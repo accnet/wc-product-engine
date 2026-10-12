@@ -33,7 +33,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T19 — Tích hợp wc_get_products, shop archives và admin lists
 - [x] T20 — Cache context, invalidation và pricing compatibility
 - [x] T21 — URL registry, providers và rendition contract
-- [ ] T22 — Real attachment bridge và Media Library behavior
+- [x] T22 — Real attachment bridge và Media Library behavior
 - [ ] T23 — Native gallery và variation image payload
 - [ ] T24 — Ảnh trên cart/email/SEO/feed/Blocks
 - [ ] T25 — Server resolver và allowed-values engine

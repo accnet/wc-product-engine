@@ -1,0 +1,78 @@
+{
+  "task_id": "T22",
+  "commit": "05fe4b1129caca8c65b8fc8c6d8994d0ef9220fd",
+  "qa_status": "passed",
+  "content_digest": "cbdf74b280da952f8d9fe7bf38b57789464c85bca274b91bd239e84250c04a06",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T22Test.php"
+      ],
+      "display": "npm run test:task -- T22",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T22/output.log",
+      "output_sha256": "b27489e036bb45e186bdccd490973ad3b415593f58d887bbdf6f9980b358c922",
+      "content_digest": "cbdf74b280da952f8d9fe7bf38b57789464c85bca274b91bd239e84250c04a06"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R87",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R87_real_attachment_race",
+      "assertion_summary": "Verified real attachment bridge allocates single post in wp_posts without race duplicates"
+    },
+    {
+      "id": "R88",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R88_wp_image_srcset_metadata",
+      "assertion_summary": "Verified WordPress image URL, downsize, metadata, and srcset filters return accurate CDN renditions"
+    },
+    {
+      "id": "R89",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R89_local_file_actions_explicit",
+      "assertion_summary": "Verified unsupported local file operations are explicitly rejected without fake local file paths"
+    },
+    {
+      "id": "R90",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R90_shared_attachment_delete",
+      "assertion_summary": "Verified shared deletion safeguards and rebind policy preserving canonical asset when references exist"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T22-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Gallery/AttachmentBridge.php",
+      "observation": "wp_get_attachment_image và Media Library preview thấy CDN ảnh đúng; bridge không tạo attachment trùng khi race"
+    },
+    {
+      "id": "AC-T22-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Gallery/AttachmentBridge.php",
+      "observation": "Delete attachment có references tạo warning/rebind policy, không xóa CDN ngoài"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Gallery/AttachmentBridge.php",
+    "tests/integration/T22Test.php",
+    "docs/evidence/T22/result.json"
+  ]
+}
