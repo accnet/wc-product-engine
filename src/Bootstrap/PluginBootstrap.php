@@ -224,6 +224,7 @@ class PluginBootstrap
                     return current_user_can('manage_woocommerce') || current_user_can('wpe_manage_operations');
                 },
             ]);
+            \WPE\Application\ImportExport\CsvStager::getInstance()->registerRestRoutes();
         });
     }
 

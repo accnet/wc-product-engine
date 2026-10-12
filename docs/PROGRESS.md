@@ -43,7 +43,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 ## 5. P3 — CSV interchange
 
-- [ ] T29 — Streaming parser, staging và dry-run validation
+- [x] T29 — Streaming parser, staging và dry-run validation
 - [ ] T30 — Commit worker, resume và conflict policy
 - [ ] T31 — Snapshot export và secure report delivery
 - [ ] T32 — Native Woo import adapter và external image mode
