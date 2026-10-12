@@ -2,79 +2,202 @@
   "schema_version": 1,
   "certified": false,
   "versions_ref": "pins.json",
+  "baseline_lock_ref": "baseline-lock.json",
+  "disclaimer": "Không ghi mọi Woo plugin tương thích; chỉ hỗ trợ các bề mặt và plugin được chứng nhận rõ ràng theo bảng dưới đây.",
   "surfaces": [
     {
       "name": "wc-crud",
-      "status": "not_tested",
+      "owner": "team-catalog",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "wc-admin",
-      "status": "not_tested",
+      "owner": "team-admin",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "wc-rest-v3",
-      "status": "not_tested",
+      "owner": "team-api",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "classic-catalog",
-      "status": "not_tested",
+      "owner": "team-storefront",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "classic-gallery",
-      "status": "not_tested",
+      "owner": "team-storefront",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "store-api",
-      "status": "not_tested",
+      "owner": "team-api",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "blocks-cart-checkout",
-      "status": "not_tested",
+      "owner": "team-checkout",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "native-reservation",
-      "status": "not_tested",
+      "owner": "team-stock",
+      "test": "tests/integration/T01Test.php",
+      "status": "unknown",
       "required": true,
       "evidence": []
     },
     {
       "name": "woo-native-csv",
-      "status": "not_tested",
+      "owner": "team-csv",
+      "test": "tests/integration/T01Test.php",
+      "status": "supported",
       "required": true,
-      "evidence": []
+      "evidence": [
+        "docs/evidence/T01/baseline.json"
+      ]
     },
     {
       "name": "shopify-local-csv",
-      "status": "not_tested",
+      "owner": "team-csv",
+      "test": "tests/integration/T01Test.php",
+      "status": "unknown",
       "required": true,
       "evidence": []
     },
     {
       "name": "rollback",
-      "status": "not_tested",
+      "owner": "team-operations",
+      "test": "tests/integration/T01Test.php",
+      "status": "unknown",
       "required": true,
       "evidence": []
     },
     {
       "name": "native-independence",
-      "status": "not_tested",
+      "owner": "team-architecture",
+      "test": "tests/integration/T01Test.php",
+      "status": "unknown",
       "required": true,
       "evidence": []
     }
   ],
-  "third_party_plugins": []
+  "third_party_plugins": [
+    {
+      "slug": "calora-bundles",
+      "version": "1.0.0",
+      "classification": "CRUD-safe",
+      "status": "supported",
+      "owner": "team-catalog",
+      "notes": "Bundles remain in legacy mode without direct SQL writes"
+    },
+    {
+      "slug": "calora-companion",
+      "version": "1.1.0",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-storefront",
+      "notes": "Theme helper using standard WordPress APIs"
+    },
+    {
+      "slug": "classic-editor",
+      "version": "1.6.7",
+      "classification": "CRUD-safe",
+      "status": "supported",
+      "owner": "team-admin",
+      "notes": "Admin editor using standard post editing"
+    },
+    {
+      "slug": "classic-widgets",
+      "version": "0.3",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-storefront",
+      "notes": "Standard WordPress widget screen"
+    },
+    {
+      "slug": "contact-form-7",
+      "version": "6.1.6",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-integration",
+      "notes": "Isolated forms post type"
+    },
+    {
+      "slug": "disable-xml-rpc",
+      "version": "1.0.1",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-security",
+      "notes": "Security filter"
+    },
+    {
+      "slug": "duplicator",
+      "version": "1.5.16",
+      "classification": "SQL-reader",
+      "status": "supported",
+      "owner": "team-operations",
+      "notes": "Backup reader only, does not modify product tables during catalog operations"
+    },
+    {
+      "slug": "easy-wp-smtp",
+      "version": "2.14.0",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-integration",
+      "notes": "Mail routing only"
+    },
+    {
+      "slug": "cards-shield",
+      "version": "2.0",
+      "classification": "WP API bridge",
+      "status": "supported",
+      "owner": "team-checkout",
+      "notes": "Payment protection gateway bridge"
+    },
+    {
+      "slug": "unregistered-direct-sql-writer",
+      "version": "any",
+      "classification": "SQL-writer",
+      "status": "blocked",
+      "owner": "team-architecture",
+      "notes": "Direct SQL writer without adapter is a strict blocker for native cohort rollout (AC-T01-03, R02)"
+    }
+  ]
 }

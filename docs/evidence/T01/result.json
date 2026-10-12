@@ -1,0 +1,74 @@
+{
+  "task_id": "T01",
+  "commit": "2520643cf4447269299aaa39fa8d55b7b365e070",
+  "qa_status": "passed",
+  "content_digest": "32bb370c9c0d919e8fcea6e5823ece2a956623ada48a5bcd99dc6313064f77cd",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T01Test.php"
+      ],
+      "display": "npm run test:task -- T01",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T01/output.log",
+      "output_sha256": "be06f804262c72f3e702ecb946b3f5a9755ca089731302ed58efe9e98596989f",
+      "content_digest": "32bb370c9c0d919e8fcea6e5823ece2a956623ada48a5bcd99dc6313064f77cd"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R01",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R01_baseline_cart_checkout_gallery_admin_csv",
+      "assertion_summary": "Verified WooCommerce 11.1.2 baseline cart, checkout, gallery, admin, and CSV surfaces are functional"
+    },
+    {
+      "id": "R02",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R02_unknown_extension_blocks_native",
+      "assertion_summary": "Verified unknown direct SQL writer extensions block native cohort migration"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T01-01",
+      "result": "passed",
+      "artifact": "contracts/compatibility/matrix.json",
+      "observation": "Matrix defines exact versions, fixtures, baseline-lock.json reference, owners, tests, and surface status"
+    },
+    {
+      "id": "AC-T01-02",
+      "result": "passed",
+      "artifact": "contracts/compatibility/matrix.json",
+      "observation": "Explicitly disclaims universal plugin compatibility; all extensions classified individually"
+    },
+    {
+      "id": "AC-T01-03",
+      "result": "passed",
+      "artifact": "contracts/compatibility/matrix.json",
+      "observation": "Direct SQL writer plugins without adapters marked as blockers for native migration"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "contracts/compatibility/pins.json",
+    "contracts/compatibility/matrix.json",
+    "docs/evidence/T01/baseline.json",
+    "tests/integration/T01Test.php",
+    "docs/evidence/T01/result.json",
+    "scripts/test-runtime.mjs",
+    "contracts/compatibility/baseline-lock.json"
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "captured_at": "2026-10-12T14:55:00+07:00",
+  "environment": {
+    "site_url": "http://site1.localhost",
+    "site_path": "/var/www/site1.localhost",
+    "wordpress": {
+      "version": "7.0",
+      "multisite": false,
+      "locale": "en_US"
+    },
+    "woocommerce": {
+      "version": "11.1.2",
+      "currency": "USD",
+      "cart_initialized": true,
+      "checkout_url": "http://site1.localhost/checkout/",
+      "product_data_store": "WC_Data_Store",
+      "csv_importer_available": true
+    },
+    "php": {
+      "version": "8.3.31",
+      "sapi": "cli",
+      "memory_limit": "256M",
+      "max_execution_time": "30"
+    },
+    "database": {
+      "server": "MariaDB",
+      "version": "11.8.6-MariaDB-ubu2204",
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "theme": {
+      "name": "calora",
+      "version": "1.0.0",
+      "status": "active"
+    }
+  },
+  "active_plugins": [
+    {
+      "name": "calora-bundles",
+      "version": "1.0.0",
+      "classification": "CRUD-safe",
+      "status": "active"
+    },
+    {
+      "name": "calora-companion",
+      "version": "1.1.0",
+      "classification": "WP API bridge",
+      "status": "active"
+    },
+    {
+      "name": "classic-editor",
+      "version": "1.6.7",
+      "classification": "CRUD-safe",
+      "status": "active"
+    },
+    {
+      "name": "classic-widgets",
+      "version": "0.3",
+      "classification": "WP API bridge",
+      "status": "active"
+    },
+    {
+      "name": "contact-form-7",
+      "version": "6.1.6",
+      "classification": "WP API bridge",
+      "status": "active"
+    },
+    {
+      "name": "disable-xml-rpc",
+      "version": "1.0.1",
+      "classification": "WP API bridge",
+      "status": "active"
+    },
+    {
+      "name": "duplicator",
+      "version": "1.5.16",
+      "classification": "SQL-reader",
+      "status": "active"
+    },
+    {
+      "name": "easy-wp-smtp",
+      "version": "2.14.0",
+      "classification": "WP API bridge",
+      "status": "active"
+    },
+    {
+      "name": "woocommerce",
+      "version": "11.1.2",
+      "classification": "Core Host",
+      "status": "active"
+    }
+  ],
+  "surfaces_status": {
+    "wc-crud": "supported",
+    "wc-admin": "supported",
+    "wc-rest-v3": "supported",
+    "classic-catalog": "supported",
+    "classic-gallery": "supported",
+    "store-api": "supported",
+    "blocks-cart-checkout": "supported",
+    "woo-native-csv": "supported"
+  }
+}
