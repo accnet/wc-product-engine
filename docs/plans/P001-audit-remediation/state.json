@@ -1,7 +1,7 @@
 {
   "id": "P001",
   "title": "Audit remediation (OD-01..OD-07)",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "07b464480afeb0bb6a758cae12c13e1cb772083ed33b9736bec413f6cd4cec26",
   "tasks": [
     {
@@ -807,5 +807,6 @@
       "started_at": "2026-10-12T16:00:27.345Z"
     }
   ],
-  "approved_hash": "07b464480afeb0bb6a758cae12c13e1cb772083ed33b9736bec413f6cd4cec26"
+  "approved_hash": "07b464480afeb0bb6a758cae12c13e1cb772083ed33b9736bec413f6cd4cec26",
+  "report_hash": "e18b9b02dd7bc50c1d9d65780c70ee0aff821470ef764dda45c4faf489599939"
 }

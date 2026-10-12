@@ -1,3 +1,7 @@
 # Report
 
 ## Summary
+
+P001 applied decisions OD-01..OD-07 from the final docs-kit audit. Contracts were re-pinned to WP 7.1.3 / WC 11.2.1 and 10 regression requirements were added (R203-R212, 212 total). Evidence tooling now records the live runtime, a base commit, file hashes, an isolation receipt and one receipt per R/AC taken from real test output. ReadinessGates compares full versions. Test isolation and a residue gate were added and the existing DB residue was cleaned after a backup. T46 and T40 got guards (explicit product_ids, native row and sealed authority, rollback window, per-cohort restore drill, mirror_stopped rollback block). R107 is now verified by a Playwright browser test with a mutation control. All 49 tasks were re-run on the pinned runtime: verify-only passes 49/49 and 212/212 requirements are verified.
+
+Rerun surfaced two test defects (T09 depended on an empty outbox, T11 hard-coded classic-editor) and one possible production defect, OutboxWorker::acquireBatch ignoring available_at, which is recorded but not fixed. Verdict in docs/audits/READINESS-GATE.md is CONDITIONALLY READY, not READY: no independent audit exists, 22 acceptance criteria only have requirements_only receipts, and 100k/1M scale is unmeasured by decision (G09 not achieved). No cutover or deploy was performed. Out-of-scope edits made along the way: verify-task isolation check, package.json and lock for @playwright/test (dependency scanner was unreachable), T01 baseline recapture.

@@ -1,6 +1,6 @@
 # P001 — Audit remediation (OD-01..OD-07)
 
-Status: in_progress
+Status: done
 
 - [x] P001.1 — Re-baseline contracts, docs and validators (done)
 - [x] P001.2 — Evidence tooling: runtime env, per-requirement receipts, base commit binding (done)
