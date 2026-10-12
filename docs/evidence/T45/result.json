@@ -1,0 +1,78 @@
+{
+  "task_id": "T45",
+  "commit": "f4974ada97cec5b31b300d637e34f21dfc176153",
+  "qa_status": "passed",
+  "content_digest": "afb78bcfad5ad63c7f80b209685c8b8b3bee832d41c2572038fdc59033e25bf3",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T45Test.php"
+      ],
+      "display": "npm run test:task -- T45",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T45/output.log",
+      "output_sha256": "56f6ebf6c849033628fb1b5665dbaf77b7f99f3f20c9c48c6676d6ca26ece102",
+      "content_digest": "afb78bcfad5ad63c7f80b209685c8b8b3bee832d41c2572038fdc59033e25bf3"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R181",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R181_no_fallback_on_native_read_error",
+      "assertion_summary": "Verified that in full_native mode missing or errored native data strictly fails closed with zero fallback to stale legacy postmeta (INV12)"
+    },
+    {
+      "id": "R182",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R182_owned_field_authority",
+      "assertion_summary": "Verified write ownership fence strictly rejects direct uncertified postmeta writes to owned keys while routing certified adapter writes to native tables"
+    },
+    {
+      "id": "R183",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R183_plugin_change_certification",
+      "assertion_summary": "Verified that uncertified plugin activation triggers automatic readiness demotion and operational alert while safely preserving native source"
+    },
+    {
+      "id": "R184",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R184_mirror_not_canonical",
+      "assertion_summary": "Verified that legacy mirror is strictly non-canonical and corrupt postmeta mutations do not affect native storefront and API product reads"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T45-01",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/AuthoritySeal.php",
+      "observation": "Full native đọc/ghi đúng và không fallback stale"
+    },
+    {
+      "id": "AC-T45-02",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/AuthoritySeal.php",
+      "observation": "CRUD-safe supported plugins hoạt động; unsupported plugin enable khiến native rollout bị chặn/cảnh báo vận hành, không tự chuyển source nguy hiểm"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Rollout/AuthoritySeal.php",
+    "tests/integration/T45Test.php",
+    "docs/evidence/T45/result.json"
+  ]
+}

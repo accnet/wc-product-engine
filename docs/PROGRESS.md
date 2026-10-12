@@ -70,7 +70,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 ## 8. P6 — Controlled rollout/release
 
 - [x] T43 — Cutover barrier, canary và monitored rollout
-- [ ] T45 — Seal authority và chuyển full_native
+- [x] T45 — Seal authority và chuyển full_native
 - [ ] T49 — Release packaging, docs và staged delivery
 
 ## 9. P7 — Retention cleanup
