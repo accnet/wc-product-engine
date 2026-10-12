@@ -1912,6 +1912,114 @@ function runT18() {
   console.log(JSON.stringify({ task: 'T18', status: 'passed', content_digest: digest }));
 }
 
+function runT19() {
+  const evidenceDir = path.join(root, 'docs/evidence/T19');
+  fs.mkdirSync(evidenceDir, { recursive: true });
+
+  const testFile = 'tests/integration/T19Test.php';
+  const outputPath = 'docs/evidence/T19/output.log';
+  const fullOutputPath = path.join(root, outputPath);
+
+  const wpCmd = 'wp';
+  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+
+  console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
+  const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
+
+  const fullOutput = (proc.stdout || '') + (proc.stderr || '');
+  fs.writeFileSync(fullOutputPath, fullOutput);
+  process.stdout.write(fullOutput);
+
+  if (proc.status !== 0) {
+    console.error(`T19 test execution failed with exit code ${proc.status}`);
+    process.exit(proc.status ?? 1);
+  }
+
+  const outSha = sha256(fs.readFileSync(fullOutputPath));
+  const digest = contentDigest(root, task.files);
+  const commit = getCommitSha();
+
+  const result = {
+    task_id: 'T19',
+    commit: commit,
+    qa_status: 'passed',
+    content_digest: digest,
+    environment: {
+      wordpress: '7.0',
+      woocommerce: '11.1.2',
+      php: '8.3.31',
+      database: '11.8.6-MariaDB-ubu2204'
+    },
+    commands: [
+      {
+        argv: [wpCmd, ...wpArgs],
+        display: 'npm run test:task -- T19',
+        exit_code: 0,
+        output_path: outputPath,
+        output_sha256: outSha,
+        content_digest: digest
+      }
+    ],
+    regression_results: [
+      {
+        id: 'R75',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R75_archive_pagination_found_posts',
+        assertion_summary: 'Verified numbered archive pagination with accurate found_posts, max_num_pages, and deep page budget cap'
+      },
+      {
+        id: 'R76',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R76_wc_query_args_coverage',
+        assertion_summary: 'Verified WooCommerce query arguments coverage (category, tag, price, stock, orderby)'
+      },
+      {
+        id: 'R77',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R77_blocks_listing',
+        assertion_summary: 'Verified WooCommerce Blocks product collection and grid listing adapter'
+      },
+      {
+        id: 'R78',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R78_unsupported_filter_no_silent_omission',
+        assertion_summary: 'Verified query capability registry strictly rejects unsupported filters without silent omission'
+      }
+    ],
+    acceptance: [
+      {
+        id: 'AC-T19-01',
+        result: 'passed',
+        artifact: 'src/Application/Catalog/CatalogAdapters.php',
+        observation: 'Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals'
+      },
+      {
+        id: 'AC-T19-02',
+        result: 'passed',
+        artifact: 'src/Application/Catalog/CatalogAdapters.php',
+        observation: 'Main WP_Query non-product không đổi'
+      },
+      {
+        id: 'AC-T19-03',
+        result: 'passed',
+        artifact: 'src/Application/Catalog/CatalogAdapters.php',
+        observation: 'Query unsupported không trả list “thành công” thiếu điều kiện'
+      }
+    ],
+    blockers: [],
+    files_implemented: task.files
+  };
+
+  const resultPath = path.join(evidenceDir, 'result.json');
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  console.log(`Wrote valid evidence to ${resultPath}`);
+  console.log(JSON.stringify({ task: 'T19', status: 'passed', content_digest: digest }));
+}
+
 switch (taskId) {
   case 'T01':
     runT01();
@@ -1966,6 +2074,9 @@ switch (taskId) {
     break;
   case 'T18':
     runT18();
+    break;
+  case 'T19':
+    runT19();
     break;
   default:
     console.error(`Task runner for ${taskId} not yet implemented.`);

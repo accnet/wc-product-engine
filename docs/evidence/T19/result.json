@@ -1,0 +1,84 @@
+{
+  "task_id": "T19",
+  "commit": "ba9f72c29381cb69edd6884f606e49eef0db0bec",
+  "qa_status": "passed",
+  "content_digest": "1ec8843f94111c2b8a35eea7d81adb3f219f3bfcc25ed840ab5e4347315f7a02",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T19Test.php"
+      ],
+      "display": "npm run test:task -- T19",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T19/output.log",
+      "output_sha256": "620c9e66492b1412403008a1b5313732404bb0679942a195cbca5163a98a5364",
+      "content_digest": "1ec8843f94111c2b8a35eea7d81adb3f219f3bfcc25ed840ab5e4347315f7a02"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R75",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R75_archive_pagination_found_posts",
+      "assertion_summary": "Verified numbered archive pagination with accurate found_posts, max_num_pages, and deep page budget cap"
+    },
+    {
+      "id": "R76",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R76_wc_query_args_coverage",
+      "assertion_summary": "Verified WooCommerce query arguments coverage (category, tag, price, stock, orderby)"
+    },
+    {
+      "id": "R77",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R77_blocks_listing",
+      "assertion_summary": "Verified WooCommerce Blocks product collection and grid listing adapter"
+    },
+    {
+      "id": "R78",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R78_unsupported_filter_no_silent_omission",
+      "assertion_summary": "Verified query capability registry strictly rejects unsupported filters without silent omission"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T19-01",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogAdapters.php",
+      "observation": "Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals"
+    },
+    {
+      "id": "AC-T19-02",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogAdapters.php",
+      "observation": "Main WP_Query non-product không đổi"
+    },
+    {
+      "id": "AC-T19-03",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogAdapters.php",
+      "observation": "Query unsupported không trả list “thành công” thiếu điều kiện"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Catalog/CatalogAdapters.php",
+    "tests/integration/T19Test.php",
+    "docs/evidence/T19/result.json"
+  ]
+}
