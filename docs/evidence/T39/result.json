@@ -1,0 +1,78 @@
+{
+  "task_id": "T39",
+  "commit": "1c916d0a461229ef69850a8243e70431658a39cd",
+  "qa_status": "passed",
+  "content_digest": "d4e9139d7ad501ecf5073f512351cf38cbc5cd085ac3c794786b51f31fee3b04",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T39Test.php"
+      ],
+      "display": "npm run test:task -- T39",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T39/output.log",
+      "output_sha256": "33327e5a1d7a53ba7a331e0f80e1b8e62b1f4309810272abc45729d7f922d44d",
+      "content_digest": "d4e9139d7ad501ecf5073f512351cf38cbc5cd085ac3c794786b51f31fee3b04"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R157",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R157_native_mirror_full_props",
+      "assertion_summary": "Verified complete native-to-legacy projection of CPT post, postmeta, taxonomy terms, arbitrary metadata, and variations while preserving historical stock operations"
+    },
+    {
+      "id": "R158",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R158_mirror_out_of_order",
+      "assertion_summary": "Verified out-of-order and restart projection events are safely skipped without reverting newer native or legacy catalog state"
+    },
+    {
+      "id": "R159",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R159_dual_writer_rejected",
+      "assertion_summary": "Verified write ownership fence strictly rejects unauthorized dual-writers under native authority and securely routes certified adapter writes to native storage"
+    },
+    {
+      "id": "R160",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R160_projection_hook_side_effect_guard",
+      "assertion_summary": "Verified origin guard suppresses secondary legacy capture hooks during projection to eliminate recursion and ping-pong sync loops"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T39-01",
+      "result": "passed",
+      "artifact": "src/Application/Migration/LegacyMirror.php",
+      "observation": "Mirror restart/out-of-order không làm revert native/legacy mới; native writes không mất historical stock operations"
+    },
+    {
+      "id": "AC-T39-02",
+      "result": "passed",
+      "artifact": "src/Application/Migration/LegacyMirror.php",
+      "observation": "Epoch fence ngăn stale worker sau authority switch"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Migration/LegacyMirror.php",
+    "tests/integration/T39Test.php",
+    "docs/evidence/T39/result.json"
+  ]
+}

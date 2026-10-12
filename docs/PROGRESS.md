@@ -56,7 +56,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 - [x] T37 — Change capture và reconciliation
 - [x] T38 — Backfill triệu products và shadow diff
-- [ ] T39 — Native→legacy mirror và write ownership fence
+- [x] T39 — Native→legacy mirror và write ownership fence
 - [ ] T40 — Rollback orchestration và deactivation safety
 - [ ] T41 — Operations UI, health và CLI
 
