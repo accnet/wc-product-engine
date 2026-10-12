@@ -7,7 +7,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 ## 2. P0 — Foundation
 
 - [x] T01 — Pin baseline và compatibility inventory
-- [ ] T02 — Plugin bootstrap và feature flags
+- [x] T02 — Plugin bootstrap và feature flags
 - [ ] T03 — Khóa database/API/event/CSV contracts
 - [ ] T04 — Fixture và differential test harness
 

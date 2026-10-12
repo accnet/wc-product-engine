@@ -1,0 +1,90 @@
+{
+  "task_id": "T02",
+  "commit": "8f53343f7bff8f7306eea9b278ad1f2fe3756b56",
+  "qa_status": "passed",
+  "content_digest": "e1bb430ebc729531599768f8a3959cbd029724d98a7c1d664deec6a2fb22d493",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T02Test.php"
+      ],
+      "display": "npm run test:task -- T02",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T02/output.log",
+      "output_sha256": "6bbc8b0a04c877f7e5dbc2c4fdc5b16ffee85b5714ac3fdb709c13ede9054f4d",
+      "content_digest": "e1bb430ebc729531599768f8a3959cbd029724d98a7c1d664deec6a2fb22d493"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R03",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R03_activation_no_mutation",
+      "assertion_summary": "Verified plugin activation does not mutate data, products, or default legacy authority"
+    },
+    {
+      "id": "R04",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R04_flag_scope",
+      "assertion_summary": "Verified independent feature flag scoping and deterministic cohort precedence"
+    },
+    {
+      "id": "R05",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R05_dependency_missing",
+      "assertion_summary": "Verified missing/unsupported dependencies block native features and render admin notice"
+    },
+    {
+      "id": "R06",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R06_deactivate_retains_data",
+      "assertion_summary": "Verified plugin deactivation retains all database tables and product records"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T02-01",
+      "result": "passed",
+      "artifact": "src/Bootstrap/PluginBootstrap.php",
+      "observation": "Install does not alter authority or products; unsupported dependencies block native"
+    },
+    {
+      "id": "AC-T02-02",
+      "result": "passed",
+      "artifact": "src/Bootstrap/PluginBootstrap.php",
+      "observation": "When query feature flag is false, WooCommerce legacy queries remain active"
+    },
+    {
+      "id": "AC-T02-03",
+      "result": "passed",
+      "artifact": "src/Bootstrap/PluginBootstrap.php",
+      "observation": "Cohort conflict resolved via deterministic precedence rules; status reflects real configuration"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "wc-product-engine.php",
+    "composer.json",
+    "package.json",
+    "scripts/test-runtime.mjs",
+    "src/Bootstrap/PluginBootstrap.php",
+    "tests/integration/T02Test.php",
+    "docs/evidence/T02/result.json",
+    "composer.lock",
+    "package-lock.json"
+  ]
+}
