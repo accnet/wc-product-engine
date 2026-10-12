@@ -55,6 +55,7 @@ class PluginBootstrap
         $this->registerDataStores();
         $this->registerRestRoutes();
         \WPE\Admin\OperationsPage::getInstance()->init();
+        \WPE\Admin\ProductEditor\ProductEditorBridge::getInstance()->init();
 
         add_action('admin_menu', [$this, 'registerAdminMenu']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
@@ -300,6 +301,7 @@ class PluginBootstrap
             ]);
             \WPE\Application\ImportExport\CsvStager::getInstance()->registerRestRoutes();
             \WPE\Admin\Rest\AdminApiController::getInstance()->registerRoutes();
+            \WPE\Admin\ProductEditor\ProductEditorApiController::getInstance()->registerRoutes();
         });
     }
 

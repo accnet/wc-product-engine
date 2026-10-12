@@ -1,0 +1,328 @@
+{
+  "id": "P003",
+  "title": "Product Variable and Attribute UI Enhancement",
+  "status": "done",
+  "content_hash": "503f83b08c3ef77c9cef96c1bc18aa2c4a65745932698d77488d489b08cba901",
+  "tasks": [
+    {
+      "id": "P003.1",
+      "title": "Backend Data Model, Repositories & REST API for Product Variant Editor",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-storage-engine.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorService.php",
+        "src/Admin/ProductEditor/ProductEditorApiController.php",
+        "tests/integration/ProductEditorServiceTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "aae75053f56b1437511ff6ef450d6b94f885f34bbee092fd42c1554eb4b79d08",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828040680-6fcdc80d.log",
+          "time": "2026-10-12T18:00:40.681Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "aae75053f56b1437511ff6ef450d6b94f885f34bbee092fd42c1554eb4b79d08",
+          "output_sha256": "b06fbd86ec1d784b600f7058d341699a0a9d5a655b244d6bd812204a63fe0f6d",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828050119-64b7a73e.log",
+          "time": "2026-10-12T18:00:50.120Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "aae75053f56b1437511ff6ef450d6b94f885f34bbee092fd42c1554eb4b79d08",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828065149-e02f08a2.log",
+          "time": "2026-10-12T18:01:05.149Z"
+        }
+      ],
+      "started_at": "2026-10-12T17:55:58.827Z"
+    },
+    {
+      "id": "P003.2",
+      "title": "WooCommerce Admin Hooks & Product Data Tabs Integration",
+      "depends_on": [
+        "P003.1"
+      ],
+      "read_first": [
+        "docs/05-data-store-contracts.md",
+        "docs/07-api-and-events.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/ProductEditorBridgeTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/ProductEditorBridgeTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "8e0b54a8c9a98f433484d86790fe24759fff82b961e3cc741cad7fee77e7ec00",
+          "output_sha256": "b06fbd86ec1d784b600f7058d341699a0a9d5a655b244d6bd812204a63fe0f6d",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828137441-dc71e872.log",
+          "time": "2026-10-12T18:02:17.442Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "8e0b54a8c9a98f433484d86790fe24759fff82b961e3cc741cad7fee77e7ec00",
+          "output_sha256": "adfb98831aa6657253394a20ad5102584f31de9a25cf1b2ff9f227cf7dc847c5",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828147090-4ef8fbf4.log",
+          "time": "2026-10-12T18:02:27.090Z"
+        }
+      ],
+      "started_at": "2026-10-12T18:01:18.386Z"
+    },
+    {
+      "id": "P003.3",
+      "title": "Frontend UI Components — Descriptive Attributes, Options Cards & Variations Matrix",
+      "depends_on": [
+        "P003.2"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/09-ui-and-theme.md"
+      ],
+      "files": [
+        "assets/admin/product-editor.css",
+        "assets/admin/product-editor.js"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "d3ec300d4400e4cdf8f11a710983e07655b4cf3e9f0845a4d5fc97acb19ce3e8",
+          "output_sha256": "b06fbd86ec1d784b600f7058d341699a0a9d5a655b244d6bd812204a63fe0f6d",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828262150-780142b9.log",
+          "time": "2026-10-12T18:04:22.150Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "d3ec300d4400e4cdf8f11a710983e07655b4cf3e9f0845a4d5fc97acb19ce3e8",
+          "output_sha256": "4fd91d3f4887704f62c6cdbebdd53b27df816276754c6a64ba1c256b5c14a58c",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828266782-eb9b003a.log",
+          "time": "2026-10-12T18:04:26.782Z"
+        }
+      ],
+      "started_at": "2026-10-12T18:02:48.903Z"
+    },
+    {
+      "id": "P003.4",
+      "title": "Modals, Bulk Operations, Fullscreen Mode & Inventory Rules",
+      "depends_on": [
+        "P003.3"
+      ],
+      "read_first": [
+        "docs/09-ui-and-theme.md",
+        "docs/04-storage-engine.md"
+      ],
+      "files": [
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "34f9e1090b2cb84c0be864b0fe64525cb63715dcc818f9b9591fe08e8a4bbebd",
+          "output_sha256": "b06fbd86ec1d784b600f7058d341699a0a9d5a655b244d6bd812204a63fe0f6d",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828347058-08e3f3e5.log",
+          "time": "2026-10-12T18:05:47.058Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "34f9e1090b2cb84c0be864b0fe64525cb63715dcc818f9b9591fe08e8a4bbebd",
+          "output_sha256": "4fd91d3f4887704f62c6cdbebdd53b27df816276754c6a64ba1c256b5c14a58c",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828351095-9b06033a.log",
+          "time": "2026-10-12T18:05:51.096Z"
+        }
+      ],
+      "started_at": "2026-10-12T18:04:49.934Z"
+    },
+    {
+      "id": "P003.5",
+      "title": "Comprehensive Integration Testing, Documentation & Evidence Verification",
+      "depends_on": [
+        "P003.4"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/06-implementation-plan.md"
+      ],
+      "files": [
+        "tests/integration/ProductEditorE2ETest.php",
+        "docs/plans/P003-variable-ui/plan.md",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "6929957bdc52a67c2df64c2cd6877a1d2a81ff34e388d02c623a42cbc51b9c24",
+          "output_sha256": "b06fbd86ec1d784b600f7058d341699a0a9d5a655b244d6bd812204a63fe0f6d",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828494116-c34f1184.log",
+          "time": "2026-10-12T18:08:14.117Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "6929957bdc52a67c2df64c2cd6877a1d2a81ff34e388d02c623a42cbc51b9c24",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828539758-577caea9.log",
+          "time": "2026-10-12T18:08:59.758Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "d580a3ef2b5fb09ca6019905b5d0ce0db62c7403",
+          "content_digest": "6929957bdc52a67c2df64c2cd6877a1d2a81ff34e388d02c623a42cbc51b9c24",
+          "output_sha256": "4fd91d3f4887704f62c6cdbebdd53b27df816276754c6a64ba1c256b5c14a58c",
+          "output_path": "docs/plans/P003-variable-ui/command-1791828547959-24edcbc0.log",
+          "time": "2026-10-12T18:09:07.959Z"
+        }
+      ],
+      "started_at": "2026-10-12T18:06:02.245Z"
+    }
+  ],
+  "approved_hash": "503f83b08c3ef77c9cef96c1bc18aa2c4a65745932698d77488d489b08cba901",
+  "report_hash": "808c0fe457dce6531b550333c5b316317b135feb4a45ff37adfb5b6ccdaa714e"
+}
