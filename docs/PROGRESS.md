@@ -31,7 +31,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T17 — Fast query compiler và keyset pagination
 - [x] T18 — Facets coherent theo variant và counts
 - [x] T19 — Tích hợp wc_get_products, shop archives và admin lists
-- [ ] T20 — Cache context, invalidation và pricing compatibility
+- [x] T20 — Cache context, invalidation và pricing compatibility
 - [ ] T21 — URL registry, providers và rendition contract
 - [ ] T22 — Real attachment bridge và Media Library behavior
 - [ ] T23 — Native gallery và variation image payload

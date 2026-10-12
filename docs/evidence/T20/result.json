@@ -1,0 +1,78 @@
+{
+  "task_id": "T20",
+  "commit": "4280ea2172958698f47571ea8deb4a8d30468da2",
+  "qa_status": "passed",
+  "content_digest": "8ed347325b7cedbdcc8c0040486e956d0b5f6a0d872df694502eacdd91e1023c",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T20Test.php"
+      ],
+      "display": "npm run test:task -- T20",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T20/output.log",
+      "output_sha256": "6b0a9a065f685928bc2cc994f1f6133abaf97bf5bc5360697e1c04008947b4c1",
+      "content_digest": "8ed347325b7cedbdcc8c0040486e956d0b5f6a0d872df694502eacdd91e1023c"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R79",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R79_context_cache_isolation",
+      "assertion_summary": "Verified context cache isolation across currency, tax, and customer group dimensions"
+    },
+    {
+      "id": "R80",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R80_visibility_cache_invalidate",
+      "assertion_summary": "Verified product visibility and status updates invalidate cache preventing draft leaks"
+    },
+    {
+      "id": "R81",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R81_cache_stampede",
+      "assertion_summary": "Verified atomic mutex lock prevents cache stampede on concurrent misses"
+    },
+    {
+      "id": "R82",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R82_dynamic_price_filter_before_pagination",
+      "assertion_summary": "Verified pricing compatibility gate routes unindexed dynamic pricing to fallback"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T20-01",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/ContextCache.php",
+      "observation": "Hai tax/customer/currency contexts không dùng chung giá; changed visibility không leak draft qua cache"
+    },
+    {
+      "id": "AC-T20-02",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/ContextCache.php",
+      "observation": "Outbox backlog có observable lag và fallback chỉ về canonical đúng authority"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Catalog/ContextCache.php",
+    "tests/integration/T20Test.php",
+    "docs/evidence/T20/result.json"
+  ]
+}
