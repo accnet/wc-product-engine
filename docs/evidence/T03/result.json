@@ -1,8 +1,8 @@
 {
   "task_id": "T03",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "qa_status": "passed",
-  "content_digest": "8f57a37426de5773a9dbcbe556262af7e42dd4fb6d531452c673342ead7d4b14",
+  "content_digest": "f9618e12e19babd416fe8416ba1fa1ea509074d9c7d0ece7a03d249798182874",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -18,8 +18,8 @@
       "display": "npm run test:task -- T03",
       "exit_code": 0,
       "output_path": "docs/evidence/T03/output.log",
-      "output_sha256": "fa852e053819c7b6799fb9d9160f5cb98dedb53bbdbaa3e656fed0b3218f3f68",
-      "content_digest": "8f57a37426de5773a9dbcbe556262af7e42dd4fb6d531452c673342ead7d4b14"
+      "output_sha256": "a8ea106df3cce6cc8429c99e7e12f4008dc4d35b0e3c3e46142b17df2a82375a",
+      "content_digest": "f9618e12e19babd416fe8416ba1fa1ea509074d9c7d0ece7a03d249798182874"
     }
   ],
   "regression_results": [
@@ -31,7 +31,7 @@
       "assertion_summary": "Verified JSON syntax and structural cross-references for all contract files",
       "basis": "output_anchor",
       "anchor": {
-        "line": 19,
+        "line": 22,
         "text": "R07 (contract_schema_validation): PASSED"
       }
     },
@@ -43,7 +43,7 @@
       "assertion_summary": "Verified 64-bit ID, price, and stock string round-trip precision",
       "basis": "output_anchor",
       "anchor": {
-        "line": 20,
+        "line": 23,
         "text": "R08 (decimal_id_roundtrip): PASSED"
       }
     },
@@ -55,7 +55,7 @@
       "assertion_summary": "Verified absent vs null vs blank string semantics",
       "basis": "output_anchor",
       "anchor": {
-        "line": 21,
+        "line": 24,
         "text": "R09 (nullable_blank_semantics): PASSED"
       }
     },
@@ -67,7 +67,7 @@
       "assertion_summary": "Verified coverage of 55+ WC properties and 39 Data Store methods in sealed mapping",
       "basis": "output_anchor",
       "anchor": {
-        "line": 22,
+        "line": 25,
         "text": "R10 (props_mapping_coverage): PASSED"
       }
     }
@@ -78,14 +78,22 @@
       "result": "passed",
       "artifact": "contracts/compatibility/wc-props-mapping.json",
       "observation": "OpenAPI and schema contracts valid; all endpoints have requests/responses/errors; props cataloged and sealed",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 26,
+        "text": "AC-T03-01 (contracts_cover_endpoints_schema_props): PASSED"
+      }
     },
     {
       "id": "AC-T03-02",
       "result": "passed",
       "artifact": "docs/adr/001-retained-shells.md",
       "observation": "ADRs document retained shells and single writer architecture; breaking changes require versioning",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "AC-T03-02 (breaking_change_needs_version_or_adr): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -104,7 +112,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -114,10 +122,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -133,7 +141,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -143,10 +151,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -162,7 +170,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -172,10 +180,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -212,7 +220,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "file_hashes": {
     "contracts/api/endpoints.json": "9fe9bb7b5953da5e03ede6ede1b5931dfbc7709b982e899ab9c9d4aba9e17e92",
     "contracts/compatibility/wc-props-mapping.json": "81833087a7d73d88009ecf6bfb6debf9c91ca8009f2de6ee60cd34dbb190d0ae",
@@ -220,6 +228,6 @@
     "contracts/database/schema-contract.json": "10b1f24ebb618890e82bd6a6f949040e6ef2e92cfef813b4f416351c9bedb775",
     "contracts/events/product-changed.schema.json": "693e286d739cd1530f0a56d6230f387371d36069279c00c128ad5680d45e57e9",
     "contracts/openapi/wpe-v1.json": "1add0e5027e9b7f9125560f95de5a3ff28068fba09bfc664a29c4ac71a00471e",
-    "tests/unit/T03Test.php": "86a14ca09edb0990a5f616c324881b728a5f7c557c1fb2ca3407190fcbd2efa1"
+    "tests/unit/T03Test.php": "b801cc9f7a151291c6316db809c5d6ba95c8aa62603c196ec8b64df4679c1845"
   }
 }

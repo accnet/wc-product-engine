@@ -40,6 +40,7 @@ class T02Test
         $r203 = $this->testEvidenceEnvMatchesRuntime();
         $r204 = $this->testEvidenceBindsBaseCommitAndFiles();
         $r205 = $this->testPerRequirementReceipt();
+        $ac = $this->testAcceptanceCriteria();
 
         echo "\n=== Test Summary ===\n";
         echo "R03 (activation_no_mutation): " . ($r03 ? "PASSED" : "FAILED") . "\n";
@@ -50,7 +51,11 @@ class T02Test
         echo "R204 (evidence_binds_base_commit_and_files): " . ($r204 ? "PASSED" : "FAILED") . "\n";
         echo "R205 (per_requirement_receipt): " . ($r205 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r03 && $r04 && $r05 && $r06 && $r203 && $r204 && $r205) {
+        foreach ($ac as $id => $row) {
+            echo "{$id} ({$row[0]}): " . ($row[1] ? "PASSED" : "FAILED") . "\n";
+        }
+
+        if ($r03 && $r04 && $r05 && $r06 && $r203 && $r204 && $r205 && !in_array(false, array_column($ac, 1), true)) {
             echo "All T02 tests passed successfully.\n";
             return 0;
         }
@@ -222,6 +227,105 @@ class T02Test
 
         echo "  [OK] Deactivation safely retained all tables and data.\n";
         return true;
+    }
+
+    /**
+     * AC-T02-01..03: install is inert, legacy reads stay on WooCommerce, cohort routing is deterministic.
+     *
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    private function testAcceptanceCriteria(): array
+    {
+        echo "[AC-T02] Verifying bootstrap acceptance criteria...\n";
+        global $wpdb;
+        $flags_before = $this->bootstrap->getFlags();
+        $routing_before = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, null);
+        $saved_flags_before = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, null);
+        $restore = function () use ($flags_before, $routing_before, $saved_flags_before): void {
+            $flagsProp = new \ReflectionProperty($this->bootstrap, 'flags');
+            $flagsProp->setAccessible(true);
+            $flagsProp->setValue($this->bootstrap, $flags_before);
+            if ($saved_flags_before === null) {
+                delete_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS);
+            } else {
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, $saved_flags_before);
+            }
+            if ($routing_before === null) {
+                delete_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING);
+            } else {
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $routing_before);
+            }
+        };
+
+        // AC-T02-01: activation changes neither authority nor products; unsupported dependencies block native.
+        $products_before = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ('product','product_variation')");
+        $mode_before = $this->bootstrap->getRestStatus()['environment']['authority_mode'];
+        \WPE\Bootstrap\PluginBootstrap::onActivate();
+        $products_after = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type IN ('product','product_variation')");
+        $mode_after = (new \WPE\Bootstrap\PluginBootstrap())->getRestStatus()['environment']['authority_mode'];
+        $blocked = new \WPE\Bootstrap\PluginBootstrap();
+        foreach (['flags' => ['native_writes_enabled' => true, 'query_enabled' => true, 'cohort_mode' => 'full_native'], 'dependencies_satisfied' => false] as $prop => $value) {
+            $ref = new \ReflectionProperty($blocked, $prop);
+            $ref->setAccessible(true);
+            $ref->setValue($blocked, $value);
+        }
+        update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, ['products' => [999001 => 'full_native']]);
+        $ok1 = $products_before === $products_after && $mode_before === $mode_after
+            && !$blocked->isFlagEnabled('native_writes_enabled') && !$blocked->isFlagEnabled('query_enabled')
+            && $blocked->resolveProductAuthority(999001) === 'legacy';
+        $restore();
+        echo $ok1 ? "  [OK] Activation is inert; unsupported dependencies force legacy and block native flags.\n" : "  [FAIL] Activation mutated state or unsupported dependencies did not block native.\n";
+
+        // AC-T02-02: with the query feature off, WooCommerce still reads products at legacy authority.
+        $this->bootstrap->setFlag('query_enabled', false);
+        $this->bootstrap->setFlag('native_writes_enabled', false);
+        $ids = wc_get_products(['limit' => 1, 'return' => 'ids']);
+        $product = $ids ? wc_get_product($ids[0]) : null;
+        $store = \WC_Data_Store::load('product');
+        $ok2 = $product instanceof \WC_Product && $product->get_name() !== '' && is_numeric($product->get_price() === '' ? 0 : $product->get_price())
+            && $this->bootstrap->resolveProductAuthority($ids[0]) === 'legacy'
+            && $store->get_current_class_name() === 'WC_Product_Data_Store_CPT';
+        $restore();
+        echo $ok2 ? "  [OK] Query flag off: WooCommerce CPT data store reads products at legacy authority.\n" : "  [FAIL] Product read with query flag off did not stay on WooCommerce legacy.\n";
+
+        // AC-T02-03: conflicting cohort rules resolve deterministically (product rule over category rule); status reflects config.
+        $pid = null;
+        $tid = null;
+        foreach (wc_get_products(['limit' => 100, 'return' => 'ids']) as $candidate) {
+            $terms = wc_get_product_term_ids($candidate, 'product_cat');
+            if ($terms) {
+                $pid = $candidate;
+                $tid = $terms[0];
+                break;
+            }
+        }
+        $ok3 = $pid !== null;
+        if ($ok3) {
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, ['products' => [$pid => 'legacy'], 'categories' => [$tid => 'full_native']]);
+            $seen = [];
+            for ($i = 0; $i < 25; $i++) {
+                $seen[] = $this->bootstrap->resolveProductAuthority($pid);
+            }
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, ['categories' => [$tid => 'full_native']]);
+            $seenCat = [];
+            for ($i = 0; $i < 25; $i++) {
+                $seenCat[] = $this->bootstrap->resolveProductAuthority($pid);
+            }
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, ['cohort_mode' => 'cohort_canary']);
+            $this->bootstrap->loadFlags();
+            $status = $this->bootstrap->getRestStatus();
+            $ok3 = array_unique($seen) === ['legacy'] && array_unique($seenCat) === ['full_native']
+                && $status['environment']['authority_mode'] === 'cohort_canary' && $status['flags'] === $this->bootstrap->getFlags()
+                && $status['dependencies_satisfied'] === $this->bootstrap->areDependenciesSatisfied();
+        }
+        $restore();
+        echo $ok3 ? "  [OK] Cohort conflict resolves deterministically; status endpoint mirrors live config.\n" : "  [FAIL] Cohort conflict was not deterministic or status did not reflect config.\n";
+
+        return [
+            'AC-T02-01' => ['install_inert_unsupported_blocks_native', $ok1],
+            'AC-T02-02' => ['legacy_reads_when_query_off', $ok2],
+            'AC-T02-03' => ['cohort_conflict_deterministic_status_real', $ok3],
+        ];
     }
 
     /**

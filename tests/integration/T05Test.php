@@ -38,6 +38,7 @@ class T05Test
         $r15 = $this->testPrefixMultisite();
         $r16 = $this->testCrashBetweenDdl();
         $r17 = $this->testDecimalPrecisionAndCollation();
+        $ac = $this->testAcceptanceCriteria();
 
         echo "\n=== Test Summary ===\n";
         echo "R14 (migration_idempotent): " . ($r14 ? "PASSED" : "FAILED") . "\n";
@@ -45,7 +46,11 @@ class T05Test
         echo "R16 (crash_between_ddl): " . ($r16 ? "PASSED" : "FAILED") . "\n";
         echo "R17 (decimal_precision_and_collation): " . ($r17 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r14 && $r15 && $r16 && $r17) {
+        foreach ($ac as $id => $row) {
+            echo "{$id} ({$row[0]}): " . ($row[1] ? "PASSED" : "FAILED") . "\n";
+        }
+
+        if ($r14 && $r15 && $r16 && $r17 && !in_array(false, array_column($ac, 1), true)) {
             echo "All T05 tests passed successfully.\n";
             return 0;
         }
@@ -158,6 +163,111 @@ class T05Test
 
         echo "  [OK] Migration successfully resumed from checkpoint and finished all 25 tables.\n";
         return true;
+    }
+
+    /**
+     * AC-T05-01..03 on a throw-away table prefix, so the live wpe_ tables are never dropped or altered.
+     *
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    private function testAcceptanceCriteria(): array
+    {
+        echo "[AC-T05] Verifying migration acceptance criteria on a disposable prefix...\n";
+        $wpdb = $this->wpdb;
+        $livePrefix = $wpdb->prefix;
+        $tmpPrefix = 'wpet05_';
+        $liveVersion = get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION, null);
+        $liveCheckpoint = get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_MIGRATION_CHECKPOINT, null);
+        $coreTables = [$wpdb->posts, $wpdb->postmeta, $wpdb->options, $wpdb->users];
+        $fingerprint = function () use ($wpdb, $coreTables): string {
+            $parts = [];
+            foreach ($coreTables as $table) {
+                $parts[] = preg_replace('/ AUTO_INCREMENT=\d+/', '', (string) ($wpdb->get_row("SHOW CREATE TABLE `{$table}`", ARRAY_N)[1] ?? ''));
+            }
+            return hash('sha256', implode('|', $parts));
+        };
+        $dropTmp = function () use ($wpdb, $tmpPrefix): void {
+            foreach ($wpdb->get_col("SHOW TABLES LIKE '" . $tmpPrefix . "wpe\\_%'") as $table) {
+                $wpdb->query("DROP TABLE IF EXISTS `{$table}`");
+            }
+        };
+        $ok1 = $ok2 = $ok3 = false;
+        $dropTmp();
+        $coreBefore = $fingerprint();
+        $ddl = (string) file_get_contents($this->root() . '/contracts/database/schema.sql');
+        try {
+            $wpdb->prefix = $tmpPrefix;
+            $migrator = new \WPE\Infrastructure\Database\SchemaMigrator($wpdb);
+            $expected = count($migrator->parseSchemaSql());
+
+            // Fresh install.
+            delete_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION);
+            $started = microtime(true);
+            $fresh = $migrator->migrate();
+            $elapsed = microtime(true) - $started;
+            $freshOk = $fresh['success'] && $migrator->verifySchema()['existing_tables_count'] === $expected
+                && (int) get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION) === \WPE\Infrastructure\Database\SchemaMigrator::SCHEMA_VERSION;
+
+            // Upgrade from N-1: version 0, two tables missing, existing data must survive.
+            $wpdb->query($wpdb->prepare("INSERT INTO `{$tmpPrefix}wpe_control` (`key`, `value`, `updated_at`) VALUES (%s, %s, %s)", 'ac-t05-sentinel', 'keep', gmdate('Y-m-d H:i:s.u')));
+            $wpdb->query("DROP TABLE `{$tmpPrefix}wpe_audit`");
+            update_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION, 0);
+            $upgrade = $migrator->migrate();
+            $upgradeOk = $upgrade['success'] && $migrator->verifySchema()['valid']
+                && (int) get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION) === \WPE\Infrastructure\Database\SchemaMigrator::SCHEMA_VERSION;
+            $survived = $wpdb->get_var("SELECT `value` FROM `{$tmpPrefix}wpe_control` WHERE `key` = 'ac-t05-sentinel'") === 'keep';
+
+            // Interrupted migration: a broken statement stops the run, the engine is not enabled, a corrected run resumes.
+            $dropTmp();
+            delete_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION);
+            $broken = sys_get_temp_dir() . '/wpe-t05-broken-' . uniqid() . '.sql';
+            $chunks = preg_split('/;\s*\n/', $ddl);
+            $chunks[4] = 'CREATE TABLE IF NOT EXISTS `{prefix}wpe_broken_ac_t05` (`id` INT NOT NULL, BROKEN SYNTAX HERE)';
+            file_put_contents($broken, implode(";\n", $chunks));
+            $wpdb->suppress_errors(true);
+            $partial = (new \WPE\Infrastructure\Database\SchemaMigrator($wpdb, $broken))->migrate();
+            $wpdb->suppress_errors(false);
+            @unlink($broken);
+            $checkpoint = get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_MIGRATION_CHECKPOINT, []);
+            $partialBlocked = !$partial['success'] && !empty($checkpoint) && count($checkpoint) < $expected
+                && (int) get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION, 0) !== \WPE\Infrastructure\Database\SchemaMigrator::SCHEMA_VERSION
+                && !$migrator->verifySchema()['valid'];
+            $resumed = $migrator->migrate();
+            $resumeOk = $resumed['success'] && $migrator->verifySchema()['valid'] && get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_MIGRATION_CHECKPOINT, false) === false;
+
+            $ok1 = $freshOk && $upgradeOk && $survived && $partialBlocked && $resumeOk;
+            // Budget: DDL on empty new tables only; a fresh 25-table install must finish well under 5 seconds.
+            $noLockStatements = !preg_match('/\b(LOCK\s+TABLES|ALTER\s+TABLE|DROP\s+TABLE|RENAME\s+TABLE|TRUNCATE)\b/i', $ddl);
+            $ok2 = $elapsed < 5.0 && $noLockStatements && $partialBlocked;
+            echo $ok1 ? "  [OK] Fresh install, N-1 upgrade (data kept) and interrupted-migration resume all pass.\n" : "  [FAIL] Migration paths: fresh=" . var_export($freshOk, true) . " upgrade=" . var_export($upgradeOk, true) . " survived=" . var_export($survived, true) . " partialBlocked=" . var_export($partialBlocked, true) . " resume=" . var_export($resumeOk, true) . "\n";
+            echo $ok2 ? sprintf("  [OK] Fresh install took %.3fs, no lock/alter statements, partial schema keeps the engine disabled.\n", $elapsed) : "  [FAIL] Migration exceeded budget, uses locking DDL or enabled the engine on a partial schema.\n";
+        } finally {
+            $wpdb->prefix = $livePrefix;
+            $dropTmp();
+            foreach ([\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION => $liveVersion, \WPE\Infrastructure\Database\SchemaMigrator::OPTION_MIGRATION_CHECKPOINT => $liveCheckpoint] as $option => $value) {
+                $value === null ? delete_option($option) : update_option($option, $value);
+            }
+        }
+
+        // AC-T05-03: only wpe_ tables are created and core table definitions are untouched.
+        preg_match_all('/^\s*(CREATE|ALTER|DROP|INSERT|UPDATE|DELETE)\b[^`]*`([^`]+)`/mi', $ddl, $statements, PREG_SET_ORDER);
+        $onlyWpe = !empty($statements);
+        foreach ($statements as $statement) {
+            $onlyWpe = $onlyWpe && strtoupper($statement[1]) === 'CREATE' && str_starts_with($statement[2], '{prefix}wpe_');
+        }
+        $ok3 = $onlyWpe && $coreBefore === $fingerprint();
+        echo $ok3 ? "  [OK] Migration only creates wpe_ tables; core table definitions unchanged.\n" : "  [FAIL] Migration touched core tables or non-wpe_ objects.\n";
+
+        return [
+            'AC-T05-01' => ['fresh_upgrade_resume', $ok1],
+            'AC-T05-02' => ['no_long_lock_partial_schema_blocked', $ok2],
+            'AC-T05-03' => ['core_tables_untouched', $ok3],
+        ];
+    }
+
+    private function root(): string
+    {
+        return dirname(__DIR__, 2);
     }
 
     /**

@@ -1,8 +1,8 @@
 {
   "task_id": "T01",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "qa_status": "passed",
-  "content_digest": "6413a935b7618d042a7281aa39f02f4b24be180600556892888f03a16d077a2d",
+  "content_digest": "4fd1f40e016c783eb9cac858452195b769e77b9af5f8963f3dd3ccd7667ab6ce",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T01",
       "exit_code": 0,
       "output_path": "docs/evidence/T01/output.log",
-      "output_sha256": "5487920ddddf1c23c94c75482883df98b67bb510e54646cb53df3dc72afc3a45",
-      "content_digest": "6413a935b7618d042a7281aa39f02f4b24be180600556892888f03a16d077a2d"
+      "output_sha256": "3c6d204071fc7fc7dff0243c15fe2652f553667e988e051d5a4ce08fd23c1ae4",
+      "content_digest": "4fd1f40e016c783eb9cac858452195b769e77b9af5f8963f3dd3ccd7667ab6ce"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified WooCommerce baseline cart, checkout, gallery, admin, and CSV surfaces are functional",
       "basis": "output_anchor",
       "anchor": {
-        "line": 16,
+        "line": 20,
         "text": "R01 (baseline_cart_checkout_gallery_admin_csv): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified unknown direct SQL writer extensions block native cohort migration",
       "basis": "output_anchor",
       "anchor": {
-        "line": 17,
+        "line": 21,
         "text": "R02 (unknown_extension_blocks_native): PASSED"
       }
     }
@@ -57,21 +57,33 @@
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
       "observation": "Matrix defines exact versions, fixtures, baseline-lock.json reference, owners, tests, and surface status",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "AC-T01-01 (matrix_exact_versions_owner_test_status): PASSED"
+      }
     },
     {
       "id": "AC-T01-02",
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
       "observation": "Explicitly disclaims universal plugin compatibility; all extensions classified individually",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "AC-T01-02 (no_universal_compatibility_claim): PASSED"
+      }
     },
     {
       "id": "AC-T01-03",
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
       "observation": "Direct SQL writer plugins without adapters marked as blockers for native migration",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "AC-T01-03 (sql_writer_blocks_native_cohort): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -88,7 +100,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -98,10 +110,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -117,7 +129,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -127,10 +139,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -146,7 +158,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -156,10 +168,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -196,11 +208,11 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "file_hashes": {
     "contracts/compatibility/baseline-lock.json": "dc9888a67316de39ea547967b088fd7dd9cd9c571c80c1b6b0d4c2d95c4e3e0d",
     "contracts/compatibility/matrix.json": "7b9687fbfdff707fe95e9610e14e331e5ce3fc5b0e77783c29a397960a0cbeac",
     "contracts/compatibility/pins.json": "bd9346561656980ebc116c285c56da7b2f7f89039e25124a513181ae4c63452b",
-    "tests/integration/T01Test.php": "6821c0e1f16adf5563f8b0276fa2171137bc40bcc9d66a70ad25038c975757fc"
+    "tests/integration/T01Test.php": "f49560377b3e90f50a2262c21531b95fbe9a91d9a0fbba7ef88196bb149fb9f9"
   }
 }

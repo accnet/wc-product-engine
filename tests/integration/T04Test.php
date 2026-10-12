@@ -36,6 +36,7 @@ class T04Test
         $r12 = $this->testDiffDetectsWrongPriceStockVariant();
         $r13 = $this->testSnapshotNotHidingErrors();
         $r212 = $this->testResidueZero();
+        $ac = $this->testAcceptanceCriteria();
 
         echo "\n=== Test Summary ===\n";
         echo "R11 (fixture_invariants): " . ($r11 ? "PASSED" : "FAILED") . "\n";
@@ -43,7 +44,11 @@ class T04Test
         echo "R13 (snapshot_not_hiding_errors): " . ($r13 ? "PASSED" : "FAILED") . "\n";
         echo "R212 (test_residue_zero): " . ($r212 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r11 && $r12 && $r13 && $r212) {
+        foreach ($ac as $id => $row) {
+            echo "{$id} ({$row[0]}): " . ($row[1] ? "PASSED" : "FAILED") . "\n";
+        }
+
+        if ($r11 && $r12 && $r13 && $r212 && !in_array(false, array_column($ac, 1), true)) {
             echo "All T04 tests passed successfully.\n";
             return 0;
         }
@@ -184,6 +189,54 @@ class T04Test
         echo "  [OK] Real semantic discrepancy properly surfaced even with timestamp changes.\n";
 
         return true;
+    }
+
+    /**
+     * AC-T04-01/02: comparator separates semantic from volatile differences; datasets are reproducible with a manifest.
+     *
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    private function testAcceptanceCriteria(): array
+    {
+        echo "[AC-T04] Verifying fixture and comparator acceptance criteria...\n";
+        $base = $this->harness->generateProductFixture('simple', ['id' => 424200, 'gallery_image_ids' => ['11', '12', '13'], 'stock_quantity' => '7.000000']);
+
+        // AC-T04-01: volatile timestamps are ignored; IDs, stock and gallery order are never normalized away.
+        $volatile = $base;
+        $volatile['updated_at'] = '2030-01-01T00:00:00Z';
+        $volatile['created_at'] = '2029-01-01T00:00:00Z';
+        $ok1 = $this->harness->compareSnapshots($base, $volatile)['identical'] === true;
+        $mutations = [
+            'id' => ['id' => '424201'],
+            'stock_quantity' => ['stock_quantity' => '6.000000'],
+            'gallery_image_ids' => ['gallery_image_ids' => ['12', '11', '13']],
+        ];
+        foreach ($mutations as $field => $change) {
+            $diff = $this->harness->compareSnapshots($base, array_merge($volatile, $change))['differences'];
+            $ok1 = $ok1 && in_array($field, array_column($diff, 'field'), true);
+            $normalized = $this->harness->normalizeSnapshot($base);
+            $ok1 = $ok1 && ($normalized[$field] ?? null) === $base[$field];
+        }
+        echo $ok1 ? "  [OK] Volatile timestamps ignored; id, stock and gallery order mutations all surfaced.\n" : "  [FAIL] Comparator hides or invents differences.\n";
+
+        // AC-T04-02: same seed reproduces the small dataset exactly; scale datasets have a manifest with seed and counts.
+        $a = (new \WPE\Bootstrap\FixtureHarness(777))->generateProductFixture('variable');
+        $b = (new \WPE\Bootstrap\FixtureHarness(777))->generateProductFixture('variable');
+        $c = (new \WPE\Bootstrap\FixtureHarness(778))->generateProductFixture('variable');
+        $ok2 = $a === $b && $a !== $c;
+        foreach (['100k', '1M'] as $scale) {
+            $manifest = $this->harness->getScaleManifest($scale);
+            $ok2 = $ok2 && $manifest['scale'] === $scale && is_int($manifest['seed']) && $manifest['seed'] > 0
+                && $manifest['parent_products'] > 0 && abs(array_sum($manifest['distribution']) - 1.0) < 1e-9
+                && $this->harness->getScaleManifest($scale) === $manifest;
+        }
+        $ok2 = $ok2 && $this->harness->getScaleManifest('100k')['seed'] !== $this->harness->getScaleManifest('1M')['seed'];
+        echo $ok2 ? "  [OK] Small dataset reproducible per seed; scale manifests (definition only, not seeded) carry seed and counts.\n" : "  [FAIL] Dataset is not reproducible or manifest incomplete.\n";
+
+        return [
+            'AC-T04-01' => ['comparator_semantic_vs_volatile', $ok1],
+            'AC-T04-02' => ['reproducible_datasets_manifest_seed', $ok2],
+        ];
     }
 
     /**

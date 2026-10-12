@@ -1,8 +1,8 @@
 {
   "task_id": "T02",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "qa_status": "passed",
-  "content_digest": "bb8fc3b5c0c7e154f2036a27507ba90dedbedef5b3ca827639a274aa47aef5ca",
+  "content_digest": "0ad94f4e333aac82609d3254de50a75cee31592ccddb252abde7a7f3a17d26c7",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T02",
       "exit_code": 0,
       "output_path": "docs/evidence/T02/output.log",
-      "output_sha256": "be136a72c134ac65d9ce69a849594ff3068d7face0895a4de73128ed41fedd4b",
-      "content_digest": "bb8fc3b5c0c7e154f2036a27507ba90dedbedef5b3ca827639a274aa47aef5ca"
+      "output_sha256": "1e7d83fcd4f779094445fe1d9844febe1cfea2d4171acd654e01bb3122aa5875",
+      "content_digest": "0ad94f4e333aac82609d3254de50a75cee31592ccddb252abde7a7f3a17d26c7"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified plugin activation does not mutate data, products, or default legacy authority",
       "basis": "output_anchor",
       "anchor": {
-        "line": 24,
+        "line": 28,
         "text": "R03 (activation_no_mutation): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified independent feature flag scoping and deterministic cohort precedence",
       "basis": "output_anchor",
       "anchor": {
-        "line": 25,
+        "line": 29,
         "text": "R04 (flag_scope): PASSED"
       }
     },
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified missing/unsupported dependencies block native features and render admin notice",
       "basis": "output_anchor",
       "anchor": {
-        "line": 26,
+        "line": 30,
         "text": "R05 (dependency_missing): PASSED"
       }
     },
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified plugin deactivation retains all database tables and product records",
       "basis": "output_anchor",
       "anchor": {
-        "line": 27,
+        "line": 31,
         "text": "R06 (deactivate_retains_data): PASSED"
       }
     },
@@ -117,21 +117,33 @@
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
       "observation": "Install does not alter authority or products; unsupported dependencies block native",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 35,
+        "text": "AC-T02-01 (install_inert_unsupported_blocks_native): PASSED"
+      }
     },
     {
       "id": "AC-T02-02",
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
       "observation": "When query feature flag is false, WooCommerce legacy queries remain active",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 36,
+        "text": "AC-T02-02 (legacy_reads_when_query_off): PASSED"
+      }
     },
     {
       "id": "AC-T02-03",
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
       "observation": "Cohort conflict resolved via deterministic precedence rules; status reflects real configuration",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 37,
+        "text": "AC-T02-03 (cohort_conflict_deterministic_status_real): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -150,7 +162,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -160,10 +172,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -179,7 +191,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -189,10 +201,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -208,7 +220,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -218,10 +230,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -258,14 +270,14 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "file_hashes": {
     "composer.json": "6550998d046ccd98d2019b475163a888fe558d554393b9eaa3bdecedd5ddb9f4",
     "composer.lock": "89b266b7e204ee1582cd36e271d626f811d855b102d0aadb03d53d230106c3d8",
     "package-lock.json": "965f2a78fb03c7267257af3e31287ed799fcfd8c9fd6f4c31dde612b10c5c3d5",
     "package.json": "c25b9e29f5fdfabc0a0908da2e7cdc1200742b7c9e0c6e10786eb3feb506ecaf",
     "src/Bootstrap/PluginBootstrap.php": "ba1f628ed58e528e09445afd4e669fe62f3757205792a550e706832e3f297d2c",
-    "tests/integration/T02Test.php": "30eb1d715945460ea0481aecdfb4177dc6f308932ab6640c4363f01c5cc4160f",
+    "tests/integration/T02Test.php": "e588f65384f1d2456f861d8ca9bfbd7599f2af72a65ea6ceb1c2a72c973c17ea",
     "wc-product-engine.php": "d8527c326d33a414513d20f67f1027d7c6c26228aa4419cce2f3009069645a9f"
   }
 }

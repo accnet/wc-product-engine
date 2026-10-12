@@ -1,8 +1,8 @@
 {
   "task_id": "T05",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "qa_status": "passed",
-  "content_digest": "72254da58945fb0abbd7a81ce80314b7b89d388e89afdf0933a3ca47f6cdfd8e",
+  "content_digest": "cfe2bcad14c4a98d8f9e5a2acf78f2cb02584a9176622ac623fca806865f747f",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T05",
       "exit_code": 0,
       "output_path": "docs/evidence/T05/output.log",
-      "output_sha256": "6433523ea130b6813af8c085cbbc3368f6705c3f47638871793c47d6c9ff0ff7",
-      "content_digest": "72254da58945fb0abbd7a81ce80314b7b89d388e89afdf0933a3ca47f6cdfd8e"
+      "output_sha256": "4c1f2188d678a9d523a99e891f4079e5bce30cff2e9cf436f56bc37931dc0079",
+      "content_digest": "cfe2bcad14c4a98d8f9e5a2acf78f2cb02584a9176622ac623fca806865f747f"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified database schema migration creates all 25 custom tables and is strictly idempotent",
       "basis": "output_anchor",
       "anchor": {
-        "line": 15,
+        "line": 19,
         "text": "R14 (migration_idempotent): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified dynamic table prefixes and multisite table prefix isolation",
       "basis": "output_anchor",
       "anchor": {
-        "line": 16,
+        "line": 20,
         "text": "R15 (prefix_multisite): PASSED"
       }
     },
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified interrupted migration resumes from persisted table checkpoint without corruption",
       "basis": "output_anchor",
       "anchor": {
-        "line": 17,
+        "line": 21,
         "text": "R16 (crash_between_ddl): PASSED"
       }
     },
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified DECIMAL(19,6) precision for regular_price and quantity, and utf8mb4 collation",
       "basis": "output_anchor",
       "anchor": {
-        "line": 18,
+        "line": 22,
         "text": "R17 (decimal_precision_and_collation): PASSED"
       }
     }
@@ -81,21 +81,33 @@
       "result": "passed",
       "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
       "observation": "Fresh migration creates all 25 tables, checkpointing allows resume on interrupt, idempotent",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "AC-T05-01 (fresh_upgrade_resume): PASSED"
+      }
     },
     {
       "id": "AC-T05-02",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
       "observation": "Individual DDL statements executed per table with lease lock; partial schema prevents engine enable",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "AC-T05-02 (no_long_lock_partial_schema_blocked): PASSED"
+      }
     },
     {
       "id": "AC-T05-03",
       "result": "passed",
       "artifact": "contracts/database/schema.sql",
       "observation": "DDL defines isolated wpe_ tables; does not alter WordPress core tables",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "AC-T05-03 (core_tables_untouched): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -110,7 +122,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -120,10 +132,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -139,7 +151,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -149,10 +161,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -168,7 +180,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -178,10 +190,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -218,10 +230,10 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "file_hashes": {
     "contracts/database/schema.sql": "b8f6a541b4eded21a3fa8a422d1df25f92d4b074d112d2c7b05ab9ea59a7d65d",
     "src/Infrastructure/Database/SchemaMigrator.php": "972f122d7b113bd4f7be4495ffab62f7ef2c0668b65ff54d2f79087b83b96088",
-    "tests/integration/T05Test.php": "00691d06699d5d3e0648da2a00f93d4cfc263c80cb3578f841432d20cb5acc0e"
+    "tests/integration/T05Test.php": "87971ec203d9240832dc8d58a9454e2b904def515f16ff956d58d56d50ad04fc"
   }
 }

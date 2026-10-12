@@ -33,18 +33,83 @@ class T01Test
 
         $r01_passed = $this->testBaselineCartCheckoutGalleryAdminCsv();
         $r02_passed = $this->testUnknownExtensionBlocksNative();
+        $ac = $this->testAcceptanceCriteria();
 
         echo "\n=== Test Summary ===\n";
         echo "R01 (baseline_cart_checkout_gallery_admin_csv): " . ($r01_passed ? "PASSED" : "FAILED") . "\n";
         echo "R02 (unknown_extension_blocks_native): " . ($r02_passed ? "PASSED" : "FAILED") . "\n";
 
-        if ($r01_passed && $r02_passed) {
+        foreach ($ac as $id => $row) {
+            echo "{$id} ({$row[0]}): " . ($row[1] ? "PASSED" : "FAILED") . "\n";
+        }
+
+        if ($r01_passed && $r02_passed && !in_array(false, array_column($ac, 1), true)) {
             echo "All T01 tests passed successfully.\n";
             return 0;
         }
 
         echo "T01 tests failed.\n";
         return 1;
+    }
+
+    /**
+     * AC-T01-01..03: matrix completeness, no universal-compatibility claim, SQL writers block native.
+     *
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    private function testAcceptanceCriteria(): array
+    {
+        echo "[AC-T01] Verifying compatibility matrix acceptance criteria...\n";
+        $dir = $this->root . '/contracts/compatibility';
+        $matrix = json_decode((string) @file_get_contents($dir . '/matrix.json'), true) ?: [];
+        $pins = json_decode((string) @file_get_contents($dir . '/pins.json'), true) ?: [];
+        $lock = json_decode((string) @file_get_contents($dir . '/baseline-lock.json'), true) ?: [];
+
+        // AC-T01-01: exact versions + baseline lock + fixtures; each surface has owner, test and a valid status.
+        $ok1 = file_exists($dir . '/' . ($matrix['versions_ref'] ?? '-')) && file_exists($dir . '/' . ($matrix['baseline_lock_ref'] ?? '-'))
+            && ($lock['environment']['wordpress']['version'] ?? null) === ($pins['versions']['wordpress'] ?? '')
+            && ($lock['environment']['woocommerce']['version'] ?? null) === ($pins['versions']['woocommerce'] ?? '')
+            && !empty($lock['environment']['wordpress']['files']) && !empty($matrix['surfaces']);
+        foreach ($matrix['surfaces'] ?? [] as $surface) {
+            $ok1 = $ok1 && !empty($surface['owner']) && !empty($surface['test']) && file_exists($this->root . '/' . $surface['test'])
+                && in_array($surface['status'] ?? '', ['supported', 'blocked', 'unknown'], true);
+        }
+        foreach ($matrix['third_party_plugins'] ?? [] as $plugin) {
+            $ok1 = $ok1 && !empty($plugin['owner']) && in_array($plugin['status'] ?? '', ['supported', 'blocked', 'unknown'], true);
+        }
+        echo $ok1 ? "  [OK] Matrix pins, baseline lock, fixtures; every surface has owner, test and status.\n" : "  [FAIL] Matrix is missing exact versions, lock, owner, test or valid status.\n";
+
+        // AC-T01-02: no universal claim; certified stays explicit and no wildcard entry exists.
+        $json = (string) json_encode($matrix, JSON_UNESCAPED_UNICODE);
+        $wildcard = false;
+        foreach ($matrix['third_party_plugins'] ?? [] as $plugin) {
+            $wildcard = $wildcard || ($plugin['slug'] ?? '') === '*' || stripos((string) ($plugin['notes'] ?? ''), 'all woocommerce plugins') !== false;
+        }
+        $ok2 = stripos((string) ($matrix['disclaimer'] ?? ''), 'Không ghi mọi Woo plugin tương thích') === 0
+            && !$wildcard && ($matrix['certified'] ?? null) === false && stripos($json, 'compatible with all') === false;
+        echo $ok2 ? "  [OK] No universal Woo plugin compatibility claim.\n" : "  [FAIL] Matrix contains or allows a universal compatibility claim.\n";
+
+        // AC-T01-03: the real policy engine (MetaBridge) refuses native authority to every SQL writer and unknown plugin.
+        $ok3 = class_exists(\WPE\Compatibility\WooDataStore\MetaBridge::class);
+        if ($ok3) {
+            global $wpdb;
+            $bridge = new \WPE\Compatibility\WooDataStore\MetaBridge($wpdb);
+            $writers = 0;
+            foreach ($matrix['third_party_plugins'] ?? [] as $plugin) {
+                if (($plugin['classification'] ?? '') === 'SQL-writer') {
+                    $writers++;
+                    $ok3 = $ok3 && $bridge->canPluginWriteNative($plugin['slug']) === false;
+                }
+            }
+            $ok3 = $ok3 && $writers > 0 && $bridge->canPluginWriteNative('t01-unregistered-plugin') === false;
+        }
+        echo $ok3 ? "  [OK] SQL writers and unknown plugins are blockers for native cohorts.\n" : "  [FAIL] A SQL writer or unknown plugin was allowed native authority.\n";
+
+        return [
+            'AC-T01-01' => ['matrix_exact_versions_owner_test_status', $ok1],
+            'AC-T01-02' => ['no_universal_compatibility_claim', $ok2],
+            'AC-T01-03' => ['sql_writer_blocks_native_cohort', $ok3],
+        ];
     }
 
     /**

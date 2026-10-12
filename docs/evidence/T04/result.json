@@ -1,8 +1,8 @@
 {
   "task_id": "T04",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "qa_status": "passed",
-  "content_digest": "5c50895c303fd9c26b566ba26ccd3d4af30229c93705fef719f0c52d57f12223",
+  "content_digest": "9a0f8adc40220aa7884375c2f7b2fead354695bf3e0992547a282cf7c8afea5b",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T04",
       "exit_code": 0,
       "output_path": "docs/evidence/T04/output.log",
-      "output_sha256": "65a758e1383b792939547773bc833d3aafbe3d0993b7d91fc022eb295ae86e28",
-      "content_digest": "5c50895c303fd9c26b566ba26ccd3d4af30229c93705fef719f0c52d57f12223"
+      "output_sha256": "309f04c68e6ef6902378ce73f8e68b37cb10fc2f11b510f429960288adacc364",
+      "content_digest": "9a0f8adc40220aa7884375c2f7b2fead354695bf3e0992547a282cf7c8afea5b"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified reproducible fixture generation satisfies domain invariants",
       "basis": "output_anchor",
       "anchor": {
-        "line": 22,
+        "line": 25,
         "text": "R11 (fixture_invariants): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified differential comparator detects price, stock, variant, and gallery mutations",
       "basis": "output_anchor",
       "anchor": {
-        "line": 23,
+        "line": 26,
         "text": "R12 (diff_detects_wrong_price_stock_variant): PASSED"
       }
     },
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified comparator normalizes volatile timestamps while preserving real semantic differences",
       "basis": "output_anchor",
       "anchor": {
-        "line": 24,
+        "line": 27,
         "text": "R13 (snapshot_not_hiding_errors): PASSED"
       }
     },
@@ -81,14 +81,22 @@
       "result": "passed",
       "artifact": "src/Bootstrap/FixtureHarness.php",
       "observation": "Comparator separates volatile timestamps while preserving IDs, stock, prices, attributes, and gallery order",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 29,
+        "text": "AC-T04-01 (comparator_semantic_vs_volatile): PASSED"
+      }
     },
     {
       "id": "AC-T04-02",
       "result": "passed",
       "artifact": "src/Bootstrap/FixtureHarness.php",
       "observation": "Fixture generator is reproducible via seeds; scale manifests defined for 100k and 1M",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 30,
+        "text": "AC-T04-02 (reproducible_datasets_manifest_seed): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -103,7 +111,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -113,10 +121,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -132,7 +140,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -142,10 +150,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -161,7 +169,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -171,10 +179,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -211,10 +219,10 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
   "file_hashes": {
     "scripts/test-isolation.mjs": "6121f4249fa55d3d068c90baf80dfc0fbffd7a67ca4767531362f6cb3c20a578",
     "src/Bootstrap/FixtureHarness.php": "c6bfd81efb2c7b917ef86f0e45e7964ebdbb14f6bfe2b8404228279c2ec50b96",
-    "tests/integration/T04Test.php": "2d381a38b1e30b5a60ca38b2c7a879408b81ab315fa1acb5edf489559eb9f734"
+    "tests/integration/T04Test.php": "7c7ab7a359178bc92a96a641e76a8234f38edfa5ff0694fec0c90a622555a9a4"
   }
 }

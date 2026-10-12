@@ -23,6 +23,7 @@ class T03Test
         $r08 = $this->testDecimalIdRoundtrip();
         $r09 = $this->testNullableBlankSemantics();
         $r10 = $this->testPropsMappingCoverage();
+        $ac = $this->testAcceptanceCriteria();
 
         echo "\n=== Test Summary ===\n";
         echo "R07 (contract_schema_validation): " . ($r07 ? "PASSED" : "FAILED") . "\n";
@@ -30,7 +31,11 @@ class T03Test
         echo "R09 (nullable_blank_semantics): " . ($r09 ? "PASSED" : "FAILED") . "\n";
         echo "R10 (props_mapping_coverage): " . ($r10 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r07 && $r08 && $r09 && $r10) {
+        foreach ($ac as $id => $row) {
+            echo "{$id} ({$row[0]}): " . ($row[1] ? "PASSED" : "FAILED") . "\n";
+        }
+
+        if ($r07 && $r08 && $r09 && $r10 && !in_array(false, array_column($ac, 1), true)) {
             echo "All T03 tests passed successfully.\n";
             return 0;
         }
@@ -157,6 +162,128 @@ class T03Test
 
         echo "  [OK] Nullable, absent, and blank semantics strictly preserved.\n";
         return true;
+    }
+
+    /**
+     * Operations/parameters/responses present in $old and missing in $new (breaking), keyed by operation.
+     *
+     * @return string[]
+     */
+    private function breakingChanges(array $old, array $new): array
+    {
+        $breaks = [];
+        foreach ($old['paths'] ?? [] as $path => $methods) {
+            foreach ($methods as $verb => $op) {
+                $now = $new['paths'][$path][$verb] ?? null;
+                if ($now === null) {
+                    $breaks[] = "removed {$verb} {$path}";
+                    continue;
+                }
+                foreach (array_keys($op['responses'] ?? []) as $code) {
+                    if (!isset($now['responses'][$code])) {
+                        $breaks[] = "removed response {$code} of {$verb} {$path}";
+                    }
+                }
+                $oldParams = array_map(fn($x) => ($x['in'] ?? '') . ':' . ($x['name'] ?? ''), $op['parameters'] ?? []);
+                $newParams = array_map(fn($x) => ($x['in'] ?? '') . ':' . ($x['name'] ?? ''), $now['parameters'] ?? []);
+                foreach (array_diff($oldParams, $newParams) as $param) {
+                    $breaks[] = "removed parameter {$param} of {$verb} {$path}";
+                }
+            }
+        }
+        return $breaks;
+    }
+
+    /**
+     * AC-T03-01/02: endpoint coverage in OpenAPI, schema coverage, native blocker for unsupported props, breaking-change gate.
+     *
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    private function testAcceptanceCriteria(): array
+    {
+        echo "[AC-T03] Verifying contract acceptance criteria...\n";
+        $load = fn(string $f) => json_decode((string) @file_get_contents($this->root . '/' . $f), true) ?: [];
+        $openapi = $load('contracts/openapi/wpe-v1.json');
+        $endpoints = $load('contracts/api/endpoints.json');
+        $schemaContract = $load('contracts/database/schema-contract.json');
+        $mapping = $load('contracts/compatibility/wc-props-mapping.json');
+        $ddl = (string) @file_get_contents($this->root . '/contracts/database/schema.sql');
+
+        // AC-T03-01: every endpoint has request, response, errors, security; every table is in the DDL; unsupported props block native.
+        $errorCodes = array_values(array_unique(array_map('strval', array_column($endpoints['errors'] ?? [], 'http'))));
+        $ok1 = ($openapi['openapi'] ?? '') !== '' && !empty($endpoints['endpoints']) && !empty($errorCodes) && !empty($openapi['components']['securitySchemes']);
+        $problems = [];
+        foreach ($endpoints['endpoints'] ?? [] as $endpoint) {
+            $op = $openapi['paths'][$endpoint['path']][strtolower($endpoint['method'])] ?? null;
+            if ($op === null) {
+                $problems[] = "{$endpoint['method']} {$endpoint['path']} missing in OpenAPI";
+                continue;
+            }
+            $pathParams = preg_match_all('/\{[^}]+\}/', $endpoint['path']);
+            if (count(array_filter($op['parameters'] ?? [], fn($x) => ($x['in'] ?? '') === 'path')) < $pathParams) {
+                $problems[] = "{$endpoint['path']} lacks path parameters";
+            }
+            if (in_array(strtoupper($endpoint['method']), ['POST', 'PATCH'], true) && empty($op['requestBody']) && empty($op['parameters'])) {
+                $problems[] = "{$endpoint['method']} {$endpoint['path']} lacks a request definition";
+            }
+            if (!array_key_exists('security', $op)) {
+                $problems[] = "{$endpoint['path']} lacks security";
+            }
+            if (!array_filter(array_keys($op['responses'] ?? []), fn($code) => str_starts_with((string) $code, '2'))) {
+                $problems[] = "{$endpoint['method']} {$endpoint['path']} lacks a 2xx response";
+            }
+            foreach ($errorCodes as $code) {
+                if (!isset($op['responses'][$code])) {
+                    $problems[] = "{$endpoint['method']} {$endpoint['path']} lacks error response {$code}";
+                }
+            }
+        }
+        $tables = array_column($schemaContract['tables'] ?? [], 'name');
+        foreach ($tables as $table) {
+            if (!str_contains($ddl, "`{{PREFIX}}{$table}`") && !preg_match('/CREATE TABLE[^`]*`[^`]*' . preg_quote($table, '/') . '`/', $ddl)) {
+                $problems[] = "table {$table} missing in schema.sql";
+            }
+        }
+        $ok1 = $ok1 && !$problems && count($tables) > 0
+            && stripos((string) ($mapping['unsupported_custom_props_policy'] ?? ''), 'blocker cohort native') !== false;
+        echo $ok1 ? "  [OK] Endpoints have request/response/errors/security; tables covered; unsupported props block native.\n"
+            : "  [FAIL] Contract coverage gaps: " . implode('; ', array_slice($problems, 0, 5)) . "\n";
+
+        // AC-T03-02: a breaking change is detected and needs a version bump or ADR. Detector self-test, then the live repository.
+        $old = ['info' => ['version' => '1.0.0'], 'paths' => ['/a' => ['get' => ['responses' => ['200' => [], '404' => []], 'parameters' => [['in' => 'query', 'name' => 'q']]]]]];
+        $dropped = $old;
+        unset($dropped['paths']['/a']['get']['responses']['404'], $dropped['paths']['/a']['get']['parameters']);
+        $removed = ['info' => ['version' => '1.0.0'], 'paths' => []];
+        $detector = count($this->breakingChanges($old, $dropped)) === 2 && count($this->breakingChanges($old, $removed)) === 1 && $this->breakingChanges($old, $old) === [];
+
+        $ok2 = $detector;
+        $head = [];
+        exec('cd ' . escapeshellarg($this->root) . ' && git show HEAD:contracts/openapi/wpe-v1.json 2>/dev/null', $head, $rc);
+        $adrFiles = glob($this->root . '/docs/adr/*.md') ?: [];
+        if ($rc === 0) {
+            $previous = json_decode(implode("\n", $head), true) ?: [];
+            $breaks = $this->breakingChanges($previous, $openapi);
+            $acknowledged = ($previous['info']['version'] ?? null) !== ($openapi['info']['version'] ?? null) || count($adrFiles) > 0 && $this->adrMentionsContract($adrFiles);
+            $ok2 = $ok2 && (!$breaks || $acknowledged);
+        }
+        $ok2 = $ok2 && !empty($openapi['info']['version']) && !empty($adrFiles);
+        echo $ok2 ? "  [OK] Breaking-change detector verified; live contract has no unacknowledged breaking change.\n"
+            : "  [FAIL] Breaking contract change without version bump or ADR.\n";
+
+        return [
+            'AC-T03-01' => ['contracts_cover_endpoints_schema_props', $ok1],
+            'AC-T03-02' => ['breaking_change_needs_version_or_adr', $ok2],
+        ];
+    }
+
+    private function adrMentionsContract(array $adrFiles): bool
+    {
+        foreach ($adrFiles as $file) {
+            if (stripos((string) file_get_contents($file), 'openapi') !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

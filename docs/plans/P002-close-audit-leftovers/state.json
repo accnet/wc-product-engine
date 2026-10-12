@@ -90,8 +90,37 @@
           "T01,T02,T03,T04,T05"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
+          "content_digest": "a4ea0945aa641c315a523a694944cd7d3a2cb67faddc9e67f697ce3427e88b95",
+          "output_sha256": "273d0fb8cd49d6054ce4542320c03e36062e7f7103d2b1abdc60679f55f5738d",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821495749-3e653cc6.log",
+          "time": "2026-10-12T16:11:35.749Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs",
+            "--only",
+            "T01,T02,T03,T04,T05"
+          ],
+          "exit_code": 0,
+          "commit": "856fa1513bf328ecc853cb9519667d35c78e2fd4",
+          "content_digest": "a4ea0945aa641c315a523a694944cd7d3a2cb67faddc9e67f697ce3427e88b95",
+          "output_sha256": "56cc657596f37718cc152e2226f69da105b99738dfb5a85787e7d6d476aafc12",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821540238-840d9b28.log",
+          "time": "2026-10-12T16:12:20.239Z"
+        }
+      ],
+      "started_at": "2026-10-12T16:07:21.742Z"
     },
     {
       "id": "P002.3",
