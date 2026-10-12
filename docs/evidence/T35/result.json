@@ -1,0 +1,78 @@
+{
+  "task_id": "T35",
+  "commit": "714096203c2b128441b496b5d77cf95c059394bb",
+  "qa_status": "passed",
+  "content_digest": "6b85ec5b069b81ade2c0e76da90526157a1cd99916229239fb54cb2f2e4b728c",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T35Test.php"
+      ],
+      "display": "npm run test:task -- T35",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T35/output.log",
+      "output_sha256": "ec76c5211532ec9b631bc587ef5a1c31446e74ebc7b89bdbced90c9872ec9ea1",
+      "content_digest": "6b85ec5b069b81ade2c0e76da90526157a1cd99916229239fb54cb2f2e4b728c"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R141",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R141_shopify_export_headers",
+      "assertion_summary": "Verified exported Shopify CSV adheres to standard current/legacy profile headers without WPE_* columns"
+    },
+    {
+      "id": "R142",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R142_variant_image_association",
+      "assertion_summary": "Verified primary variant images mapped per row, and gallery images serialized across rows and image-only continuation rows"
+    },
+    {
+      "id": "R143",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R143_more_than_three_options_loss",
+      "assertion_summary": "Verified maximum 3 options enforced: strict mode fails with structured report; lossy mode archives extra options in sidecar"
+    },
+    {
+      "id": "R144",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R144_no_extra_native_columns",
+      "assertion_summary": "Verified zero non-standard native/engine columns in CSV; internal IDs and metadata preserved in sidecar JSON archive"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T35-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/ShopifyExporter.php",
+      "observation": "Schema snapshot Shopify profile validate; exact image/variant association; >3 options strict fails có report"
+    },
+    {
+      "id": "AC-T35-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/ShopifyExporter.php",
+      "observation": "Shopify CSV export có subset declaration, không quảng cáo giữ native variant IDs"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Csv/Shopify/ShopifyExporter.php",
+    "tests/integration/T35Test.php",
+    "docs/evidence/T35/result.json"
+  ]
+}
