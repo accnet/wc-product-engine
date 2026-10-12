@@ -35,7 +35,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T21 — URL registry, providers và rendition contract
 - [x] T22 — Real attachment bridge và Media Library behavior
 - [x] T23 — Native gallery và variation image payload
-- [ ] T24 — Ảnh trên cart/email/SEO/feed/Blocks
+- [x] T24 — Ảnh trên cart/email/SEO/feed/Blocks
 - [ ] T25 — Server resolver và allowed-values engine
 - [ ] T26 — Resolver API và native AJAX variation adapter
 - [ ] T27 — Selector UI, swatches và asynchronous behavior
