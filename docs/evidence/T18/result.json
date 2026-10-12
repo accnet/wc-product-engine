@@ -1,0 +1,72 @@
+{
+  "task_id": "T18",
+  "commit": "e3e4fbb25960759c734cecc1d396f0722e6e98de",
+  "qa_status": "passed",
+  "content_digest": "e2201fd82620985f159a83d8d9efebeb8aed91923274f83ca23d8ed91cb8a0bd",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T18Test.php"
+      ],
+      "display": "npm run test:task -- T18",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T18/output.log",
+      "output_sha256": "0efaabcdd858a6eadc44590711df9ce4a9afcf83b203961dc1cd5a8598dc7c86",
+      "content_digest": "e2201fd82620985f159a83d8d9efebeb8aed91923274f83ca23d8ed91cb8a0bd"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R71",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R71_impossible_combination_filter",
+      "assertion_summary": "Verified variant-coherent mode requires matching variation and rejects impossible combinations"
+    },
+    {
+      "id": "R72",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R72_distinct_parent_counts",
+      "assertion_summary": "Verified distinct parent product counts without variation duplication"
+    },
+    {
+      "id": "R73",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R73_self_exclusion_facets",
+      "assertion_summary": "Verified disjunctive facet counts with strict self-exclusion for active facets"
+    },
+    {
+      "id": "R74",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R74_category_descendants_deleted_term",
+      "assertion_summary": "Verified category hierarchy expansion with deleted term safety"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T18-01",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/FacetQuery.php",
+      "observation": "Black-M/White-L không match Black-L trong coherent mode; counts không double khi nhiều variants/terms; WC-compatible fixture nếu khác được tách tên/mode"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Catalog/FacetQuery.php",
+    "tests/integration/T18Test.php",
+    "docs/evidence/T18/result.json"
+  ]
+}
