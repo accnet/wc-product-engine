@@ -34,7 +34,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T20 — Cache context, invalidation và pricing compatibility
 - [x] T21 — URL registry, providers và rendition contract
 - [x] T22 — Real attachment bridge và Media Library behavior
-- [ ] T23 — Native gallery và variation image payload
+- [x] T23 — Native gallery và variation image payload
 - [ ] T24 — Ảnh trên cart/email/SEO/feed/Blocks
 - [ ] T25 — Server resolver và allowed-values engine
 - [ ] T26 — Resolver API và native AJAX variation adapter

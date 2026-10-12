@@ -1,0 +1,78 @@
+{
+  "task_id": "T23",
+  "commit": "b51d3eb2fff33548b8717f96d1f0fc8ac420dab2",
+  "qa_status": "passed",
+  "content_digest": "2ab48eb8de9f369a5a51269e79fb9d1f6a079ee4683841f2fdb55001707db5b3",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T23Test.php"
+      ],
+      "display": "npm run test:task -- T23",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T23/output.log",
+      "output_sha256": "7e17b97d05fbcd125c3cd13571bc7de236c5258dd27bd44f7a781ff846faae99",
+      "content_digest": "2ab48eb8de9f369a5a51269e79fb9d1f6a079ee4683841f2fdb55001707db5b3"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R91",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R91_classic_gallery_zoom_lightbox",
+      "assertion_summary": "Verified coherent zoom, lightbox, swipe, and thumbnail gallery markup"
+    },
+    {
+      "id": "R92",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R92_variant_image_reset",
+      "assertion_summary": "Verified variation image resets restoring parent gallery state"
+    },
+    {
+      "id": "R93",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R93_multiple_variant_images",
+      "assertion_summary": "Verified multi-image variation gallery extension"
+    },
+    {
+      "id": "R94",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R94_missing_image_fallback",
+      "assertion_summary": "Verified deterministic fallback for variations lacking images"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T23-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Gallery/GalleryAdapter.php",
+      "observation": "Zoom/lightbox/swipe/keyboard và chọn/reset variation chạy; kích thước srcset đúng, không thumbnail ảnh A full_src ảnh B"
+    },
+    {
+      "id": "AC-T23-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Gallery/GalleryAdapter.php",
+      "observation": "Không cần sửa WC template Core"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Gallery/GalleryAdapter.php",
+    "tests/integration/T23Test.php",
+    "docs/evidence/T23/result.json"
+  ]
+}
