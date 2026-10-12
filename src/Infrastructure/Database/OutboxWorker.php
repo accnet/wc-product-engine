@@ -56,7 +56,8 @@ class OutboxWorker
     }
 
     /**
-     * Acquire a batch of pending or expired-lease outbox events atomically (R34).
+     * Acquire a batch of due (available_at reached) pending/failed or expired-lease outbox events atomically (R34).
+     * Events whose retry backoff (available_at) is still in the future are never handed out.
      */
     public function acquireBatch(string $workerId, int $batchSize = 10, int $leaseSeconds = 30): array
     {
@@ -66,10 +67,11 @@ class OutboxWorker
         // Select IDs of candidate events (pending or expired lease)
         $candidates = $this->wpdb->get_col($this->wpdb->prepare(
             "SELECT event_id FROM {$this->tableOutbox}
-             WHERE state IN ('pending', 'failed')
+             WHERE (state IN ('pending', 'failed') AND available_at <= %s)
                 OR (state = 'processing' AND lease_until < %s)
-             ORDER BY created_at ASC
+             ORDER BY available_at ASC, created_at ASC
              LIMIT %d",
+            $now,
             $now,
             $batchSize
         ));
@@ -85,10 +87,11 @@ class OutboxWorker
                 "UPDATE {$this->tableOutbox}
                  SET state = 'processing', lease_owner = %s, lease_until = %s, attempts = attempts + 1
                  WHERE event_id = %s
-                   AND (state IN ('pending', 'failed') OR lease_until < %s)",
+                   AND ((state IN ('pending', 'failed') AND available_at <= %s) OR lease_until < %s)",
                 $workerId,
                 $leaseUntil,
                 $id,
+                $now,
                 $now
             ));
 

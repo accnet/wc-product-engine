@@ -55,6 +55,7 @@ class T09Test
             $r32 = $this->testOutboxCommitCrash();
             $r33 = $this->testDuplicateOutOfOrderEvents();
             $r34 = $this->testWorkerLeaseTakeover();
+            $backoff = $this->testRetryBackoffHonorsAvailableAt();
             $r35 = $this->testKeyBodyConflict();
             $r36 = $this->testStaleEpoch();
             $ac02 = $this->testAuditActorRequestId();
@@ -78,8 +79,10 @@ class T09Test
         echo "R35 (key_body_conflict): " . ($r35 ? "PASSED" : "FAILED") . "\n";
         echo "R36 (stale_epoch): " . ($r36 ? "PASSED" : "FAILED") . "\n";
         echo "AC-T09-02 (audit_actor_request_id): " . ($ac02 ? "PASSED" : "FAILED") . "\n";
+        $ac01 = $r32 && $r33 && $r34 && $r36 && $backoff;
+        echo "AC-T09-01 (crash_duplicate_resume_epoch_backoff): " . ($ac01 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r32 && $r33 && $r34 && $r35 && $r36 && $ac02) {
+        if ($r32 && $r33 && $r34 && $r35 && $r36 && $ac01 && $ac02) {
             echo "All T09 tests passed successfully.\n";
             return 0;
         }
@@ -229,6 +232,53 @@ class T09Test
 
         $this->worker->completeEvent($eventId);
         echo "  [OK] Worker B successfully took over expired lease via atomic CAS.\n";
+        return true;
+    }
+
+    /**
+     * Retry backoff: a failed event whose available_at is in the future must not be handed out (F15).
+     */
+    private function testRetryBackoffHonorsAvailableAt(): bool
+    {
+        echo "[AC-T09-01] Verifying retry backoff (available_at) is honored by acquireBatch...\n";
+
+        $table = $this->wpdb->prefix . 'wpe_outbox';
+        $eventId = $this->worker->publishEvent(mt_rand(740000, 749999), 1, 1, 'stock.reserved', ['qty' => 1]);
+        if (empty($eventId)) {
+            echo "  [FAIL] Failed to publish outbox event.\n";
+            return false;
+        }
+        $batch = $this->worker->acquireBatch('worker-backoff', 10, 30);
+        if (!in_array($eventId, array_column($batch, 'event_id'), true)) {
+            echo "  [FAIL] Due event was not handed out.\n";
+            return false;
+        }
+        $this->worker->failEvent($eventId, 'simulated handler failure');
+        $row = $this->wpdb->get_row($this->wpdb->prepare("SELECT state, available_at FROM {$table} WHERE event_id = %s", $eventId), ARRAY_A);
+        if (($row['state'] ?? '') !== 'failed' || strtotime($row['available_at'] . ' UTC') <= time()) {
+            echo "  [FAIL] failEvent did not schedule a future retry.\n";
+            return false;
+        }
+
+        $early = $this->worker->acquireBatch('worker-backoff', 10, 30);
+        if (in_array($eventId, array_column($early, 'event_id'), true)) {
+            echo "  [FAIL] Failed event was handed out before its backoff elapsed.\n";
+            return false;
+        }
+        echo "  [OK] Failed event is withheld until available_at.\n";
+
+        $this->wpdb->query($this->wpdb->prepare(
+            "UPDATE {$table} SET available_at = %s WHERE event_id = %s",
+            gmdate('Y-m-d H:i:s.u', time() - 5),
+            $eventId
+        ));
+        $due = $this->worker->acquireBatch('worker-backoff', 10, 30);
+        if (!in_array($eventId, array_column($due, 'event_id'), true)) {
+            echo "  [FAIL] Failed event was not retried after its backoff elapsed.\n";
+            return false;
+        }
+        $this->worker->completeEvent($eventId);
+        echo "  [OK] Failed event is retried once available_at has passed.\n";
         return true;
     }
 

@@ -1,8 +1,8 @@
 {
   "task_id": "T09",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "6814132a35e43261990f3dd94ca2aa688aa616c3",
   "qa_status": "passed",
-  "content_digest": "a6cfd98be557d5f9b4b7b94cedb21be5c8b2a48812a3df6a1e8f261e0580deab",
+  "content_digest": "f609601e3d2248bef45f988936c1bcc26b62823b22549a236023c297533fffb7",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T09",
       "exit_code": 0,
       "output_path": "docs/evidence/T09/output.log",
-      "output_sha256": "4ce72c5af30f76ef41f49289caef7255c884153294b67be67e9a662f4f2c5c8e",
-      "content_digest": "a6cfd98be557d5f9b4b7b94cedb21be5c8b2a48812a3df6a1e8f261e0580deab"
+      "output_sha256": "b26504cf12efdeb2928c31a24da4fb9f33e8198a4de051b2eae9428473436119",
+      "content_digest": "f609601e3d2248bef45f988936c1bcc26b62823b22549a236023c297533fffb7"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified outbox events committed to database persist across crashes",
       "basis": "output_anchor",
       "anchor": {
-        "line": 25,
+        "line": 28,
         "text": "R32 (outbox_commit_crash): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified monotonic revision fence rejects older or duplicate revisions without reverting data",
       "basis": "output_anchor",
       "anchor": {
-        "line": 26,
+        "line": 29,
         "text": "R33 (duplicate_out_of_order_events): PASSED"
       }
     },
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified atomic worker lease takeover via CAS when previous lease expires",
       "basis": "output_anchor",
       "anchor": {
-        "line": 27,
+        "line": 30,
         "text": "R34 (worker_lease_takeover): PASSED"
       }
     },
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified idempotency key reuse with differing request payload triggers idempotency_conflict error",
       "basis": "output_anchor",
       "anchor": {
-        "line": 28,
+        "line": 31,
         "text": "R35 (key_body_conflict): PASSED"
       }
     },
@@ -82,7 +82,7 @@
       "assertion_summary": "Verified command with stale epoch is rejected by epoch control check",
       "basis": "output_anchor",
       "anchor": {
-        "line": 29,
+        "line": 32,
         "text": "R36 (stale_epoch): PASSED"
       }
     }
@@ -93,7 +93,11 @@
       "result": "passed",
       "artifact": "src/Infrastructure/Database/OutboxWorker.php",
       "observation": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 34,
+        "text": "AC-T09-01 (crash_duplicate_resume_epoch_backoff): PASSED"
+      }
     },
     {
       "id": "AC-T09-02",
@@ -102,7 +106,7 @@
       "observation": "Audit row includes actor_id and request_id and redacts sensitive credentials",
       "basis": "output_anchor",
       "anchor": {
-        "line": 30,
+        "line": 33,
         "text": "AC-T09-02 (audit_actor_request_id): PASSED"
       }
     }
@@ -118,7 +122,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -128,10 +132,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -147,7 +151,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4004,
+      "wp_wpe_audit": 4006,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 11,
@@ -157,10 +161,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 343,
+      "wp_wpe_object_state": 345,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1151,
+      "wp_wpe_outbox": 1158,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -176,7 +180,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -186,10 +190,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -207,7 +211,7 @@
       "wp_wpe_audit": 1,
       "wp_wpe_control": 1,
       "wp_wpe_object_state": 1,
-      "wp_wpe_outbox": 2
+      "wp_wpe_outbox": 3
     },
     "residue_after_restore": {},
     "junk_before": {
@@ -231,9 +235,9 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "6814132a35e43261990f3dd94ca2aa688aa616c3",
   "file_hashes": {
-    "src/Infrastructure/Database/OutboxWorker.php": "d986a6e76b70602bacfc8afa0704244666031320fc6de64e7e9719b7c4d22fd6",
-    "tests/integration/T09Test.php": "9e910f521ce6e4b93d4a5ffbd0eb70212641bff70d1defcc17369634f78c48ee"
+    "src/Infrastructure/Database/OutboxWorker.php": "52718abda7b56189e32b8e0719d76115aca0691101d7770b9b20dcce69a0194e",
+    "tests/integration/T09Test.php": "fdb362511f3671bbc45305401cff40824fff1b8469f5e268490f734d3ae35d35"
   }
 }

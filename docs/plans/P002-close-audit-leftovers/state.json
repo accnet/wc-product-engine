@@ -1,0 +1,175 @@
+{
+  "id": "P002",
+  "title": "Close audit leftovers (F15, AC anchors, waivers)",
+  "status": "in_progress",
+  "content_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546",
+  "tasks": [
+    {
+      "id": "P002.1",
+      "title": "OutboxWorker honors available_at (F15)",
+      "depends_on": [],
+      "read_first": [
+        "docs/audits/FINAL-AUDIT.md",
+        "docs/03-database-schema.md"
+      ],
+      "files": [
+        "src/Infrastructure/Database/OutboxWorker.php",
+        "tests/integration/T09Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/rerun-evidence.mjs",
+          "--only",
+          "T09"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "6814132a35e43261990f3dd94ca2aa688aa616c3",
+          "content_digest": "f609601e3d2248bef45f988936c1bcc26b62823b22549a236023c297533fffb7",
+          "output_sha256": "273d0fb8cd49d6054ce4542320c03e36062e7f7103d2b1abdc60679f55f5738d",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821218249-4ae1c553.log",
+          "time": "2026-10-12T16:06:58.250Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs",
+            "--only",
+            "T09"
+          ],
+          "exit_code": 0,
+          "commit": "6814132a35e43261990f3dd94ca2aa688aa616c3",
+          "content_digest": "f609601e3d2248bef45f988936c1bcc26b62823b22549a236023c297533fffb7",
+          "output_sha256": "3193b1158d2e10a5d1e407dbf71c5eae35a240543862d406635055737464d003",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821229304-993e5c24.log",
+          "time": "2026-10-12T16:07:09.305Z"
+        }
+      ],
+      "started_at": "2026-10-12T16:06:26.444Z"
+    },
+    {
+      "id": "P002.2",
+      "title": "Real AC anchors for T01-T05",
+      "depends_on": [
+        "P002.1"
+      ],
+      "read_first": [
+        "docs/audits/READINESS-GATE.md"
+      ],
+      "files": [
+        "tests/integration/T01Test.php",
+        "tests/integration/T02Test.php",
+        "tests/unit/T03Test.php",
+        "tests/integration/T04Test.php",
+        "tests/integration/T05Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/rerun-evidence.mjs",
+          "--only",
+          "T01,T02,T03,T04,T05"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P002.3",
+      "title": "Real AC anchors for T30-T34",
+      "depends_on": [
+        "P002.1"
+      ],
+      "read_first": [
+        "docs/audits/READINESS-GATE.md"
+      ],
+      "files": [
+        "tests/integration/T30Test.php",
+        "tests/integration/T31Test.php",
+        "tests/integration/T32Test.php",
+        "tests/integration/T33Test.php",
+        "tests/integration/T34Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/rerun-evidence.mjs",
+          "--only",
+          "T30,T31,T32,T33,T34"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P002.4",
+      "title": "Waivers, readiness gate re-evaluation and final rerun",
+      "depends_on": [
+        "P002.2",
+        "P002.3"
+      ],
+      "read_first": [
+        "docs/audits/READINESS-GATE.md"
+      ],
+      "files": [
+        "docs/audits/READINESS-GATE.md",
+        "docs/audits/FINAL-AUDIT.md",
+        "docs/audits/OPEN-DECISIONS.md",
+        "docs/audits/REMEDIATION-PLAN.md",
+        "docs/QUESTIONS.md",
+        "docs/NOTES.md",
+        "docs/PROGRESS.md",
+        "README.md",
+        "docs/evidence/independent-review.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/rerun-evidence.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546"
+}
