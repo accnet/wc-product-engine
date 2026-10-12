@@ -1,8 +1,8 @@
 {
   "task_id": "T01",
-  "commit": "fa1c082f1a93d1ece6417f019c415664e8f964a7",
+  "commit": "172c2fab75e07a9fd04acfbe929fd1c03bc87dde",
   "qa_status": "passed",
-  "content_digest": "7f5d3a1334297365f3264fd8a0ae1c889ab012a6fc8ed3e7286dbdacd8d196f4",
+  "content_digest": "7e3e4d7384799daa7509ec6f1e9f5a75007469f46ac9865205809ab67b41f068",
   "environment": {
     "wordpress": "7.0",
     "woocommerce": "11.1.2",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T01/output.log",
       "output_sha256": "be06f804262c72f3e702ecb946b3f5a9755ca089731302ed58efe9e98596989f",
-      "content_digest": "7f5d3a1334297365f3264fd8a0ae1c889ab012a6fc8ed3e7286dbdacd8d196f4"
+      "content_digest": "7e3e4d7384799daa7509ec6f1e9f5a75007469f46ac9865205809ab67b41f068"
     }
   ],
   "regression_results": [

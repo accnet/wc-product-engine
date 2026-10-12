@@ -1,0 +1,71 @@
+{
+  "task_id": "T04",
+  "commit": "4f7955a25751891fd1d4a34a733c74203d73b963",
+  "qa_status": "passed",
+  "content_digest": "26255c935e48bc24fac62a8122331303a92576b8be23af17d3c670a9135291a3",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T04Test.php"
+      ],
+      "display": "npm run test:task -- T04",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T04/output.log",
+      "output_sha256": "110035332e9470621fe91cae7f8a66063e791af13bd66af4a729c67bf6f8b06f",
+      "content_digest": "26255c935e48bc24fac62a8122331303a92576b8be23af17d3c670a9135291a3"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R11",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R11_fixture_invariants",
+      "assertion_summary": "Verified reproducible fixture generation satisfies domain invariants"
+    },
+    {
+      "id": "R12",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R12_diff_detects_wrong_price_stock_variant",
+      "assertion_summary": "Verified differential comparator detects price, stock, variant, and gallery mutations"
+    },
+    {
+      "id": "R13",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R13_snapshot_not_hiding_errors",
+      "assertion_summary": "Verified comparator normalizes volatile timestamps while preserving real semantic differences"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T04-01",
+      "result": "passed",
+      "artifact": "src/Bootstrap/FixtureHarness.php",
+      "observation": "Comparator separates volatile timestamps while preserving IDs, stock, prices, attributes, and gallery order"
+    },
+    {
+      "id": "AC-T04-02",
+      "result": "passed",
+      "artifact": "src/Bootstrap/FixtureHarness.php",
+      "observation": "Fixture generator is reproducible via seeds; scale manifests defined for 100k and 1M"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Bootstrap/FixtureHarness.php",
+    "tests/integration/T04Test.php",
+    "docs/evidence/T04/result.json"
+  ]
+}

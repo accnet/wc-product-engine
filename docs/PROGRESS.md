@@ -9,7 +9,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T01 — Pin baseline và compatibility inventory
 - [x] T02 — Plugin bootstrap và feature flags
 - [x] T03 — Khóa database/API/event/CSV contracts
-- [ ] T04 — Fixture và differential test harness
+- [x] T04 — Fixture và differential test harness
 
 ## 3. P1 — Storage và Woo compatibility
 
