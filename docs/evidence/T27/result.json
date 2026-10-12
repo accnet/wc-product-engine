@@ -1,0 +1,80 @@
+{
+  "task_id": "T27",
+  "commit": "2c42e838901ee6321b175fcc1f6c1ea3a1498961",
+  "qa_status": "passed",
+  "content_digest": "bddd403258ed9bc4d7ce5978990aff53ff29ecd89fbc1440951920d12de94b64",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T27Test.php"
+      ],
+      "display": "npm run test:task -- T27",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T27/output.log",
+      "output_sha256": "b094e714d1e13cfbb2dfba2ae922217b2eb93beb60c2adb057d095e452a143aa",
+      "content_digest": "bddd403258ed9bc4d7ce5978990aff53ff29ecd89fbc1440951920d12de94b64"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R107",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R107_out_of_order_responses",
+      "assertion_summary": "Verified out of order responses discarded, abort on newer requests, and request_sequence tracking"
+    },
+    {
+      "id": "R108",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R108_keyboard_accessibility",
+      "assertion_summary": "Verified accessible radiogroup/radio controls, roving tabindex, and text labels ensuring color is not sole signal"
+    },
+    {
+      "id": "R109",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R109_reset_defaults",
+      "assertion_summary": "Verified reset to default selection, clearing variation_id, restoring parent gallery image and price"
+    },
+    {
+      "id": "R110",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R110_large_variant_payload_budget",
+      "assertion_summary": "Verified 10k variant product sets threshold to 0, preventing WooCommerce from embedding full variations JSON in DOM"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T27-01",
+      "result": "passed",
+      "artifact": "assets/variant-selector/selector.js",
+      "observation": "Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image"
+    },
+    {
+      "id": "AC-T27-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/StoreApi/SelectorAdapter.php",
+      "observation": "Product 10k variations không embed toàn JSON; responsive không mất selection"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "assets/variant-selector/selector.js",
+    "assets/variant-selector/selector.css",
+    "src/Compatibility/StoreApi/SelectorAdapter.php",
+    "tests/integration/T27Test.php",
+    "docs/evidence/T27/result.json"
+  ]
+}

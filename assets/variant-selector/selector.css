@@ -1,0 +1,219 @@
+/**
+ * WC Product Engine — Variant Selector & Accessible Swatches Styles
+ * Scoped under .wpe-selector, .wpe-swatches, .wpe-swatch
+ */
+
+/* Container & Options */
+.wpe-variant-selector {
+  margin-bottom: 1.5rem;
+}
+
+.wpe-option-group {
+  margin-bottom: 1.25rem;
+}
+
+.wpe-option-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.wpe-selected-value-hint {
+  font-weight: 400;
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+/* Swatches Group */
+.wpe-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Base Swatch Button */
+.wpe-swatch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #222;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.wpe-swatch:hover:not([aria-disabled="true"]):not(.is-disabled) {
+  border-color: #555;
+  background-color: #f9f9f9;
+}
+
+/* Selected State */
+.wpe-swatch[aria-checked="true"],
+.wpe-swatch.is-selected {
+  border: 2px solid #0071a1;
+  background-color: #f0f7fb;
+  color: #0071a1;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px #0071a1;
+}
+
+/* Focus Visible for Keyboard Accessibility */
+.wpe-swatch:focus-visible {
+  outline: 2px solid #0071a1;
+  outline-offset: 2px;
+}
+
+/* Disabled / Impossible Value State */
+.wpe-swatch[aria-disabled="true"],
+.wpe-swatch.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #ddd;
+  background-color: #f5f5f5;
+  color: #999;
+}
+
+.wpe-swatch[aria-disabled="true"]::after,
+.wpe-swatch.is-disabled::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background-color: #d63638;
+  transform: rotate(-35deg);
+  pointer-events: none;
+}
+
+/* Color Swatch */
+.wpe-swatch-color {
+  padding: 0.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.wpe-swatch-color[aria-checked="true"],
+.wpe-swatch-color.is-selected {
+  border-radius: 50%;
+}
+
+.wpe-swatch-color-bubble {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+
+/* Image Swatch */
+.wpe-swatch-image {
+  padding: 2px;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+}
+
+.wpe-swatch-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+}
+
+/* Screen-Reader Only text (Accessible labels, color not sole signal) */
+.wpe-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Reset / Clear Button */
+.wpe-reset-selection {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.wpe-reset-selection:hover {
+  color: #000;
+}
+
+/* Notice & Status Messages */
+.wpe-selector-notice {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  display: none;
+}
+
+.wpe-selector-notice.is-visible {
+  display: block;
+}
+
+.wpe-selector-notice.notice-warning {
+  background-color: #fff8e5;
+  border: 1px solid #dba617;
+  color: #614700;
+}
+
+.wpe-selector-notice.notice-error {
+  background-color: #fcf0f1;
+  border: 1px solid #d63638;
+  color: #780004;
+}
+
+.wpe-selector-notice.notice-info {
+  background-color: #f0f7fb;
+  border: 1px solid #0071a1;
+  color: #003750;
+}
+
+/* Loading / Resolving state */
+.wpe-variant-selector[aria-busy="true"] .wpe-swatches {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.wpe-loading-indicator {
+  display: none;
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+.wpe-variant-selector[aria-busy="true"] .wpe-loading-indicator {
+  display: inline-block;
+}
