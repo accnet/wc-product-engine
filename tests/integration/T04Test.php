@@ -4,6 +4,7 @@
  *
  * Verifies R11 (fixture_invariants), R12 (diff_detects_wrong_price_stock_variant),
  * and R13 (snapshot_not_hiding_errors).
+ * Also verifies R212 (test_residue_zero): the residue gate and DB snapshot/restore isolation.
  */
 
 if (!defined('ABSPATH')) {
@@ -34,13 +35,15 @@ class T04Test
         $r11 = $this->testFixtureInvariants();
         $r12 = $this->testDiffDetectsWrongPriceStockVariant();
         $r13 = $this->testSnapshotNotHidingErrors();
+        $r212 = $this->testResidueZero();
 
         echo "\n=== Test Summary ===\n";
         echo "R11 (fixture_invariants): " . ($r11 ? "PASSED" : "FAILED") . "\n";
         echo "R12 (diff_detects_wrong_price_stock_variant): " . ($r12 ? "PASSED" : "FAILED") . "\n";
         echo "R13 (snapshot_not_hiding_errors): " . ($r13 ? "PASSED" : "FAILED") . "\n";
+        echo "R212 (test_residue_zero): " . ($r212 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r11 && $r12 && $r13) {
+        if ($r11 && $r12 && $r13 && $r212) {
             echo "All T04 tests passed successfully.\n";
             return 0;
         }
@@ -180,6 +183,96 @@ class T04Test
         }
         echo "  [OK] Real semantic discrepancy properly surfaced even with timestamp changes.\n";
 
+        return true;
+    }
+
+    /**
+     * Run scripts/test-isolation.mjs and return [exit code, stdout+stderr].
+     *
+     * @return array{0:int,1:string}
+     */
+    private function isolationCli(string $args): array
+    {
+        $root = dirname(__DIR__, 2);
+        $out = [];
+        exec('cd ' . escapeshellarg($root) . ' && node scripts/test-isolation.mjs ' . $args . ' 2>&1', $out, $code);
+        return [$code, implode("\n", $out)];
+    }
+
+    /**
+     * R212: tests leave no junk rows; the residue gate detects injected junk, cleanup is guarded,
+     * and a DB snapshot/restore round trip removes whatever a test wrote.
+     */
+    private function testResidueZero(): bool
+    {
+        echo "[R212] Verifying test residue is zero and the isolation tooling works...\n";
+        global $wpdb;
+        $control = $wpdb->prefix . 'wpe_control';
+        $marker = 'mirror_stopped_cohort_r999_probe_' . $this->harness->namespaced('residue');
+        $count = static fn(array $r): int => array_sum(array_map('count', $r));
+
+        try {
+            // 1. Database starts clean, and PHP and Node agree on what "junk" means.
+            $php = \WPE\Bootstrap\FixtureHarness::residueReport();
+            [$code, $out] = $this->isolationCli('residue --json');
+            if ($count($php) !== 0 || $code !== 0) {
+                echo "  [FAIL] Junk rows already present: " . json_encode(array_map('count', $php)) . " / node exit {$code}\n";
+                return false;
+            }
+            echo "  [OK] Residue gate reports zero junk rows (PHP and Node agree).\n";
+
+            // 2. The gate detects injected junk in both implementations.
+            $wpdb->insert($control, ['key' => $marker, 'value' => '{}', 'version' => 1, 'updated_at' => gmdate('Y-m-d H:i:s')]);
+            $php = \WPE\Bootstrap\FixtureHarness::residueReport();
+            [$code, $out] = $this->isolationCli('residue --json');
+            if (!in_array($marker, $php['test_control_keys'], true) || $code !== 1 || strpos($out, $marker) === false) {
+                echo "  [FAIL] Injected junk key was not detected (node exit {$code}).\n";
+                return false;
+            }
+            echo "  [OK] Injected junk is detected by the PHP and Node residue gates.\n";
+
+            // 3. Cleanup is a dry run by default and refuses --apply without a backup.
+            [$code] = $this->isolationCli('cleanup-residue');
+            $stillThere = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$control} WHERE `key` = %s", $marker));
+            if ($code !== 0 || $stillThere !== 1) {
+                echo "  [FAIL] Dry-run cleanup changed data.\n";
+                return false;
+            }
+            [$code, $out] = $this->isolationCli('cleanup-residue --apply');
+            $stillThere = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$control} WHERE `key` = %s", $marker));
+            if ($code === 0 || $stillThere !== 1) {
+                echo "  [FAIL] cleanup --apply without --backup was not refused (exit {$code}).\n";
+                return false;
+            }
+            echo "  [OK] Cleanup is dry-run by default and --apply without a backup is refused.\n";
+            $wpdb->delete($control, ['key' => $marker]);
+
+            // 4. Snapshot -> write -> restore removes what the test wrote.
+            $snapshot = sys_get_temp_dir() . '/wpe-r212-' . uniqid('', true) . '.sql';
+            [$code] = $this->isolationCli('snapshot ' . escapeshellarg($snapshot));
+            if ($code !== 0) {
+                echo "  [FAIL] Snapshot failed.\n";
+                return false;
+            }
+            $wpdb->insert($control, ['key' => $marker, 'value' => '{}', 'version' => 1, 'updated_at' => gmdate('Y-m-d H:i:s')]);
+            [$code] = $this->isolationCli('restore ' . escapeshellarg($snapshot));
+            @unlink($snapshot);
+            $leftover = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$control} WHERE `key` = %s", $marker));
+            if ($code !== 0 || $leftover !== 0) {
+                echo "  [FAIL] Restore did not remove the row written after the snapshot (exit {$code}, rows {$leftover}).\n";
+                return false;
+            }
+            echo "  [OK] Snapshot/restore round trip removes rows a test wrote after the snapshot.\n";
+        } finally {
+            $wpdb->delete($control, ['key' => $marker]);
+        }
+
+        $after = \WPE\Bootstrap\FixtureHarness::residueReport();
+        if ($count($after) !== 0) {
+            echo "  [FAIL] Junk rows remain after the test.\n";
+            return false;
+        }
+        echo "  [OK] R212 passed: residue is zero before and after; gate, guarded cleanup and restore verified.\n";
         return true;
     }
 }

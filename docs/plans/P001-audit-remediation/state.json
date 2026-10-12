@@ -385,8 +385,77 @@
           "T04"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+          "content_digest": "b110e5910f59e8c35d4902fb2cf77d0be3f8bb18e73278ca2e46a70cb76d5733",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818905650-fd498809.log",
+          "time": "2026-10-12T15:28:25.650Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T04Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+          "content_digest": "b110e5910f59e8c35d4902fb2cf77d0be3f8bb18e73278ca2e46a70cb76d5733",
+          "output_sha256": "65a758e1383b792939547773bc833d3aafbe3d0993b7d91fc022eb295ae86e28",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818914463-e89a0b7a.log",
+          "time": "2026-10-12T15:28:34.464Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/test-runtime.mjs",
+            "T04"
+          ],
+          "exit_code": 0,
+          "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+          "content_digest": "b110e5910f59e8c35d4902fb2cf77d0be3f8bb18e73278ca2e46a70cb76d5733",
+          "output_sha256": "8ad1569caee04a3b845b7fe7bfd964dd4bac4cb4d71ce3eb7ae35868d59dea5d",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818929699-bbc36e2d.log",
+          "time": "2026-10-12T15:28:49.700Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T04"
+          ],
+          "exit_code": 0,
+          "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+          "content_digest": "b110e5910f59e8c35d4902fb2cf77d0be3f8bb18e73278ca2e46a70cb76d5733",
+          "output_sha256": "4ea8bbf5c0bc8fedf50c36da4b0147e959dd74a5d33d972d5f382cb1ff810d07",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818930374-52643c78.log",
+          "time": "2026-10-12T15:28:50.375Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+          "content_digest": "b110e5910f59e8c35d4902fb2cf77d0be3f8bb18e73278ca2e46a70cb76d5733",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818935526-edfeac8c.log",
+          "time": "2026-10-12T15:28:55.526Z"
+        }
+      ],
+      "started_at": "2026-10-12T15:25:23.866Z"
     },
     {
       "id": "P001.5",

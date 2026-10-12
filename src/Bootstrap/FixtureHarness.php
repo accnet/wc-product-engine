@@ -216,4 +216,35 @@ class FixtureHarness
 
         return $manifests[$scale] ?? $manifests['100k'];
     }
+
+    /**
+     * Namespaced fixture key (R212): everything a test creates by name carries this prefix so leaked
+     * rows are attributable and the residue gate has something to match against.
+     */
+    public function namespaced(string $name): string
+    {
+        return 'wpe-fixture-' . $this->seed . '-' . $name;
+    }
+
+    /**
+     * Junk signatures that only tests create on this site (R212). Mirrors scripts/test-isolation.mjs.
+     *
+     * @return array<string,list<string>>
+     */
+    public static function residueReport(): array
+    {
+        global $wpdb;
+        $p = $wpdb->prefix;
+        $queries = [
+            'junk_native_products' => "SELECT id FROM {$p}wpe_products WHERE title = '' OR title LIKE 'AUTO-DRAFT%'",
+            'orphan_auto_draft_posts' => "SELECT ID FROM {$p}posts WHERE post_type IN ('product','product_variation') AND post_status = 'auto-draft' AND ID NOT IN (SELECT id FROM {$p}wpe_products)",
+            'completed_cleanup_jobs' => "SELECT id FROM {$p}wpe_jobs WHERE kind = 'cleanup' AND status = 'completed'",
+            'test_control_keys' => "SELECT `key` FROM {$p}wpe_control WHERE `key` LIKE 'mirror\\_stopped\\_cohort\\_r%' OR `key` LIKE 'idempotency:test-%'",
+        ];
+        $report = [];
+        foreach ($queries as $name => $sql) {
+            $report[$name] = array_map('strval', $wpdb->get_col($sql));
+        }
+        return $report;
+    }
 }

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { contentDigest, sha256, runtimeEnvironment, finalizeEvidence } from './evidence-lib.mjs';
+import { beginIsolation, finishIsolation, isolationProblems } from './test-isolation.mjs';
 
 const root = process.cwd();
 const taskId = process.argv[2];
@@ -22,13 +23,33 @@ if (!task) {
 
 // R203-R205: environment, base commit, file hashes and per-requirement receipts are computed here, not hard-coded per task.
 function writeEvidence(resultPath, result, task, output) {
+  // R212: the test ran between a DB snapshot and a restore; the raw before/after counts are part of the receipt.
+  result.isolation = finishIsolation(isolation);
   const problems = finalizeEvidence(root, task, result, output);
+  const isoProblems = isolationProblems(result.isolation);
+  if (isoProblems.length) {
+    result.qa_status = 'failed';
+    result.blockers = [...(result.blockers ?? []), ...isoProblems];
+    problems.push(...isoProblems);
+  }
   fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
   if (problems.length) {
     console.error(`${task.id} evidence rejected:\n  ` + problems.join('\n  '));
     process.exit(1);
   }
 }
+
+// Every task test runs inside an isolation window (snapshot -> test -> restore). A failing test still restores on exit.
+let isolation;
+try {
+  isolation = beginIsolation(taskId);
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}
+process.on('exit', () => {
+  if (isolation && !isolation.restored) finishIsolation(isolation);
+});
 
 function getCommitSha() {
   const r = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });

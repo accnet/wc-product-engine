@@ -1,11 +1,11 @@
 {
   "task_id": "T04",
-  "commit": "4f7955a25751891fd1d4a34a733c74203d73b963",
+  "commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
   "qa_status": "passed",
-  "content_digest": "26255c935e48bc24fac62a8122331303a92576b8be23af17d3c670a9135291a3",
+  "content_digest": "5c50895c303fd9c26b566ba26ccd3d4af30229c93705fef719f0c52d57f12223",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T04",
       "exit_code": 0,
       "output_path": "docs/evidence/T04/output.log",
-      "output_sha256": "110035332e9470621fe91cae7f8a66063e791af13bd66af4a729c67bf6f8b06f",
-      "content_digest": "26255c935e48bc24fac62a8122331303a92576b8be23af17d3c670a9135291a3"
+      "output_sha256": "65a758e1383b792939547773bc833d3aafbe3d0993b7d91fc022eb295ae86e28",
+      "content_digest": "5c50895c303fd9c26b566ba26ccd3d4af30229c93705fef719f0c52d57f12223"
     }
   ],
   "regression_results": [
@@ -31,21 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R11_fixture_invariants",
-      "assertion_summary": "Verified reproducible fixture generation satisfies domain invariants"
+      "assertion_summary": "Verified reproducible fixture generation satisfies domain invariants",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "R11 (fixture_invariants): PASSED"
+      }
     },
     {
       "id": "R12",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R12_diff_detects_wrong_price_stock_variant",
-      "assertion_summary": "Verified differential comparator detects price, stock, variant, and gallery mutations"
+      "assertion_summary": "Verified differential comparator detects price, stock, variant, and gallery mutations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "R12 (diff_detects_wrong_price_stock_variant): PASSED"
+      }
     },
     {
       "id": "R13",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R13_snapshot_not_hiding_errors",
-      "assertion_summary": "Verified comparator normalizes volatile timestamps while preserving real semantic differences"
+      "assertion_summary": "Verified comparator normalizes volatile timestamps while preserving real semantic differences",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "R13 (snapshot_not_hiding_errors): PASSED"
+      }
+    },
+    {
+      "id": "R212",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R212_test_residue_zero",
+      "assertion_summary": "Task test output asserts requirement test_residue_zero",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "[OK] R212 passed: residue is zero before and after; gate, guarded cleanup and restore verified."
+      }
     }
   ],
   "acceptance": [
@@ -53,19 +80,141 @@
       "id": "AC-T04-01",
       "result": "passed",
       "artifact": "src/Bootstrap/FixtureHarness.php",
-      "observation": "Comparator separates volatile timestamps while preserving IDs, stock, prices, attributes, and gallery order"
+      "observation": "Comparator separates volatile timestamps while preserving IDs, stock, prices, attributes, and gallery order",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T04-02",
       "result": "passed",
       "artifact": "src/Bootstrap/FixtureHarness.php",
-      "observation": "Fixture generator is reproducible via seeds; scale manifests defined for 100k and 1M"
+      "observation": "Fixture generator is reproducible via seeds; scale manifests defined for 100k and 1M",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
   "files_implemented": [
     "src/Bootstrap/FixtureHarness.php",
+    "scripts/test-isolation.mjs",
     "tests/integration/T04Test.php",
     "docs/evidence/T04/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 3830,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 340,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1129,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 3830,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 340,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1129,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 3830,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 340,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1129,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "d982ff97ef7768099afe9e4637fb0741adefd82e",
+  "file_hashes": {
+    "scripts/test-isolation.mjs": "6121f4249fa55d3d068c90baf80dfc0fbffd7a67ca4767531362f6cb3c20a578",
+    "src/Bootstrap/FixtureHarness.php": "c6bfd81efb2c7b917ef86f0e45e7964ebdbb14f6bfe2b8404228279c2ec50b96",
+    "tests/integration/T04Test.php": "2d381a38b1e30b5a60ca38b2c7a879408b81ab315fa1acb5edf489559eb9f734"
+  }
 }

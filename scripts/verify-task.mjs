@@ -18,6 +18,8 @@ function check(task,e,requireFresh=true){
  if(!e.commands?.length)errs.push(`${task.id}: no executed commands`);
  for(const c of e.commands??[]){if(c.exit_code!==0||!c.output_path||!Array.isArray(c.argv)||!c.argv.length||c.content_digest!==e.content_digest)errs.push(`${task.id}: failed/missing/stale command receipt`);else try{const f=containedFile(root,c.output_path);if(sha256(fs.readFileSync(f))!==c.output_sha256)errs.push(`${task.id}: command output changed`);}catch{errs.push(`${task.id}: command output file absent/unsafe`);}}
  if(e.blockers?.length)errs.push(`${task.id}: unresolved blockers`);
+ const iso=e.isolation;
+ if(!iso||iso.restored!==true||iso.junk_total_before!==0||iso.junk_total_after_restore!==0||Object.keys(iso.residue_after_restore??{}).length)errs.push(`${task.id}: isolation receipt missing or residue not zero (R212)`);
  const out=outputOf(e);
  for(const r of task.regression_requirements){const result=e.regression_results?.find(x=>x.id===r.id);if(!result||result.status!=='passed'||!Number.isInteger(result.command_ref)||!e.commands?.[result.command_ref]||!result.test_name||!result.assertion_summary)errs.push(`${task.id}: requirement ${r.id} unverified`);
   else if(result.basis!=='output_anchor'||!result.anchor?.line||out===null||!findAnchor(out,r.id))errs.push(`${task.id}: requirement ${r.id} has no verifiable output anchor`);}
