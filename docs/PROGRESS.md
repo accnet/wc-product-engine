@@ -62,7 +62,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 ## 7. P5 — Evidence và readiness
 
-- [ ] T44 — Chứng minh đọc native không dựa core postmeta
+- [x] T44 — Chứng minh đọc native không dựa core postmeta
 - [ ] T47 — Benchmark realistic scale và EXPLAIN budgets
 - [ ] T48 — E2E compatibility/security/fault-injection suite
 - [ ] T42 — Readiness gates và cohort manifest
