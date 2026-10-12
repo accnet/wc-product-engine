@@ -155,6 +155,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $gallery = $this->mediaRepo->getGallery($productId);
         $upsells = $this->mediaRepo->getLinks($productId, 'upsell');
         $crosssells = $this->mediaRepo->getLinks($productId, 'crosssell');
+        $extra = json_decode($data['extra_props'] ?? '{}', true) ?: [];
 
         $product->set_props([
             'name'               => $data['title'],
@@ -188,6 +189,9 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             'gallery_image_ids'  => array_map('intval', array_column($gallery, 'asset_id')),
             'upsell_ids'         => array_map('intval', array_column($upsells, 'target_id')),
             'cross_sell_ids'     => array_map('intval', array_column($crosssells, 'target_id')),
+            'average_rating'     => (float)($extra['average_rating'] ?? 0.0),
+            'review_count'       => (int)($extra['review_count'] ?? 0),
+            'rating_counts'      => $extra['rating_counts'] ?? [],
             'date_created'       => $data['created_at'],
             'date_modified'      => $data['updated_at'],
         ]);

@@ -1,0 +1,78 @@
+{
+  "task_id": "T13",
+  "commit": "26b9732e2b8f439619811a48d960d770475b99fc",
+  "qa_status": "passed",
+  "content_digest": "a3cc895a7afbc94a427534b348f0154f382cbc4006ced4d6db70061476b6e4e6",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T13Test.php"
+      ],
+      "display": "npm run test:task -- T13",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T13/output.log",
+      "output_sha256": "c5138c364936c081f5139d0c7017a462ae0a8e4799dec760e4d9948e3618676c",
+      "content_digest": "a3cc895a7afbc94a427534b348f0154f382cbc4006ced4d6db70061476b6e4e6"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R51",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R51_permalink_factory_ids",
+      "assertion_summary": "Verified real ID allocation, factory hydration, permalink slug updates with 301 redirect tracking, and variation discovery"
+    },
+    {
+      "id": "R52",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R52_taxonomy_hierarchy",
+      "assertion_summary": "Verified hierarchical category and tag assignment, ancestral hierarchy, and category product counts synchronization"
+    },
+    {
+      "id": "R53",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R53_reviews_rating_projection",
+      "assertion_summary": "Verified review comments, rating distributions, and average rating projection to product properties"
+    },
+    {
+      "id": "R54",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R54_nonproduct_queries_unchanged",
+      "assertion_summary": "Verified non-product WP_Query completely untouched and product shell stores zero canonical stock or price"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T13-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/PostShellBridge.php",
+      "observation": "Permalink cũ/new slug redirects và variation discovery ổn; get_post_type/reviews/category counts phù hợp policy"
+    },
+    {
+      "id": "AC-T13-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/PostShellBridge.php",
+      "observation": "Non-product posts không bị can thiệp; shell-only không chứa stock/price canonical"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/WooDataStore/PostShellBridge.php",
+    "tests/integration/T13Test.php",
+    "docs/evidence/T13/result.json"
+  ]
+}

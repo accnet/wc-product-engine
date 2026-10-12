@@ -21,7 +21,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T10 — Woo Product Data Stores
 - [x] T11 — WC metadata và WordPress metadata bridge
 - [x] T12 — Stock owner, reservation và order lifecycle
-- [ ] T13 — Post shell, factory, taxonomy và permalink bridge
+- [x] T13 — Post shell, factory, taxonomy và permalink bridge
 - [ ] T14 — WC admin, REST v3 và Store API adapters
 - [ ] T15 — Hooks, product transitions và cache lifecycle
 
