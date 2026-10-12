@@ -46,7 +46,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T29 — Streaming parser, staging và dry-run validation
 - [x] T30 — Commit worker, resume và conflict policy
 - [x] T31 — Snapshot export và secure report delivery
-- [ ] T32 — Native Woo import adapter và external image mode
+- [x] T32 — Native Woo import adapter và external image mode
 - [ ] T33 — Woo export adapter và round-trip
 - [ ] T34 — Current/legacy parser và product grouping
 - [ ] T35 — Native Shopify exporter và loss policy

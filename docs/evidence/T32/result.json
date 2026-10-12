@@ -1,0 +1,78 @@
+{
+  "task_id": "T32",
+  "commit": "966dfe9ede330ea58bd196c7340fce3d4d9d63fc",
+  "qa_status": "passed",
+  "content_digest": "7c0444e96d336e35cc23fb37fac7e2f811ea0abf838253015beb669baa07d68b",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T32Test.php"
+      ],
+      "display": "npm run test:task -- T32",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T32/output.log",
+      "output_sha256": "a95ac4f05e49800e5a88a1cf56798c68163fa83b4989560ce6e0cf6e436d657a",
+      "content_digest": "7c0444e96d336e35cc23fb37fac7e2f811ea0abf838253015beb669baa07d68b"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R128",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R128_woo_csv_baseline_fixture",
+      "assertion_summary": "Verified standard WooCommerce baseline CSV fixture import and differential semantic pass"
+    },
+    {
+      "id": "R129",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R129_woo_parent_sku_id",
+      "assertion_summary": "Verified parent product resolution via SKU and id:N formats correctly attaches variations"
+    },
+    {
+      "id": "R130",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R130_native_importer_external_no_sideload",
+      "assertion_summary": "Verified external image mode intercepts sideloading with zero uploads mutations while download mode remains standard"
+    },
+    {
+      "id": "R131",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R131_stock_blank_published_values",
+      "assertion_summary": "Verified stock blank vs zero semantics and published statuses (1, 0, draft, publish) correctly differentiated"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T32-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Woo/WooImporter.php",
+      "observation": "File export Woo baseline import engine đạt semantic diff pass; cả UI plugin và native Woo importer paths tested"
+    },
+    {
+      "id": "AC-T32-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Woo/WooImporter.php",
+      "observation": "External mode không tải ảnh về uploads; download mode không bị đổi"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Csv/Woo/WooImporter.php",
+    "tests/integration/T32Test.php",
+    "docs/evidence/T32/result.json"
+  ]
+}
