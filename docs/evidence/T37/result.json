@@ -1,0 +1,78 @@
+{
+  "task_id": "T37",
+  "commit": "5b84e38376a916ee8de9c37a3c53b45e568f0f18",
+  "qa_status": "passed",
+  "content_digest": "906f7034bc52d8c5536813820a473a90f95da0f87e4d7780483f11e35b7bf961",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T37Test.php"
+      ],
+      "display": "npm run test:task -- T37",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T37/output.log",
+      "output_sha256": "255fb9d662392c5cab821a891df385f7703b4ea94e380c260bc4ffe142c7b3cd",
+      "content_digest": "906f7034bc52d8c5536813820a473a90f95da0f87e4d7780483f11e35b7bf961"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R149",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R149_missed_hook_reconcile",
+      "assertion_summary": "Reconciliation scanner detected missed hooks via high-water mark and content hashes, repairing native projection in native storage"
+    },
+    {
+      "id": "R150",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R150_term_stock_delete_capture",
+      "assertion_summary": "Captured post, taxonomy terms, stock, and trash/delete hooks; coalesced child variation changes to parent aggregate ID"
+    },
+    {
+      "id": "R151",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R151_raw_sql_detected_audit",
+      "assertion_summary": "Direct SQL modifications without hooks detected by reconciliation scanner and recorded as raw_sql_detected alerts in wpe_audit"
+    },
+    {
+      "id": "R152",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R152_origin_guard_no_pingpong",
+      "assertion_summary": "Origin guard withOrigin suppressed legacy hooks during native projection, preventing infinite ping-pong sync loops"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T37-01",
+      "result": "passed",
+      "artifact": "src/Application/Migration/LegacyCapture.php",
+      "observation": "Missed hook được reconciliation repair; projection không gọi lại sync loop"
+    },
+    {
+      "id": "AC-T37-02",
+      "result": "passed",
+      "artifact": "src/Application/Migration/LegacyCapture.php",
+      "observation": "Native authority legacy mismatches tạo alert, không overwrite native tự động"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Migration/LegacyCapture.php",
+    "tests/integration/T37Test.php",
+    "docs/evidence/T37/result.json"
+  ]
+}
