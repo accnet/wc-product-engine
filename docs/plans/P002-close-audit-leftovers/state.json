@@ -1,7 +1,7 @@
 {
   "id": "P002",
   "title": "Close audit leftovers (F15, AC anchors, waivers)",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546",
   "tasks": [
     {
@@ -282,5 +282,6 @@
       "started_at": "2026-10-12T16:13:52.125Z"
     }
   ],
-  "approved_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546"
+  "approved_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546",
+  "report_hash": "7d47da6384be9acc4172734dab8cec5a31211321f135e2384fa832a303f4245f"
 }
