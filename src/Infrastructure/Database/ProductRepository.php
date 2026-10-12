@@ -93,7 +93,7 @@ class ProductRepository
             }
         }
 
-        $now = gmdate('Y-m-d H:i:s.u');
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
         $epoch = $this->outboxWorker->getCurrentEpoch();
         $version = 1;
 
@@ -261,7 +261,7 @@ class ProductRepository
      */
     public function update(int $productId, array $data): array
     {
-        $now = gmdate('Y-m-d H:i:s.u');
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
         $epoch = $this->outboxWorker->getCurrentEpoch();
 
         // Start transaction
@@ -472,9 +472,11 @@ class ProductRepository
             return null;
         }
 
+        $lower = mb_strtolower($trimmed, 'UTF-8');
         $reg = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT object_id, object_kind FROM {$this->tableSkuRegistry} WHERE normalized_sku = %s",
-            $trimmed
+            "SELECT object_id, object_kind FROM {$this->tableSkuRegistry} WHERE normalized_sku = %s OR normalized_sku = %s",
+            $trimmed,
+            $lower
         ));
 
         if (!$reg) {

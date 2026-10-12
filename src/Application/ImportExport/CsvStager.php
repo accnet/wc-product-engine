@@ -682,7 +682,17 @@ class CsvStager
                         $skuNorm
                     ));
 
+                    $mappedPayload = null;
                     if ($existingSku) {
+                        $existingVersion = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                            "SELECT version FROM {$this->tableProducts} WHERE id = %d",
+                            $existingSku->object_id
+                        ));
+                        $mappedPayload = wp_json_encode([
+                            'existing_id'      => (int)$existingSku->object_id,
+                            'existing_version' => $existingVersion,
+                        ]);
+
                         // SKU exists in catalog
                         if ($updateMode === 'merge') {
                             $rowWarnings[] = [
@@ -798,15 +808,16 @@ class CsvStager
                 $this->wpdb->update(
                     $this->tableImportRows,
                     [
-                        'status'   => $rowStatus,
-                        'errors'   => wp_json_encode($rowErrors),
-                        'warnings' => wp_json_encode($rowWarnings),
+                        'status'         => $rowStatus,
+                        'mapped_payload' => $mappedPayload,
+                        'errors'         => wp_json_encode($rowErrors),
+                        'warnings'       => wp_json_encode($rowWarnings),
                     ],
                     [
                         'job_id'     => $jobId,
                         'row_number' => $rowNum,
                     ],
-                    ['%s', '%s', '%s'],
+                    ['%s', '%s', '%s', '%s'],
                     ['%s', '%d']
                 );
             }
@@ -815,7 +826,7 @@ class CsvStager
 
         // Compute immutable snapshot hash (AC-T29-02)
         $snapshotHash = hash('sha256', "{$currentFileHash}:{$format}:{$profile}:{$updateMode}:{$totalRows}:{$validRows}");
-        $now = gmdate('Y-m-d H:i:s.u');
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
 
         $counts = [
             'total_rows'      => $totalRows,

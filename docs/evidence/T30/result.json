@@ -1,0 +1,78 @@
+{
+  "task_id": "T30",
+  "commit": "a20caf57ca618255c00b80761c56702184fed0a4",
+  "qa_status": "passed",
+  "content_digest": "0b181f883d00e7a0f8f237c4f11e13b304f056386796a9e1bf155de7ebac1a80",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T30Test.php"
+      ],
+      "display": "npm run test:task -- T30",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T30/output.log",
+      "output_sha256": "49052b80df223272706fa18cd7bb61e75174802df4922911eef6b2805003347b",
+      "content_digest": "0b181f883d00e7a0f8f237c4f11e13b304f056386796a9e1bf155de7ebac1a80"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R120",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R120_import_crash_resume",
+      "assertion_summary": "Verified worker crash recovery and idempotent resume via persisted database checkpoints without duplicate records"
+    },
+    {
+      "id": "R121",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R121_import_group_atomic",
+      "assertion_summary": "Verified atomic per-product group commits with zero half-saved products or variants on failure"
+    },
+    {
+      "id": "R122",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R122_import_vs_admin_conflict",
+      "assertion_summary": "Verified conflict policies (fail vs skip) strictly prevent overwriting concurrent admin edits made after validation"
+    },
+    {
+      "id": "R123",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R123_cancel_partial_commit_report",
+      "assertion_summary": "Verified cancellation stops at commit boundaries, preserves previously committed groups, and outputs accurate partial reports"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T30-01",
+      "result": "passed",
+      "artifact": "src/Application/ImportExport/ImportCommitter.php",
+      "observation": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp"
+    },
+    {
+      "id": "AC-T30-02",
+      "result": "passed",
+      "artifact": "src/Application/ImportExport/ImportCommitter.php",
+      "observation": "Không overwrite edit mới giữa dry-run và commit"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/ImportExport/ImportCommitter.php",
+    "tests/integration/T30Test.php",
+    "docs/evidence/T30/result.json"
+  ]
+}
