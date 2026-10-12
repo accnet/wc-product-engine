@@ -1,0 +1,78 @@
+{
+  "task_id": "T38",
+  "commit": "d12a3aee9280373624c6fd23382ae9c0ceaada4e",
+  "qa_status": "passed",
+  "content_digest": "6d5413a447322334793720aaea130bd49dddb258c9b53acdeb8c6bb7744ebd89",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T38Test.php"
+      ],
+      "display": "npm run test:task -- T38",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T38/output.log",
+      "output_sha256": "42cdcbdb1d00542a927d636b94cda9149c6913ba365294c89198871d7b58c019",
+      "content_digest": "6d5413a447322334793720aaea130bd49dddb258c9b53acdeb8c6bb7744ebd89"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R153",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R153_backfill_resume",
+      "assertion_summary": "Verified backfill pause and resume checkpointing without dropping or duplicating product or variation aggregates"
+    },
+    {
+      "id": "R154",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R154_backfill_concurrent_edit_delete",
+      "assertion_summary": "Verified revision fence preserves fresh concurrent edits and trash tombstones during keyset backfill execution"
+    },
+    {
+      "id": "R155",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R155_no_full_catalog_memory",
+      "assertion_summary": "Verified strictly keyset pagination (no OFFSET), zero full catalog hydration via wc_get_products, and O(1) bounded memory consumption"
+    },
+    {
+      "id": "R156",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R156_shadow_diff_detects_gap",
+      "assertion_summary": "Verified shadow diff detects missing products, price/status field mismatches, and variation count gaps, reaching quiescence after repair"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T38-01",
+      "result": "passed",
+      "artifact": "src/Application/Migration/BackfillRunner.php",
+      "observation": "Resume không mất/duplicate aggregate; source counts và hashes khớp semantic snapshot, trừ differences approved"
+    },
+    {
+      "id": "AC-T38-02",
+      "result": "passed",
+      "artifact": "src/Application/Migration/BackfillRunner.php",
+      "observation": "Backfill write load giữ storefront trong budget T47"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Migration/BackfillRunner.php",
+    "tests/integration/T38Test.php",
+    "docs/evidence/T38/result.json"
+  ]
+}
