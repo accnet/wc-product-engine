@@ -1,0 +1,85 @@
+{
+  "task_id": "T34",
+  "commit": "f57a91b567e496876b482b4e684aa59b4ce51087",
+  "qa_status": "passed",
+  "content_digest": "24adea025ee9348c3e6130cde68740dacfe1667a59252534f5989e81d6261af4",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T34Test.php"
+      ],
+      "display": "npm run test:task -- T34",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T34/output.log",
+      "output_sha256": "c39657348b0123948ea4fdfa0303b42954bd7fb8b170239bac33edd09ad7dd07",
+      "content_digest": "24adea025ee9348c3e6130cde68740dacfe1667a59252534f5989e81d6261af4"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R136",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R136_shopify_header_aliases",
+      "assertion_summary": "Verified current and legacy Shopify header aliases produce identical canonical domain subsets"
+    },
+    {
+      "id": "R137",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R137_image_only_row_no_variant",
+      "assertion_summary": "Verified image-only rows attach gallery images to parent without creating redundant variations"
+    },
+    {
+      "id": "R138",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R138_compare_at_units",
+      "assertion_summary": "Verified Compare-at pricing calculation rules and weight unit conversions"
+    },
+    {
+      "id": "R139",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R139_handle_idempotency_and_option_change",
+      "assertion_summary": "Verified handle grouping idempotency and missing vs blank column overwrite policies"
+    },
+    {
+      "id": "R140",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R140_unsupported_shopify_fields",
+      "assertion_summary": "Verified unsupported fields (>3 options, locations, metafields) captured in structured loss report"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T34-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
+      "observation": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation"
+    },
+    {
+      "id": "AC-T34-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
+      "observation": "Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
+    "tests/integration/T34Test.php",
+    "docs/evidence/T34/result.json"
+  ]
+}

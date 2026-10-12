@@ -989,6 +989,8 @@ class ProductRepository
             'status'            => $row['status'],
             'name'              => $row['title'],
             'title'             => $row['title'],
+            'description'       => $row['description'] ?? '',
+            'short_description' => $row['short_description'] ?? '',
             'slug'              => $row['slug'],
             'sku'               => $row['sku'],
             'regular_price'     => $row['regular_price'] !== null ? sprintf('%.6f', (float)$row['regular_price']) : null,
