@@ -27,7 +27,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 ## 4. P2 — Catalog/media/variants
 
-- [ ] T16 — Projection builder và generation rebuild
+- [x] T16 — Projection builder và generation rebuild
 - [ ] T17 — Fast query compiler và keyset pagination
 - [ ] T18 — Facets coherent theo variant và counts
 - [ ] T19 — Tích hợp wc_get_products, shop archives và admin lists

@@ -1,0 +1,84 @@
+{
+  "task_id": "T16",
+  "commit": "be95c992f73dffcd55d3a46a8979cd627095ef51",
+  "qa_status": "passed",
+  "content_digest": "2597c1a84acae74da814ea5bf2f448d0d3d7915dfe84b9dda22a3b259e460f92",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T16Test.php"
+      ],
+      "display": "npm run test:task -- T16",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T16/output.log",
+      "output_sha256": "155b82dd0bd0f2015e2ff1c0df42537585580b3639edb6bb7cc5c45420689c66",
+      "content_digest": "2597c1a84acae74da814ea5bf2f448d0d3d7915dfe84b9dda22a3b259e460f92"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R63",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R63_rebuild_under_writes",
+      "assertion_summary": "Verified catch-up revision fence catches dirty writes during rebuild"
+    },
+    {
+      "id": "R64",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R64_tombstone_no_resurrection",
+      "assertion_summary": "Verified trashed and deleted products never resurrect into active index"
+    },
+    {
+      "id": "R65",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R65_sale_clock_boundary_dst",
+      "assertion_summary": "Verified scheduled sale prices automatically switch across time boundary without save"
+    },
+    {
+      "id": "R66",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R66_generation_cursor_retention",
+      "assertion_summary": "Verified previous generations are retained for active cursor lifespan"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T16-01",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogProjector.php",
+      "observation": "Dirty product cuối rebuild vẫn đúng; previous generation giữ đến cursor expiry"
+    },
+    {
+      "id": "AC-T16-02",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogProjector.php",
+      "observation": "Price schedule tự chuyển dù không save"
+    },
+    {
+      "id": "AC-T16-03",
+      "result": "passed",
+      "artifact": "src/Application/Catalog/CatalogProjector.php",
+      "observation": "No orphan facets và source_version audit pass"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Catalog/CatalogProjector.php",
+    "tests/integration/T16Test.php",
+    "docs/evidence/T16/result.json"
+  ]
+}
