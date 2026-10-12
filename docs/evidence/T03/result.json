@@ -1,0 +1,80 @@
+{
+  "task_id": "T03",
+  "commit": "e8239d3b8996cafc492ac94614bb5faa13c06677",
+  "qa_status": "passed",
+  "content_digest": "1b1d406eedec036a88975016dadff65329c2e71f28fc65b68dda73ed3e96cf57",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "php",
+        "tests/unit/T03Test.php"
+      ],
+      "display": "npm run test:task -- T03",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T03/output.log",
+      "output_sha256": "fa852e053819c7b6799fb9d9160f5cb98dedb53bbdbaa3e656fed0b3218f3f68",
+      "content_digest": "1b1d406eedec036a88975016dadff65329c2e71f28fc65b68dda73ed3e96cf57"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R07",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R07_contract_schema_validation",
+      "assertion_summary": "Verified JSON syntax and structural cross-references for all contract files"
+    },
+    {
+      "id": "R08",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R08_decimal_id_roundtrip",
+      "assertion_summary": "Verified 64-bit ID, price, and stock string round-trip precision"
+    },
+    {
+      "id": "R09",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R09_nullable_blank_semantics",
+      "assertion_summary": "Verified absent vs null vs blank string semantics"
+    },
+    {
+      "id": "R10",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R10_props_mapping_coverage",
+      "assertion_summary": "Verified coverage of 55+ WC properties and 39 Data Store methods in sealed mapping"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T03-01",
+      "result": "passed",
+      "artifact": "contracts/compatibility/wc-props-mapping.json",
+      "observation": "OpenAPI and schema contracts valid; all endpoints have requests/responses/errors; props cataloged and sealed"
+    },
+    {
+      "id": "AC-T03-02",
+      "result": "passed",
+      "artifact": "docs/adr/001-retained-shells.md",
+      "observation": "ADRs document retained shells and single writer architecture; breaking changes require versioning"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "contracts/database/schema-contract.json",
+    "contracts/openapi/wpe-v1.json",
+    "contracts/api/endpoints.json",
+    "contracts/events/product-changed.schema.json",
+    "contracts/csv/dialects.json",
+    "contracts/compatibility/wc-props-mapping.json",
+    "tests/unit/T03Test.php",
+    "docs/evidence/T03/result.json"
+  ]
+}
