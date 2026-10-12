@@ -65,10 +65,6 @@ class GalleryAdapter
     {
         $adapter = $instance ?? self::instance();
 
-        if (self::$filtersRegistered) {
-            return $adapter;
-        }
-
         // Available variation image payload (R92, R93, R94)
         add_filter('woocommerce_available_variation', [$adapter, 'filterAvailableVariation'], 10, 3);
 

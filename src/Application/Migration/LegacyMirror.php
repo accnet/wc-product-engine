@@ -211,6 +211,117 @@ class LegacyMirror
                 $this->updatePostMetaDirect($aggregateId, $mKey, (string)$mVal);
             }
 
+            // Project featured and gallery images
+            $featuredImg = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT a.attachment_id FROM {$this->wpdb->prefix}wpe_product_media pm
+                 JOIN {$this->wpdb->prefix}wpe_assets a ON pm.asset_id = a.id
+                 WHERE pm.product_id = %d AND pm.role = 'featured'
+                 LIMIT 1",
+                $aggregateId
+            ), ARRAY_A);
+            if ($featuredImg && !empty($featuredImg['attachment_id'])) {
+                $this->updatePostMetaDirect($aggregateId, '_thumbnail_id', (string)$featuredImg['attachment_id']);
+            }
+
+            $galleryImgs = $this->wpdb->get_col($this->wpdb->prepare(
+                "SELECT a.attachment_id FROM {$this->wpdb->prefix}wpe_product_media pm
+                 JOIN {$this->wpdb->prefix}wpe_assets a ON pm.asset_id = a.id
+                 WHERE pm.product_id = %d AND pm.role = 'gallery'
+                 ORDER BY pm.position ASC",
+                $aggregateId
+            ));
+            if (!empty($galleryImgs)) {
+                $galleryClean = array_filter($galleryImgs);
+                if (!empty($galleryClean)) {
+                    $this->updatePostMetaDirect($aggregateId, '_product_image_gallery', implode(',', $galleryClean));
+                }
+            }
+
+            // Project attributes
+            $options = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT id, name, position, visible, used_for_variation, taxonomy
+                 FROM {$this->wpdb->prefix}wpe_options
+                 WHERE product_id = %d
+                 ORDER BY position ASC",
+                $aggregateId
+            ), ARRAY_A);
+
+            if (!empty($options)) {
+                $productAttributes = [];
+                foreach ($options as $opt) {
+                    $vals = $this->wpdb->get_col($this->wpdb->prepare(
+                        "SELECT label FROM {$this->wpdb->prefix}wpe_option_values
+                         WHERE option_id = %d
+                         ORDER BY position ASC",
+                        $opt['id']
+                    ));
+                    $attrKey = sanitize_title($opt['name']);
+                    $productAttributes[$attrKey] = [
+                        'name'         => $opt['name'],
+                        'value'        => implode(' | ', $vals),
+                        'position'     => (int)$opt['position'],
+                        'is_visible'   => (int)$opt['visible'],
+                        'is_variation' => (int)$opt['used_for_variation'],
+                        'is_taxonomy'  => !empty($opt['taxonomy']) ? 1 : 0,
+                    ];
+                }
+                $this->updatePostMetaDirect($aggregateId, '_product_attributes', serialize($productAttributes));
+            }
+
+            // Project product_type taxonomy relationship (variable vs simple)
+            $targetType = !empty($variants) ? 'variable' : 'simple';
+            $termRow = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT tt.term_taxonomy_id FROM {$this->wpdb->terms} t
+                 JOIN {$this->wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
+                 WHERE t.slug = %s AND tt.taxonomy = 'product_type' LIMIT 1",
+                $targetType
+            ), ARRAY_A);
+            if ($termRow) {
+                $allTypeTermTaxIds = $this->wpdb->get_col(
+                    "SELECT term_taxonomy_id FROM {$this->wpdb->term_taxonomy} WHERE taxonomy = 'product_type'"
+                );
+                if (!empty($allTypeTermTaxIds)) {
+                    $idList = implode(',', array_map('intval', $allTypeTermTaxIds));
+                    $this->wpdb->query($this->wpdb->prepare(
+                        "DELETE FROM {$this->wpdb->term_relationships} WHERE object_id = %d AND term_taxonomy_id IN ({$idList})",
+                        $aggregateId
+                    ));
+                }
+                $this->wpdb->replace($this->wpdb->term_relationships, [
+                    'object_id'        => $aggregateId,
+                    'term_taxonomy_id' => (int)$termRow['term_taxonomy_id'],
+                    'term_order'       => 0,
+                ]);
+            }
+
+            // Calculate variable product price ranges
+            if (!empty($variants)) {
+                $prices = [];
+                $regPrices = [];
+                foreach ($variants as $v) {
+                    $vReg  = $v['regular_price'] !== null ? (float)$v['regular_price'] : null;
+                    $vSale = $v['sale_price'] !== null ? (float)$v['sale_price'] : null;
+                    $vP    = ($vSale !== null && $vSale > 0) ? $vSale : $vReg;
+                    if ($vP !== null) {
+                        $prices[] = $vP;
+                    }
+                    if ($vReg !== null) {
+                        $regPrices[] = $vReg;
+                    }
+                }
+                if (!empty($prices)) {
+                    $minP = min($prices);
+                    $maxP = max($prices);
+                    $this->updatePostMetaDirect($aggregateId, '_price', (string)$minP);
+                    $this->updatePostMetaDirect($aggregateId, '_min_variation_price', (string)$minP);
+                    $this->updatePostMetaDirect($aggregateId, '_max_variation_price', (string)$maxP);
+                }
+                if (!empty($regPrices)) {
+                    $this->updatePostMetaDirect($aggregateId, '_min_variation_regular_price', (string)min($regPrices));
+                    $this->updatePostMetaDirect($aggregateId, '_max_variation_regular_price', (string)max($regPrices));
+                }
+            }
+
             // Project extension / arbitrary metadata from wpe_meta
             if (!empty($metaRows)) {
                 foreach ($metaRows as $mr) {
@@ -280,6 +391,33 @@ class LegacyMirror
                         $this->updatePostMetaDirect($varId, '_manage_stock', $vInv['manage_stock'] ? 'yes' : 'no');
                         $this->updatePostMetaDirect($varId, '_stock', $vInv['quantity'] !== null ? (string)(float)$vInv['quantity'] : '');
                         $this->updatePostMetaDirect($varId, '_stock_status', $vInv['stock_status'] ?? 'instock');
+                    }
+
+                    // Variation attributes
+                    $vValues = $this->wpdb->get_results($this->wpdb->prepare(
+                        "SELECT o.name, ov.label
+                         FROM {$this->wpdb->prefix}wpe_variant_values vv
+                         JOIN {$this->wpdb->prefix}wpe_options o ON vv.option_id = o.id
+                         JOIN {$this->wpdb->prefix}wpe_option_values ov ON vv.value_id = ov.id
+                         WHERE vv.variant_id = %d",
+                        $varId
+                    ), ARRAY_A);
+
+                    foreach ($vValues as $vv) {
+                        $attrKey = 'attribute_' . sanitize_title($vv['name']);
+                        $this->updatePostMetaDirect($varId, $attrKey, $vv['label']);
+                    }
+
+                    // Variation image
+                    $vImg = $this->wpdb->get_row($this->wpdb->prepare(
+                        "SELECT a.attachment_id FROM {$this->wpdb->prefix}wpe_variant_media vm
+                         JOIN {$this->wpdb->prefix}wpe_assets a ON vm.asset_id = a.id
+                         WHERE vm.variant_id = %d AND vm.is_primary = 1
+                         LIMIT 1",
+                        $varId
+                    ), ARRAY_A);
+                    if ($vImg && !empty($vImg['attachment_id'])) {
+                        $this->updatePostMetaDirect($varId, '_thumbnail_id', (string)$vImg['attachment_id']);
                     }
                 }
             }

@@ -43,6 +43,7 @@ class ShopifyImporter
     private string $tableOptions;
     private string $tableOptionValues;
     private string $tableVariantValues;
+    private string $tableObjectState;
 
     /**
      * Canonical header aliases: maps legacy or alternative Shopify header names to normalized keys.
@@ -111,6 +112,7 @@ class ShopifyImporter
         $this->tableOptions       = "{$prefix}wpe_options";
         $this->tableOptionValues  = "{$prefix}wpe_option_values";
         $this->tableVariantValues = "{$prefix}wpe_variant_values";
+        $this->tableObjectState   = "{$prefix}wpe_object_state";
 
         $this->productRepo      = $productRepo ?? new ProductRepository($this->wpdb);
         $this->optionsRepo      = $optionsRepo ?? new OptionsRepository($this->wpdb);
@@ -219,6 +221,7 @@ class ShopifyImporter
                     'tags'                => $row['tags'] ?? '',
                     'status'              => $this->mapStatus($row['status'] ?? $row['published'] ?? ''),
                     'options'             => [],
+                    'option_names'        => [],
                     'images'              => [],
                     'variants'            => [],
                     'unsupported_columns' => array_values(array_unique($unsupportedColumns)),
@@ -256,13 +259,17 @@ class ShopifyImporter
                 }
             }
 
-            // Options discovery
+            // Options discovery (support standard Shopify CSV where subsequent rows leave option names blank)
             for ($optIdx = 1; $optIdx <= 3; $optIdx++) {
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
 
                 if (!empty($row[$optNameKey])) {
-                    $optName = trim($row[$optNameKey]);
+                    $groups[$handleKey]['option_names'][$optIdx] = trim($row[$optNameKey]);
+                }
+                $optName = $groups[$handleKey]['option_names'][$optIdx] ?? null;
+
+                if ($optName !== null && $optName !== '') {
                     if (!isset($groups[$handleKey]['options'][$optName])) {
                         $groups[$handleKey]['options'][$optName] = [];
                     }
@@ -290,13 +297,14 @@ class ShopifyImporter
             // Variant image URL
             $varImgUrl = trim($row['variant_image_url'] ?? '');
 
-            // Build variation row attributes
+            // Build variation row attributes (inherit option names if blank in subsequent rows)
             $attributes = [];
             for ($optIdx = 1; $optIdx <= 3; $optIdx++) {
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
-                if (!empty($row[$optNameKey]) && !empty($row[$optValKey])) {
-                    $attributes[trim($row[$optNameKey])] = trim($row[$optValKey]);
+                $optName = !empty($row[$optNameKey]) ? trim($row[$optNameKey]) : ($groups[$handleKey]['option_names'][$optIdx] ?? null);
+                if ($optName !== null && $optName !== '' && !empty($row[$optValKey])) {
+                    $attributes[$optName] = trim($row[$optValKey]);
                 }
             }
 
@@ -475,6 +483,18 @@ class ShopifyImporter
                     }
                 }
 
+                // Mirror canonical state to legacy WooCommerce tables (CPT, postmeta, taxonomy, attributes)
+                try {
+                    $state = $this->wpdb->get_row($this->wpdb->prepare(
+                        "SELECT native_revision, native_applied, epoch FROM {$this->tableObjectState} WHERE object_id = %d",
+                        $productId
+                    ), ARRAY_A);
+                    $rev = $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1;
+                    $workerEpoch = $state ? (int)$state['epoch'] : 1;
+                    \WPE\Application\Migration\LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+                } catch (\Throwable $mE) {
+                    // Non-fatal
+                }
             } catch (\Throwable $e) {
                 $errors[] = [
                     'handle' => $handle,

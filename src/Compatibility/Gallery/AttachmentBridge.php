@@ -69,27 +69,47 @@ class AttachmentBridge
      */
     public static function register(?AttachmentBridge $instance = null): self
     {
-        $bridge = $instance ?? self::instance();
+        if ($instance !== null) {
+            self::$instance = $instance;
+        }
+
+        $bridge = self::instance();
 
         if (self::$filtersRegistered) {
             return $bridge;
         }
 
         // Image URL and sizing filters (R88)
-        add_filter('wp_get_attachment_url', [$bridge, 'filterAttachmentUrl'], 10, 2);
-        add_filter('image_downsize', [$bridge, 'filterImageDownsize'], 10, 3);
-        add_filter('wp_get_attachment_metadata', [$bridge, 'filterAttachmentMetadata'], 10, 2);
-        add_filter('wp_calculate_image_srcset', [$bridge, 'filterCalculateImageSrcset'], 10, 5);
-        add_filter('wp_calculate_image_sizes', [$bridge, 'filterCalculateImageSizes'], 10, 5);
+        add_filter('wp_get_attachment_url', function ($url, $id) {
+            return self::instance()->filterAttachmentUrl($url, $id);
+        }, 10, 2);
+        add_filter('image_downsize', function ($out, $id, $size) {
+            return self::instance()->filterImageDownsize($out, $id, $size);
+        }, 10, 3);
+        add_filter('wp_get_attachment_metadata', function ($data, $id) {
+            return self::instance()->filterAttachmentMetadata($data, $id);
+        }, 10, 2);
+        add_filter('wp_calculate_image_srcset', function ($sources, $size_array, $image_src, $image_meta, $attachment_id) {
+            return self::instance()->filterCalculateImageSrcset($sources, $size_array, $image_src, $image_meta, $attachment_id);
+        }, 10, 5);
+        add_filter('wp_calculate_image_sizes', function ($sizes, $size, $image_src, $image_meta, $attachment_id) {
+            return self::instance()->filterCalculateImageSizes($sizes, $size, $image_src, $image_meta, $attachment_id);
+        }, 10, 5);
 
         // Media Library modal and REST preview (AC-T22-01)
-        add_filter('wp_prepare_attachment_for_js', [$bridge, 'filterPrepareAttachmentForJs'], 10, 3);
+        add_filter('wp_prepare_attachment_for_js', function ($response, $attachment, $meta) {
+            return self::instance()->filterPrepareAttachmentForJs($response, $attachment, $meta);
+        }, 10, 3);
 
         // Local file actions guard (R89)
-        add_filter('get_attached_file', [$bridge, 'filterGetAttachedFile'], 10, 2);
+        add_filter('get_attached_file', function ($file, $attachment_id) {
+            return self::instance()->filterGetAttachedFile($file, $attachment_id);
+        }, 10, 2);
 
         // Shared deletion safeguards (R90, AC-T22-02)
-        add_action('delete_attachment', [$bridge, 'onDeleteAttachment'], 10, 2);
+        add_action('delete_attachment', function ($post_id, $post) {
+            self::instance()->onDeleteAttachment($post_id, $post);
+        }, 10, 2);
 
         self::$filtersRegistered = true;
         return $bridge;

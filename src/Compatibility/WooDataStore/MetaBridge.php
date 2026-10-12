@@ -433,12 +433,22 @@ class MetaBridge
         // Media properties
         if ($prop === 'image_id') {
             $featured = $this->mediaRepo->getFeaturedImage($objectId);
-            return $featured ? (string)$featured['asset_id'] : '';
+            if (!$featured) {
+                return '';
+            }
+            $attId = !empty($featured['attachment_id']) ? $featured['attachment_id'] : ($featured['id'] ?? '');
+            return (string)$attId;
         }
 
         if ($prop === 'gallery_image_ids') {
             $gallery = $this->mediaRepo->getGallery($objectId);
-            $ids = array_map('strval', array_column($gallery, 'asset_id'));
+            $ids = [];
+            foreach ($gallery as $item) {
+                $id = !empty($item['attachment_id']) ? $item['attachment_id'] : ($item['id'] ?? null);
+                if ($id !== null) {
+                    $ids[] = (string)$id;
+                }
+            }
             return implode(',', $ids);
         }
 

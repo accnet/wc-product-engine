@@ -55,6 +55,10 @@ class PluginBootstrap
         $this->registerDataStores();
         $this->registerRestRoutes();
         \WPE\Admin\OperationsPage::getInstance()->init();
+
+        \WPE\Compatibility\Gallery\AttachmentBridge::register();
+        \WPE\Compatibility\Gallery\GalleryAdapter::register();
+        \WPE\Compatibility\WooDataStore\PostShellBridge::getInstance()->boot();
     }
 
     public function checkDependencies(): bool
