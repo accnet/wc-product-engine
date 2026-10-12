@@ -195,97 +195,40 @@ class T27Test
         $jsFile = dirname(__DIR__, 2) . '/assets/variant-selector/selector.js';
         $this->assert(file_exists($jsFile), "selector.js must exist at assets/variant-selector/selector.js");
 
-        $jsContent = file_get_contents($jsFile);
+        // Behavior test in a real browser (tests/e2e/SelectorBehavior.spec.mjs): the first of two quick
+        // selections is answered slowly, so its stale response arrives last and must be ignored. The spec
+        // also proves the sequence guard alone does the job (abort disabled) and that it fails when the
+        // guard is removed. This replaces the earlier string-matching and hand-written simulation.
+        $root = dirname(__DIR__, 2);
+        $out = [];
+        exec('cd ' . escapeshellarg($root) . ' && npx --no-install playwright test --config=playwright.config.mjs --reporter=json 2>&1', $out, $exitCode);
+        $raw = implode("\n", $out);
+        $report = json_decode(substr($raw, (int) strpos($raw, '{')), true);
 
-        // 1. Verify sequence tracking and comparison
+        $this->assert(is_array($report), "Playwright must produce a JSON report; got: " . substr($raw, 0, 400));
+        $this->assert($exitCode === 0, "Playwright selector behavior suite must exit 0: " . substr($raw, 0, 400));
+        $stats = $report['stats'] ?? [];
+        $this->assert(($stats['unexpected'] ?? 1) === 0 && ($stats['flaky'] ?? 1) === 0 && ($stats['skipped'] ?? 1) === 0,
+            "No Playwright test may fail, be flaky or be skipped: " . json_encode($stats));
+        $this->assert(($stats['expected'] ?? 0) >= 3, "At least the three R107 browser tests must run: " . json_encode($stats));
+
+        $titles = [];
+        $collect = function (array $suites) use (&$collect, &$titles): void {
+            foreach ($suites as $suite) {
+                foreach ($suite['specs'] ?? [] as $spec) {
+                    $titles[] = $spec['title'];
+                }
+                $collect($suite['suites'] ?? []);
+            }
+        };
+        $collect($report['suites'] ?? []);
         $this->assert(
-            str_contains($jsContent, 'this.requestSequence++'),
-            "selector.js must increment requestSequence on every resolution call (R107)"
+            count(array_filter($titles, fn($t) => str_contains($t, 'sequence guard alone'))) === 1
+                && count(array_filter($titles, fn($t) => str_contains($t, 'control: without the sequence guard'))) === 1,
+            "The guard-only test and the mutation control must both be part of the suite: " . json_encode($titles)
         );
 
-        $this->assert(
-            str_contains($jsContent, 'data.request_sequence < this.requestSequence') ||
-            str_contains($jsContent, 'request_sequence < this.requestSequence'),
-            "selector.js must strictly discard responses where request_sequence is smaller than active requestSequence (R107)"
-        );
-
-        // 2. Verify AbortController integration
-        $this->assert(
-            str_contains($jsContent, 'this.abortController.abort()'),
-            "selector.js must abort in-flight requests on new selection via AbortController (R107)"
-        );
-        $this->assert(
-            str_contains($jsContent, 'new AbortController()'),
-            "selector.js must create new AbortController per request (R107)"
-        );
-
-        // 3. Verify in Node.js runtime using a headless simulation of out-of-order delivery
-        $nodeTestScript = <<<NODE
-import '{$jsFile}';
-
-const WpeVariantSelector = globalThis.WpeVariantSelector;
-if (!WpeVariantSelector) {
-    console.error("WpeVariantSelector class not found on globalThis");
-    process.exit(1);
-}
-
-// Mock form element
-const form = {
-    setAttribute: () => {},
-    removeAttribute: () => {},
-    querySelector: () => null,
-    querySelectorAll: () => [],
-    appendChild: () => {}
-};
-
-const selector = new WpeVariantSelector(form, {
-    productId: 100,
-    resolveEndpoint: 'http://localhost/test',
-    defaultSelection: {}
-});
-
-// Simulate sequence 1 dispatched
-selector.requestSequence = 1;
-
-// Simulate sequence 2 dispatched
-selector.requestSequence = 2;
-
-// Simulate sequence 2 response arrives first
-selector.handleResponse({
-    state: 'exact',
-    request_sequence: 2,
-    variant: { id: 202, display_price: '$24.95', purchasable: true, available: true }
-});
-
-if (selector.currentState !== 'exact_purchasable') {
-    console.error("State should be exact_purchasable after seq 2");
-    process.exit(2);
-}
-
-// Simulate sequence 1 delayed response arrives afterwards
-let seq1Discarded = false;
-const staleSeq1 = 1;
-if (staleSeq1 < selector.requestSequence) {
-    seq1Discarded = true;
-}
-
-if (!seq1Discarded) {
-    console.error("Seq 1 response was not flagged as stale!");
-    process.exit(3);
-}
-
-console.log("R107_SIMULATION_OK");
-NODE;
-
-        $tmpFile = tempnam(sys_get_temp_dir(), 't27_r107_') . '.mjs';
-        file_put_contents($tmpFile, $nodeTestScript);
-        exec("node $tmpFile 2>&1", $output, $exitCode);
-        unlink($tmpFile);
-
-        $this->assert($exitCode === 0, "Node.js out-of-order response simulation must exit 0: " . implode("\n", $output));
-        $this->assert(in_array("R107_SIMULATION_OK", $output), "Simulation must confirm R107_SIMULATION_OK");
-
-        echo " OK\n";
+        echo " OK (" . $stats['expected'] . " browser tests passed)\n";
     }
 
     /**

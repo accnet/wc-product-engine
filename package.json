@@ -12,5 +12,8 @@
     "check:guard": "node scripts/guard.mjs --all",
     "verify": "npm run check:docs && npm run check:plans && npm run check:guard",
     "test:task": "node scripts/test-runtime.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
   }
 }

@@ -8,3 +8,4 @@ artifacts/
 private-staging/
 *.log
 dist/
+test-results/
