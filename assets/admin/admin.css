@@ -1,0 +1,75 @@
+/* WC Product Engine — Admin Styles */
+
+.wpe-settings-wrap,
+.wpe-import-wrap {
+    max-width: 1200px;
+    margin: 20px 20px 0 0;
+}
+
+.wpe-settings-wrap h1,
+.wpe-import-wrap h1 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 23px;
+    font-weight: 600;
+}
+
+/* Dropzone */
+#wpe-dropzone.dragover {
+    border-color: #2271b1 !important;
+    background-color: #f0f6fc !important;
+}
+
+/* Metric boxes */
+.wpe-status-grid .card,
+.wpe-metric-box {
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Terminal Console */
+#wpe-terminal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#wpe-terminal-body::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+#wpe-terminal-body::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+#wpe-terminal-body::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+.wpe-log-success {
+    color: #4ec9b0;
+}
+
+.wpe-log-info {
+    color: #9cdcfe;
+}
+
+.wpe-log-warning {
+    color: #dcdcaa;
+}
+
+.wpe-log-error {
+    color: #f48771;
+}
+
+/* Progress bar pulse animation */
+@keyframes wpePulse {
+    0% { opacity: 0.85; }
+    50% { opacity: 1; }
+    100% { opacity: 0.85; }
+}
+
+.wpe-progress-pulsing {
+    animation: wpePulse 1.5s infinite;
+}

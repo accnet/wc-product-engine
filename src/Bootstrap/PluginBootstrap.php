@@ -56,6 +56,9 @@ class PluginBootstrap
         $this->registerRestRoutes();
         \WPE\Admin\OperationsPage::getInstance()->init();
 
+        add_action('admin_menu', [$this, 'registerAdminMenu']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
+
         \WPE\Compatibility\Gallery\AttachmentBridge::register();
         \WPE\Compatibility\Gallery\GalleryAdapter::register();
         \WPE\Compatibility\WooDataStore\PostShellBridge::getInstance()->boot();
@@ -219,6 +222,72 @@ class PluginBootstrap
         return $stores;
     }
 
+    public function registerAdminMenu(): void
+    {
+        add_menu_page(
+            __('WC Product Engine', 'wc-product-engine'),
+            __('WC Product Engine', 'wc-product-engine'),
+            'manage_woocommerce',
+            'wc-product-engine',
+            [\WPE\Admin\SettingsPage::class, 'render'],
+            'dashicons-performance',
+            56
+        );
+
+        add_submenu_page(
+            'wc-product-engine',
+            __('Cài đặt chung', 'wc-product-engine'),
+            __('Cài đặt chung', 'wc-product-engine'),
+            'manage_woocommerce',
+            'wc-product-engine',
+            [\WPE\Admin\SettingsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'wc-product-engine',
+            __('Import CSV Shopify', 'wc-product-engine'),
+            __('Import CSV Shopify', 'wc-product-engine'),
+            'wpe_import_products',
+            'wpe-shopify-import',
+            [\WPE\Admin\ShopifyImportPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'wc-product-engine',
+            __('Vận hành & Giám sát', 'wc-product-engine'),
+            __('Vận hành & Giám sát', 'wc-product-engine'),
+            'wpe_manage_operations',
+            'wpe-operations',
+            [\WPE\Admin\OperationsPage::getInstance(), 'renderPage']
+        );
+    }
+
+    public function enqueueAdminAssets(string $hook): void
+    {
+        if (strpos($hook, 'wc-product-engine') === false && strpos($hook, 'wpe-shopify-import') === false) {
+            return;
+        }
+
+        $cssUrl = plugins_url('assets/admin/admin.css', dirname(__DIR__, 1));
+        wp_enqueue_style('wpe-admin-css', $cssUrl, [], '1.2.0');
+
+        if (strpos($hook, 'wpe-shopify-import') !== false) {
+            $jsUrl = plugins_url('assets/admin/shopify-import.js', dirname(__DIR__, 1));
+            wp_enqueue_script('wpe-shopify-import-js', $jsUrl, ['jquery'], '1.2.0', true);
+            wp_localize_script('wpe-shopify-import-js', 'wpeImportConfig', [
+                'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
+                'nonce'   => wp_create_nonce('wp_rest'),
+            ]);
+        } else {
+            $jsUrl = plugins_url('assets/admin/settings.js', dirname(__DIR__, 1));
+            wp_enqueue_script('wpe-settings-js', $jsUrl, ['jquery'], '1.2.0', true);
+            wp_localize_script('wpe-settings-js', 'wpeAdminConfig', [
+                'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
+                'nonce'   => wp_create_nonce('wp_rest'),
+            ]);
+        }
+    }
+
     public function registerRestRoutes(): void
     {
         add_action('rest_api_init', function () {
@@ -230,6 +299,7 @@ class PluginBootstrap
                 },
             ]);
             \WPE\Application\ImportExport\CsvStager::getInstance()->registerRestRoutes();
+            \WPE\Admin\Rest\AdminApiController::getInstance()->registerRoutes();
         });
     }
 
