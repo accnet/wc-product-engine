@@ -39,7 +39,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T25 — Server resolver và allowed-values engine
 - [x] T26 — Resolver API và native AJAX variation adapter
 - [x] T27 — Selector UI, swatches và asynchronous behavior
-- [ ] T28 — Server add-to-cart validation và session restore
+- [x] T28 — Server add-to-cart validation và session restore
 
 ## 5. P3 — CSV interchange
 

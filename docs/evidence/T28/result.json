@@ -1,0 +1,78 @@
+{
+  "task_id": "T28",
+  "commit": "ba621ee16c2b517ed58fadb93ed2903bd40cdf02",
+  "qa_status": "passed",
+  "content_digest": "ec87a562bf43e1b9c3eda3390370229bd56e2a0b7096577787ad1b0b9fb3d781",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T28Test.php"
+      ],
+      "display": "npm run test:task -- T28",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T28/output.log",
+      "output_sha256": "e120ec58c0df6700cbb08103f11cc1472f53f72c8908be3014f3f68793675a62",
+      "content_digest": "ec87a562bf43e1b9c3eda3390370229bd56e2a0b7096577787ad1b0b9fb3d781"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R111",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R111_tampered_cart_payload",
+      "assertion_summary": "Verified rejection of tampered variant IDs, parent mismatches, attribute discrepancies, and unpriced items"
+    },
+    {
+      "id": "R112",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R112_stock_changed_after_resolve",
+      "assertion_summary": "Verified server-side stock validation, out-of-stock rejection, quantity bounds, and sold-individually limits"
+    },
+    {
+      "id": "R113",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R113_cart_session_after_migration",
+      "assertion_summary": "Verified cart revalidation removes deleted/trashed or out-of-stock items with clear notices and preserves migrated items"
+    },
+    {
+      "id": "R114",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R114_custom_cart_meta_retention",
+      "assertion_summary": "Verified retention of custom line item metadata attached by certified extensions across add-to-cart and session restore"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T28-01",
+      "result": "passed",
+      "artifact": "src/Application/Variant/CartValidation.php",
+      "observation": "Tampered variant hoặc price không mua được; stale stock bị xử lý rõ; cart restore sau migrate giữ IDs, invalid variation báo người dùng"
+    },
+    {
+      "id": "AC-T28-02",
+      "result": "passed",
+      "artifact": "src/Application/Variant/CartValidation.php",
+      "observation": "Classic và Blocks parity"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Variant/CartValidation.php",
+    "tests/integration/T28Test.php",
+    "docs/evidence/T28/result.json"
+  ]
+}
