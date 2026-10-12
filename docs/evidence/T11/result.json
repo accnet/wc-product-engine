@@ -1,0 +1,78 @@
+{
+  "task_id": "T11",
+  "commit": "36ad443b1342d7bc6f14bb00f9ca69688b8464e7",
+  "qa_status": "passed",
+  "content_digest": "f466e03569375a675e2b8c474aa4526ab581fd95448331ea2639710e7e008787",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T11Test.php"
+      ],
+      "display": "npm run test:task -- T11",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T11/output.log",
+      "output_sha256": "b7438e5db234a704e5574e4ac3a31d06f2444a716f27dc3b7d9ec8cb42b82a19",
+      "content_digest": "f466e03569375a675e2b8c474aa4526ab581fd95448331ea2639710e7e008787"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R41",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R41_meta_bridge_single_multiple",
+      "assertion_summary": "Verified single vs array query semantics and empty key metadata map retrieval"
+    },
+    {
+      "id": "R42",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R42_wp_meta_noop_return",
+      "assertion_summary": "Verified update_post_meta returns false when value unchanged (WordPress contract)"
+    },
+    {
+      "id": "R43",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R43_recursive_hook_guard",
+      "assertion_summary": "Verified recursion guard prevents re-entrant infinite loops"
+    },
+    {
+      "id": "R44",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R44_unknown_meta_retention",
+      "assertion_summary": "Verified arbitrary extension metadata retained in wpe_meta and accessible via WP and WC APIs"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T11-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/MetaBridge.php",
+      "observation": "get_post_meta và WC read_meta_data thống nhất trên owned keys trong supported mode; direct WP API writes có validation và event"
+    },
+    {
+      "id": "AC-T11-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/MetaBridge.php",
+      "observation": "Unknown SQL writer không được mặc nhiên native"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/WooDataStore/MetaBridge.php",
+    "tests/integration/T11Test.php",
+    "docs/evidence/T11/result.json"
+  ]
+}

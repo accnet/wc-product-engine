@@ -19,7 +19,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T07 — Options, values và combination integrity
 - [x] T08 — Media và metadata persistence
 - [x] T10 — Woo Product Data Stores
-- [ ] T11 — WC metadata và WordPress metadata bridge
+- [x] T11 — WC metadata và WordPress metadata bridge
 - [ ] T12 — Stock owner, reservation và order lifecycle
 - [ ] T13 — Post shell, factory, taxonomy và permalink bridge
 - [ ] T14 — WC admin, REST v3 và Store API adapters
