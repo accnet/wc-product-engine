@@ -14,7 +14,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 ## 3. P1 — Storage và Woo compatibility
 
 - [x] T05 — DDL và migration runner
-- [ ] T09 — Outbox, jobs, epoch và idempotency persistence
+- [x] T09 — Outbox, jobs, epoch và idempotency persistence
 - [ ] T06 — Product/variant repositories và aggregate commands
 - [ ] T07 — Options, values và combination integrity
 - [ ] T08 — Media và metadata persistence

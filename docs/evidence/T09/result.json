@@ -1,0 +1,85 @@
+{
+  "task_id": "T09",
+  "commit": "c6e26a35793a331d2ca9cc75b4212be725549ef7",
+  "qa_status": "passed",
+  "content_digest": "fb31a31d798d503f3f391820d02f06a9ab5533ddef8c6713370f065370c41fa4",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T09Test.php"
+      ],
+      "display": "npm run test:task -- T09",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T09/output.log",
+      "output_sha256": "b220b250bba9875b701e9299962a64dc71e3479e6a8a7740a938441674117d33",
+      "content_digest": "fb31a31d798d503f3f391820d02f06a9ab5533ddef8c6713370f065370c41fa4"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R32",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R32_outbox_commit_crash",
+      "assertion_summary": "Verified outbox events committed to database persist across crashes"
+    },
+    {
+      "id": "R33",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R33_duplicate_out_of_order_events",
+      "assertion_summary": "Verified monotonic revision fence rejects older or duplicate revisions without reverting data"
+    },
+    {
+      "id": "R34",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R34_worker_lease_takeover",
+      "assertion_summary": "Verified atomic worker lease takeover via CAS when previous lease expires"
+    },
+    {
+      "id": "R35",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R35_key_body_conflict",
+      "assertion_summary": "Verified idempotency key reuse with differing request payload triggers idempotency_conflict error"
+    },
+    {
+      "id": "R36",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R36_stale_epoch",
+      "assertion_summary": "Verified command with stale epoch is rejected by epoch control check"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T09-01",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/OutboxWorker.php",
+      "observation": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject"
+    },
+    {
+      "id": "AC-T09-02",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/OutboxWorker.php",
+      "observation": "Audit row includes actor_id and request_id and redacts sensitive credentials"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Infrastructure/Database/OutboxWorker.php",
+    "tests/integration/T09Test.php",
+    "docs/evidence/T09/result.json"
+  ]
+}
