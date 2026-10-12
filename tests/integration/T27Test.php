@@ -229,6 +229,7 @@ class T27Test
         );
 
         echo " OK (" . $stats['expected'] . " browser tests passed)\n";
+        echo "R211 (selector_stale_response_behavioral) PASSED: stale-response guard verified in a real browser, with mutation control.\n";
     }
 
     /**

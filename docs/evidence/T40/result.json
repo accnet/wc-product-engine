@@ -1,11 +1,11 @@
 {
   "task_id": "T40",
-  "commit": "1209195611819eecc1325b65d018375406d28815",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "0cf152b71ca6dc1dd7c1b292925c938cb36f7996099a77ad201115590b7e2ed1",
+  "content_digest": "3e45e89e40397c659002c294eb7b47b0542fa15fc8aa0be8278cb5645e22e619",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T40",
       "exit_code": 0,
       "output_path": "docs/evidence/T40/output.log",
-      "output_sha256": "e01e44ff91b3996d7060b47849c6a5a6b7018352bce23fdf4d3d63184a40d566",
-      "content_digest": "0cf152b71ca6dc1dd7c1b292925c938cb36f7996099a77ad201115590b7e2ed1"
+      "output_sha256": "3be395f81097739a4733f6339f0955de84c0b400a7ed29d0f3149557691e6d8c",
+      "content_digest": "3e45e89e40397c659002c294eb7b47b0542fa15fc8aa0be8278cb5645e22e619"
     }
   ],
   "regression_results": [
@@ -31,28 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R161_rollback_after_new_products_orders",
-      "assertion_summary": "Verified rollback after native product creation, edits, sales, and refunds preserves all updated values, stock counts, and WooCommerce order line item product dereferencing"
+      "assertion_summary": "Verified rollback after native product creation, edits, sales, and refunds preserves all updated values, stock counts, and WooCommerce order line item product dereferencing",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R161 passed: rollback after native create/edit/sale/refund preserved all data and order references"
+      }
     },
     {
       "id": "R162",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R162_rollback_inflight_checkout",
-      "assertion_summary": "Verified write barrier blocks incoming mutations and reliably drains in-flight checkout stock mutations before authority switch"
+      "assertion_summary": "Verified write barrier blocks incoming mutations and reliably drains in-flight checkout stock mutations before authority switch",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R162 passed: write barrier gracefully blocks and drains in-flight checkout stock mutations"
+      }
     },
     {
       "id": "R163",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R163_rollback_timeout_no_switch",
-      "assertion_summary": "Verified timed-out rollback cleanly aborts without switching authority or epoch, leaving native authority and write barrier cleanly intact"
+      "assertion_summary": "Verified timed-out rollback cleanly aborts without switching authority or epoch, leaving native authority and write barrier cleanly intact",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R163 passed: timed-out rollback safely aborted without switching authority or epoch"
+      }
     },
     {
       "id": "R164",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R164_deactivation_with_native_only_data",
-      "assertion_summary": "Verified deactivation safety gates block unsafe plugin deactivation when unprojected native-only data or active native authority is present"
+      "assertion_summary": "Verified deactivation safety gates block unsafe plugin deactivation when unprojected native-only data or active native authority is present",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R164 passed: deactivation safety verification blocks unsafe deactivation with native-only data"
+      }
+    },
+    {
+      "id": "R210",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R210_rollback_blocked_when_mirror_stopped",
+      "assertion_summary": "Task test output asserts requirement rollback_blocked_when_mirror_stopped",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "✓ R210 passed: authority switch to legacy is blocked while the legacy mirror is stopped and not reprojected"
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +92,34 @@
       "id": "AC-T40-01",
       "result": "passed",
       "artifact": "src/Application/Migration/RollbackRunner.php",
-      "observation": "Rollback test sau native create/edit/sale/refund giữ current data và order refs; timed-out rollback không switch authority"
+      "observation": "Rollback test sau native create/edit/sale/refund giữ current data và order refs; timed-out rollback không switch authority",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "✓ AC-T40-01 passed: rollback preserves current mutations and timed-out rollback preserves authority"
+      }
     },
     {
       "id": "AC-T40-02",
       "result": "passed",
       "artifact": "src/Application/Migration/RollbackRunner.php",
-      "observation": "Safe fallback không chỉ đổi flag về CPT stale"
+      "observation": "Safe fallback không chỉ đổi flag về CPT stale",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 21,
+        "text": "✓ AC-T40-02 passed: safe fallback strictly blocks simple flag flip to stale CPTs"
+      }
     },
     {
       "id": "AC-T40-03",
       "result": "passed",
       "artifact": "src/Application/Migration/RollbackRunner.php",
-      "observation": "Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code"
+      "observation": "Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "✓ AC-T40-03 passed: standalone recovery runbook and SQL script generated for forced deletion scenario"
+      }
     }
   ],
   "blockers": [],
@@ -80,5 +127,125 @@
     "src/Application/Migration/RollbackRunner.php",
     "tests/integration/T40Test.php",
     "docs/evidence/T40/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4040,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 37
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Migration/RollbackRunner.php": "50a13e025a70c596c956715d9d2bda7a5a5bc1a52a76ecff619d60666ff4ff06",
+    "tests/integration/T40Test.php": "b068f81dba26545ead1fb4ec5aa6fcd9685775c08285383fce742270753e8c7b"
+  }
 }

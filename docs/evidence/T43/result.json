@@ -1,11 +1,11 @@
 {
   "task_id": "T43",
-  "commit": "e8d8a83ff70d15436b6f3359cfa9966d07debb71",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "85d92dd23579d1c30369beb7ea8cf02ad572a971556d1b07fa62f3b2a1901b15",
+  "content_digest": "f1cd92ed476260750663466ed41d3a5edb3c68ec417183cb83488e760f4f0e5a",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T43/output.log",
       "output_sha256": "04d6de0fb72f6d7bb9726ae47b43246876dcce50b3afcef0fb2e9104439308f9",
-      "content_digest": "85d92dd23579d1c30369beb7ea8cf02ad572a971556d1b07fa62f3b2a1901b15"
+      "content_digest": "f1cd92ed476260750663466ed41d3a5edb3c68ec417183cb83488e760f4f0e5a"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R173_cutover_checkpoint_faults",
-      "assertion_summary": "Verified cutover execution through discrete sequential checkpoints; fault injection at pre-flip and post-flip checkpoints resumes or aborts with unambiguous single authority"
+      "assertion_summary": "Verified cutover execution through discrete sequential checkpoints; fault injection at pre-flip and post-flip checkpoints resumes or aborts with unambiguous single authority",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R173 passed: Checkpoint fault resilience and crash recovery guarantee unambiguous single authority"
+      }
     },
     {
       "id": "R174",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R174_epoch_worker_fence",
-      "assertion_summary": "Verified epoch worker fence strictly rejects stale workers carrying obsolete epochs and records security audit events"
+      "assertion_summary": "Verified epoch worker fence strictly rejects stale workers carrying obsolete epochs and records security audit events",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "✓ R174 passed: Epoch worker fence reliably rejects stale workers and protects authority boundary"
+      }
     },
     {
       "id": "R175",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R175_canary_halt",
-      "assertion_summary": "Verified canary metric monitoring halts cohort expansion on error rate or stock mismatch threshold breaches and exposes structured recovery options without automatic rollback"
+      "assertion_summary": "Verified canary metric monitoring halts cohort expansion on error rate or stock mismatch threshold breaches and exposes structured recovery options without automatic rollback",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 15,
+        "text": "✓ R175 passed: Canary metric evaluator reliably halts expansion and exposes recovery runbook"
+      }
     },
     {
       "id": "R176",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R176_no_partial_parent_variant_cutover",
-      "assertion_summary": "Verified parent product and all child variants and stock owners flip authority and epoch atomically in a single transaction; partial cutovers are strictly rejected"
+      "assertion_summary": "Verified parent product and all child variants and stock owners flip authority and epoch atomically in a single transaction; partial cutovers are strictly rejected",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "✓ R176 passed: Atomic transaction enforces complete parent + variants + stock cutover with zero partial states"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T43-01",
       "result": "passed",
       "artifact": "src/Application/Rollout/CutoverRunner.php",
-      "observation": "Crash mỗi checkpoint resume/abort có nguồn chuẩn rõ; old workers reject; no checkout stock double mutation"
+      "observation": "Crash mỗi checkpoint resume/abort có nguồn chuẩn rõ; old workers reject; no checkout stock double mutation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "✓ AC-T43-01 passed: Crash resilience and strict idempotency prevent double mutation under checkout retry load"
+      }
     },
     {
       "id": "AC-T43-02",
       "result": "passed",
       "artifact": "src/Application/Rollout/CutoverRunner.php",
-      "observation": "Error/mismatch threshold tự halt mở rộng và expose recovery, không tự rollback dữ liệu chưa mirror-ready"
+      "observation": "Error/mismatch threshold tự halt mở rộng và expose recovery, không tự rollback dữ liệu chưa mirror-ready",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "✓ AC-T43-02 passed: Error/mismatch threshold halts rollout expansion safely without corrupting native data"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,125 @@
     "src/Application/Rollout/CutoverRunner.php",
     "tests/integration/T43Test.php",
     "docs/evidence/T43/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4015,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 12
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Rollout/CutoverRunner.php": "9aa36baab66b3a9fe838a6f4dcba4b0190f6d8be02488bacae6f36af15a7589b",
+    "tests/integration/T43Test.php": "d37d4dadd4b18c21d74a3cb7cc106e7c209d6b7f9394d3b7870a38b8a567b420"
+  }
 }

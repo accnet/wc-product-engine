@@ -1,11 +1,11 @@
 {
   "task_id": "T36",
-  "commit": "a72eac5db6499bce3ef94f616ec00a29bb8736dd",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "b9f56c052f61be306d954a696716d62c809b04cb4b24def09a76f97fdeb3c1b2",
+  "content_digest": "e2ead47fe6a43b6d19c301345145142f6dd8addb151cb981a7d75248e089a322",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T36/output.log",
       "output_sha256": "a361124a6c916833100c46c81e1f6f25dcc86fce0e30d4bda3fe5dec1885453e",
-      "content_digest": "b9f56c052f61be306d954a696716d62c809b04cb4b24def09a76f97fdeb3c1b2"
+      "content_digest": "e2ead47fe6a43b6d19c301345145142f6dd8addb151cb981a7d75248e089a322"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R145_cross_format_subset",
-      "assertion_summary": "Verified common canonical business subset (SKU, title, price, stock, options, images) matches across Woo CSV and Shopify CSV via Engine"
+      "assertion_summary": "Verified common canonical business subset (SKU, title, price, stock, options, images) matches across Woo CSV and Shopify CSV via Engine",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R145 passed: Canonical business subset matches across Woo and Shopify formats."
+      }
     },
     {
       "id": "R146",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R146_loss_not_hidden",
-      "assertion_summary": "Verified unsupported fields (>3 options, digital downloads, metadata) are explicitly listed in loss reports and not masked as pass after normalize"
+      "assertion_summary": "Verified unsupported fields (>3 options, digital downloads, metadata) are explicitly listed in loss reports and not masked as pass after normalize",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "R146 passed: Unsupported engine fields explicitly documented in loss reports and not masked as pass."
+      }
     },
     {
       "id": "R147",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R147_reimport_idempotent",
-      "assertion_summary": "Verified re-importing exported CSVs into engine is completely idempotent with zero duplicate products or variants"
+      "assertion_summary": "Verified re-importing exported CSVs into engine is completely idempotent with zero duplicate products or variants",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "R147 passed: Re-importing exported CSV into engine is completely idempotent."
+      }
     },
     {
       "id": "R148",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R148_image_position_alt_and_variant_mapping",
-      "assertion_summary": "Verified image order, alt text, and variant primary images; explained row count differences due to Shopify image-only rows"
+      "assertion_summary": "Verified image order, alt text, and variant primary images; explained row count differences due to Shopify image-only rows",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "R148 passed: Image position, alt text, and row count divergence verified."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T36-01",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
-      "observation": "Không tính unsupported fields là pass sau normalize; reports chỉ rõ local vs live verification"
+      "observation": "Không tính unsupported fields là pass sau normalize; reports chỉ rõ local vs live verification",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "AC-T36-01 passed: Reports explicitly distinguish local contract pass from live Shopify verification pending."
+      }
     },
     {
       "id": "AC-T36-02",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
-      "observation": "File URL images truy cập public ổn định; row count khác do image-only rows được explain bằng canonical diff"
+      "observation": "File URL images truy cập public ổn định; row count khác do image-only rows được explain bằng canonical diff",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "AC-T36-02 passed: Golden fixtures generated and public image handling verified."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,127 @@
     "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
     "tests/integration/T36Test.php",
     "docs/evidence/T36/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4012,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 346,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1158,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 9,
+      "wp_wpe_object_state": 4,
+      "wp_wpe_outbox": 9
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/Csv/Shopify/CsvParityHarness.php": "da99ddffe7273ce10ae95c77fbe5733eb2d41f655fdac6464bc58e7b16807ae2",
+    "tests/integration/T36Test.php": "aec326120d08924491d79ba4fd9bb5b01ac4d9194014cb62d99d909c57afea68"
+  }
 }

@@ -690,8 +690,22 @@
           "scripts/rerun-evidence.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+          "content_digest": "b916143e9f2450b57ca4e1f249ba4af6a00670d0695639e8651404839c8d7cea",
+          "output_sha256": "8789cc5940c979ecf6fbce92b2c7411c18b16c4f773add9c0553f2d5378a1c45",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791820817688-2b718abe.log",
+          "time": "2026-10-12T16:00:17.688Z"
+        }
+      ],
+      "started_at": "2026-10-12T15:36:24.110Z"
     },
     {
       "id": "P001.8",

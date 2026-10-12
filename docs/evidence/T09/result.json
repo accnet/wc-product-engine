@@ -1,11 +1,11 @@
 {
   "task_id": "T09",
-  "commit": "c6e26a35793a331d2ca9cc75b4212be725549ef7",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "fb31a31d798d503f3f391820d02f06a9ab5533ddef8c6713370f065370c41fa4",
+  "content_digest": "a6cfd98be557d5f9b4b7b94cedb21be5c8b2a48812a3df6a1e8f261e0580deab",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T09",
       "exit_code": 0,
       "output_path": "docs/evidence/T09/output.log",
-      "output_sha256": "b220b250bba9875b701e9299962a64dc71e3479e6a8a7740a938441674117d33",
-      "content_digest": "fb31a31d798d503f3f391820d02f06a9ab5533ddef8c6713370f065370c41fa4"
+      "output_sha256": "4ce72c5af30f76ef41f49289caef7255c884153294b67be67e9a662f4f2c5c8e",
+      "content_digest": "a6cfd98be557d5f9b4b7b94cedb21be5c8b2a48812a3df6a1e8f261e0580deab"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R32_outbox_commit_crash",
-      "assertion_summary": "Verified outbox events committed to database persist across crashes"
+      "assertion_summary": "Verified outbox events committed to database persist across crashes",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "R32 (outbox_commit_crash): PASSED"
+      }
     },
     {
       "id": "R33",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R33_duplicate_out_of_order_events",
-      "assertion_summary": "Verified monotonic revision fence rejects older or duplicate revisions without reverting data"
+      "assertion_summary": "Verified monotonic revision fence rejects older or duplicate revisions without reverting data",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 26,
+        "text": "R33 (duplicate_out_of_order_events): PASSED"
+      }
     },
     {
       "id": "R34",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R34_worker_lease_takeover",
-      "assertion_summary": "Verified atomic worker lease takeover via CAS when previous lease expires"
+      "assertion_summary": "Verified atomic worker lease takeover via CAS when previous lease expires",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "R34 (worker_lease_takeover): PASSED"
+      }
     },
     {
       "id": "R35",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R35_key_body_conflict",
-      "assertion_summary": "Verified idempotency key reuse with differing request payload triggers idempotency_conflict error"
+      "assertion_summary": "Verified idempotency key reuse with differing request payload triggers idempotency_conflict error",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 28,
+        "text": "R35 (key_body_conflict): PASSED"
+      }
     },
     {
       "id": "R36",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R36_stale_epoch",
-      "assertion_summary": "Verified command with stale epoch is rejected by epoch control check"
+      "assertion_summary": "Verified command with stale epoch is rejected by epoch control check",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 29,
+        "text": "R36 (stale_epoch): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -67,13 +92,19 @@
       "id": "AC-T09-01",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/OutboxWorker.php",
-      "observation": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject"
+      "observation": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T09-02",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/OutboxWorker.php",
-      "observation": "Audit row includes actor_id and request_id and redacts sensitive credentials"
+      "observation": "Audit row includes actor_id and request_id and redacts sensitive credentials",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 30,
+        "text": "AC-T09-02 (audit_actor_request_id): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -81,5 +112,128 @@
     "src/Infrastructure/Database/OutboxWorker.php",
     "tests/integration/T09Test.php",
     "docs/evidence/T09/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4004,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 11,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 343,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1151,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 1,
+      "wp_wpe_control": 1,
+      "wp_wpe_object_state": 1,
+      "wp_wpe_outbox": 2
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 1
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Infrastructure/Database/OutboxWorker.php": "d986a6e76b70602bacfc8afa0704244666031320fc6de64e7e9719b7c4d22fd6",
+    "tests/integration/T09Test.php": "9e910f521ce6e4b93d4a5ffbd0eb70212641bff70d1defcc17369634f78c48ee"
+  }
 }

@@ -34,12 +34,42 @@ class T09Test
     {
         echo "=== Running T09 Integration Tests ===\n";
 
-        $r32 = $this->testOutboxCommitCrash();
-        $r33 = $this->testDuplicateOutOfOrderEvents();
-        $r34 = $this->testWorkerLeaseTakeover();
-        $r35 = $this->testKeyBodyConflict();
-        $r36 = $this->testStaleEpoch();
-        $ac02 = $this->testAuditActorRequestId();
+        $table = $this->wpdb->prefix . 'wpe_outbox';
+        $parked = $this->wpdb->get_results(
+            "SELECT event_id, state FROM {$table} WHERE state IN ('pending','failed','processing')",
+            ARRAY_A
+        );
+        $byState = [];
+        foreach ($parked as $row) {
+            $byState[$row['state']][] = $row['event_id'];
+        }
+        foreach ($byState as $state => $ids) {
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $in = implode(',', array_map(fn($id) => "'" . esc_sql($id) . "'", $chunk));
+                $this->wpdb->query("UPDATE {$table} SET state='test_parked' WHERE event_id IN ({$in})");
+            }
+        }
+        echo "[isolation] parked " . count($parked) . " pre-existing outbox events for the test.\n";
+
+        try {
+            $r32 = $this->testOutboxCommitCrash();
+            $r33 = $this->testDuplicateOutOfOrderEvents();
+            $r34 = $this->testWorkerLeaseTakeover();
+            $r35 = $this->testKeyBodyConflict();
+            $r36 = $this->testStaleEpoch();
+            $ac02 = $this->testAuditActorRequestId();
+        } finally {
+            foreach ($byState as $state => $ids) {
+                foreach (array_chunk($ids, 500) as $chunk) {
+                    $in = implode(',', array_map(fn($id) => "'" . esc_sql($id) . "'", $chunk));
+                    $this->wpdb->query($this->wpdb->prepare(
+                        "UPDATE {$table} SET state=%s WHERE state='test_parked' AND event_id IN ({$in})",
+                        $state
+                    ));
+                }
+            }
+            echo "[isolation] restored " . count($parked) . " pre-existing outbox events.\n";
+        }
 
         echo "\n=== Test Summary ===\n";
         echo "R32 (outbox_commit_crash): " . ($r32 ? "PASSED" : "FAILED") . "\n";

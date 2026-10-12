@@ -1,11 +1,11 @@
 {
   "task_id": "T38",
-  "commit": "d12a3aee9280373624c6fd23382ae9c0ceaada4e",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "6d5413a447322334793720aaea130bd49dddb258c9b53acdeb8c6bb7744ebd89",
+  "content_digest": "a8ee54aa3916a4210168e8a162574597696a71d17ac39ef13fb74e3fd36f5442",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T38/output.log",
       "output_sha256": "42cdcbdb1d00542a927d636b94cda9149c6913ba365294c89198871d7b58c019",
-      "content_digest": "6d5413a447322334793720aaea130bd49dddb258c9b53acdeb8c6bb7744ebd89"
+      "content_digest": "a8ee54aa3916a4210168e8a162574597696a71d17ac39ef13fb74e3fd36f5442"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R153_backfill_resume",
-      "assertion_summary": "Verified backfill pause and resume checkpointing without dropping or duplicating product or variation aggregates"
+      "assertion_summary": "Verified backfill pause and resume checkpointing without dropping or duplicating product or variation aggregates",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R153 passed: backfill paused and resumed successfully with zero lost or duplicated records"
+      }
     },
     {
       "id": "R154",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R154_backfill_concurrent_edit_delete",
-      "assertion_summary": "Verified revision fence preserves fresh concurrent edits and trash tombstones during keyset backfill execution"
+      "assertion_summary": "Verified revision fence preserves fresh concurrent edits and trash tombstones during keyset backfill execution",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R154 passed: concurrent edits and deletes correctly preserved under revision fence"
+      }
     },
     {
       "id": "R155",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R155_no_full_catalog_memory",
-      "assertion_summary": "Verified strictly keyset pagination (no OFFSET), zero full catalog hydration via wc_get_products, and O(1) bounded memory consumption"
+      "assertion_summary": "Verified strictly keyset pagination (no OFFSET), zero full catalog hydration via wc_get_products, and O(1) bounded memory consumption",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R155 passed: strictly keyset pagination (no OFFSET), zero full catalog hydration, bounded memory"
+      }
     },
     {
       "id": "R156",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R156_shadow_diff_detects_gap",
-      "assertion_summary": "Verified shadow diff detects missing products, price/status field mismatches, and variation count gaps, reaching quiescence after repair"
+      "assertion_summary": "Verified shadow diff detects missing products, price/status field mismatches, and variation count gaps, reaching quiescence after repair",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R156 passed: shadow diff accurately identified missing products, price mismatches, and variation count gaps"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T38-01",
       "result": "passed",
       "artifact": "src/Application/Migration/BackfillRunner.php",
-      "observation": "Resume không mất/duplicate aggregate; source counts và hashes khớp semantic snapshot, trừ differences approved"
+      "observation": "Resume không mất/duplicate aggregate; source counts và hashes khớp semantic snapshot, trừ differences approved",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "✓ AC-T38-01 passed: resume preserved exact source counts, zero duplicates, and validated semantic hashes"
+      }
     },
     {
       "id": "AC-T38-02",
       "result": "passed",
       "artifact": "src/Application/Migration/BackfillRunner.php",
-      "observation": "Backfill write load giữ storefront trong budget T47"
+      "observation": "Backfill write load giữ storefront trong budget T47",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ AC-T38-02 passed: adaptive pacing and throttle metrics maintained storefront write budget"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,123 @@
     "src/Application/Migration/BackfillRunner.php",
     "tests/integration/T38Test.php",
     "docs/evidence/T38/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Migration/BackfillRunner.php": "42de27e0682e4f629e30a24b064b90cd7e29589e35f016019a65fb44fa693763",
+    "tests/integration/T38Test.php": "94cbfa8833c326b3a6f1dfc18c268da34b3943fb713e1daa4b069212dd61425b"
+  }
 }

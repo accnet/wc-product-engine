@@ -1,11 +1,11 @@
 {
   "task_id": "T25",
-  "commit": "dcf5b5102b81125ca32500100d6eebced0a3a35c",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "b2f12d2f0341cbbb6bf212404f4a987494b1c40c78b5a829bd619e7a2a47603f",
+  "content_digest": "c4045cfe94d1a96bab670e10d01539d1708dd992db22a0836d496f47b5e63595",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T25/output.log",
       "output_sha256": "e7ff25e1ebf29723565433970e2ab65762af6bb9d4f05747d69cfbcfe4f81faa",
-      "content_digest": "b2f12d2f0341cbbb6bf212404f4a987494b1c40c78b5a829bd619e7a2a47603f"
+      "content_digest": "c4045cfe94d1a96bab670e10d01539d1708dd992db22a0836d496f47b5e63595"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R99_partial_allowed_values",
-      "assertion_summary": "Verified partial selection allowed values from compatible variants without Cartesian products"
+      "assertion_summary": "Verified partial selection allowed values from compatible variants without Cartesian products",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- testR99_partial_allowed_values... OK"
+      }
     },
     {
       "id": "R100",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R100_wildcard_precedence_diff",
-      "assertion_summary": "Verified wildcard ANY precedence matching WooCommerce baseline order"
+      "assertion_summary": "Verified wildcard ANY precedence matching WooCommerce baseline order",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- testR100_wildcard_precedence_diff... OK"
+      }
     },
     {
       "id": "R101",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R101_stock_price_revision",
-      "assertion_summary": "Verified stock inheritance, scheduled price, free vs missing price, and revision echo"
+      "assertion_summary": "Verified stock inheritance, scheduled price, free vs missing price, and revision echo",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- testR101_stock_price_revision... OK"
+      }
     },
     {
       "id": "R102",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R102_unknown_option_wrong_product",
-      "assertion_summary": "Verified graceful rejection of unknown options, invalid values, and non-variable products"
+      "assertion_summary": "Verified graceful rejection of unknown options, invalid values, and non-variable products",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- testR102_unknown_option_wrong_product... OK"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T25-01",
       "result": "passed",
       "artifact": "src/Application/Variant/VariantResolver.php",
-      "observation": "None/partial/exact/ambiguous states đúng fixtures, inherited stock đúng; free vs missing price khác"
+      "observation": "None/partial/exact/ambiguous states đúng fixtures, inherited stock đúng; free vs missing price khác",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- testAC_T25_01_StatesAndFixtures... OK"
+      }
     },
     {
       "id": "AC-T25-02",
       "result": "passed",
       "artifact": "src/Application/Variant/VariantResolver.php",
-      "observation": "Duplicate overlapping Any được report, không random selection"
+      "observation": "Duplicate overlapping Any được report, không random selection",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- testAC_T25_02_DuplicateOverlappingAnyReported... OK"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,125 @@
     "src/Application/Variant/VariantResolver.php",
     "tests/integration/T25Test.php",
     "docs/evidence/T25/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 261,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_posts": 19
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 19,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Variant/VariantResolver.php": "771793f1e6ba8eac1efde9d289319697c5cb59be92012c3369324d8bb1c081a0",
+    "tests/integration/T25Test.php": "3a5306ee0e44a2e1c07317c436f14a8556cf03802ac41bb9596007f0c8857c3d"
+  }
 }

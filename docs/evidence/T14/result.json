@@ -1,11 +1,11 @@
 {
   "task_id": "T14",
-  "commit": "32d47e462eb843fc670e28b7a39dae27883726eb",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "306b98f537eab163c31fa6fec8cc0ff986cefebaa4bf792fd6ef2c89fb74349d",
+  "content_digest": "e52b94881c5d0c0b6a39e105ad82742ed4b72f6f353aea4fcd188d3c6b948c6c",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T14/output.log",
       "output_sha256": "1579464948b2cea8cee302184177a96f333b988a47a231ec593897305e680920",
-      "content_digest": "306b98f537eab163c31fa6fec8cc0ff986cefebaa4bf792fd6ef2c89fb74349d"
+      "content_digest": "e52b94881c5d0c0b6a39e105ad82742ed4b72f6f353aea4fcd188d3c6b948c6c"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R55_admin_crud_bulk_duplicate",
-      "assertion_summary": "Verified admin CRUD, quick edit, bulk status and trash actions, and product duplication with shell and SKU"
+      "assertion_summary": "Verified admin CRUD, quick edit, bulk status and trash actions, and product duplication with shell and SKU",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "R55 (admin_crud_bulk_duplicate): PASSED"
+      }
     },
     {
       "id": "R56",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R56_wc_rest_product_variation_roundtrip",
-      "assertion_summary": "Verified full WC REST v3 product and variation lifecycle persisted in native database"
+      "assertion_summary": "Verified full WC REST v3 product and variation lifecycle persisted in native database",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "R56 (wc_rest_product_variation_roundtrip): PASSED"
+      }
     },
     {
       "id": "R57",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R57_store_api_no_private_leak",
-      "assertion_summary": "Verified Store API and public response sanitation preventing draft, private, and cost data leakage"
+      "assertion_summary": "Verified Store API and public response sanitation preventing draft, private, and cost data leakage",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "R57 (store_api_no_private_leak): PASSED"
+      }
     },
     {
       "id": "R58",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R58_object_capability_denial",
-      "assertion_summary": "Verified object-level capability checks and denial for unauthorized actors"
+      "assertion_summary": "Verified object-level capability checks and denial for unauthorized actors",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "R58 (object_capability_denial): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T14-01",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/AdminApiBridge.php",
-      "observation": "Tạo/sửa/xóa qua WC admin và WC REST tồn tại cùng dữ liệu engine; public API không lộ draft/private/cost"
+      "observation": "Tạo/sửa/xóa qua WC admin và WC REST tồn tại cùng dữ liệu engine; public API không lộ draft/private/cost",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "PASSED: AC-T14-01 verified."
+      }
     },
     {
       "id": "AC-T14-02",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/AdminApiBridge.php",
-      "observation": "Unsupported query chỉ fallback ở legacy authority, không query stale native postmeta"
+      "observation": "Unsupported query chỉ fallback ở legacy authority, không query stale native postmeta",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "PASSED: AC-T14-02 verified."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,125 @@
     "src/Compatibility/WooDataStore/AdminApiBridge.php",
     "tests/integration/T14Test.php",
     "docs/evidence/T14/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4014,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 11
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WooDataStore/AdminApiBridge.php": "ef64c9405819abee3c5e71d1ef54b6cea67bca272ffc8777496ea569e1057dec",
+    "tests/integration/T14Test.php": "ed6c94b4e892b3a79394cd494b171c1e100eb6c87301b82649547d1c20958b8d"
+  }
 }

@@ -1,11 +1,11 @@
 {
   "task_id": "T34",
-  "commit": "f57a91b567e496876b482b4e684aa59b4ce51087",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "24adea025ee9348c3e6130cde68740dacfe1667a59252534f5989e81d6261af4",
+  "content_digest": "9370bd7c6bc6552aa62ea277b313ce31715094ea612cf74e7c5efdf6d9ca7b11",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T34/output.log",
       "output_sha256": "c39657348b0123948ea4fdfa0303b42954bd7fb8b170239bac33edd09ad7dd07",
-      "content_digest": "24adea025ee9348c3e6130cde68740dacfe1667a59252534f5989e81d6261af4"
+      "content_digest": "9370bd7c6bc6552aa62ea277b313ce31715094ea612cf74e7c5efdf6d9ca7b11"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R136_shopify_header_aliases",
-      "assertion_summary": "Verified current and legacy Shopify header aliases produce identical canonical domain subsets"
+      "assertion_summary": "Verified current and legacy Shopify header aliases produce identical canonical domain subsets",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R136 passed: Current and legacy Shopify headers produce identical canonical domain subsets."
+      }
     },
     {
       "id": "R137",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R137_image_only_row_no_variant",
-      "assertion_summary": "Verified image-only rows attach gallery images to parent without creating redundant variations"
+      "assertion_summary": "Verified image-only rows attach gallery images to parent without creating redundant variations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "R137 passed: Image-only rows add gallery images without creating redundant variations."
+      }
     },
     {
       "id": "R138",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R138_compare_at_units",
-      "assertion_summary": "Verified Compare-at pricing calculation rules and weight unit conversions"
+      "assertion_summary": "Verified Compare-at pricing calculation rules and weight unit conversions",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "R138 passed: Compare-at pricing rules and weight conversions verified."
+      }
     },
     {
       "id": "R139",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R139_handle_idempotency_and_option_change",
-      "assertion_summary": "Verified handle grouping idempotency and missing vs blank column overwrite policies"
+      "assertion_summary": "Verified handle grouping idempotency and missing vs blank column overwrite policies",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "R139 passed: Handle idempotency and missing vs blank overwrite policies verified."
+      }
     },
     {
       "id": "R140",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R140_unsupported_shopify_fields",
-      "assertion_summary": "Verified unsupported fields (>3 options, locations, metafields) captured in structured loss report"
+      "assertion_summary": "Verified unsupported fields (>3 options, locations, metafields) captured in structured loss report",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "R140 passed: Unsupported Shopify fields and extra options captured in loss report."
+      }
     }
   ],
   "acceptance": [
@@ -67,13 +92,15 @@
       "id": "AC-T34-01",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
-      "observation": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation"
+      "observation": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T34-02",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
-      "observation": "Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product"
+      "observation": "Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -81,5 +108,127 @@
     "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
     "tests/integration/T34Test.php",
     "docs/evidence/T34/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4015,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 346,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1161,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 12,
+      "wp_wpe_object_state": 4,
+      "wp_wpe_outbox": 12
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/Csv/Shopify/ShopifyImporter.php": "4f586851403a62b4e923fe67ce11fd9c86901217604e5b888b8b270d05de70f0",
+    "tests/integration/T34Test.php": "af328c0722400c2ab59e5ad230efd042cd58d73dd1be91c23bf36391856c2829"
+  }
 }

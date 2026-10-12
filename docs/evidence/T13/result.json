@@ -1,11 +1,11 @@
 {
   "task_id": "T13",
-  "commit": "26b9732e2b8f439619811a48d960d770475b99fc",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "a3cc895a7afbc94a427534b348f0154f382cbc4006ced4d6db70061476b6e4e6",
+  "content_digest": "1033322896cd8d53ea7b94d755438384a4f5b35811a1c694b1e3e223e669471b",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T13/output.log",
       "output_sha256": "c5138c364936c081f5139d0c7017a462ae0a8e4799dec760e4d9948e3618676c",
-      "content_digest": "a3cc895a7afbc94a427534b348f0154f382cbc4006ced4d6db70061476b6e4e6"
+      "content_digest": "1033322896cd8d53ea7b94d755438384a4f5b35811a1c694b1e3e223e669471b"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R51_permalink_factory_ids",
-      "assertion_summary": "Verified real ID allocation, factory hydration, permalink slug updates with 301 redirect tracking, and variation discovery"
+      "assertion_summary": "Verified real ID allocation, factory hydration, permalink slug updates with 301 redirect tracking, and variation discovery",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "R51 (permalink_factory_ids): PASSED"
+      }
     },
     {
       "id": "R52",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R52_taxonomy_hierarchy",
-      "assertion_summary": "Verified hierarchical category and tag assignment, ancestral hierarchy, and category product counts synchronization"
+      "assertion_summary": "Verified hierarchical category and tag assignment, ancestral hierarchy, and category product counts synchronization",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "R52 (taxonomy_hierarchy): PASSED"
+      }
     },
     {
       "id": "R53",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R53_reviews_rating_projection",
-      "assertion_summary": "Verified review comments, rating distributions, and average rating projection to product properties"
+      "assertion_summary": "Verified review comments, rating distributions, and average rating projection to product properties",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "R53 (reviews_rating_projection): PASSED"
+      }
     },
     {
       "id": "R54",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R54_nonproduct_queries_unchanged",
-      "assertion_summary": "Verified non-product WP_Query completely untouched and product shell stores zero canonical stock or price"
+      "assertion_summary": "Verified non-product WP_Query completely untouched and product shell stores zero canonical stock or price",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "R54 (nonproduct_queries_unchanged): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T13-01",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/PostShellBridge.php",
-      "observation": "Permalink cũ/new slug redirects và variation discovery ổn; get_post_type/reviews/category counts phù hợp policy"
+      "observation": "Permalink cũ/new slug redirects và variation discovery ổn; get_post_type/reviews/category counts phù hợp policy",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "PASSED: AC-T13-01 verified."
+      }
     },
     {
       "id": "AC-T13-02",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/PostShellBridge.php",
-      "observation": "Non-product posts không bị can thiệp; shell-only không chứa stock/price canonical"
+      "observation": "Non-product posts không bị can thiệp; shell-only không chứa stock/price canonical",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "PASSED: AC-T13-02 verified."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,125 @@
     "src/Compatibility/WooDataStore/PostShellBridge.php",
     "tests/integration/T13Test.php",
     "docs/evidence/T13/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4010,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 7
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WooDataStore/PostShellBridge.php": "ab17999cd6d7bdae50e903eb9f44bfae4d94ae1f627f848fe7e2bc37ec6a1417",
+    "tests/integration/T13Test.php": "37b0cc9767f224e67f50b5439c0becd6927ea6c4f491c31f83fb1e5a4fce0b3d"
+  }
 }

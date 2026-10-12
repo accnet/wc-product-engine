@@ -1,11 +1,11 @@
 {
   "task_id": "T23",
-  "commit": "b51d3eb2fff33548b8717f96d1f0fc8ac420dab2",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "2ab48eb8de9f369a5a51269e79fb9d1f6a079ee4683841f2fdb55001707db5b3",
+  "content_digest": "6b5ab060190b8bbded4aa9f18edd5e07293aeded691d23754483e80afda33833",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T23/output.log",
       "output_sha256": "7e17b97d05fbcd125c3cd13571bc7de236c5258dd27bd44f7a781ff846faae99",
-      "content_digest": "2ab48eb8de9f369a5a51269e79fb9d1f6a079ee4683841f2fdb55001707db5b3"
+      "content_digest": "6b5ab060190b8bbded4aa9f18edd5e07293aeded691d23754483e80afda33833"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R91_classic_gallery_zoom_lightbox",
-      "assertion_summary": "Verified coherent zoom, lightbox, swipe, and thumbnail gallery markup"
+      "assertion_summary": "Verified coherent zoom, lightbox, swipe, and thumbnail gallery markup",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- testR91_classic_gallery_zoom_lightbox... OK"
+      }
     },
     {
       "id": "R92",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R92_variant_image_reset",
-      "assertion_summary": "Verified variation image resets restoring parent gallery state"
+      "assertion_summary": "Verified variation image resets restoring parent gallery state",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- testR92_variant_image_reset... OK"
+      }
     },
     {
       "id": "R93",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R93_multiple_variant_images",
-      "assertion_summary": "Verified multi-image variation gallery extension"
+      "assertion_summary": "Verified multi-image variation gallery extension",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- testR93_multiple_variant_images... OK"
+      }
     },
     {
       "id": "R94",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R94_missing_image_fallback",
-      "assertion_summary": "Verified deterministic fallback for variations lacking images"
+      "assertion_summary": "Verified deterministic fallback for variations lacking images",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- testR94_missing_image_fallback... OK"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T23-01",
       "result": "passed",
       "artifact": "src/Compatibility/Gallery/GalleryAdapter.php",
-      "observation": "Zoom/lightbox/swipe/keyboard và chọn/reset variation chạy; kích thước srcset đúng, không thumbnail ảnh A full_src ảnh B"
+      "observation": "Zoom/lightbox/swipe/keyboard và chọn/reset variation chạy; kích thước srcset đúng, không thumbnail ảnh A full_src ảnh B",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- testAC_T23_01_CoherentGalleryZoomAndSelection... OK"
+      }
     },
     {
       "id": "AC-T23-02",
       "result": "passed",
       "artifact": "src/Compatibility/Gallery/GalleryAdapter.php",
-      "observation": "Không cần sửa WC template Core"
+      "observation": "Không cần sửa WC template Core",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- testAC_T23_02_NoCoreTemplateModification... OK"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,126 @@
     "src/Compatibility/Gallery/GalleryAdapter.php",
     "tests/integration/T23Test.php",
     "docs/evidence/T23/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 256,
+      "wp_postmeta": 2605
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_posts": 14,
+      "wp_postmeta": 21
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 7,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/Gallery/GalleryAdapter.php": "14e99664a4a7980b534e5e3ab44236d5c8f63d413595c2a5f8037bcda1294179",
+    "tests/integration/T23Test.php": "c4adc82baec27060b37ac9716032bee13b85d50a835d1108ddf9ec3eed824411"
+  }
 }

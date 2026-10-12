@@ -1,11 +1,11 @@
 {
   "task_id": "T48",
-  "commit": "944fee4657d0ade535d7ce01a1d722a8fa05e3ff",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "a61de09a1046eb3d8b11b292825d8552e4f85296b787311dbb59d7cbe9419c66",
+  "content_digest": "fac318d462454db682b62bae362277875640c1fe08f62e9e930aa786961c03a0",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T48/output.log",
       "output_sha256": "b0f8905ec6d619d74ec60d8b10acd0b0526e68470d1ff0f2115d95976a2030b3",
-      "content_digest": "a61de09a1046eb3d8b11b292825d8552e4f85296b787311dbb59d7cbe9419c66"
+      "content_digest": "fac318d462454db682b62bae362277875640c1fe08f62e9e930aa786961c03a0"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R194_full_mode_matrix",
-      "assertion_summary": "Verified operational mode matrix (legacy, indexed, native_bridge, full_native) across product catalog, inventory, and order lifecycle with zero critical semantic diffs"
+      "assertion_summary": "Verified operational mode matrix (legacy, indexed, native_bridge, full_native) across product catalog, inventory, and order lifecycle with zero critical semantic diffs",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R194 passed: Full operational matrix (legacy, indexed, native_bridge, full_native) passed with 0 critical semantic diffs"
+      }
     },
     {
       "id": "R195",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R195_fault_injection_recovery",
-      "assertion_summary": "Verified atomic rollback on aborted stock transactions, worker crash lease recovery without checkpoint loss, dead letter queue routing for poisoned outbox events, and epoch fence write blocking"
+      "assertion_summary": "Verified atomic rollback on aborted stock transactions, worker crash lease recovery without checkpoint loss, dead letter queue routing for poisoned outbox events, and epoch fence write blocking",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ R195 passed: All injected faults safely contained with zero data corruption or unhandled errors"
+      }
     },
     {
       "id": "R196",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R196_api_auth_injection_ssrf",
-      "assertion_summary": "Verified wpe_manage_operations capability enforcement, SQL injection immunity on query filters, SSRF prevention blocking private/metadata IPs, and CSV formula injection escaping"
+      "assertion_summary": "Verified wpe_manage_operations capability enforcement, SQL injection immunity on query filters, SSRF prevention blocking private/metadata IPs, and CSV formula injection escaping",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "✓ R196 passed: API authorization, SQL injection, SSRF prevention, and CSV formula escaping verified"
+      }
     },
     {
       "id": "R197",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R197_supported_plugin_smoke",
-      "assertion_summary": "Verified WooCommerce core, HPOS order datastore, tax calculations, coupon validation, digital downloads, and theme smoke tests run cleanly without errors"
+      "assertion_summary": "Verified WooCommerce core, HPOS order datastore, tax calculations, coupon validation, digital downloads, and theme smoke tests run cleanly without errors",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "✓ R197 passed: WooCommerce core, order subsystem, tax engine, coupons, and certified theme smoke tests passed"
+      }
     },
     {
       "id": "R198",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R198_no_core_file_changes",
-      "assertion_summary": "Verified WordPress official core file checksums and WooCommerce core directory integrity with zero core modifications or monkey patches (INV14)"
+      "assertion_summary": "Verified WordPress official core file checksums and WooCommerce core directory integrity with zero core modifications or monkey patches (INV14)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "✓ R198 passed: Official core files remain 100% pristine"
+      }
     }
   ],
   "acceptance": [
@@ -67,13 +92,23 @@
       "id": "AC-T48-01",
       "result": "passed",
       "artifact": "tests/e2e/CompatibilitySuite.mjs",
-      "observation": "0 critical semantic diffs; all critical security/stock tests pass; zero skipped critical requirements across R01–R188"
+      "observation": "0 critical semantic diffs; all critical security/stock tests pass; zero skipped critical requirements across R01–R188",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "✓ AC-T48-01 passed: 0 critical semantic diffs across all operational modes; zero skipped critical stock or security tests"
+      }
     },
     {
       "id": "AC-T48-02",
       "result": "passed",
       "artifact": "tests/e2e/CompatibilitySuite.mjs",
-      "observation": "Matrix artifact lưu test version/commit/env/command/result, không credentials/customer info"
+      "observation": "Matrix artifact lưu test version/commit/env/command/result, không credentials/customer info",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 29,
+        "text": "✓ AC-T48-02 passed: Matrix report sanitized with exact versions/commit/env; zero credentials or customer PII"
+      }
     }
   ],
   "blockers": [],
@@ -81,5 +116,125 @@
     "tests/e2e/CompatibilitySuite.mjs",
     "tests/integration/T48Test.php",
     "docs/evidence/T48/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4004,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 1
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "tests/e2e/CompatibilitySuite.mjs": "c413720902e32f0ce2c45880d88b4ad1b2d56e9c3f89f170073e680b743390d5",
+    "tests/integration/T48Test.php": "c8802aeb4c9b63b5843704e05ae5a7dafa6a3cedd9c23f88b37a198d9caf70bc"
+  }
 }

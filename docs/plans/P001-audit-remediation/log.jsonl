@@ -86,3 +86,9 @@
 {"action":"state","state_hash":"c954f817aaa15ddb810d71146f1231c87223993f6b5b08a8cc1fd65de1ccc7e9","time":"2026-10-12T15:36:03.475Z","actor":"accnet","commit":"4b1cddc7f155bccfb451416a76854ba981bf7788"}
 {"action":"done","task_id":"P001.6","time":"2026-10-12T15:36:09.597Z","actor":"accnet","commit":"4b1cddc7f155bccfb451416a76854ba981bf7788"}
 {"action":"state","state_hash":"6bbd3fee9eada9801e91a7dc120ad4988be78d8bf502ccf33169e036d1777924","time":"2026-10-12T15:36:09.600Z","actor":"accnet","commit":"4b1cddc7f155bccfb451416a76854ba981bf7788"}
+{"action":"start","task_id":"P001.7","time":"2026-10-12T15:36:24.111Z","actor":"accnet","commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c"}
+{"action":"state","state_hash":"3ceee1661fb5e5f2631627b236393de98c200d1f07a04a8be4191b589b3872c0","time":"2026-10-12T15:36:24.117Z","actor":"accnet","commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c"}
+{"action":"run","task_id":"P001.7","argv":["node","scripts/rerun-evidence.mjs"],"exit_code":0,"commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c","content_digest":"b916143e9f2450b57ca4e1f249ba4af6a00670d0695639e8651404839c8d7cea","output_sha256":"8789cc5940c979ecf6fbce92b2c7411c18b16c4f773add9c0553f2d5378a1c45","output_path":"docs/plans/P001-audit-remediation/command-1791820817688-2b718abe.log","time":"2026-10-12T16:00:17.688Z","actor":"accnet"}
+{"action":"state","state_hash":"34a9e1c654c7b3f9ddd363cb9450213c8fbbe8589d6799c249556c897943b0c0","time":"2026-10-12T16:00:17.690Z","actor":"accnet","commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c"}
+{"action":"done","task_id":"P001.7","time":"2026-10-12T16:00:21.915Z","actor":"accnet","commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c"}
+{"action":"state","state_hash":"ac6b8d89d6d1e1033b60dcbda6d4fe432386b15e4ce091799be001a4dab0076e","time":"2026-10-12T16:00:21.918Z","actor":"accnet","commit":"fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c"}

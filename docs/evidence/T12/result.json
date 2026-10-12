@@ -1,11 +1,11 @@
 {
   "task_id": "T12",
-  "commit": "51be3da7cab373fdcc85ff41ed207c5d1d329ff2",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "4ad1695c838b7d89431da4988a59c33f6853f9b0058ac34375e619f3ab20f0ef",
+  "content_digest": "7ba186e696d50abab58de0fd53b5dc729830663317ee970ad1206e20bd2cb052",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T12/output.log",
       "output_sha256": "bd0837bb097ba67665d0ffe62bb03519b34637a177554a5ea9b73b2d3afd1f1c",
-      "content_digest": "4ad1695c838b7d89431da4988a59c33f6853f9b0058ac34375e619f3ab20f0ef"
+      "content_digest": "7ba186e696d50abab58de0fd53b5dc729830663317ee970ad1206e20bd2cb052"
     }
   ],
   "regression_results": [
@@ -31,42 +31,72 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R45_last_unit_race",
-      "assertion_summary": "Verified atomic no-backorder oversell rejection for concurrent buyers on final unit"
+      "assertion_summary": "Verified atomic no-backorder oversell rejection for concurrent buyers on final unit",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 31,
+        "text": "R45 (last_unit_race): PASSED"
+      }
     },
     {
       "id": "R46",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R46_parent_stock_shared_variants",
-      "assertion_summary": "Verified variations correctly inherit and deplete shared parent product stock"
+      "assertion_summary": "Verified variations correctly inherit and deplete shared parent product stock",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 32,
+        "text": "R46 (parent_stock_shared_variants): PASSED"
+      }
     },
     {
       "id": "R47",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R47_reserve_expiry_and_own_order",
-      "assertion_summary": "Verified reservation holds expire correctly and own order hold is not double-counted"
+      "assertion_summary": "Verified reservation holds expire correctly and own order hold is not double-counted",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 33,
+        "text": "R47 (reserve_expiry_and_own_order): PASSED"
+      }
     },
     {
       "id": "R48",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R48_payment_retry_reduce_once",
-      "assertion_summary": "Verified duplicate webhook/retry reduces stock only once via operation key idempotency"
+      "assertion_summary": "Verified duplicate webhook/retry reduces stock only once via operation key idempotency",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 34,
+        "text": "R48 (payment_retry_reduce_once): PASSED"
+      }
     },
     {
       "id": "R49",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R49_partial_refund_restock",
-      "assertion_summary": "Verified partial refund restock is idempotent across retry events"
+      "assertion_summary": "Verified partial refund restock is idempotent across retry events",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 35,
+        "text": "R49 (partial_refund_restock): PASSED"
+      }
     },
     {
       "id": "R50",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R50_hpos_and_legacy_orders",
-      "assertion_summary": "Verified live WC_Order reduce and restore lifecycle with line item meta and stock operations"
+      "assertion_summary": "Verified live WC_Order reduce and restore lifecycle with line item meta and stock operations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 36,
+        "text": "R50 (hpos_and_legacy_orders): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -74,19 +104,34 @@
       "id": "AC-T12-01",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/InventoryBridge.php",
-      "observation": "Concurrent buyers cuối stock không oversell khi no-backorder; duplicate webhook/retry không double-reduce; cancel/fail/timeout release đúng"
+      "observation": "Concurrent buyers cuối stock không oversell khi no-backorder; duplicate webhook/retry không double-reduce; cancel/fail/timeout release đúng",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "PASSED: AC-T12-01 verified."
+      }
     },
     {
       "id": "AC-T12-02",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/InventoryBridge.php",
-      "observation": "Không đọc quantity stale từ postmeta/lookup tại checkout native"
+      "observation": "Không đọc quantity stale từ postmeta/lookup tại checkout native",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "PASSED: AC-T12-02 zero stale postmeta leakage verified."
+      }
     },
     {
       "id": "AC-T12-03",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/InventoryBridge.php",
-      "observation": "Không thay order/payment engine"
+      "observation": "Không thay order/payment engine",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 28,
+        "text": "PASSED: AC-T12-03 order and payment engine integrity confirmed."
+      }
     }
   ],
   "blockers": [],
@@ -94,5 +139,125 @@
     "src/Compatibility/WooDataStore/InventoryBridge.php",
     "tests/integration/T12Test.php",
     "docs/evidence/T12/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4011,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 8
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WooDataStore/InventoryBridge.php": "d41c614fe0fd502d67b4585797a5b6c9c73b498f03c10a6f5b548bde8c4213df",
+    "tests/integration/T12Test.php": "9513824987eaf747370d0b0d7a30529da22ed20a4009b702a0a4d6ef5065f8e9"
+  }
 }

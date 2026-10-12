@@ -1,11 +1,11 @@
 {
   "task_id": "T27",
-  "commit": "2c42e838901ee6321b175fcc1f6c1ea3a1498961",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "bddd403258ed9bc4d7ce5978990aff53ff29ecd89fbc1440951920d12de94b64",
+  "content_digest": "529f944585a72383af38a4b59304a297246ff18d622b6feb7c61b57952e314f6",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T27",
       "exit_code": 0,
       "output_path": "docs/evidence/T27/output.log",
-      "output_sha256": "b094e714d1e13cfbb2dfba2ae922217b2eb93beb60c2adb057d095e452a143aa",
-      "content_digest": "bddd403258ed9bc4d7ce5978990aff53ff29ecd89fbc1440951920d12de94b64"
+      "output_sha256": "a0d51ba05492fc9033210cef0860a45591da4c80fd40bdab5e2cc2d1fdc8fb94",
+      "content_digest": "529f944585a72383af38a4b59304a297246ff18d622b6feb7c61b57952e314f6"
     }
   ],
   "regression_results": [
@@ -31,28 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R107_out_of_order_responses",
-      "assertion_summary": "Verified out of order responses discarded, abort on newer requests, and request_sequence tracking"
+      "assertion_summary": "Verified out of order responses discarded, abort on newer requests, and request_sequence tracking",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- testR107_out_of_order_responses... OK (3 browser tests passed)"
+      }
     },
     {
       "id": "R108",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R108_keyboard_accessibility",
-      "assertion_summary": "Verified accessible radiogroup/radio controls, roving tabindex, and text labels ensuring color is not sole signal"
+      "assertion_summary": "Verified accessible radiogroup/radio controls, roving tabindex, and text labels ensuring color is not sole signal",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- testR108_keyboard_accessibility... OK"
+      }
     },
     {
       "id": "R109",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R109_reset_defaults",
-      "assertion_summary": "Verified reset to default selection, clearing variation_id, restoring parent gallery image and price"
+      "assertion_summary": "Verified reset to default selection, clearing variation_id, restoring parent gallery image and price",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- testR109_reset_defaults... OK"
+      }
     },
     {
       "id": "R110",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R110_large_variant_payload_budget",
-      "assertion_summary": "Verified 10k variant product sets threshold to 0, preventing WooCommerce from embedding full variations JSON in DOM"
+      "assertion_summary": "Verified 10k variant product sets threshold to 0, preventing WooCommerce from embedding full variations JSON in DOM",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- testR110_large_variant_payload_budget... OK"
+      }
+    },
+    {
+      "id": "R211",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R211_selector_stale_response_behavioral",
+      "assertion_summary": "Task test output asserts requirement selector_stale_response_behavioral",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R211 (selector_stale_response_behavioral) PASSED: stale-response guard verified in a real browser, with mutation control."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +92,23 @@
       "id": "AC-T27-01",
       "result": "passed",
       "artifact": "assets/variant-selector/selector.js",
-      "observation": "Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image"
+      "observation": "Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- testAC_T27_01_KeyboardAndFastSwitching... OK"
+      }
     },
     {
       "id": "AC-T27-02",
       "result": "passed",
       "artifact": "src/Compatibility/StoreApi/SelectorAdapter.php",
-      "observation": "Product 10k variations không embed toàn JSON; responsive không mất selection"
+      "observation": "Product 10k variations không embed toàn JSON; responsive không mất selection",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 8,
+        "text": "- testAC_T27_02_LargeVariantBudgetAndResponsivePreservation... OK"
+      }
     }
   ],
   "blockers": [],
@@ -75,6 +117,130 @@
     "assets/variant-selector/selector.css",
     "src/Compatibility/StoreApi/SelectorAdapter.php",
     "tests/integration/T27Test.php",
-    "docs/evidence/T27/result.json"
-  ]
+    "docs/evidence/T27/result.json",
+    "playwright.config.mjs",
+    "tests/e2e/SelectorBehavior.spec.mjs"
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "assets/variant-selector/selector.css": "c9070eee1fa3c1068343d97d97e63c510fa371175e71e58a37bdd2a3bd1f2c8f",
+    "assets/variant-selector/selector.js": "e73d7952a30a2abb0367344b7cbaa95bda2d0bb8a278742c1495b8f478a93f53",
+    "playwright.config.mjs": "2c6682942f737d04493aa13c7dbfbc93880091008d72640c898f57371b15d129",
+    "src/Compatibility/StoreApi/SelectorAdapter.php": "71a07ae7596cef5678ac6d346142fc87068db5d1dc6b58dc698f06f48a1cb30e",
+    "tests/e2e/SelectorBehavior.spec.mjs": "d874ad397582dfa9a6845d076737886571b395d4f8e3b34547c763ccaccad98b",
+    "tests/integration/T27Test.php": "91f4e50a920952ae69145834647caaba14f7fa4506ce79feec7009085664bd66"
+  }
 }

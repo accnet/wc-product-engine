@@ -1,11 +1,11 @@
 {
   "task_id": "T49",
-  "commit": "707e3d423e32227467c2cf9da951d7ce49d60fe6",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "cbece5423488eb38c39b77580487ec4bfec9bf502b5f6126173be04401138277",
+  "content_digest": "f581bd711006ecf8224dba2a4622a559134aa488868f86d61bad4d6b09f89f3e",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T49/output.log",
       "output_sha256": "87cc67d5313ab36e4ec1ad899ef54e758058b08d1217f52904f76def048c9186",
-      "content_digest": "cbece5423488eb38c39b77580487ec4bfec9bf502b5f6126173be04401138277"
+      "content_digest": "f581bd711006ecf8224dba2a4622a559134aa488868f86d61bad4d6b09f89f3e"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R199_release_install_upgrade",
-      "assertion_summary": "Verified reproducible release distribution zip build, runtime structure integrity, and idempotent schema install/upgrade lifecycle"
+      "assertion_summary": "Verified reproducible release distribution zip build, runtime structure integrity, and idempotent schema install/upgrade lifecycle",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R199 passed: Release distribution zip builds cleanly and install/upgrade lifecycle is verified"
+      }
     },
     {
       "id": "R200",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R200_package_default_safe_mode",
-      "assertion_summary": "Verified that release package defaults strictly to safe legacy mode with zero automatic cutover on install or update"
+      "assertion_summary": "Verified that release package defaults strictly to safe legacy mode with zero automatic cutover on install or update",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 8,
+        "text": "✓ R200 passed: Zero automatic cutover to native or full_native on install or update"
+      }
     },
     {
       "id": "R201",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R201_core_checksum",
-      "assertion_summary": "Verified official WordPress core and WooCommerce plugin checksums with 100% integrity and zero core file modifications (INV14)"
+      "assertion_summary": "Verified official WordPress core and WooCommerce plugin checksums with 100% integrity and zero core file modifications (INV14)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 12,
+        "text": "✓ R201 passed: Core checksums pass cleanly with zero modifications or monkey patches (INV14)"
+      }
     },
     {
       "id": "R202",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R202_restore_drill_from_backup_and_journal",
-      "assertion_summary": "Verified restore drill from consistent database snapshot and operation journal replay, perfectly preserving catalog, stock balances, and authority boundaries"
+      "assertion_summary": "Verified restore drill from consistent database snapshot and operation journal replay, perfectly preserving catalog, stock balances, and authority boundaries",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 15,
+        "text": "✓ R202 passed: Restore drill confirms zero data loss and preserves operational boundaries"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T49-01",
       "result": "passed",
       "artifact": "scripts/release/ReleasePackager.mjs",
-      "observation": "Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass"
+      "observation": "Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "✓ AC-T49-01 passed: Release certified matrix and smoke lifecycle verified"
+      }
     },
     {
       "id": "AC-T49-02",
       "result": "passed",
       "artifact": "scripts/release/ReleasePackager.mjs",
-      "observation": "User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này"
+      "observation": "User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "✓ AC-T49-02 passed: Concrete package, manifest, and runbooks prepared for operator staged rollout"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,123 @@
     "scripts/release/ReleasePackager.mjs",
     "tests/integration/T49Test.php",
     "docs/evidence/T49/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "scripts/release/ReleasePackager.mjs": "69904add2781d84505c2df28a0559d01a938243d9fd8962d25e2dcf073f96055",
+    "tests/integration/T49Test.php": "64fe0d3428723f43601b98df0f58840b3bd71e7a5e450dc15c9bd65d2bf0ea62"
+  }
 }

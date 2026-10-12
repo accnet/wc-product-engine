@@ -1,11 +1,11 @@
 {
   "task_id": "T26",
-  "commit": "10367f63e01c4223fcf334f034debf7c3bd3ce40",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "88d674268a7a12037570c537be400d17c877a765e6539896f749e5e9a064c926",
+  "content_digest": "e0c78f29dbc75f284efef2150b570d59e3e2ac53cb92819253cd61c97b423468",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T26/output.log",
       "output_sha256": "64ebd8a0a3ba12b4229ba41416786dcdd9757f680889b9318bbb8416ed72af39",
-      "content_digest": "88d674268a7a12037570c537be400d17c877a765e6539896f749e5e9a064c926"
+      "content_digest": "e0c78f29dbc75f284efef2150b570d59e3e2ac53cb92819253cd61c97b423468"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R103_wc_ajax_variation_payload",
-      "assertion_summary": "Verified WooCommerce native AJAX get_variation returns compatible variation payload with image and pricing"
+      "assertion_summary": "Verified WooCommerce native AJAX get_variation returns compatible variation payload with image and pricing",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- testR103_wc_ajax_variation_payload... OK"
+      }
     },
     {
       "id": "R104",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R104_public_resolver_permissions",
-      "assertion_summary": "Verified public resolver permissions reject drafts, private items, and nonexistent products"
+      "assertion_summary": "Verified public resolver permissions reject drafts, private items, and nonexistent products",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- testR104_public_resolver_permissions... OK"
+      }
     },
     {
       "id": "R105",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R105_payload_limits",
-      "assertion_summary": "Verified payload limits reject >32 options, negative/non-numeric quantity, and enforce rate limits"
+      "assertion_summary": "Verified payload limits reject >32 options, negative/non-numeric quantity, and enforce rate limits",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- testR105_payload_limits... OK"
+      }
     },
     {
       "id": "R106",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R106_revision_refresh",
-      "assertion_summary": "Verified ETag 304 caching, request_sequence echo, product revision reporting, and zero stock holds"
+      "assertion_summary": "Verified ETag 304 caching, request_sequence echo, product revision reporting, and zero stock holds",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- testR106_revision_refresh... OK"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T26-01",
       "result": "passed",
       "artifact": "src/Application/Variant/ResolverApi.php",
-      "observation": "Classic get_variation AJAX trả hợp lệ; engine resolver không expose draft/meta"
+      "observation": "Classic get_variation AJAX trả hợp lệ; engine resolver không expose draft/meta",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- testAC_T26_01_ClassicAjaxAndNoMetaExposure... OK"
+      }
     },
     {
       "id": "AC-T26-02",
       "result": "passed",
       "artifact": "src/Application/Variant/ResolverApi.php",
-      "observation": "Empty selection không hydrate 10k variations; rate limit phản hồi có retry hint"
+      "observation": "Empty selection không hydrate 10k variations; rate limit phản hồi có retry hint",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- testAC_T26_02_EmptySelectionAndRateLimitWithRetryHint... OK"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,126 @@
     "src/Application/Variant/ResolverApi.php",
     "tests/integration/T26Test.php",
     "docs/evidence/T26/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 254,
+      "wp_postmeta": 2587
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_posts": 12,
+      "wp_postmeta": 3
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 11,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Variant/ResolverApi.php": "d0108a04dbc1859c08d4105d458dea4fe1c60291898682bac6c4a103c12cccbf",
+    "tests/integration/T26Test.php": "863edbff685d0b562f2f2fd937ebf1d5e7e3c94e38265147114a659214bf46fa"
+  }
 }

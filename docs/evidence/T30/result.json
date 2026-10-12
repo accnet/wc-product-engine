@@ -1,11 +1,11 @@
 {
   "task_id": "T30",
-  "commit": "a20caf57ca618255c00b80761c56702184fed0a4",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "0b181f883d00e7a0f8f237c4f11e13b304f056386796a9e1bf155de7ebac1a80",
+  "content_digest": "b1dc6ede7b3a6383213ab1b6899abb09dbd55e062db136d987b85f3c1f5bcc63",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T30/output.log",
       "output_sha256": "49052b80df223272706fa18cd7bb61e75174802df4922911eef6b2805003347b",
-      "content_digest": "0b181f883d00e7a0f8f237c4f11e13b304f056386796a9e1bf155de7ebac1a80"
+      "content_digest": "b1dc6ede7b3a6383213ab1b6899abb09dbd55e062db136d987b85f3c1f5bcc63"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R120_import_crash_resume",
-      "assertion_summary": "Verified worker crash recovery and idempotent resume via persisted database checkpoints without duplicate records"
+      "assertion_summary": "Verified worker crash recovery and idempotent resume via persisted database checkpoints without duplicate records",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- R120 (import_crash_resume)... OK"
+      }
     },
     {
       "id": "R121",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R121_import_group_atomic",
-      "assertion_summary": "Verified atomic per-product group commits with zero half-saved products or variants on failure"
+      "assertion_summary": "Verified atomic per-product group commits with zero half-saved products or variants on failure",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- R121 (import_group_atomic)... OK"
+      }
     },
     {
       "id": "R122",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R122_import_vs_admin_conflict",
-      "assertion_summary": "Verified conflict policies (fail vs skip) strictly prevent overwriting concurrent admin edits made after validation"
+      "assertion_summary": "Verified conflict policies (fail vs skip) strictly prevent overwriting concurrent admin edits made after validation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- R122 (import_vs_admin_conflict)... OK"
+      }
     },
     {
       "id": "R123",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R123_cancel_partial_commit_report",
-      "assertion_summary": "Verified cancellation stops at commit boundaries, preserves previously committed groups, and outputs accurate partial reports"
+      "assertion_summary": "Verified cancellation stops at commit boundaries, preserves previously committed groups, and outputs accurate partial reports",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- R123 (cancel_partial_commit_report)... OK"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,15 @@
       "id": "AC-T30-01",
       "result": "passed",
       "artifact": "src/Application/ImportExport/ImportCommitter.php",
-      "observation": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp"
+      "observation": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T30-02",
       "result": "passed",
       "artifact": "src/Application/ImportExport/ImportCommitter.php",
-      "observation": "Không overwrite edit mới giữa dry-run và commit"
+      "observation": "Không overwrite edit mới giữa dry-run và commit",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -74,5 +96,127 @@
     "src/Application/ImportExport/ImportCommitter.php",
     "tests/integration/T30Test.php",
     "docs/evidence/T30/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4010,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 344,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1156,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 7,
+      "wp_wpe_object_state": 2,
+      "wp_wpe_outbox": 7
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/ImportExport/ImportCommitter.php": "f601fe01cf6489ac8c82f952ff32bff727dccc9bd67dc638983159098feae6d0",
+    "tests/integration/T30Test.php": "69f8fb210c7e6b23becccc35cb9363a955fa0ab541ecbd75fe69798be29772e3"
+  }
 }

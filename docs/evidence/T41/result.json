@@ -1,11 +1,11 @@
 {
   "task_id": "T41",
-  "commit": "ea561c942f7b3efbd735cd5f4b3c1f813e4196ad",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "bb5f6d2d90d43f65478e3c125f300fa70a5a994e7b9104ca03d7993efbe9bf3a",
+  "content_digest": "cd8efbba0a85e4892435361a7d63db5bcb4d32826da77b153d51413fd6de1fee",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T41/output.log",
       "output_sha256": "e18b216ebcda3c2adf73cd44af704401bd26cd4bbda9bb8b49bf3190873a603a",
-      "content_digest": "bb5f6d2d90d43f65478e3c125f300fa70a5a994e7b9104ca03d7993efbe9bf3a"
+      "content_digest": "cd8efbba0a85e4892435361a7d63db5bcb4d32826da77b153d51413fd6de1fee"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R165_health_blocks_on_mismatch",
-      "assertion_summary": "Verified health status strictly blocks green/healthy on unresolved shadow diff mismatches, DLQ failures, or projection lag"
+      "assertion_summary": "Verified health status strictly blocks green/healthy on unresolved shadow diff mismatches, DLQ failures, or projection lag",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R165 passed: health status strictly blocks green/healthy on unresolved mismatches or DLQ items"
+      }
     },
     {
       "id": "R166",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R166_cli_ui_command_parity",
-      "assertion_summary": "Verified 100% parity between WP-CLI commands and UI operations actions by delegating to the unified OperationsPage command dispatcher"
+      "assertion_summary": "Verified 100% parity between WP-CLI commands and UI operations actions by delegating to the unified OperationsPage command dispatcher",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "✓ R166 passed: UI actions and WP-CLI commands share 100% unified command service implementation"
+      }
     },
     {
       "id": "R167",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R167_operations_auth_audit",
-      "assertion_summary": "Verified strict capability authorization checks on operations mutations and audit logging of start and completion events to wpe_audit"
+      "assertion_summary": "Verified strict capability authorization checks on operations mutations and audit logging of start and completion events to wpe_audit",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 12,
+        "text": "✓ R167 passed: operations require authorization and write audit trails for every mutation"
+      }
     },
     {
       "id": "R168",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R168_worker_starvation_alert",
-      "assertion_summary": "Verified worker starvation alert triggered and green health blocked when active background job runs for >120s without checkpoint/heartbeat"
+      "assertion_summary": "Verified worker starvation alert triggered and green health blocked when active background job runs for >120s without checkpoint/heartbeat",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 14,
+        "text": "✓ R168 passed: worker starvation alert detected when active worker has no heartbeat for >120s"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T41-01",
       "result": "passed",
       "artifact": "src/Admin/OperationsPage.php",
-      "observation": "Không green khi unresolved mismatch/DLQ; resume/retry visible cho operator; CLI và UI cùng command service"
+      "observation": "Không green khi unresolved mismatch/DLQ; resume/retry visible cho operator; CLI và UI cùng command service",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "✓ AC-T41-01 passed: checkpoints display resume controls and resume/retry actions update jobs"
+      }
     },
     {
       "id": "AC-T41-02",
       "result": "passed",
       "artifact": "src/Admin/OperationsPage.php",
-      "observation": "Không reveal filesystem/secret URLs cho user thiếu quyền"
+      "observation": "Không reveal filesystem/secret URLs cho user thiếu quyền",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 18,
+        "text": "✓ AC-T41-02 passed: strict output sanitization redacts local filesystem paths and secret tokens"
+      }
     }
   ],
   "blockers": [],
@@ -76,5 +106,129 @@
     "src/Cli/Commands.php",
     "tests/integration/T41Test.php",
     "docs/evidence/T41/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4013,
+      "wp_wpe_catalog": 542,
+      "wp_wpe_catalog_facets": 136,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 10,
+      "wp_wpe_catalog": 103,
+      "wp_wpe_catalog_facets": 34
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "assets/operations/operations.js": "678720e00a67ea2f97857c5f44b53caaa06ae8d80da3c63f8ca451c1d54a59c2",
+    "src/Admin/OperationsPage.php": "4142656c2b843907329b8f245787e5224d50d16b5d5958b4adb80eb363ca476e",
+    "src/Cli/Commands.php": "f94a5b2862a0f09aa41186caae92577723bcc0fb54a9e57a27387dc0463a796e",
+    "tests/integration/T41Test.php": "8b999b3e8632c6f9fa88ebd1f096d61eff9ac319ed175d745cdcfc9128efe74f"
+  }
 }

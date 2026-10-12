@@ -1,11 +1,11 @@
 {
   "task_id": "T29",
-  "commit": "3ff72e0e21776358ba0754865de7df92b5b2e4c3",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "1b3ad4a3c355af5da97be9ab8d728298f62423ae6412b393870e74b4db2f4789",
+  "content_digest": "b883c1fe6dfeb4bad0120096b5026a9e903ec1bafab1a7caed0d03909246dd50",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T29/output.log",
       "output_sha256": "c912b6165d21bc67208c4728aa09ad15c3740908792119046b91ee7b7a2764d2",
-      "content_digest": "1b3ad4a3c355af5da97be9ab8d728298f62423ae6412b393870e74b4db2f4789"
+      "content_digest": "b883c1fe6dfeb4bad0120096b5026a9e903ec1bafab1a7caed0d03909246dd50"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R115_csv_multiline_quotes_bom",
-      "assertion_summary": "Verified streaming UTF-8 BOM, multiline quoted fields, escaped quotes, and absent vs blank column state preservation"
+      "assertion_summary": "Verified streaming UTF-8 BOM, multiline quoted fields, escaped quotes, and absent vs blank column state preservation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- R115 (csv_multiline_quotes_bom)... OK"
+      }
     },
     {
       "id": "R116",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R116_dryrun_no_side_effects",
-      "assertion_summary": "Verified dry-run validation produces zero mutations to catalog, variant, inventory, option, asset, post, or term tables"
+      "assertion_summary": "Verified dry-run validation produces zero mutations to catalog, variant, inventory, option, asset, post, or term tables",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- R116 (dryrun_no_side_effects)... OK"
+      }
     },
     {
       "id": "R117",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R117_group_shuffled_rows",
-      "assertion_summary": "Verified shuffled child variation rows appearing before parent product row are grouped together via group_key on database"
+      "assertion_summary": "Verified shuffled child variation rows appearing before parent product row are grouped together via group_key on database",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- R117 (group_shuffled_rows)... OK"
+      }
     },
     {
       "id": "R118",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R118_large_csv_memory",
-      "assertion_summary": "Verified streaming parser and keyset chunked validation maintains bounded O(1) memory consumption for large CSV files"
+      "assertion_summary": "Verified streaming parser and keyset chunked validation maintains bounded O(1) memory consumption for large CSV files",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- R118 (large_csv_memory)... OK"
+      }
     },
     {
       "id": "R119",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R119_private_upload_permissions",
-      "assertion_summary": "Verified sandboxed staging directory, path traversal rejection, file size enforcement, and actor capability checks"
+      "assertion_summary": "Verified sandboxed staging directory, path traversal rejection, file size enforcement, and actor capability checks",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- R119 (private_upload_permissions)... OK"
+      }
     }
   ],
   "acceptance": [
@@ -67,13 +92,23 @@
       "id": "AC-T29-01",
       "result": "passed",
       "artifact": "src/Application/ImportExport/CsvStager.php",
-      "observation": "Dry-run không mutation catalog; malformed row giữ exact row/column error"
+      "observation": "Dry-run không mutation catalog; malformed row giữ exact row/column error",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- AC-T29-01 (malformed_row_exact_errors)... OK"
+      }
     },
     {
       "id": "AC-T29-02",
       "result": "passed",
       "artifact": "src/Application/ImportExport/CsvStager.php",
-      "observation": "File/config sửa sau validation làm commit reject; file 1M rows không giữ RAM tỷ lệ kích thước toàn file"
+      "observation": "File/config sửa sau validation làm commit reject; file 1M rows không giữ RAM tỷ lệ kích thước toàn file",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 8,
+        "text": "- AC-T29-02 (commit_hash_verification)... OK"
+      }
     }
   ],
   "blockers": [],
@@ -81,5 +116,123 @@
     "src/Application/ImportExport/CsvStager.php",
     "tests/integration/T29Test.php",
     "docs/evidence/T29/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/ImportExport/CsvStager.php": "99a7bc4bab81adfa103dccbace4896eb87e0f84fd0f3d90bcc7ec9f7d74d9505",
+    "tests/integration/T29Test.php": "73074a5272303c1095136f5b8f2d0383744758660b8d033325abcf76a6f9ffab"
+  }
 }

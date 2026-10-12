@@ -1,11 +1,11 @@
 {
   "task_id": "T45",
-  "commit": "f4974ada97cec5b31b300d637e34f21dfc176153",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "afb78bcfad5ad63c7f80b209685c8b8b3bee832d41c2572038fdc59033e25bf3",
+  "content_digest": "4c9e9297ad598e542b21049b2780281cb87c6be5347ec19f0f9b2d615063d963",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T45/output.log",
       "output_sha256": "56f6ebf6c849033628fb1b5665dbaf77b7f99f3f20c9c48c6676d6ca26ece102",
-      "content_digest": "afb78bcfad5ad63c7f80b209685c8b8b3bee832d41c2572038fdc59033e25bf3"
+      "content_digest": "4c9e9297ad598e542b21049b2780281cb87c6be5347ec19f0f9b2d615063d963"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R181_no_fallback_on_native_read_error",
-      "assertion_summary": "Verified that in full_native mode missing or errored native data strictly fails closed with zero fallback to stale legacy postmeta (INV12)"
+      "assertion_summary": "Verified that in full_native mode missing or errored native data strictly fails closed with zero fallback to stale legacy postmeta (INV12)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "✓ R181 passed: In full_native mode, missing/errored native data strictly rejects stale postmeta fallback"
+      }
     },
     {
       "id": "R182",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R182_owned_field_authority",
-      "assertion_summary": "Verified write ownership fence strictly rejects direct uncertified postmeta writes to owned keys while routing certified adapter writes to native tables"
+      "assertion_summary": "Verified write ownership fence strictly rejects direct uncertified postmeta writes to owned keys while routing certified adapter writes to native tables",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 12,
+        "text": "✓ R182 passed: Owned field authority enforces write ownership fence and routes certified writes"
+      }
     },
     {
       "id": "R183",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R183_plugin_change_certification",
-      "assertion_summary": "Verified that uncertified plugin activation triggers automatic readiness demotion and operational alert while safely preserving native source"
+      "assertion_summary": "Verified that uncertified plugin activation triggers automatic readiness demotion and operational alert while safely preserving native source",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "✓ R183 passed: Plugin certification changes reliably trigger operational alert and block rollout safely"
+      }
     },
     {
       "id": "R184",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R184_mirror_not_canonical",
-      "assertion_summary": "Verified that legacy mirror is strictly non-canonical and corrupt postmeta mutations do not affect native storefront and API product reads"
+      "assertion_summary": "Verified that legacy mirror is strictly non-canonical and corrupt postmeta mutations do not affect native storefront and API product reads",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 20,
+        "text": "✓ R184 passed: Legacy mirror is strictly secondary projection with zero canonical read influence"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T45-01",
       "result": "passed",
       "artifact": "src/Application/Rollout/AuthoritySeal.php",
-      "observation": "Full native đọc/ghi đúng và không fallback stale"
+      "observation": "Full native đọc/ghi đúng và không fallback stale",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "✓ AC-T45-01 passed: Full native read/write operates accurately with verified zero postmeta fallback"
+      }
     },
     {
       "id": "AC-T45-02",
       "result": "passed",
       "artifact": "src/Application/Rollout/AuthoritySeal.php",
-      "observation": "CRUD-safe supported plugins hoạt động; unsupported plugin enable khiến native rollout bị chặn/cảnh báo vận hành, không tự chuyển source nguy hiểm"
+      "observation": "CRUD-safe supported plugins hoạt động; unsupported plugin enable khiến native rollout bị chặn/cảnh báo vận hành, không tự chuyển source nguy hiểm",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "✓ AC-T45-02 passed: Supported plugins certified; unsupported plugin triggers operational alert without source flip"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,125 @@
     "src/Application/Rollout/AuthoritySeal.php",
     "tests/integration/T45Test.php",
     "docs/evidence/T45/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4010,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 7
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Rollout/AuthoritySeal.php": "3daa515fccc7b8ae2d1fa09f46f4b09dfb666c8e7ed78aa7b7ae612347d80b13",
+    "tests/integration/T45Test.php": "d59d984b2ff7274eef0bc61c609eda106a6c909286b82935b5cbe874e6d54d7a"
+  }
 }

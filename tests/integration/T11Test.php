@@ -323,8 +323,22 @@ class T11Test
         echo "\n[Test AC-T11-02] Testing unclassified and SQL-writer plugin blocking...\n";
 
         // 1. Supported certified plugin
-        if (!$this->bridge->canPluginWriteNative('classic-editor')) {
-            echo "FAILED: Certified CRUD-safe plugin 'classic-editor' was blocked.\n";
+        $matrix = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/contracts/compatibility/matrix.json'), true);
+        $supported = null;
+        foreach (($matrix['third_party_plugins'] ?? $matrix['plugins'] ?? []) as $p) {
+            if (($p['status'] ?? '') === 'supported' && ($p['classification'] ?? '') !== 'SQL-writer') {
+                $supported = $p['slug'];
+                break;
+            }
+        }
+        if ($supported === null || !$this->bridge->canPluginWriteNative($supported)) {
+            echo "FAILED: Certified supported plugin '" . (string) $supported . "' was blocked.\n";
+            return false;
+        }
+
+        // 1b. Plugin whose version changed and was not re-reviewed (status unknown) stays blocked.
+        if ($this->bridge->canPluginWriteNative('classic-editor')) {
+            echo "FAILED: Unreviewed plugin 'classic-editor' (status unknown) was permitted native authority.\n";
             return false;
         }
 

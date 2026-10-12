@@ -1,11 +1,11 @@
 {
   "task_id": "T18",
-  "commit": "e3e4fbb25960759c734cecc1d396f0722e6e98de",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "e2201fd82620985f159a83d8d9efebeb8aed91923274f83ca23d8ed91cb8a0bd",
+  "content_digest": "5fac8fd3097c2fdc6c0e902d0ed911ffaed58bc9b207fd8edeba2fd5c283410e",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T18/output.log",
       "output_sha256": "0efaabcdd858a6eadc44590711df9ce4a9afcf83b203961dc1cd5a8598dc7c86",
-      "content_digest": "e2201fd82620985f159a83d8d9efebeb8aed91923274f83ca23d8ed91cb8a0bd"
+      "content_digest": "5fac8fd3097c2fdc6c0e902d0ed911ffaed58bc9b207fd8edeba2fd5c283410e"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R71_impossible_combination_filter",
-      "assertion_summary": "Verified variant-coherent mode requires matching variation and rejects impossible combinations"
+      "assertion_summary": "Verified variant-coherent mode requires matching variation and rejects impossible combinations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "PASSED: R71 & AC-T18-01 verified. Coherent correctly isolates Black-M, compatible retains Woo behavior."
+      }
     },
     {
       "id": "R72",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R72_distinct_parent_counts",
-      "assertion_summary": "Verified distinct parent product counts without variation duplication"
+      "assertion_summary": "Verified distinct parent product counts without variation duplication",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "PASSED: R72 distinct parent counts verified. Exactly 2 products counted despite 4 total variations."
+      }
     },
     {
       "id": "R73",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R73_self_exclusion_facets",
-      "assertion_summary": "Verified disjunctive facet counts with strict self-exclusion for active facets"
+      "assertion_summary": "Verified disjunctive facet counts with strict self-exclusion for active facets",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "PASSED: R73 self-exclusion facets verified. Blue remains available with count 1 when red is selected."
+      }
     },
     {
       "id": "R74",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R74_category_descendants_deleted_term",
-      "assertion_summary": "Verified category hierarchy expansion with deleted term safety"
+      "assertion_summary": "Verified category hierarchy expansion with deleted term safety",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "PASSED: R74 category descendants expansion and deleted term safety verified."
+      }
     }
   ],
   "acceptance": [
@@ -60,7 +80,12 @@
       "id": "AC-T18-01",
       "result": "passed",
       "artifact": "src/Application/Catalog/FacetQuery.php",
-      "observation": "Black-M/White-L không match Black-L trong coherent mode; counts không double khi nhiều variants/terms; WC-compatible fixture nếu khác được tách tên/mode"
+      "observation": "Black-M/White-L không match Black-L trong coherent mode; counts không double khi nhiều variants/terms; WC-compatible fixture nếu khác được tách tên/mode",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "PASSED: R71 & AC-T18-01 verified. Coherent correctly isolates Black-M, compatible retains Woo behavior."
+      }
     }
   ],
   "blockers": [],
@@ -68,5 +93,126 @@
     "src/Application/Catalog/FacetQuery.php",
     "tests/integration/T18Test.php",
     "docs/evidence/T18/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4011,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1157,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 8,
+      "wp_wpe_outbox": 8
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Catalog/FacetQuery.php": "59867e79d8b41f76d090220d469f2d0ca011b2a6ff291807fb642ec2b7221d68",
+    "tests/integration/T18Test.php": "220dd3f95e80255570d97678863165f7033ba0525043fbf00f9ea72b24dea677"
+  }
 }

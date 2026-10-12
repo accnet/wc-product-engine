@@ -1,11 +1,11 @@
 {
   "task_id": "T08",
-  "commit": "aec1c80492bfc9fe113669f521f097cc98da75a0",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "22ced7e6f601f70e40a17f188a1492be4882b7250858f5fde0ddebee4938f3ab",
+  "content_digest": "1dbbc6cbf07d806d4cbb15e38e8b317d67a03b70162b8df400f9ceecba972329",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -19,7 +19,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T08/output.log",
       "output_sha256": "7efae69f7726f34a60d38f061851361bccd3d49bac72bed634c075cbd54b29f9",
-      "content_digest": "22ced7e6f601f70e40a17f188a1492be4882b7250858f5fde0ddebee4938f3ab"
+      "content_digest": "1dbbc6cbf07d806d4cbb15e38e8b317d67a03b70162b8df400f9ceecba972329"
     }
   ],
   "regression_results": [
@@ -28,28 +28,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R28_gallery_order",
-      "assertion_summary": "Verified gallery ordering and atomic replacement"
+      "assertion_summary": "Verified gallery ordering and atomic replacement",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "R28 (gallery_order): PASSED"
+      }
     },
     {
       "id": "R29",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R29_shared_asset_delete",
-      "assertion_summary": "Verified shared asset reference protection against cascade deletion"
+      "assertion_summary": "Verified shared asset reference protection against cascade deletion",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "R29 (shared_asset_delete): PASSED"
+      }
     },
     {
       "id": "R30",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R30_meta_serialized_repeated_ids",
-      "assertion_summary": "Verified repeated metadata assigned distinct wp_postmeta IDs and PHP serialization preserved"
+      "assertion_summary": "Verified repeated metadata assigned distinct wp_postmeta IDs and PHP serialization preserved",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 18,
+        "text": "R30 (meta_serialized_repeated_ids): PASSED"
+      }
     },
     {
       "id": "R31",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R31_download_ids_preserved",
-      "assertion_summary": "Verified custom immutable download IDs preserved across save and reload"
+      "assertion_summary": "Verified custom immutable download IDs preserved across save and reload",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "R31 (download_ids_preserved): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -57,13 +77,23 @@
       "id": "AC-T08-01",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/MediaRepository.php",
-      "observation": "Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject"
+      "observation": "Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 20,
+        "text": "AC-T08-01 (featured_validation_foreign_asset): PASSED"
+      }
     },
     {
       "id": "AC-T08-02",
       "result": "passed",
       "artifact": "src/Compatibility/WordPress/MetaIdAllocator.php",
-      "observation": "Repeated metadata và downloadable props survive save/reload"
+      "observation": "Repeated metadata và downloadable props survive save/reload",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 21,
+        "text": "AC-T08-02 (repeated_meta_downloads_roundtrip): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -72,5 +102,137 @@
     "tests/integration/T08Test.php",
     "docs/evidence/T08/result.json",
     "src/Compatibility/WordPress/MetaIdAllocator.php"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 30,
+      "wp_wpe_audit": 4010,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 8,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 269,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 24,
+      "wp_wpe_object_state": 348,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1156,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 20,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 120,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 221,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 249,
+      "wp_postmeta": 2590
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_assets": 6,
+      "wp_wpe_audit": 7,
+      "wp_wpe_downloads": 2,
+      "wp_wpe_inventory": 6,
+      "wp_wpe_meta": 6,
+      "wp_wpe_object_state": 6,
+      "wp_wpe_outbox": 7,
+      "wp_wpe_product_media": 5,
+      "wp_wpe_products": 6,
+      "wp_wpe_sku_registry": 6,
+      "wp_posts": 7,
+      "wp_postmeta": 6
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 1,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WordPress/MetaIdAllocator.php": "2f60c5be7dbdcf873c15210c4bc5ee54d757e435d2c34699cd4ca5e1c7268dd2",
+    "src/Infrastructure/Database/MediaRepository.php": "b3947c0a9e12795552c0ac6f0f8a29cb63f4c0897d5814056c6cb29c3e6e21b3",
+    "tests/integration/T08Test.php": "68e68a527b2a7334fdcb8037aad7c96435e4dbb13915b3ffade4fe015269a0f6"
+  }
 }

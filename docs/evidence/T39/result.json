@@ -1,11 +1,11 @@
 {
   "task_id": "T39",
-  "commit": "1c916d0a461229ef69850a8243e70431658a39cd",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "d4e9139d7ad501ecf5073f512351cf38cbc5cd085ac3c794786b51f31fee3b04",
+  "content_digest": "79d936ba753cfcc47c62195eac6aa94c4f6a3322a01375fdbb8794def184e779",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T39/output.log",
       "output_sha256": "33327e5a1d7a53ba7a331e0f80e1b8e62b1f4309810272abc45729d7f922d44d",
-      "content_digest": "d4e9139d7ad501ecf5073f512351cf38cbc5cd085ac3c794786b51f31fee3b04"
+      "content_digest": "79d936ba753cfcc47c62195eac6aa94c4f6a3322a01375fdbb8794def184e779"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R157_native_mirror_full_props",
-      "assertion_summary": "Verified complete native-to-legacy projection of CPT post, postmeta, taxonomy terms, arbitrary metadata, and variations while preserving historical stock operations"
+      "assertion_summary": "Verified complete native-to-legacy projection of CPT post, postmeta, taxonomy terms, arbitrary metadata, and variations while preserving historical stock operations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R157 passed: full aggregate props, metadata, terms, and variations projected to legacy; stock operations preserved"
+      }
     },
     {
       "id": "R158",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R158_mirror_out_of_order",
-      "assertion_summary": "Verified out-of-order and restart projection events are safely skipped without reverting newer native or legacy catalog state"
+      "assertion_summary": "Verified out-of-order and restart projection events are safely skipped without reverting newer native or legacy catalog state",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R158 passed: obsolete out-of-order mirror events safely skipped without reverting newer state"
+      }
     },
     {
       "id": "R159",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R159_dual_writer_rejected",
-      "assertion_summary": "Verified write ownership fence strictly rejects unauthorized dual-writers under native authority and securely routes certified adapter writes to native storage"
+      "assertion_summary": "Verified write ownership fence strictly rejects unauthorized dual-writers under native authority and securely routes certified adapter writes to native storage",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R159 passed: unauthorized dual-writers rejected and certified writes routed to native storage"
+      }
     },
     {
       "id": "R160",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R160_projection_hook_side_effect_guard",
-      "assertion_summary": "Verified origin guard suppresses secondary legacy capture hooks during projection to eliminate recursion and ping-pong sync loops"
+      "assertion_summary": "Verified origin guard suppresses secondary legacy capture hooks during projection to eliminate recursion and ping-pong sync loops",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R160 passed: origin guard successfully suppressed secondary capture hooks during projection"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T39-01",
       "result": "passed",
       "artifact": "src/Application/Migration/LegacyMirror.php",
-      "observation": "Mirror restart/out-of-order không làm revert native/legacy mới; native writes không mất historical stock operations"
+      "observation": "Mirror restart/out-of-order không làm revert native/legacy mới; native writes không mất historical stock operations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "✓ AC-T39-01 passed: out-of-order events rejected and historical stock operations preserved"
+      }
     },
     {
       "id": "AC-T39-02",
       "result": "passed",
       "artifact": "src/Application/Migration/LegacyMirror.php",
-      "observation": "Epoch fence ngăn stale worker sau authority switch"
+      "observation": "Epoch fence ngăn stale worker sau authority switch",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ AC-T39-02 passed: epoch fence strictly blocks stale workers after authority switch"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,123 @@
     "src/Application/Migration/LegacyMirror.php",
     "tests/integration/T39Test.php",
     "docs/evidence/T39/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Migration/LegacyMirror.php": "7ec9f869649fa40cf17f800acff812a3a97f0bb5e41b5d2ab0c4be51c1cac0ca",
+    "tests/integration/T39Test.php": "963cd05f66e0f8eb175e0e751420167e60422a53653611ea8f955b2681a8730e"
+  }
 }

@@ -1,11 +1,11 @@
 {
   "task_id": "T31",
-  "commit": "29e821bafb8009b0b0356dffe0d7ab0903eb160e",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "5187904ccf27da3239c3ef1fb6cb01421905147d128d05a11a0110b1860b3d08",
+  "content_digest": "6951016f2f614d706225e29b5ab780172dc952d7b12bb8cdd5911aa846f76451",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T31/output.log",
       "output_sha256": "54b4a694221b84aed06f3814e759695b9e6c536d9875c0737bb4bfec11c89082",
-      "content_digest": "5187904ccf27da3239c3ef1fb6cb01421905147d128d05a11a0110b1860b3d08"
+      "content_digest": "6951016f2f614d706225e29b5ab780172dc952d7b12bb8cdd5911aa846f76451"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R124_export_snapshot_under_writes",
-      "assertion_summary": "Verified immutable snapshot staging ensures write isolation with zero lost or duplicate rows in manifest or CSV"
+      "assertion_summary": "Verified immutable snapshot staging ensures write isolation with zero lost or duplicate rows in manifest or CSV",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R124 passed: Snapshot write isolation and zero duplicate/lost rows verified."
+      }
     },
     {
       "id": "R125",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R125_csv_formula_profiles",
-      "assertion_summary": "Verified machine vs spreadsheet_safe profiles properly escape formula triggers (=, +, -, @, \\t, \\r) and strip control characters"
+      "assertion_summary": "Verified machine vs spreadsheet_safe profiles properly escape formula triggers (=, +, -, @, \\t, \\r) and strip control characters",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "R125 passed: Machine vs spreadsheet-safe profiles correctly handle formula triggers and control chars."
+      }
     },
     {
       "id": "R126",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R126_download_auth_and_path",
-      "assertion_summary": "Verified capability check on every download request and strict rejection of path traversal and null byte sequences"
+      "assertion_summary": "Verified capability check on every download request and strict rejection of path traversal and null byte sequences",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "R126 passed: Download capability checked on every request; path traversal strictly rejected."
+      }
     },
     {
       "id": "R127",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R127_export_loss_report_and_counts",
-      "assertion_summary": "Verified loss report generation with field/path/reason, exact job counts tracking, and artifact retention cleanup"
+      "assertion_summary": "Verified loss report generation with field/path/reason, exact job counts tracking, and artifact retention cleanup",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "R127 passed: Loss report has field/path/reason, counts match, retention policy enforced."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,19 @@
       "id": "AC-T31-01",
       "result": "passed",
       "artifact": "src/Application/ImportExport/SnapshotExporter.php",
-      "observation": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest"
+      "observation": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "AC-T31-01 passed: Engine snapshot round-trip faithfully preserves all dialect fields."
+      }
     },
     {
       "id": "AC-T31-02",
       "result": "passed",
       "artifact": "src/Application/ImportExport/SnapshotExporter.php",
-      "observation": "Permission download kiểm tra mỗi lần; loss report có field/path/reason"
+      "observation": "Permission download kiểm tra mỗi lần; loss report có field/path/reason",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -74,5 +100,130 @@
     "src/Application/ImportExport/SnapshotExporter.php",
     "tests/integration/T31Test.php",
     "docs/evidence/T31/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4012,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 344,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1158,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 26,
+      "wp_wpe_variants": 133,
+      "wp_posts": 244,
+      "wp_postmeta": 2585
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 9,
+      "wp_wpe_object_state": 2,
+      "wp_wpe_outbox": 9,
+      "wp_wpe_variant_values": 2,
+      "wp_posts": 2,
+      "wp_postmeta": 1
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 2,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/ImportExport/SnapshotExporter.php": "e6c14b5b5a039ad9152de711af8e8aebc0a210d66ef7f6fc47d20ce9f08cdde3",
+    "tests/integration/T31Test.php": "12c44c1f15aaccc5d55eba74bade283beabd07083f6af8a816c452d5c67d7c85"
+  }
 }

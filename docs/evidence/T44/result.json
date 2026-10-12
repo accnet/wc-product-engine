@@ -1,11 +1,11 @@
 {
   "task_id": "T44",
-  "commit": "ecb1ca03f813428a2c5630e63ecc3df2139d854d",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "7e8006b1ae5d9ac52241367b73193b41a4eaee93093022b4f99ad32fe240ca55",
+  "content_digest": "cbc65923246907e16c5a50acfed109d9da7ba61cfa38782e69327a8f67be3b73",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T44/output.log",
       "output_sha256": "4e367c0439e44fd29ed5d0ce4df8e6d06cdf4619554fe50e5a5826cab18cb42d",
-      "content_digest": "7e8006b1ae5d9ac52241367b73193b41a4eaee93093022b4f99ad32fe240ca55"
+      "content_digest": "cbc65923246907e16c5a50acfed109d9da7ba61cfa38782e69327a8f67be3b73"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R177_poison_legacy_price_stock",
-      "assertion_summary": "Verified reading native product returned 100% canonical native price, stock, and SKU values without falling back to heavily poisoned legacy postmeta"
+      "assertion_summary": "Verified reading native product returned 100% canonical native price, stock, and SKU values without falling back to heavily poisoned legacy postmeta",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R177 passed: reading native product returned 100% canonical native values despite poisoned postmeta"
+      }
     },
     {
       "id": "R178",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R178_projection_off_native_crud",
-      "assertion_summary": "Verified native catalog CRUD operations operate with complete independence and durability when legacy mirror projection is turned off"
+      "assertion_summary": "Verified native catalog CRUD operations operate with complete independence and durability when legacy mirror projection is turned off",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R178 passed: native catalog CRUD operates completely independently with projection disabled"
+      }
     },
     {
       "id": "R179",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R179_factory_shell_retained",
-      "assertion_summary": "Verified post shells are preserved strictly for factory hydration without storing canonical business properties; query classifier distinguishes valid reads from CPT fallback"
+      "assertion_summary": "Verified post shells are preserved strictly for factory hydration without storing canonical business properties; query classifier distinguishes valid reads from CPT fallback",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R179 passed: post shells preserved for factory hydration; query classification strictly distinguishes valid reads from CPT fallback"
+      }
     },
     {
       "id": "R180",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R180_native_reservation_independence",
-      "assertion_summary": "Verified native inventory reservations and checkout deductions operate with zero reliance on legacy postmeta _stock or _stock_status"
+      "assertion_summary": "Verified native inventory reservations and checkout deductions operate with zero reliance on legacy postmeta _stock or _stock_status",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R180 passed: native stock reservations and deductions operate with zero reliance on legacy postmeta"
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +80,34 @@
       "id": "AC-T44-01",
       "result": "passed",
       "artifact": "src/Application/Rollout/NativeIndependenceHarness.php",
-      "observation": "Không lấy giá/stock/options từ poison meta; zero unsupported business-prop CPT reads trên certified paths"
+      "observation": "Không lấy giá/stock/options từ poison meta; zero unsupported business-prop CPT reads trên certified paths",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "✓ AC-T44-01 passed: zero data extracted from poisoned legacy metadata across certified paths"
+      }
     },
     {
       "id": "AC-T44-02",
       "result": "passed",
       "artifact": "src/Application/Rollout/NativeIndependenceHarness.php",
-      "observation": "Không test phá data production"
+      "observation": "Không test phá data production",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ AC-T44-02 passed: test products strictly isolated and cleaned up without touching production catalog"
+      }
     },
     {
       "id": "AC-T44-03",
       "result": "passed",
       "artifact": "src/Application/Rollout/NativeIndependenceHarness.php",
-      "observation": "Path chưa đạt giữ native_bridge/indexed và blocker rõ"
+      "observation": "Path chưa đạt giữ native_bridge/indexed và blocker rõ",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 15,
+        "text": "✓ AC-T44-03 passed: unsupported paths correctly classified as blocked from native authority"
+      }
     }
   ],
   "blockers": [],
@@ -80,5 +115,126 @@
     "src/Application/Rollout/NativeIndependenceHarness.php",
     "tests/integration/T44Test.php",
     "docs/evidence/T44/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1150,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 4,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_outbox": 1,
+      "wp_wpe_reservation_bridge": 1
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Rollout/NativeIndependenceHarness.php": "88f27be81863c4250c94fbf25bff366041295f5b6b36e01f73b2c7d9417c7621",
+    "tests/integration/T44Test.php": "c7e85bf2970c75238fb9c23f9b74348739847a5f3ffcff416afa8544968057cf"
+  }
 }

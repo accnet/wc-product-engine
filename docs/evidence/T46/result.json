@@ -1,11 +1,11 @@
 {
   "task_id": "T46",
-  "commit": "a5c1bce04648da266afde1c127c82a69aae0e6d0",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "3768f92869feade3915b7fd12a0558a3fd6b8b68c965b70d21a263b69854c275",
+  "content_digest": "5f6bf316a51f48955988e2c77195dbf1679917f9337e24316268c694cd6366cf",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T46",
       "exit_code": 0,
       "output_path": "docs/evidence/T46/output.log",
-      "output_sha256": "07b1f2c15b33bd66779add996d5b4f71d763b5554f78a0c0aaa09e72113fdc1c",
-      "content_digest": "3768f92869feade3915b7fd12a0558a3fd6b8b68c965b70d21a263b69854c275"
+      "output_sha256": "9e8978e6976c557e149c8b014e093cb24c50339150071202d2c806abc2f24d75",
+      "content_digest": "5f6bf316a51f48955988e2c77195dbf1679917f9337e24316268c694cd6366cf"
     }
   ],
   "regression_results": [
@@ -31,28 +31,96 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R185_gc_shared_refs_and_orders",
-      "assertion_summary": "Verified garbage collection prunes duplicated postmeta while strictly preserving post shells, order item references, shared media, and stock operations"
+      "assertion_summary": "Verified garbage collection prunes duplicated postmeta while strictly preserving post shells, order item references, shared media, and stock operations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R185 passed: Garbage collection prunes duplicated postmeta while strictly preserving shared refs, shells, and orders"
+      }
     },
     {
       "id": "R186",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R186_cleanup_resume",
-      "assertion_summary": "Verified resumable chunked cleanup with database checkpoints in wpe_jobs recovering from failure and completing idempotently"
+      "assertion_summary": "Verified resumable chunked cleanup with database checkpoints in wpe_jobs recovering from failure and completing idempotently",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "✓ R186 passed: Resumable chunked cleanup with database checkpoints operates reliably"
+      }
     },
     {
       "id": "R187",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R187_cleanup_requires_restore_gate",
-      "assertion_summary": "Verified cleanup strictly requires verified restore drill pass and expired rollback window before cleaning duplicated postmeta (fail-closed)"
+      "assertion_summary": "Verified cleanup strictly requires verified restore drill pass and expired rollback window before cleaning duplicated postmeta (fail-closed)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 14,
+        "text": "✓ R187 passed: Verified restore drill gate is strictly required before cleanup execution"
+      }
     },
     {
       "id": "R188",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R188_rollback_after_mirror_stopped",
-      "assertion_summary": "Verified rollback after mirror stopped strictly acquires write barrier and reprojects current native data to legacy storage before authority switch"
+      "assertion_summary": "Verified rollback after mirror stopped strictly acquires write barrier and reprojects current native data to legacy storage before authority switch",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "✓ R188 passed: Rollback after stopped mirror safely reprojects current native data before authority switch"
+      }
+    },
+    {
+      "id": "R206",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R206_cleanup_requires_explicit_scope",
+      "assertion_summary": "Task test output asserts requirement cleanup_requires_explicit_scope",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "✓ R206 passed: cleanup only runs for an explicit product scope that is recorded on the job"
+      }
+    },
+    {
+      "id": "R207",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R207_cleanup_requires_native_row",
+      "assertion_summary": "Task test output asserts requirement cleanup_requires_native_row",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 29,
+        "text": "✓ R207 passed: cleanup needs a native row and a sealed authority for every product"
+      }
+    },
+    {
+      "id": "R208",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R208_cleanup_requires_rollback_window",
+      "assertion_summary": "Task test output asserts requirement cleanup_requires_rollback_window",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 34,
+        "text": "✓ R208 passed: cleanup is blocked until the configured rollback window has elapsed"
+      }
+    },
+    {
+      "id": "R209",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R209_restore_gate_is_per_cohort",
+      "assertion_summary": "Task test output asserts requirement restore_gate_is_per_cohort",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 39,
+        "text": "✓ R209 passed: restore drill gate is evaluated per cohort with no global shortcut"
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +128,34 @@
       "id": "AC-T46-01",
       "result": "passed",
       "artifact": "src/Application/Rollout/RetentionCleaner.php",
-      "observation": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ"
+      "observation": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 41,
+        "text": "✓ AC-T46-01 passed: Dry-run accurately reports IDs, bytes, rollback impact with zero DB mutations"
+      }
     },
     {
       "id": "AC-T46-02",
       "result": "passed",
       "artifact": "src/Application/Rollout/RetentionCleaner.php",
-      "observation": "Cleanup không automatic on upgrade/activate/deactivate"
+      "observation": "Cleanup không automatic on upgrade/activate/deactivate",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 46,
+        "text": "✓ AC-T46-02 passed: Cleanup is never automatic on upgrade, activate, or deactivate"
+      }
     },
     {
       "id": "AC-T46-03",
       "result": "passed",
       "artifact": "src/Application/Rollout/RetentionCleaner.php",
-      "observation": "Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch"
+      "observation": "Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 49,
+        "text": "✓ AC-T46-03 passed: Safe fallback reprojects current native data under write barrier before authority switch"
+      }
     }
   ],
   "blockers": [],
@@ -80,5 +163,125 @@
     "src/Application/Rollout/RetentionCleaner.php",
     "tests/integration/T46Test.php",
     "docs/evidence/T46/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4014,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 11
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Rollout/RetentionCleaner.php": "3075a777f23ffc06fef8455ce8e39be05492c2367e6959efbd4e695f7bbf4440",
+    "tests/integration/T46Test.php": "fb8e321e1b7831c8e62db21ace87ecfad2c0de2d84164e160a62ce3de1126ae7"
+  }
 }

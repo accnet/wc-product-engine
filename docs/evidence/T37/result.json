@@ -1,11 +1,11 @@
 {
   "task_id": "T37",
-  "commit": "5b84e38376a916ee8de9c37a3c53b45e568f0f18",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "906f7034bc52d8c5536813820a473a90f95da0f87e4d7780483f11e35b7bf961",
+  "content_digest": "6ec0803f163a0cd53e1190988a1c847203a7151864c1b95ee7ded7d81bcc85a9",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T37/output.log",
       "output_sha256": "255fb9d662392c5cab821a891df385f7703b4ea94e380c260bc4ffe142c7b3cd",
-      "content_digest": "906f7034bc52d8c5536813820a473a90f95da0f87e4d7780483f11e35b7bf961"
+      "content_digest": "6ec0803f163a0cd53e1190988a1c847203a7151864c1b95ee7ded7d81bcc85a9"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R149_missed_hook_reconcile",
-      "assertion_summary": "Reconciliation scanner detected missed hooks via high-water mark and content hashes, repairing native projection in native storage"
+      "assertion_summary": "Reconciliation scanner detected missed hooks via high-water mark and content hashes, repairing native projection in native storage",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "✓ R149 passed: missed hook detected and repaired via reconciliation scanner"
+      }
     },
     {
       "id": "R150",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R150_term_stock_delete_capture",
-      "assertion_summary": "Captured post, taxonomy terms, stock, and trash/delete hooks; coalesced child variation changes to parent aggregate ID"
+      "assertion_summary": "Captured post, taxonomy terms, stock, and trash/delete hooks; coalesced child variation changes to parent aggregate ID",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R150 passed: terms, stock, trash hooks captured and variations coalesce to parent"
+      }
     },
     {
       "id": "R151",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R151_raw_sql_detected_audit",
-      "assertion_summary": "Direct SQL modifications without hooks detected by reconciliation scanner and recorded as raw_sql_detected alerts in wpe_audit"
+      "assertion_summary": "Direct SQL modifications without hooks detected by reconciliation scanner and recorded as raw_sql_detected alerts in wpe_audit",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "✓ R151 passed: direct SQL mutations detected and logged in wpe_audit"
+      }
     },
     {
       "id": "R152",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R152_origin_guard_no_pingpong",
-      "assertion_summary": "Origin guard withOrigin suppressed legacy hooks during native projection, preventing infinite ping-pong sync loops"
+      "assertion_summary": "Origin guard withOrigin suppressed legacy hooks during native projection, preventing infinite ping-pong sync loops",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R152 passed: origin guard successfully suppresses legacy hooks during native projection"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T37-01",
       "result": "passed",
       "artifact": "src/Application/Migration/LegacyCapture.php",
-      "observation": "Missed hook được reconciliation repair; projection không gọi lại sync loop"
+      "observation": "Missed hook được reconciliation repair; projection không gọi lại sync loop",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "✓ AC-T37-01 passed: missed hook repaired by scanner and projection does not trigger sync loop"
+      }
     },
     {
       "id": "AC-T37-02",
       "result": "passed",
       "artifact": "src/Application/Migration/LegacyCapture.php",
-      "observation": "Native authority legacy mismatches tạo alert, không overwrite native tự động"
+      "observation": "Native authority legacy mismatches tạo alert, không overwrite native tự động",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ AC-T37-02 passed: legacy mutations under native authority generate alerts and never overwrite native storage"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,129 @@
     "src/Application/Migration/LegacyCapture.php",
     "tests/integration/T37Test.php",
     "docs/evidence/T37/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4305,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 275,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 349,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 121,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 216,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 302,
+      "wp_wpe_inventory": 12,
+      "wp_wpe_object_state": 7,
+      "wp_wpe_products": 7,
+      "wp_wpe_sku_registry": 1
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Migration/LegacyCapture.php": "c2036d9be9a0622de1a96826c933d655e9e26f96de4028513eae4484c87ce06d",
+    "tests/integration/T37Test.php": "b5401a3bd6901d241200b7c63eac1ea396a2641301379b524e2b7a138df2de8f"
+  }
 }

@@ -1,11 +1,11 @@
 {
   "task_id": "T20",
-  "commit": "4280ea2172958698f47571ea8deb4a8d30468da2",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "8ed347325b7cedbdcc8c0040486e956d0b5f6a0d872df694502eacdd91e1023c",
+  "content_digest": "35b4da826e6c1e3ae61e439acf2253e6e2b0d5a8627450bd481c1c1768097e97",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T20",
       "exit_code": 0,
       "output_path": "docs/evidence/T20/output.log",
-      "output_sha256": "6b0a9a065f685928bc2cc994f1f6133abaf97bf5bc5360697e1c04008947b4c1",
-      "content_digest": "8ed347325b7cedbdcc8c0040486e956d0b5f6a0d872df694502eacdd91e1023c"
+      "output_sha256": "46b44d8525113b408e86ba1ba13328d408606339adb6b057d347dd002b893a1e",
+      "content_digest": "35b4da826e6c1e3ae61e439acf2253e6e2b0d5a8627450bd481c1c1768097e97"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R79_context_cache_isolation",
-      "assertion_summary": "Verified context cache isolation across currency, tax, and customer group dimensions"
+      "assertion_summary": "Verified context cache isolation across currency, tax, and customer group dimensions",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "PASSED: R79 context cache isolation verified between USD/US-CA/retail and EUR/DE/wholesale."
+      }
     },
     {
       "id": "R80",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R80_visibility_cache_invalidate",
-      "assertion_summary": "Verified product visibility and status updates invalidate cache preventing draft leaks"
+      "assertion_summary": "Verified product visibility and status updates invalidate cache preventing draft leaks",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "PASSED: R80 visibility cache invalidation verified. Cache epoch incremented, busting stale keys."
+      }
     },
     {
       "id": "R81",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R81_cache_stampede",
-      "assertion_summary": "Verified atomic mutex lock prevents cache stampede on concurrent misses"
+      "assertion_summary": "Verified atomic mutex lock prevents cache stampede on concurrent misses",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "PASSED: R81 cache stampede protection verified. Mutex lock prevents redundant executions."
+      }
     },
     {
       "id": "R82",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R82_dynamic_price_filter_before_pagination",
-      "assertion_summary": "Verified pricing compatibility gate routes unindexed dynamic pricing to fallback"
+      "assertion_summary": "Verified pricing compatibility gate routes unindexed dynamic pricing to fallback",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "PASSED: R82 pricing compatibility gate verified. Correctly routes to fallback_legacy when pre-pagination price filtering cannot guarantee accuracy."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T20-01",
       "result": "passed",
       "artifact": "src/Application/Catalog/ContextCache.php",
-      "observation": "Hai tax/customer/currency contexts không dùng chung giá; changed visibility không leak draft qua cache"
+      "observation": "Hai tax/customer/currency contexts không dùng chung giá; changed visibility không leak draft qua cache",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "AC-T20-01 (context_isolation_visibility_invalidate): PASSED"
+      }
     },
     {
       "id": "AC-T20-02",
       "result": "passed",
       "artifact": "src/Application/Catalog/ContextCache.php",
-      "observation": "Outbox backlog có observable lag và fallback chỉ về canonical đúng authority"
+      "observation": "Outbox backlog có observable lag và fallback chỉ về canonical đúng authority",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "PASSED: AC-T20-02 outbox lag observable: pending=1139, lag=27589s, status=degraded."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,123 @@
     "src/Application/Catalog/ContextCache.php",
     "tests/integration/T20Test.php",
     "docs/evidence/T20/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Catalog/ContextCache.php": "931bd3dd5a1b982c67fb6da8ad554b3ec3360905ccda2bc23daff8f0b2ba4fbd",
+    "tests/integration/T20Test.php": "e5a757fb976f7b4cf2fc5ea828aa9c8519603a212190e9ffe4a8b3ceadfab95d"
+  }
 }

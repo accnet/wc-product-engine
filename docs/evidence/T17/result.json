@@ -1,11 +1,11 @@
 {
   "task_id": "T17",
-  "commit": "69a28955bf00f95b2de21f491f9e3de8a9154e62",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "4423331e11b33503ab6532454230504a54cbc613980eaecfdec3fd9fe1c52eab",
+  "content_digest": "fdd654fc914a58420003b3e186062bd07c7688c4132dd4ff0a68dbfd4d41ebb6",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T17/output.log",
       "output_sha256": "e7021f41ca7f80a8b33b98ea62c68d57f22baa3cabea2532dcbff9986c66ed9d",
-      "content_digest": "4423331e11b33503ab6532454230504a54cbc613980eaecfdec3fd9fe1c52eab"
+      "content_digest": "fdd654fc914a58420003b3e186062bd07c7688c4132dd4ff0a68dbfd4d41ebb6"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R67_filter_sort_diff",
-      "assertion_summary": "Verified multi-field filtering (category, tag, attributes, price range, stock, sale, search) and deterministic sorting"
+      "assertion_summary": "Verified multi-field filtering (category, tag, attributes, price range, stock, sale, search) and deterministic sorting",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "PASSED: R67 (filter_sort_diff) verified successfully."
+      }
     },
     {
       "id": "R68",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R68_equal_price_cursor_tie",
-      "assertion_summary": "Verified keyset cursor pagination with stable (sort_value, product_id) tie-breaking across pages without duplicates or missing items"
+      "assertion_summary": "Verified keyset cursor pagination with stable (sort_value, product_id) tie-breaking across pages without duplicates or missing items",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "PASSED: R68 (equal_price_cursor_tie) 10 products traversed across 3 pages cleanly without duplicates or gaps."
+      }
     },
     {
       "id": "R69",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R69_cursor_tamper_query_mismatch",
-      "assertion_summary": "Verified HMAC cursor signature verification, expiry check, and query hash mismatch rejection"
+      "assertion_summary": "Verified HMAC cursor signature verification, expiry check, and query hash mismatch rejection",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "PASSED: R69 (cursor_tamper_query_mismatch) tamper, expiry, and mismatch strictly rejected."
+      }
     },
     {
       "id": "R70",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R70_limit_cap_and_null_price",
-      "assertion_summary": "Verified limit cap (max 100, default 48) and explicit nulls-last price ordering on asc and desc"
+      "assertion_summary": "Verified limit cap (max 100, default 48) and explicit nulls-last price ordering on asc and desc",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "PASSED: R70 (limit_cap_and_null_price) limit cap 100 and nulls-last verified in both directions."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T17-01",
       "result": "passed",
       "artifact": "src/Application/Catalog/CatalogQuery.php",
-      "observation": "Result IDs/order khớp fixture semantic mode; injection/cursor tamper reject; page 1 size đúng không N+1 theo số matches"
+      "observation": "Result IDs/order khớp fixture semantic mode; injection/cursor tamper reject; page 1 size đúng không N+1 theo số matches",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "PASSED: AC-T17-01 card projection and injection resistance verified."
+      }
     },
     {
       "id": "AC-T17-02",
       "result": "passed",
       "artifact": "src/Application/Catalog/CatalogQuery.php",
-      "observation": "Live traversal semantics documented, export không reuse cursor như snapshot"
+      "observation": "Live traversal semantics documented, export không reuse cursor như snapshot",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "PASSED: AC-T17-02 live traversal semantics verified: Large CSV catalog exports must use immutable snapshot staging tables, NOT live pagination cursors."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,126 @@
     "src/Application/Catalog/CatalogQuery.php",
     "tests/integration/T17Test.php",
     "docs/evidence/T17/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4020,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1166,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 17,
+      "wp_wpe_outbox": 17
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Catalog/CatalogQuery.php": "eeecc11bba6ac13a4fc622041b560f6d71a44db742a1a265453de6a80acffef2",
+    "tests/integration/T17Test.php": "fca9239584b93bfbdaf1e06680eca2811e7e1471d496c619eae2e49d42a9a5dd"
+  }
 }

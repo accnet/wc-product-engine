@@ -1,11 +1,11 @@
 {
   "task_id": "T47",
-  "commit": "d205b40f8da94034692b2c540888c3e312e9ea76",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "53620030eaddfde83213ce83bbc16ac46fe359c6b39606182118da685e790598",
+  "content_digest": "238a6cf54211ec39defb2ea63589a522fbe566fc312964375c0ad2c56c1cb0ee",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T47",
       "exit_code": 0,
       "output_path": "docs/evidence/T47/output.log",
-      "output_sha256": "cdec7b54520fd619a067a76d4cfb923da3a6d97cb011d60c78ba807d4d03f84a",
-      "content_digest": "53620030eaddfde83213ce83bbc16ac46fe359c6b39606182118da685e790598"
+      "output_sha256": "f0e4b4c43c606dc12da6eb058d9f5d5032ebce92780e5d03031e74dfbd5b29fb",
+      "content_digest": "238a6cf54211ec39defb2ea63589a522fbe566fc312964375c0ad2c56c1cb0ee"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R189_scale_filter_facet_plan",
-      "assertion_summary": "Verified EXPLAIN execution plans on native indexes (idx_cat_filter, PRIMARY) and validated selective catalog filter and facet calculation DB p95 latencies within budget"
+      "assertion_summary": "Verified EXPLAIN execution plans on native indexes (idx_cat_filter, PRIMARY) and validated selective catalog filter and facet calculation DB p95 latencies within budget",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "✓ R189 passed: EXPLAIN execution plans use proper indexes and query latencies satisfy budgets"
+      }
     },
     {
       "id": "R190",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R190_deep_page_budget",
-      "assertion_summary": "Verified keyset pagination executes with O(1) compound index lookup (idx_cat_filter) and deep page traversal DB p95 remains strictly within budget"
+      "assertion_summary": "Verified keyset pagination executes with O(1) compound index lookup (idx_cat_filter) and deep page traversal DB p95 remains strictly within budget",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "✓ R190 passed: Keyset pagination maintains O(1) index seek and stays strictly within budget"
+      }
     },
     {
       "id": "R191",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R191_concurrent_import_checkout",
-      "assertion_summary": "Verified concurrent keyset backfill and import write load does not regress storefront checkout latency; zero oversell and idempotency verified"
+      "assertion_summary": "Verified concurrent keyset backfill and import write load does not regress storefront checkout latency; zero oversell and idempotency verified",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 13,
+        "text": "✓ R191 passed: Concurrent write load did not degrade checkout p95 beyond budget; 0 oversell, idempotency strictly verified"
+      }
     },
     {
       "id": "R192",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R192_memory_growth_bounded",
-      "assertion_summary": "Verified streaming catalog traversal maintains bounded flat memory consumption far below the 256 MiB worker budget"
+      "assertion_summary": "Verified streaming catalog traversal maintains bounded flat memory consumption far below the 256 MiB worker budget",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "✓ R192 passed: Memory growth is strictly bounded and remains far below 256 MiB worker budget"
+      }
     },
     {
       "id": "R193",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R193_cache_cold_warm",
-      "assertion_summary": "Verified warm cache delivers strong speedup and atomic mutex stampede protection prevents duplicate database queries under concurrency"
+      "assertion_summary": "Verified warm cache delivers strong speedup and atomic mutex stampede protection prevents duplicate database queries under concurrency",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "✓ R193 passed: Warm cache delivers strong speedup and mutex stampede protection prevents duplicate query execution"
+      }
     }
   ],
   "acceptance": [
@@ -67,19 +92,34 @@
       "id": "AC-T47-01",
       "result": "passed",
       "artifact": "tests/performance/ScaleBenchmark.mjs",
-      "observation": "Ngưỡng ở phần 9/07 §6 được chốt trên baseline; critical p95 không suy giảm >10% proposed budget (catalog 48 filter <= 100ms, facets <= 250ms, keyset deep <= 100ms, checkout <= 50ms, RAM <= 256 MiB)"
+      "observation": "Ngưỡng ở phần 9/07 §6 được chốt trên baseline; critical p95 không suy giảm >10% proposed budget (catalog 48 filter <= 100ms, facets <= 250ms, keyset deep <= 100ms, checkout <= 50ms, RAM <= 256 MiB)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "✓ AC-T47-01 passed: All critical p95 metrics comply with proposed budgets without regression >10%"
+      }
     },
     {
       "id": "AC-T47-02",
       "result": "passed",
       "artifact": "tests/integration/T47Test.php",
-      "observation": "Index query speed được directly measured bằng microtime timers qua nhiều iterations, báo cáo đầy đủ p50/p95/p99/min/max thay vì suy diễn từ row count"
+      "observation": "Index query speed được directly measured bằng microtime timers qua nhiều iterations, báo cáo đầy đủ p50/p95/p99/min/max thay vì suy diễn từ row count",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 29,
+        "text": "✓ AC-T47-02 passed: All index query speeds directly measured via microsecond timers across multi-sample distributions"
+      }
     },
     {
       "id": "AC-T47-03",
       "result": "passed",
       "artifact": "tests/performance/ScaleBenchmark.mjs",
-      "observation": "Báo cáo storage footprint chi tiết cho retained shells/meta và phân tích slow unsupported legacy queries (filesort và temporary tables do unindexed postmeta)"
+      "observation": "Báo cáo storage footprint chi tiết cho retained shells/meta và phân tích slow unsupported legacy queries (filesort và temporary tables do unindexed postmeta)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 33,
+        "text": "✓ AC-T47-03 passed: Retained shell storage footprint calculated and slow unsupported legacy queries classified"
+      }
     }
   ],
   "blockers": [],
@@ -87,5 +127,125 @@
     "tests/performance/ScaleBenchmark.mjs",
     "tests/integration/T47Test.php",
     "docs/evidence/T47/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1199,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_outbox": 50
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "tests/integration/T47Test.php": "ef2e5900ae422c4ad21a27289b65f8d9cb06917b01033b67056a198f45ee0e90",
+    "tests/performance/ScaleBenchmark.mjs": "aa891da2c0be28bc00d1f125c7b3f54fadb6f09606ff6731c8f73da01068a560"
+  }
 }

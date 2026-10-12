@@ -1,11 +1,11 @@
 {
   "task_id": "T07",
-  "commit": "3388bc4349938cae427d93ea4c56903b2c4decac",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "08520d485df7a2a245b5ab2ed3d67eac2d7e49651bf6b05642630389d89632cf",
+  "content_digest": "0f2087501b54dde17f217cd69a44340ab05e25a8a0dec515cb370304c4a8d12d",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -19,7 +19,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T07/output.log",
       "output_sha256": "62933d61990bdc2f0068005869d3932e73ee1abc9dece88b6dcd48be1b5b7b89",
-      "content_digest": "08520d485df7a2a245b5ab2ed3d67eac2d7e49651bf6b05642630389d89632cf"
+      "content_digest": "0f2087501b54dde17f217cd69a44340ab05e25a8a0dec515cb370304c4a8d12d"
     }
   ],
   "regression_results": [
@@ -28,35 +28,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R23_unicode_value_key",
-      "assertion_summary": "Verified Unicode labels and keys preservation without identity or encoding corruption"
+      "assertion_summary": "Verified Unicode labels and keys preservation without identity or encoding corruption",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 18,
+        "text": "R23 (unicode_value_key): PASSED"
+      }
     },
     {
       "id": "R24",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R24_hash_collision_simulated",
-      "assertion_summary": "Verified simulated hash collision triggers full selection vector comparison and rejects false equality"
+      "assertion_summary": "Verified simulated hash collision triggers full selection vector comparison and rejects false equality",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "R24 (hash_collision_simulated): PASSED"
+      }
     },
     {
       "id": "R25",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R25_rename_reorder_preserve_id",
-      "assertion_summary": "Verified renaming and reordering options and values strictly preserves object IDs"
+      "assertion_summary": "Verified renaming and reordering options and values strictly preserves object IDs",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 20,
+        "text": "R25 (rename_reorder_preserve_id): PASSED"
+      }
     },
     {
       "id": "R26",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R26_any_vs_empty",
-      "assertion_summary": "Verified wildcard ANY and empty string produce distinct selection vectors and non-colliding keys"
+      "assertion_summary": "Verified wildcard ANY and empty string produce distinct selection vectors and non-colliding keys",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 21,
+        "text": "R26 (any_vs_empty): PASSED"
+      }
     },
     {
       "id": "R27",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R27_no_cartesian_variants",
-      "assertion_summary": "Verified adding options does not trigger implicit Cartesian variant generation"
+      "assertion_summary": "Verified adding options does not trigger implicit Cartesian variant generation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "R27 (no_cartesian_variants): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -64,13 +89,23 @@
       "id": "AC-T07-01",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/OptionsRepository.php",
-      "observation": "Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng"
+      "observation": "Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "AC-T07-01 (parent_bounds_defaults): PASSED"
+      }
     },
     {
       "id": "AC-T07-02",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/OptionsRepository.php",
-      "observation": "Duplicate combinations được report, không silent overwrite"
+      "observation": "Duplicate combinations được report, không silent overwrite",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "AC-T07-02 (duplicate_combination_report): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -78,5 +113,135 @@
     "src/Infrastructure/Database/OptionsRepository.php",
     "tests/unit/T07Test.php",
     "docs/evidence/T07/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4011,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 277,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 356,
+      "wp_wpe_option_values": 78,
+      "wp_wpe_options": 41,
+      "wp_wpe_outbox": 1157,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 122,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 229,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 26,
+      "wp_wpe_variants": 139,
+      "wp_posts": 256,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 8,
+      "wp_wpe_inventory": 14,
+      "wp_wpe_object_state": 14,
+      "wp_wpe_option_values": 17,
+      "wp_wpe_options": 9,
+      "wp_wpe_outbox": 8,
+      "wp_wpe_products": 8,
+      "wp_wpe_sku_registry": 14,
+      "wp_wpe_variant_values": 2,
+      "wp_wpe_variants": 6,
+      "wp_posts": 14
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 6,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Infrastructure/Database/OptionsRepository.php": "7e70418c89b7d70dd53b429704d5e83eaf0a4ca91249962130776c9a7b8db4b9",
+    "tests/unit/T07Test.php": "ce7a1b5cb779c86f40f8c12bdbb13b94ee5c29c5cffdeae7df2af3ed16ed1186"
+  }
 }

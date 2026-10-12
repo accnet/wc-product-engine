@@ -1,11 +1,11 @@
 {
   "task_id": "T33",
-  "commit": "4af73d29ebc899ae8e12c8dd546fbdd26b7d7daf",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "d0930e3eebf05e99e30f3f64099c415b1615f0d793b59948f18ac8c092055247",
+  "content_digest": "f6e1d958b75afcf05c296ecddd33c05502ee8820875893697788612352bb6957",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T33/output.log",
       "output_sha256": "47ab64ad00677e88f8b7a7219c516aba9a8cca36eae0cfa65fdea536f40f2e77",
-      "content_digest": "d0930e3eebf05e99e30f3f64099c415b1615f0d793b59948f18ac8c092055247"
+      "content_digest": "f6e1d958b75afcf05c296ecddd33c05502ee8820875893697788612352bb6957"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R132_woo_export_into_baseline",
-      "assertion_summary": "Verified exported products adhere to native WooCommerce baseline CSV format and column specifications"
+      "assertion_summary": "Verified exported products adhere to native WooCommerce baseline CSV format and column specifications",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R132 passed: Woo export generates valid baseline WooCommerce CSV."
+      }
     },
     {
       "id": "R133",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R133_woo_csv_roundtrip_subset",
-      "assertion_summary": "Verified engine product -> export to Woo CSV -> import via WooImporter produces equivalent subset equality"
+      "assertion_summary": "Verified engine product -> export to Woo CSV -> import via WooImporter produces equivalent subset equality",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "R133 passed: Engine -> Woo export -> Woo import round-trip subset equality verified."
+      }
     },
     {
       "id": "R134",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R134_native_exporter_hooks",
-      "assertion_summary": "Verified integration hooks adapting native WooCommerce CSV Exporter (woocommerce_product_export_row_data, etc.)"
+      "assertion_summary": "Verified integration hooks adapting native WooCommerce CSV Exporter (woocommerce_product_export_row_data, etc.)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "R134 passed: Native WooCommerce CSV Exporter hooks successfully registered and verified."
+      }
     },
     {
       "id": "R135",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R135_image_url_order_and_loss",
-      "assertion_summary": "Verified featured first then gallery image ordering, variation primary image in row, and multi-gallery variation loss report"
+      "assertion_summary": "Verified featured first then gallery image ordering, variation primary image in row, and multi-gallery variation loss report",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "R135 passed: Image URL ordering and variation multi-gallery loss report verified."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,19 @@
       "id": "AC-T33-01",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Woo/WooExporter.php",
-      "observation": "Woo stock site test import file đạt subset equality; engine→Woo→engine giữ IDs qua source mapping hợp lệ hoặc report remap khi cross-site"
+      "observation": "Woo stock site test import file đạt subset equality; engine→Woo→engine giữ IDs qua source mapping hợp lệ hoặc report remap khi cross-site",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T33-02",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Woo/WooExporter.php",
-      "observation": "Không cố gán numeric ID mới từ CSV; hệ thống cấp phát ID theo thẩm quyền native"
+      "observation": "Không cố gán numeric ID mới từ CSV; hệ thống cấp phát ID theo thẩm quyền native",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "AC-T33-02 passed: Arbitrary numeric ID injection strictly avoided; system allocates authoritative shell ID."
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +100,128 @@
     "src/Compatibility/Csv/Woo/WooExporter.php",
     "tests/integration/T33Test.php",
     "docs/evidence/T33/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4013,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 347,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1159,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 244,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 10,
+      "wp_wpe_object_state": 5,
+      "wp_wpe_outbox": 10,
+      "wp_posts": 2
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 2,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/Csv/Woo/WooExporter.php": "b01243b147f5a10b3052ae915b10a04d171bf526c91050479ea9a2ed791a3a60",
+    "tests/integration/T33Test.php": "e367cf9bb14badd1a3b11b747e9c64d5e7030d3bfb568e6c8f62577dc065a7ec"
+  }
 }

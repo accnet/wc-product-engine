@@ -1,11 +1,11 @@
 {
   "task_id": "T06",
-  "commit": "f56deba1810dda264b87633b42eb90d7cd8ce5e2",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "4f106cca80b492512b3a7fda9cd6287b05a0952d6d85a18e8c38c1498685433a",
+  "content_digest": "b65f0cc58e3dcd433fe3de9ad25c45b862d524790195db7280ac04f6b788979f",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T06",
       "exit_code": 0,
       "output_path": "docs/evidence/T06/output.log",
-      "output_sha256": "7aae45b7037b3b4ab6284062a17228cd383cb26bf3c42a369a96e6c0c8c176a6",
-      "content_digest": "4f106cca80b492512b3a7fda9cd6287b05a0952d6d85a18e8c38c1498685433a"
+      "output_sha256": "d8b84102059e4bbcebfeb42f9ac24f168a7798462ebd8bdbc13f332911822e2b",
+      "content_digest": "b65f0cc58e3dcd433fe3de9ad25c45b862d524790195db7280ac04f6b788979f"
     }
   ],
   "regression_results": [
@@ -31,35 +31,60 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R18_aggregate_atomicity",
-      "assertion_summary": "Verified atomic aggregate write; invalid child price rolls back entire aggregate without partial data"
+      "assertion_summary": "Verified atomic aggregate write; invalid child price rolls back entire aggregate without partial data",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 18,
+        "text": "R18 (aggregate_atomicity): PASSED"
+      }
     },
     {
       "id": "R19",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R19_sku_race",
-      "assertion_summary": "Verified duplicate SKU race only permits one winner via sku_registry unique constraint"
+      "assertion_summary": "Verified duplicate SKU race only permits one winner via sku_registry unique constraint",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "R19 (sku_race): PASSED"
+      }
     },
     {
       "id": "R20",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R20_variant_wrong_parent",
-      "assertion_summary": "Verified variant with mismatched parent_id is rejected by parent boundary check"
+      "assertion_summary": "Verified variant with mismatched parent_id is rejected by parent boundary check",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 20,
+        "text": "R20 (variant_wrong_parent): PASSED"
+      }
     },
     {
       "id": "R21",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R21_deleted_product_order_reference",
-      "assertion_summary": "Verified soft deletion tombstones product and variant while preserving IDs for historical orders"
+      "assertion_summary": "Verified soft deletion tombstones product and variant while preserving IDs for historical orders",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 21,
+        "text": "R21 (deleted_product_order_reference): PASSED"
+      }
     },
     {
       "id": "R22",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R22_stale_write_412",
-      "assertion_summary": "Verified CAS version mismatch rejects stale write with 412 Precondition Failed"
+      "assertion_summary": "Verified CAS version mismatch rejects stale write with 412 Precondition Failed",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 22,
+        "text": "R22 (stale_write_412): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -67,13 +92,23 @@
       "id": "AC-T06-01",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/ProductRepository.php",
-      "observation": "Save rồi reload khớp canonical snapshot; duplicate SKU race chỉ một winner; invalid child/price không lưu nửa aggregate; cập nhật phiên bản và outbox transaction theo T09"
+      "observation": "Save rồi reload khớp canonical snapshot; duplicate SKU race chỉ một winner; invalid child/price không lưu nửa aggregate; cập nhật phiên bản và outbox transaction theo T09",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 23,
+        "text": "AC-T06-01 (canonical_snapshot_outbox): PASSED"
+      }
     },
     {
       "id": "AC-T06-02",
       "result": "passed",
       "artifact": "src/Compatibility/WordPress/PostIdAllocator.php",
-      "observation": "Legacy IDs được reuse khi migrate"
+      "observation": "Legacy IDs được reuse khi migrate",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "AC-T06-02 (legacy_id_reuse): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -82,5 +117,134 @@
     "tests/integration/T06Test.php",
     "docs/evidence/T06/result.json",
     "src/Compatibility/WordPress/PostIdAllocator.php"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4010,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 278,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 357,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1156,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 18,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 119,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 230,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 143,
+      "wp_posts": 260,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 7,
+      "wp_wpe_inventory": 15,
+      "wp_wpe_object_state": 15,
+      "wp_wpe_outbox": 7,
+      "wp_wpe_product_media": 3,
+      "wp_wpe_products": 5,
+      "wp_wpe_sku_registry": 15,
+      "wp_wpe_variants": 10,
+      "wp_posts": 18
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 13,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WordPress/PostIdAllocator.php": "7d72b76f441831472de16853a88f255724499ccc385add715e2979b6e435428c",
+    "src/Infrastructure/Database/ProductRepository.php": "9a1a2dee059af6921f3b8b923bc3c37664a9a0f16f79d4fb9c784a238b837385",
+    "tests/integration/T06Test.php": "e909213906e89636b0bc3d3b1513d12c5ecf6a112c6a8ba83426685a669b0f84"
+  }
 }

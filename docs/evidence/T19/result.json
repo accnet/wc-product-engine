@@ -1,11 +1,11 @@
 {
   "task_id": "T19",
-  "commit": "ba9f72c29381cb69edd6884f606e49eef0db0bec",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "1ec8843f94111c2b8a35eea7d81adb3f219f3bfcc25ed840ab5e4347315f7a02",
+  "content_digest": "3d24588d2939519fdf142ab0986ea8558134b1d3d9f3288b2da1119ab55f4f8b",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T19/output.log",
       "output_sha256": "620c9e66492b1412403008a1b5313732404bb0679942a195cbca5163a98a5364",
-      "content_digest": "1ec8843f94111c2b8a35eea7d81adb3f219f3bfcc25ed840ab5e4347315f7a02"
+      "content_digest": "3d24588d2939519fdf142ab0986ea8558134b1d3d9f3288b2da1119ab55f4f8b"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R75_archive_pagination_found_posts",
-      "assertion_summary": "Verified numbered archive pagination with accurate found_posts, max_num_pages, and deep page budget cap"
+      "assertion_summary": "Verified numbered archive pagination with accurate found_posts, max_num_pages, and deep page budget cap",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "PASSED: R75 (archive_pagination_found_posts) 7 products paginated across 3 pages with exact totals and deep cap."
+      }
     },
     {
       "id": "R76",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R76_wc_query_args_coverage",
-      "assertion_summary": "Verified WooCommerce query arguments coverage (category, tag, price, stock, orderby)"
+      "assertion_summary": "Verified WooCommerce query arguments coverage (category, tag, price, stock, orderby)",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "PASSED: R76 (wc_query_args_coverage) WooCommerce query arguments mapped and filtered correctly."
+      }
     },
     {
       "id": "R77",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R77_blocks_listing",
-      "assertion_summary": "Verified WooCommerce Blocks product collection and grid listing adapter"
+      "assertion_summary": "Verified WooCommerce Blocks product collection and grid listing adapter",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "PASSED: R77 (blocks_listing) WooCommerce Blocks attributes correctly adapted and executed."
+      }
     },
     {
       "id": "R78",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R78_unsupported_filter_no_silent_omission",
-      "assertion_summary": "Verified query capability registry strictly rejects unsupported filters without silent omission"
+      "assertion_summary": "Verified query capability registry strictly rejects unsupported filters without silent omission",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 14,
+        "text": "PASSED: R78 & AC-T19-03 capability registry strictly prevents silent filter drop."
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +80,34 @@
       "id": "AC-T19-01",
       "result": "passed",
       "artifact": "src/Application/Catalog/CatalogAdapters.php",
-      "observation": "Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals"
+      "observation": "Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "AC-T19-01 (classic_pagination_blocks_exact_totals): PASSED"
+      }
     },
     {
       "id": "AC-T19-02",
       "result": "passed",
       "artifact": "src/Application/Catalog/CatalogAdapters.php",
-      "observation": "Main WP_Query non-product không đổi"
+      "observation": "Main WP_Query non-product không đổi",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "PASSED: AC-T19-02 non-product WP_Query untouched."
+      }
     },
     {
       "id": "AC-T19-03",
       "result": "passed",
       "artifact": "src/Application/Catalog/CatalogAdapters.php",
-      "observation": "Query unsupported không trả list “thành công” thiếu điều kiện"
+      "observation": "Query unsupported không trả list “thành công” thiếu điều kiện",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 14,
+        "text": "PASSED: R78 & AC-T19-03 capability registry strictly prevents silent filter drop."
+      }
     }
   ],
   "blockers": [],
@@ -80,5 +115,126 @@
     "src/Application/Catalog/CatalogAdapters.php",
     "tests/integration/T19Test.php",
     "docs/evidence/T19/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4012,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1158,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 9,
+      "wp_wpe_outbox": 9
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Catalog/CatalogAdapters.php": "0293aae2a2b3b9ddc5c1cc4c6e284aa7a673da0e3fecd2d1e7c8fdbd8a1fe60d",
+    "tests/integration/T19Test.php": "88b742f5ded08daaf9fac711eb5ea1619705a7e2f48a222582ef388408c0669d"
+  }
 }

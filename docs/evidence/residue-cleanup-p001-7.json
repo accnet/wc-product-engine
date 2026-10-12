@@ -1,0 +1,31 @@
+{
+  "cleaned_at": "2026-10-12T15:46:09.307Z",
+  "backup": "db-backup-p001-7-1791819966.sql",
+  "backup_bytes": 5558445,
+  "deleted": {
+    "summary": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 2
+    },
+    "junk_native_product_ids": [],
+    "orphan_auto_draft_post_ids": [],
+    "cleanup_job_ids": [],
+    "control_keys": [
+      "idempotency:test-idemp-key-6acd002f1d725",
+      "idempotency:test-idemp-key-6acd00aa75d8d"
+    ]
+  },
+  "statements": 1,
+  "count_delta": {
+    "wp_wpe_control": -2
+  },
+  "remaining_junk": {
+    "junk_native_products": 0,
+    "orphan_auto_draft_posts": 0,
+    "completed_cleanup_jobs": 0,
+    "test_control_keys": 0
+  },
+  "untouched": "wpe_audit and wpe_outbox are append-only history and were not modified; objects not matching the junk signatures were left in place"
+}

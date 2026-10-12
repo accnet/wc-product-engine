@@ -1,11 +1,11 @@
 {
   "task_id": "T05",
-  "commit": "342ddcfa645c292ba56e9435aad905021cf522e3",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "f1201091d5ceb63836f29f393ec5d797dc2e502515de0bb976a7a16198962a06",
+  "content_digest": "72254da58945fb0abbd7a81ce80314b7b89d388e89afdf0933a3ca47f6cdfd8e",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T05/output.log",
       "output_sha256": "6433523ea130b6813af8c085cbbc3368f6705c3f47638871793c47d6c9ff0ff7",
-      "content_digest": "f1201091d5ceb63836f29f393ec5d797dc2e502515de0bb976a7a16198962a06"
+      "content_digest": "72254da58945fb0abbd7a81ce80314b7b89d388e89afdf0933a3ca47f6cdfd8e"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R14_migration_idempotent",
-      "assertion_summary": "Verified database schema migration creates all 25 custom tables and is strictly idempotent"
+      "assertion_summary": "Verified database schema migration creates all 25 custom tables and is strictly idempotent",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 15,
+        "text": "R14 (migration_idempotent): PASSED"
+      }
     },
     {
       "id": "R15",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R15_prefix_multisite",
-      "assertion_summary": "Verified dynamic table prefixes and multisite table prefix isolation"
+      "assertion_summary": "Verified dynamic table prefixes and multisite table prefix isolation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "R15 (prefix_multisite): PASSED"
+      }
     },
     {
       "id": "R16",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R16_crash_between_ddl",
-      "assertion_summary": "Verified interrupted migration resumes from persisted table checkpoint without corruption"
+      "assertion_summary": "Verified interrupted migration resumes from persisted table checkpoint without corruption",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "R16 (crash_between_ddl): PASSED"
+      }
     },
     {
       "id": "R17",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R17_decimal_precision_and_collation",
-      "assertion_summary": "Verified DECIMAL(19,6) precision for regular_price and quantity, and utf8mb4 collation"
+      "assertion_summary": "Verified DECIMAL(19,6) precision for regular_price and quantity, and utf8mb4 collation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 18,
+        "text": "R17 (decimal_precision_and_collation): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +80,22 @@
       "id": "AC-T05-01",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
-      "observation": "Fresh migration creates all 25 tables, checkpointing allows resume on interrupt, idempotent"
+      "observation": "Fresh migration creates all 25 tables, checkpointing allows resume on interrupt, idempotent",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T05-02",
       "result": "passed",
       "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
-      "observation": "Individual DDL statements executed per table with lease lock; partial schema prevents engine enable"
+      "observation": "Individual DDL statements executed per table with lease lock; partial schema prevents engine enable",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T05-03",
       "result": "passed",
       "artifact": "contracts/database/schema.sql",
-      "observation": "DDL defines isolated wpe_ tables; does not alter WordPress core tables"
+      "observation": "DDL defines isolated wpe_ tables; does not alter WordPress core tables",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -81,5 +104,124 @@
     "tests/integration/T05Test.php",
     "docs/evidence/T05/result.json",
     "contracts/database/schema.sql"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "contracts/database/schema.sql": "b8f6a541b4eded21a3fa8a422d1df25f92d4b074d112d2c7b05ab9ea59a7d65d",
+    "src/Infrastructure/Database/SchemaMigrator.php": "972f122d7b113bd4f7be4495ffab62f7ef2c0668b65ff54d2f79087b83b96088",
+    "tests/integration/T05Test.php": "00691d06699d5d3e0648da2a00f93d4cfc263c80cb3578f841432d20cb5acc0e"
+  }
 }

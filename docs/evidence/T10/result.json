@@ -1,11 +1,11 @@
 {
   "task_id": "T10",
-  "commit": "54ef48582b40fc0721f90677f832e2e660de7e9f",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "37986b3ec76ab22704ff5f5bc8434058a6895483be47e3933f811cf51dce599c",
+  "content_digest": "d4f5f7ae7f2aaca5c8e46985b2910fbdde614cbca5667a18378be7b027fb3aba",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T10/output.log",
       "output_sha256": "e803320240bf04f6065aad3d9390174279c193ab80c63b73b163b81be3125799",
-      "content_digest": "37986b3ec76ab22704ff5f5bc8434058a6895483be47e3933f811cf51dce599c"
+      "content_digest": "d4f5f7ae7f2aaca5c8e46985b2910fbdde614cbca5667a18378be7b027fb3aba"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R37_datastore_interface_parity",
-      "assertion_summary": "Verified all 39 sealed Data Store methods present and WooCommerce registration filters active"
+      "assertion_summary": "Verified all 39 sealed Data Store methods present and WooCommerce registration filters active",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "R37 (datastore_interface_parity): PASSED"
+      }
     },
     {
       "id": "R38",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R38_wc_object_class_and_hydration",
-      "assertion_summary": "Verified WC_Product_Simple, Variable, and Variation CRUD lifecycle, hydration, get_changes, and object_read preservation"
+      "assertion_summary": "Verified WC_Product_Simple, Variable, and Variation CRUD lifecycle, hydration, get_changes, and object_read preservation",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 26,
+        "text": "R38 (wc_object_class_and_hydration): PASSED"
+      }
     },
     {
       "id": "R39",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R39_children_and_price_sync",
-      "assertion_summary": "Verified read_children returns variant IDs and sync_price synchronizes min/max prices"
+      "assertion_summary": "Verified read_children returns variant IDs and sync_price synchronizes min/max prices",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "R39 (children_and_price_sync): PASSED"
+      }
     },
     {
       "id": "R40",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R40_no_hidden_cpt_method_reads",
-      "assertion_summary": "Verified zero reads or fallbacks to wp_postmeta for native properties"
+      "assertion_summary": "Verified zero reads or fallbacks to wp_postmeta for native properties",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 28,
+        "text": "R40 (no_hidden_cpt_method_reads): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +80,34 @@
       "id": "AC-T10-01",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/ProductDataStore.php",
-      "observation": "Direct WC_Product_Simple/Variable/Variation save/read/getters/setters và Data Store ID query methods đúng classes/IDs"
+      "observation": "Direct WC_Product_Simple/Variable/Variation save/read/getters/setters và Data Store ID query methods đúng classes/IDs",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "PASSED: AC-T10-01 direct queries return expected classes/IDs."
+      }
     },
     {
       "id": "AC-T10-02",
       "result": "passed",
       "artifact": "src/Compatibility/WooDataStore/ProductDataStore.php",
-      "observation": "Factory/permalink qua wc_get_product được chứng nhận T13; full wc_get_products query surfaces T19"
+      "observation": "Factory/permalink qua wc_get_product được chứng nhận T13; full wc_get_products query surfaces T19",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "PASSED: AC-T10-02 data store query surfaces verified."
+      }
     },
     {
       "id": "AC-T10-03",
       "result": "passed",
       "artifact": "tests/integration/T10Test.php",
-      "observation": "Mọi methods mapping T03 có integration test trong scope trực tiếp, không chỉ 4 CRUD methods"
+      "observation": "Mọi methods mapping T03 có integration test trong scope trực tiếp, không chỉ 4 CRUD methods",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 31,
+        "text": "AC-T10-03 (all_39_methods_tested): PASSED"
+      }
     }
   ],
   "blockers": [],
@@ -80,5 +115,126 @@
     "src/Compatibility/WooDataStore/ProductDataStore.php",
     "tests/integration/T10Test.php",
     "docs/evidence/T10/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4012,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1159,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 9,
+      "wp_wpe_outbox": 10
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/WooDataStore/ProductDataStore.php": "454391c7cae1d2d3f79d2dbea136cc0a741ae7cfcf704860420b1b29d2f16d5d",
+    "tests/integration/T10Test.php": "2ba766fc7ff1b87b035c3f0983f945e49368763da601ed23d1c1e5ac2bc60f69"
+  }
 }

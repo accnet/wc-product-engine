@@ -1,11 +1,11 @@
 {
   "task_id": "T28",
-  "commit": "ba621ee16c2b517ed58fadb93ed2903bd40cdf02",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "ec87a562bf43e1b9c3eda3390370229bd56e2a0b7096577787ad1b0b9fb3d781",
+  "content_digest": "b7c6a331f71b9d548b9a504f7b7855157d478860e134ae1b051c7c1a208dc01f",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T28/output.log",
       "output_sha256": "e120ec58c0df6700cbb08103f11cc1472f53f72c8908be3014f3f68793675a62",
-      "content_digest": "ec87a562bf43e1b9c3eda3390370229bd56e2a0b7096577787ad1b0b9fb3d781"
+      "content_digest": "b7c6a331f71b9d548b9a504f7b7855157d478860e134ae1b051c7c1a208dc01f"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R111_tampered_cart_payload",
-      "assertion_summary": "Verified rejection of tampered variant IDs, parent mismatches, attribute discrepancies, and unpriced items"
+      "assertion_summary": "Verified rejection of tampered variant IDs, parent mismatches, attribute discrepancies, and unpriced items",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 2,
+        "text": "- testR111_tampered_cart_payload... OK"
+      }
     },
     {
       "id": "R112",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R112_stock_changed_after_resolve",
-      "assertion_summary": "Verified server-side stock validation, out-of-stock rejection, quantity bounds, and sold-individually limits"
+      "assertion_summary": "Verified server-side stock validation, out-of-stock rejection, quantity bounds, and sold-individually limits",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "- testR112_stock_changed_after_resolve... OK"
+      }
     },
     {
       "id": "R113",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R113_cart_session_after_migration",
-      "assertion_summary": "Verified cart revalidation removes deleted/trashed or out-of-stock items with clear notices and preserves migrated items"
+      "assertion_summary": "Verified cart revalidation removes deleted/trashed or out-of-stock items with clear notices and preserves migrated items",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 4,
+        "text": "- testR113_cart_session_after_migration... OK"
+      }
     },
     {
       "id": "R114",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R114_custom_cart_meta_retention",
-      "assertion_summary": "Verified retention of custom line item metadata attached by certified extensions across add-to-cart and session restore"
+      "assertion_summary": "Verified retention of custom line item metadata attached by certified extensions across add-to-cart and session restore",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "- testR114_custom_cart_meta_retention... OK"
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,23 @@
       "id": "AC-T28-01",
       "result": "passed",
       "artifact": "src/Application/Variant/CartValidation.php",
-      "observation": "Tampered variant hoặc price không mua được; stale stock bị xử lý rõ; cart restore sau migrate giữ IDs, invalid variation báo người dùng"
+      "observation": "Tampered variant hoặc price không mua được; stale stock bị xử lý rõ; cart restore sau migrate giữ IDs, invalid variation báo người dùng",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "- testAC_T28_01_TamperedPayloadsAndStaleStock... OK"
+      }
     },
     {
       "id": "AC-T28-02",
       "result": "passed",
       "artifact": "src/Application/Variant/CartValidation.php",
-      "observation": "Classic và Blocks parity"
+      "observation": "Classic và Blocks parity",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "- testAC_T28_02_ClassicAndBlocksParity... OK"
+      }
     }
   ],
   "blockers": [],
@@ -74,5 +104,123 @@
     "src/Application/Variant/CartValidation.php",
     "tests/integration/T28Test.php",
     "docs/evidence/T28/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {},
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Application/Variant/CartValidation.php": "e73c685bbd900e965a9e34e65122e739086487f8d61f2fc6b0c3d2cf41f3c96e",
+    "tests/integration/T28Test.php": "5afb96ca2e4ae9eebd65947f6cfcdeabe776f7a48b4f8c3ed456aef8b4111f5a"
+  }
 }

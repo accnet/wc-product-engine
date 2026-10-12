@@ -1,11 +1,11 @@
 {
   "task_id": "T32",
-  "commit": "966dfe9ede330ea58bd196c7340fce3d4d9d63fc",
+  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
   "qa_status": "passed",
-  "content_digest": "7c0444e96d336e35cc23fb37fac7e2f811ea0abf838253015beb669baa07d68b",
+  "content_digest": "38c3e97e224faf622064cd6cf6b9bb39052915c276284cbe25c2c3770060c1a7",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T32/output.log",
       "output_sha256": "a95ac4f05e49800e5a88a1cf56798c68163fa83b4989560ce6e0cf6e436d657a",
-      "content_digest": "7c0444e96d336e35cc23fb37fac7e2f811ea0abf838253015beb669baa07d68b"
+      "content_digest": "38c3e97e224faf622064cd6cf6b9bb39052915c276284cbe25c2c3770060c1a7"
     }
   ],
   "regression_results": [
@@ -31,28 +31,48 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R128_woo_csv_baseline_fixture",
-      "assertion_summary": "Verified standard WooCommerce baseline CSV fixture import and differential semantic pass"
+      "assertion_summary": "Verified standard WooCommerce baseline CSV fixture import and differential semantic pass",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 3,
+        "text": "R128 passed: WooCommerce baseline fixture imported and semantic diff verified."
+      }
     },
     {
       "id": "R129",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R129_woo_parent_sku_id",
-      "assertion_summary": "Verified parent product resolution via SKU and id:N formats correctly attaches variations"
+      "assertion_summary": "Verified parent product resolution via SKU and id:N formats correctly attaches variations",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "R129 passed: Parent resolution by SKU and id:N successfully attaches variations."
+      }
     },
     {
       "id": "R130",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R130_native_importer_external_no_sideload",
-      "assertion_summary": "Verified external image mode intercepts sideloading with zero uploads mutations while download mode remains standard"
+      "assertion_summary": "Verified external image mode intercepts sideloading with zero uploads mutations while download mode remains standard",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "R130 passed: External mode intercepts sideloading with zero uploads mutations; download mode preserved."
+      }
     },
     {
       "id": "R131",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R131_stock_blank_published_values",
-      "assertion_summary": "Verified stock blank vs zero semantics and published statuses (1, 0, draft, publish) correctly differentiated"
+      "assertion_summary": "Verified stock blank vs zero semantics and published statuses (1, 0, draft, publish) correctly differentiated",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 9,
+        "text": "R131 passed: Stock blank vs zero and published statuses strictly differentiated."
+      }
     }
   ],
   "acceptance": [
@@ -60,13 +80,15 @@
       "id": "AC-T32-01",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Woo/WooImporter.php",
-      "observation": "File export Woo baseline import engine đạt semantic diff pass; cả UI plugin và native Woo importer paths tested"
+      "observation": "File export Woo baseline import engine đạt semantic diff pass; cả UI plugin và native Woo importer paths tested",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T32-02",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Woo/WooImporter.php",
-      "observation": "External mode không tải ảnh về uploads; download mode không bị đổi"
+      "observation": "External mode không tải ảnh về uploads; download mode không bị đổi",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -74,5 +96,127 @@
     "src/Compatibility/Csv/Woo/WooImporter.php",
     "tests/integration/T32Test.php",
     "docs/evidence/T32/result.json"
-  ]
+  ],
+  "isolation": {
+    "mechanism": "wp db export before the test, wp db import after the test",
+    "restored": true,
+    "counts_before": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_test": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4015,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 346,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1161,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "counts_after_restore": {
+      "wp_wpe_assets": 24,
+      "wp_wpe_audit": 4003,
+      "wp_wpe_catalog": 439,
+      "wp_wpe_catalog_facets": 102,
+      "wp_wpe_control": 10,
+      "wp_wpe_downloads": 6,
+      "wp_wpe_external_ids": 0,
+      "wp_wpe_import_rows": 1,
+      "wp_wpe_inventory": 263,
+      "wp_wpe_jobs": 2,
+      "wp_wpe_meta": 18,
+      "wp_wpe_object_state": 342,
+      "wp_wpe_option_values": 61,
+      "wp_wpe_options": 32,
+      "wp_wpe_outbox": 1149,
+      "wp_wpe_product_links": 0,
+      "wp_wpe_product_media": 15,
+      "wp_wpe_product_terms": 56,
+      "wp_wpe_products": 114,
+      "wp_wpe_reservation_bridge": 3,
+      "wp_wpe_sku_registry": 215,
+      "wp_wpe_stock_operations": 3,
+      "wp_wpe_variant_media": 0,
+      "wp_wpe_variant_values": 24,
+      "wp_wpe_variants": 133,
+      "wp_posts": 242,
+      "wp_postmeta": 2584
+    },
+    "leaked_by_test": {
+      "wp_wpe_audit": 12,
+      "wp_wpe_object_state": 4,
+      "wp_wpe_outbox": 12
+    },
+    "residue_after_restore": {},
+    "junk_before": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_test": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_after_restore": {
+      "junk_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+    },
+    "junk_total_before": 0,
+    "junk_total_after_restore": 0
+  },
+  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "file_hashes": {
+    "src/Compatibility/Csv/Woo/WooImporter.php": "90dbf67fcf851a51d9d51a96dfee19638eb3a26da5e4d4c799f88e4cdc6bb9f5",
+    "tests/integration/T32Test.php": "eb6cd1606ab43a9ac0b690503627f3d1d9c8be57624dd6a949ef622df8016d0e"
+  }
 }
