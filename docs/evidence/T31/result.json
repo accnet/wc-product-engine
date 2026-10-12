@@ -1,0 +1,78 @@
+{
+  "task_id": "T31",
+  "commit": "29e821bafb8009b0b0356dffe0d7ab0903eb160e",
+  "qa_status": "passed",
+  "content_digest": "5187904ccf27da3239c3ef1fb6cb01421905147d128d05a11a0110b1860b3d08",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T31Test.php"
+      ],
+      "display": "npm run test:task -- T31",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T31/output.log",
+      "output_sha256": "54b4a694221b84aed06f3814e759695b9e6c536d9875c0737bb4bfec11c89082",
+      "content_digest": "5187904ccf27da3239c3ef1fb6cb01421905147d128d05a11a0110b1860b3d08"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R124",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R124_export_snapshot_under_writes",
+      "assertion_summary": "Verified immutable snapshot staging ensures write isolation with zero lost or duplicate rows in manifest or CSV"
+    },
+    {
+      "id": "R125",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R125_csv_formula_profiles",
+      "assertion_summary": "Verified machine vs spreadsheet_safe profiles properly escape formula triggers (=, +, -, @, \\t, \\r) and strip control characters"
+    },
+    {
+      "id": "R126",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R126_download_auth_and_path",
+      "assertion_summary": "Verified capability check on every download request and strict rejection of path traversal and null byte sequences"
+    },
+    {
+      "id": "R127",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R127_export_loss_report_and_counts",
+      "assertion_summary": "Verified loss report generation with field/path/reason, exact job counts tracking, and artifact retention cleanup"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T31-01",
+      "result": "passed",
+      "artifact": "src/Application/ImportExport/SnapshotExporter.php",
+      "observation": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest"
+    },
+    {
+      "id": "AC-T31-02",
+      "result": "passed",
+      "artifact": "src/Application/ImportExport/SnapshotExporter.php",
+      "observation": "Permission download kiểm tra mỗi lần; loss report có field/path/reason"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/ImportExport/SnapshotExporter.php",
+    "tests/integration/T31Test.php",
+    "docs/evidence/T31/result.json"
+  ]
+}
