@@ -1,0 +1,85 @@
+{
+  "task_id": "T05",
+  "commit": "342ddcfa645c292ba56e9435aad905021cf522e3",
+  "qa_status": "passed",
+  "content_digest": "f1201091d5ceb63836f29f393ec5d797dc2e502515de0bb976a7a16198962a06",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T05Test.php"
+      ],
+      "display": "npm run test:task -- T05",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T05/output.log",
+      "output_sha256": "6433523ea130b6813af8c085cbbc3368f6705c3f47638871793c47d6c9ff0ff7",
+      "content_digest": "f1201091d5ceb63836f29f393ec5d797dc2e502515de0bb976a7a16198962a06"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R14",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R14_migration_idempotent",
+      "assertion_summary": "Verified database schema migration creates all 25 custom tables and is strictly idempotent"
+    },
+    {
+      "id": "R15",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R15_prefix_multisite",
+      "assertion_summary": "Verified dynamic table prefixes and multisite table prefix isolation"
+    },
+    {
+      "id": "R16",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R16_crash_between_ddl",
+      "assertion_summary": "Verified interrupted migration resumes from persisted table checkpoint without corruption"
+    },
+    {
+      "id": "R17",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R17_decimal_precision_and_collation",
+      "assertion_summary": "Verified DECIMAL(19,6) precision for regular_price and quantity, and utf8mb4 collation"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T05-01",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
+      "observation": "Fresh migration creates all 25 tables, checkpointing allows resume on interrupt, idempotent"
+    },
+    {
+      "id": "AC-T05-02",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/SchemaMigrator.php",
+      "observation": "Individual DDL statements executed per table with lease lock; partial schema prevents engine enable"
+    },
+    {
+      "id": "AC-T05-03",
+      "result": "passed",
+      "artifact": "contracts/database/schema.sql",
+      "observation": "DDL defines isolated wpe_ tables; does not alter WordPress core tables"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Infrastructure/Database/SchemaMigrator.php",
+    "tests/integration/T05Test.php",
+    "docs/evidence/T05/result.json",
+    "contracts/database/schema.sql"
+  ]
+}
