@@ -749,8 +749,62 @@
           "--verify-only"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "68b28793bf21304c9413128be35de692f0593e63",
+          "content_digest": "678127bd45b942f11b8854d23e2d07967de3c85c7568c6ddd792c5dc7bf8e7c7",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791820968142-f257de0e.log",
+          "time": "2026-10-12T16:02:48.143Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "68b28793bf21304c9413128be35de692f0593e63",
+          "content_digest": "678127bd45b942f11b8854d23e2d07967de3c85c7568c6ddd792c5dc7bf8e7c7",
+          "output_sha256": "b9c60d5df7090032ec444ba4649b0296c65fa4b5ae515b15e35e66580f000b84",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791820968231-3725fa12.log",
+          "time": "2026-10-12T16:02:48.232Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "68b28793bf21304c9413128be35de692f0593e63",
+          "content_digest": "678127bd45b942f11b8854d23e2d07967de3c85c7568c6ddd792c5dc7bf8e7c7",
+          "output_sha256": "cf7891a994c66270eeafe128c31f48ef21874c953bbb1a989cebdf4abe2b1220",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791820968322-0e91314f.log",
+          "time": "2026-10-12T16:02:48.322Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs",
+            "--verify-only"
+          ],
+          "exit_code": 0,
+          "commit": "68b28793bf21304c9413128be35de692f0593e63",
+          "content_digest": "678127bd45b942f11b8854d23e2d07967de3c85c7568c6ddd792c5dc7bf8e7c7",
+          "output_sha256": "758cf2410b2c566559654d81e21a906ff2ad530d5b7262cc8a18ae3c2f93644f",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791821002147-aa414dec.log",
+          "time": "2026-10-12T16:03:22.147Z"
+        }
+      ],
+      "started_at": "2026-10-12T16:00:27.345Z"
     }
   ],
   "approved_hash": "07b464480afeb0bb6a758cae12c13e1cb772083ed33b9736bec413f6cd4cec26"

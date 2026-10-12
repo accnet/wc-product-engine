@@ -2,7 +2,7 @@
 
 ## 1. Trạng thái
 
-Bộ docs đã tạo; runtime T01–T49 đã implement và có receipt. `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation. Kế hoạch P001 (docs/plans/P001-audit-remediation) đang chạy lại toàn bộ receipt trên runtime đã re-pin (WP 7.1.3, WC 11.2.1); cho tới khi P001.7 done, `[x]` phản ánh receipt cũ chưa được xác nhận lại.
+Bộ docs đã tạo; runtime T01–T49 đã implement. Kế hoạch P001 (docs/plans/P001-audit-remediation) đã re-pin lên WP 7.1.3 / WC 11.2.1 và chạy lại toàn bộ receipt: `node scripts/verify-task.mjs Txx` exit 0 cho 49/49 task, 212/212 requirement ở trạng thái `verified` (receipt theo từng R/AC từ output thật, có isolation receipt). `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation. Đây là evidence tích hợp trên site1.localhost (khoảng 370 product), không phải benchmark 100k/1M. Gate vẫn chưa READY: xem docs/audits/READINESS-GATE.md.
 
 ## 2. P0 — Foundation
 

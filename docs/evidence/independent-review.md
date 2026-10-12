@@ -21,3 +21,7 @@ Reviewer độc lập đọc docs/contracts/scripts ở chế độ read-only tr
 ## 3. Limits
 
 49 implementation tasks và 202 regression requirements chưa được implement hoặc chạy trên WP/Woo. Review và receipt validators không chứng minh stock concurrency, theme/Blocks compatibility, CSV round-trip, performance hay safe production cutover. T03 seal contracts; runtime evidence là điều kiện cho mỗi task và release gates. Không tạo runtime result.json giả.
+
+## 4. Addendum — audit remediation (P001, 2026-10-12)
+
+Mục 3 ở trên mô tả trạng thái trước khi implement. Hiện T01–T49 đã implement và được chạy lại trên WP 7.1.3 / WC 11.2.1 (`node scripts/rerun-evidence.mjs`: 49/49 verify, 212/212 requirement `verified`). Review này vẫn **không** thay thế audit độc lập: vòng audit hậu implementation do chính implementer thực hiện (`docs/audits/`), không có báo cáo Codex hoặc Claude. Các receipt và validator vẫn không chứng minh hiệu năng 100k/1M hay an toàn của production cutover.

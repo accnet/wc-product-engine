@@ -1,9 +1,9 @@
 # FINAL AUDIT — Consolidation
 
-- Phiên bản audited: git `1759717` (T46), working tree sạch, 2026-10-12 (Asia/Ho_Chi_Minh).
-- Kết luận: **NOT READY** (xem `READINESS-GATE.md`).
-- Cả 7 quyết định mở đã được user chốt (OD-01 = A, OD-02 = C, OD-03 = A, OD-04 = B, OD-05 = A, OD-06 = A, OD-07 = A). Chưa có thay đổi nào được áp dụng vào source, contract hay docs gốc, nên các P0/P1 vẫn mở.
-- Không có source, contract hay PLAN gốc nào bị sửa trong vòng audit này. Chỉ thêm 7 file trong `docs/audits/`.
+- Phiên bản audit gốc: git `1759717` (T46), 2026-10-12 (Asia/Ho_Chi_Minh). Cập nhật sau remediation P001.1–P001.7 (commit `68b2879`), P001.8.
+- Kết luận ban đầu: **NOT READY**. Kết luận hiện tại: **CONDITIONALLY READY** (xem `READINESS-GATE.md`). Không READY.
+- Cả 7 quyết định mở đã được user chốt (OD-01 = A, OD-02 = C, OD-03 = A, OD-04 = B, OD-05 = A, OD-06 = A, OD-07 = A) và đã được áp dụng bởi plan `docs/plans/P001-audit-remediation`.
+- Vòng audit gốc chỉ thêm file trong `docs/audits/`. Việc sửa source, contract và docs nằm trong P001, sau khi user cho phép ("thực hiện").
 
 ## 1. Đầu vào thực tế
 
@@ -23,19 +23,19 @@ Hệ quả cho việc consolidation:
 
 Thứ tự ưu tiên nguồn theo AGENTS: 02 > 03 > 04 > 10 > 01 > 09 > 07 > 08 > 05 > 06. Chi tiết và lệnh evidence ở `agent-technical-audit.md`.
 
-| ID | Sev | Loại | Tóm tắt | Evidence đã chạy lại |
-|---|---|---|---|---|
-| F01 | P0 | Kỹ thuật + quyết định | 49/49 receipt khai WP 7.0 / WC 11.1.2; host 7.1.3 / 11.2.1; pins cũng là 7.0 / 11.1.2 | `wp core version`, đọc 49 `result.json`, grep runner |
-| F01b | P1 | Kỹ thuật | `ReadinessGates` chỉ so thành phần đầu của version | Đọc `ReadinessGates.php` L212–247 |
-| F02 | P0 | Kỹ thuật + quyết định | Benchmark chạy trên 372 product / 1,213 catalog rows, không có 100k/1M | `wp db query`, đọc `T47Test`, `FixtureHarness` |
-| F03 | P1 | Kỹ thuật + quyết định | 8 task `verify-task` fail vì evidence stale | Chạy `verify-task` T01–T49 |
-| F04 | P1 | Kỹ thuật | Receipt "passed" cố định, 11 AC không anchor | Đọc runner, regex test |
-| F05 | P1 | Kỹ thuật + quyết định | R107 kiểm bằng `str_contains` trên JS source; không có browser test | Đọc `T27Test.php` L207–209, `ls tests/e2e` |
-| F06 | P1 | Kỹ thuật + nghiệp vụ | T46 thiếu rollback window, gate theo cohort, retention/archival/restore instructions | Grep `src`, đọc `RetentionCleaner` |
-| F07 | P1 | Kỹ thuật | `mirror_stopped` không có consumer; rollback không bị chặn | Grep `src` |
-| F08 | P1 | Kỹ thuật | Cleanup/reproject mặc định toàn catalog; xoá khi chưa có native row; AC-T46-03 test đã ghi lại 372 product | Đọc code + test, đếm DB |
-| F09 | P1 | Kỹ thuật + quyết định | Residue test trên DB dev; 21 file test không có tearDown; không thấy backup sau P1 | Query DB, grep tests, `ls backups` |
-| F10–F13 | P2 | Kỹ thuật / tài liệu | Commit receipt lệch một bước; test AC-T46-02 yếu; status/tài liệu lỗi thời; xung đột seal T03 vs T05 | Xem technical audit |
+| ID | Sev | Loại | Tóm tắt | Evidence đã chạy lại | Trạng thái sau P001 |
+|---|---|---|---|---|---|
+| F01 | P0 | Kỹ thuật + quyết định | 49/49 receipt khai WP 7.0 / WC 11.1.2; host 7.1.3 / 11.2.1; pins cũng là 7.0 / 11.1.2 | `wp core version`, đọc 49 `result.json`, grep runner | **Đã đóng** (P001.1–P001.2, P001.7): pins = runtime, 49/49 receipt khai đúng version |
+| F01b | P1 | Kỹ thuật | `ReadinessGates` chỉ so thành phần đầu của version | Đọc `ReadinessGates.php` L212–247 | **Đã đóng** (P001.3): so version đầy đủ, R171 |
+| F02 | P0 | Kỹ thuật + quyết định | Benchmark chạy trên 372 product / 1,213 catalog rows, không có 100k/1M | `wp db query`, đọc `T47Test`, `FixtureHarness` | **Đóng bằng quyết định** (OD-02 = C): claim đã hạ, G09 "chưa đạt". Không đo 100k/1M |
+| F03 | P1 | Kỹ thuật + quyết định | 8 task `verify-task` fail vì evidence stale | Chạy `verify-task` T01–T49 | **Đã đóng** (P001.7): `verify-task` exit 0 cho 49/49 |
+| F04 | P1 | Kỹ thuật | Receipt "passed" cố định, 11 AC không anchor | Đọc runner, regex test | **Đóng một phần** (P001.2): receipt từng R từ output (212/212). 22/110 AC vẫn `requirements_only` |
+| F05 | P1 | Kỹ thuật + quyết định | R107 kiểm bằng `str_contains` trên JS source; không có browser test | Đọc `T27Test.php` L207–209, `ls tests/e2e` | **Đã đóng** (P001.6): Playwright 1.63.0 + mutation control, R211 |
+| F06 | P1 | Kỹ thuật + nghiệp vụ | T46 thiếu rollback window, gate theo cohort, retention/archival/restore instructions | Grep `src`, đọc `RetentionCleaner` | **Đã đóng theo scope hẹp** (P001.5, ADR 003): rollback window, gate theo cohort. Retention/archival hoãn (OD-04) |
+| F07 | P1 | Kỹ thuật | `mirror_stopped` không có consumer; rollback không bị chặn | Grep `src` | **Đã đóng** (P001.5): `assertMirrorNotStopped`, R210 |
+| F08 | P1 | Kỹ thuật | Cleanup/reproject mặc định toàn catalog; xoá khi chưa có native row; AC-T46-03 test đã ghi lại 372 product | Đọc code + test, đếm DB | **Đã đóng** (P001.5): bắt buộc `product_ids`, native row, seal; R206–R209 |
+| F09 | P1 | Kỹ thuật + quyết định | Residue test trên DB dev; 21 file test không có tearDown; không thấy backup sau P1 | Query DB, grep tests, `ls backups` | **Đã đóng** (P001.4): backup, dọn residue, isolation receipt, R212 |
+| F10–F13 | P2 | Kỹ thuật / tài liệu | Commit receipt lệch một bước; test AC-T46-02 yếu; status/tài liệu lỗi thời; xung đột seal T03 vs T05 | Xem technical audit | F10, F11, F12, F13 đã xử lý trong P001.1–P001.5 và P001.8; không còn mở |
 
 ## 3. Loại bỏ / hạ mức (false positives và điều chỉnh)
 
@@ -62,12 +62,31 @@ Xem `agent-traceability-matrix.md` §2–§3. Tóm tắt:
 - Contract: `pins.json`, `baseline-lock.json`, `wc-props-mapping.json`, `matrix.json`, `regression-requirements.json`.
 
 ## 6. Thứ tự giải quyết theo dependency
-`REMEDIATION-PLAN.md`. Bắt đầu bằng OD-01, vì pin quyết định việc chạy lại mọi evidence.
+Đã thực hiện theo `REMEDIATION-PLAN.md` (P001.1 → P001.8), mỗi task một commit.
 
-## 7. Regression tests cần thêm
-`REMEDIATION-PLAN.md` §4 (đề xuất R203–R216 và AC bổ sung). Các ID này chưa tồn tại trong `contracts/`; thêm chúng cần OD-07.
+## 7. Regression tests đã thêm
+R203–R212 (10 requirement, ID cuối cùng sau OD-07; kế hoạch ban đầu đề xuất R203–R216 và đã bỏ R213–R215 theo OD-02/OD-04). Tất cả `verified`:
 
-## 8. Phát biểu giới hạn
-- `check-docs` và `plan.mjs check` pass chỉ chứng minh tài liệu nhất quán về cấu trúc.
-- Chưa có kết luận nào về production readiness. Cutover production chưa được authorize.
+| ID | Nội dung | Task |
+|---|---|---|
+| R203–R205 | env receipt = runtime, commit/base_commit, receipt từng R/AC | T02 |
+| R206–R209 | cleanup cần `product_ids`, native row + seal, rollback window, restore gate theo cohort | T46 |
+| R210 | rollback bị chặn khi `mirror_stopped` | T40, T46 |
+| R211 | selector stale response (test trình duyệt) | T27 |
+| R212 | residue gate: test không để lại dữ liệu | T04 |
+
+## 8. Finding mới phát hiện trong quá trình remediation
+| ID | Sev | Tóm tắt | Xử lý |
+|---|---|---|---|
+| F14 | P1 | Pins/receipt khai các version dev-tool không có thật trên máy (pin chỉ là chuỗi trong contract, không có thứ gì kiểm tra) | Đóng: T01Test so pins với runtime; cài `@playwright/test@1.63.0` pin chính xác |
+| F15 | P2 | T09 R32/R34 chỉ pass khi outbox trống: `OutboxWorker::acquireBatch` lấy `pending`/`failed` theo `created_at` và **bỏ qua `available_at`**, nên backlog thật (khoảng 1.1k event) làm sự kiện của test không bao giờ lọt vào batch; backoff retry cũng không có tác dụng | Test đã hermetic (park/restore backlog). `acquireBatch` **chưa sửa** (ngoài phạm vi), cần quyết định riêng |
+| F16 | P3 | Receipt trước đây chỉ đọc `qa_status`; kết luận "49/49 verified" ban đầu của tôi sai | Đóng: `verify-task` kiểm env, base_commit, file_hashes, isolation, anchor |
+| F17 | P3 | T11 AC-T11-02 hard-code `classic-editor`, plugin đã lên 1.7.0 và đúng ra là status `unknown` (bị chặn) | Test dùng plugin `supported` từ matrix và khẳng định `classic-editor` bị chặn |
+
+Hai ghi chú về cô lập test: 1010 dòng do test tạo ra qua các lần chạy đã được snapshot-restore sau mỗi task; trạng thái plugin đang active đã khác baseline cũ (contact-form-7, duplicator, easy-wp-smtp không còn active), baseline T01 đã được chụp lại.
+
+## 9. Phát biểu giới hạn
+- `check-docs` và `plan.mjs check` pass chỉ chứng minh tài liệu nhất quán về cấu trúc. Bằng chứng tích hợp là 49 test chạy trên WP/WC thật của `site1.localhost`, không phải production.
+- Audit do implementer viết; không có Codex/Claude audit. Chưa có kết luận về production readiness, cutover chưa được authorize.
+- `scan_dependencies` không chạy được (SecureCoder tại 127.0.0.1:11911 không phản hồi); `@playwright/test@1.63.0` đã được cài với `npm audit` 0 lỗ hổng và registry đã đối chiếu.
 - Tôi chưa đọc lại toàn bộ source của 49 task. Danh sách finding là phần được chứng minh, không phải danh sách đầy đủ.

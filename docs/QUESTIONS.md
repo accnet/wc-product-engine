@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Không có câu hỏi mở. OD-01…OD-07 của audit (2026-10-12) đã được trả lời, xem mục 3. Runtime pins/extensions chưa certified là T01 deliverables.
+Không có câu hỏi chặn. OD-01…OD-07 của audit (2026-10-12) đã được trả lời, xem mục 3. Hai quyết định mới không chặn, chưa chốt: (1) F15, `OutboxWorker::acquireBatch` bỏ qua `available_at`, sửa trong task riêng hay ghi nhận rủi ro; (2) 22 AC chỉ có `requirements_only`, thêm anchor hay chấp nhận. Evidence: `docs/audits/FINAL-AUDIT.md` §8, `READINESS-GATE.md` §4. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 

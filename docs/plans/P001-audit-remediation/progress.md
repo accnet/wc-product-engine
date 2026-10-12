@@ -9,4 +9,4 @@ Status: in_progress
 - [x] P001.5 — T46 guards and T40 mirror-stopped rollback block (done)
 - [x] P001.6 — Playwright selector stale-response behavior test (done)
 - [x] P001.7 — Re-run all evidence T01-T49 on pinned runtime (done)
-- [ ] P001.8 — Refresh docs, requirement status and readiness gate (todo)
+- [x] P001.8 — Refresh docs, requirement status and readiness gate (done)

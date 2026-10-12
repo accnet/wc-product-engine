@@ -1,5 +1,7 @@
 # OPEN DECISIONS
 
+> **Trạng thái (P001.8):** OD-01 … OD-07 đã được user chốt và áp dụng, không còn decision blocker. Quyết định mới phát sinh (chưa chốt, không chặn): xử lý F15 (`OutboxWorker::acquireBatch` bỏ qua `available_at`) và việc chấp nhận 22 AC `requirements_only`. Chi tiết `READINESS-GATE.md` §4.
+
 Trạng thái: **0 quyết định đang mở; cả 7 đã chốt (OD-01 = A, OD-02 = C, OD-03 = A, OD-04 = B, OD-05 = A, OD-06 = A, OD-07 = A)**. Agent không tự quyết định thay user. Thứ tự hỏi theo dependency: OD-01 chặn các mục còn lại, OD-07 chốt sau cùng. **Decision blocker đã đóng. Chưa có thay đổi nào được áp dụng vào source, contract hay docs gốc.**
 
 Phiên bản: git `1759717`. Sau khi user chốt, agent sẽ cập nhật mục "Kết quả" và phạm vi cập nhật.
