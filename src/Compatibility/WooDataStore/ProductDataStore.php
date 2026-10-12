@@ -547,32 +547,18 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function update_product_stock($product_id_with_stock, $stock_quantity = null, $operation = 'set'): float
     {
-        $productId = absint($product_id_with_stock);
-        $current = $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT quantity FROM {$this->tableInventory} WHERE owner_id = %d",
-            $productId
-        ));
-        $currentVal = $current !== null ? (float)$current : 0.0;
-
-        if ($operation === 'increase') {
-            $newQty = $currentVal + (float)$stock_quantity;
-        } elseif ($operation === 'decrease') {
-            $newQty = $currentVal - (float)$stock_quantity;
-        } else {
-            $newQty = (float)$stock_quantity;
-        }
-
-        $now = gmdate('Y-m-d H:i:s.u');
-        $this->wpdb->update(
-            $this->tableInventory,
-            [
-                'quantity'   => sprintf('%.6f', $newQty),
-                'updated_at' => $now,
-            ],
-            ['owner_id' => $productId]
+        $bridge = InventoryBridge::getInstance();
+        $res = $bridge->updateProductStock(
+            absint($product_id_with_stock),
+            $stock_quantity !== null ? (float)$stock_quantity : null,
+            $operation
         );
+        return (float)($res['to'] ?? 0.0);
+    }
 
-        return $newQty;
+    public function get_stock_quantity($product_id): ?float
+    {
+        return InventoryBridge::getInstance()->getStockQuantity(absint($product_id));
     }
 
     public function update_product_sales($product_id, $quantity = null, $operation = 'set'): void
@@ -641,11 +627,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         if ($new_stock !== null) {
             $qty = (float)$new_stock;
         } else {
-            $raw = $this->wpdb->get_var($this->wpdb->prepare(
-                "SELECT quantity FROM {$this->tableInventory} WHERE owner_id = %d",
-                $productId
-            ));
-            $qty = $raw !== null ? (float)$raw : null;
+            $qty = InventoryBridge::getInstance()->getStockQuantity($productId);
         }
 
         if ($productObj) {
@@ -952,6 +934,9 @@ class ProductVariationDataStore extends ProductDataStore
                 width = VALUES(width), height = VALUES(height), description = VALUES(description), position = VALUES(position),
                 extra_props = VALUES(extra_props), version = version + 1, updated_at = VALUES(updated_at), deleted_at = NULL";
 
+        $manageStock = $product->get_manage_stock('edit') ? 1 : 0;
+        $stockOwnerId = $manageStock ? $variantId : $parentId;
+
         $this->wpdb->query($this->wpdb->prepare(
             $sql,
             $variantId,
@@ -971,14 +956,13 @@ class ProductVariationDataStore extends ProductDataStore
             $product->get_height('edit') !== '' ? $product->get_height('edit') : null,
             (int)$product->get_menu_order('edit'),
             $product->get_description('edit') ?: '',
-            $variantId,
+            $stockOwnerId,
             json_encode($extraProps, JSON_UNESCAPED_UNICODE),
             $now,
             $now
         ));
 
         // Inventory
-        $manageStock = $product->get_manage_stock('edit') ? 1 : 0;
         $stockQty = $product->get_stock_quantity('edit') !== null ? (string)$product->get_stock_quantity('edit') : null;
         $stockStatus = $product->get_stock_status('edit') ?: 'instock';
 
@@ -1103,7 +1087,12 @@ class ProductVariationDataStore extends ProductDataStore
         // Inventory
         if (isset($changes['manage_stock']) || array_key_exists('stock_quantity', $changes) || isset($changes['stock_status']) || isset($changes['backorders'])) {
             $invPayload = ['updated_at' => $now];
-            if (isset($changes['manage_stock'])) $invPayload['manage_stock'] = $changes['manage_stock'] ? 1 : 0;
+            if (isset($changes['manage_stock'])) {
+                $isManaging = $changes['manage_stock'] ? 1 : 0;
+                $invPayload['manage_stock'] = $isManaging;
+                $newOwnerId = $isManaging ? $variantId : (int)$product->get_parent_id();
+                $this->wpdb->update($this->tableVariants, ['stock_owner_id' => $newOwnerId], ['id' => $variantId]);
+            }
             if (array_key_exists('stock_quantity', $changes)) $invPayload['quantity'] = $changes['stock_quantity'] !== null ? (string)$changes['stock_quantity'] : null;
             if (isset($changes['stock_status'])) $invPayload['stock_status'] = $changes['stock_status'];
             if (isset($changes['backorders'])) $invPayload['backorders'] = $changes['backorders'];
