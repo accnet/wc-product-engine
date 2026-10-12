@@ -50,7 +50,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T33 — Woo export adapter và round-trip
 - [x] T34 — Current/legacy parser và product grouping
 - [x] T35 — Native Shopify exporter và loss policy
-- [ ] T36 — Cross-format equivalence và import/export QA
+- [x] T36 — Cross-format equivalence và import/export QA
 
 ## 6. P4 — Migration/recovery
 

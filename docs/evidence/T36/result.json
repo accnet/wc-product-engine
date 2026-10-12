@@ -1,0 +1,78 @@
+{
+  "task_id": "T36",
+  "commit": "a72eac5db6499bce3ef94f616ec00a29bb8736dd",
+  "qa_status": "passed",
+  "content_digest": "b9f56c052f61be306d954a696716d62c809b04cb4b24def09a76f97fdeb3c1b2",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T36Test.php"
+      ],
+      "display": "npm run test:task -- T36",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T36/output.log",
+      "output_sha256": "a361124a6c916833100c46c81e1f6f25dcc86fce0e30d4bda3fe5dec1885453e",
+      "content_digest": "b9f56c052f61be306d954a696716d62c809b04cb4b24def09a76f97fdeb3c1b2"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R145",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R145_cross_format_subset",
+      "assertion_summary": "Verified common canonical business subset (SKU, title, price, stock, options, images) matches across Woo CSV and Shopify CSV via Engine"
+    },
+    {
+      "id": "R146",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R146_loss_not_hidden",
+      "assertion_summary": "Verified unsupported fields (>3 options, digital downloads, metadata) are explicitly listed in loss reports and not masked as pass after normalize"
+    },
+    {
+      "id": "R147",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R147_reimport_idempotent",
+      "assertion_summary": "Verified re-importing exported CSVs into engine is completely idempotent with zero duplicate products or variants"
+    },
+    {
+      "id": "R148",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R148_image_position_alt_and_variant_mapping",
+      "assertion_summary": "Verified image order, alt text, and variant primary images; explained row count differences due to Shopify image-only rows"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T36-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
+      "observation": "Không tính unsupported fields là pass sau normalize; reports chỉ rõ local vs live verification"
+    },
+    {
+      "id": "AC-T36-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
+      "observation": "File URL images truy cập public ổn định; row count khác do image-only rows được explain bằng canonical diff"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
+    "tests/integration/T36Test.php",
+    "docs/evidence/T36/result.json"
+  ]
+}
