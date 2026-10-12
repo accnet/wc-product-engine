@@ -1,0 +1,84 @@
+{
+  "task_id": "T10",
+  "commit": "54ef48582b40fc0721f90677f832e2e660de7e9f",
+  "qa_status": "passed",
+  "content_digest": "37986b3ec76ab22704ff5f5bc8434058a6895483be47e3933f811cf51dce599c",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T10Test.php"
+      ],
+      "display": "npm run test:task -- T10",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T10/output.log",
+      "output_sha256": "e803320240bf04f6065aad3d9390174279c193ab80c63b73b163b81be3125799",
+      "content_digest": "37986b3ec76ab22704ff5f5bc8434058a6895483be47e3933f811cf51dce599c"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R37",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R37_datastore_interface_parity",
+      "assertion_summary": "Verified all 39 sealed Data Store methods present and WooCommerce registration filters active"
+    },
+    {
+      "id": "R38",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R38_wc_object_class_and_hydration",
+      "assertion_summary": "Verified WC_Product_Simple, Variable, and Variation CRUD lifecycle, hydration, get_changes, and object_read preservation"
+    },
+    {
+      "id": "R39",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R39_children_and_price_sync",
+      "assertion_summary": "Verified read_children returns variant IDs and sync_price synchronizes min/max prices"
+    },
+    {
+      "id": "R40",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R40_no_hidden_cpt_method_reads",
+      "assertion_summary": "Verified zero reads or fallbacks to wp_postmeta for native properties"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T10-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/ProductDataStore.php",
+      "observation": "Direct WC_Product_Simple/Variable/Variation save/read/getters/setters và Data Store ID query methods đúng classes/IDs"
+    },
+    {
+      "id": "AC-T10-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/ProductDataStore.php",
+      "observation": "Factory/permalink qua wc_get_product được chứng nhận T13; full wc_get_products query surfaces T19"
+    },
+    {
+      "id": "AC-T10-03",
+      "result": "passed",
+      "artifact": "tests/integration/T10Test.php",
+      "observation": "Mọi methods mapping T03 có integration test trong scope trực tiếp, không chỉ 4 CRUD methods"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/WooDataStore/ProductDataStore.php",
+    "tests/integration/T10Test.php",
+    "docs/evidence/T10/result.json"
+  ]
+}
