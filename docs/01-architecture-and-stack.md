@@ -30,20 +30,20 @@ Namespace `WPE\`; PSR-4 `src/`; strict types trong domain; không gọi global W
 
 ## 8. Stack pin và dependencies
 
-Pin ở `contracts/compatibility/pins.json` lấy từ **môi trường thực tế** `http://site1.localhost` (`/var/www/site1.localhost`), ngày đo 12/10/2026; plugin chạy trực tiếp từ thư mục `wp-content/plugins/wc-product-engine` của site này, không dựng Docker/wp-env/site riêng. Không còn ma trận MySQL vs MariaDB: chỉ DB của site (MariaDB). Đây là baseline môi trường, **không phải supported/certified claim**. T01 đọc lại version bằng WP-CLI và ghi vào baseline; đổi version site mở lại gate bị ảnh hưởng.
+Pin ở `contracts/compatibility/pins.json` lấy từ **môi trường thực tế** `http://site1.localhost` (`/var/www/site1.localhost`), ngày đo 12/10/2026, re-pin lần hai 12/10/2026 22:20 (ADR 003: pin trước đó 7.0 / 11.1.2 không khớp host); plugin chạy trực tiếp từ thư mục `wp-content/plugins/wc-product-engine` của site này, không dựng Docker/wp-env/site riêng. Không còn ma trận MySQL vs MariaDB: chỉ DB của site (MariaDB). Đây là baseline môi trường, **không phải supported/certified claim**. T01 đọc lại version bằng WP-CLI và ghi vào baseline; đổi version site mở lại gate bị ảnh hưởng.
 
 | Thành phần | Pin lựa chọn | Vai trò |
 |---|---|---|
-| wordpress | 7.0 | Runtime (site1.localhost) |
-| woocommerce | 11.1.2 | Runtime (site1.localhost) |
+| wordpress | 7.1.3 | Runtime (site1.localhost) |
+| woocommerce | 11.2.1 | Runtime (site1.localhost) |
 | php | 8.3.31 | Runtime (site1.localhost) |
 | node | 22.22.2 | Dev/test |
 | mariadb | 11.8.6 | Runtime (DB của site1.localhost) |
-| composer | 2.8.12 | Dev/test |
-| phpunit | 9.6.38 | Dev/test |
-| phpcodesniffer | 3.13.4 | Dev/test |
-| wordpress_coding_standards | 3.2.0 | Dev/test |
-| playwright | 1.56.1 | Dev/test |
+| composer | not_installed | Không dùng bởi task nào |
+| phpunit | not_installed | Không dùng bởi task nào (tests chạy bằng wp eval-file) |
+| phpcodesniffer | not_installed | Không dùng bởi task nào |
+| wordpress_coding_standards | not_installed | Không dùng bởi task nào |
+| playwright | 1.63.0 | Dev/test (npx toàn cục) |
 | theme | calora 1.0.0 | Runtime (site1.localhost) |
 
 Không thêm dependency runtime ngoài WC/WP trong V1 nếu không có task contract riêng. Node dùng scripts docs và browser tests; UI selector vanilla JavaScript, admin operations dùng WP packages được WC/WP cung cấp. Không tải CDN JS runtime tùy ý. Test tooling exact pins do T02 tạo lockfiles, WordPress test-library source phải cùng WP pin. Không dùng branch trunk/latest làm lock.

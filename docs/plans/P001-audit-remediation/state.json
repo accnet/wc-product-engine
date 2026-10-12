@@ -1,7 +1,7 @@
 {
   "id": "P001",
   "title": "Audit remediation (OD-01..OD-07)",
-  "status": "approved",
+  "status": "in_progress",
   "content_hash": "07b464480afeb0bb6a758cae12c13e1cb772083ed33b9736bec413f6cd4cec26",
   "tasks": [
     {
@@ -59,8 +59,64 @@
           "tests/integration/T01Test.php"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "3d5bac2670002380b2c2e284a522bfe299d981ae",
+          "content_digest": "c5c85ee8a4d74c33bc69e4ed2fb0967bf4c559a363c5325fa3097a2eeb970d78",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818459516-7a5ef8ce.log",
+          "time": "2026-10-12T15:20:59.518Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "3d5bac2670002380b2c2e284a522bfe299d981ae",
+          "content_digest": "c5c85ee8a4d74c33bc69e4ed2fb0967bf4c559a363c5325fa3097a2eeb970d78",
+          "output_sha256": "b9c60d5df7090032ec444ba4649b0296c65fa4b5ae515b15e35e66580f000b84",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818459599-ee1ed23b.log",
+          "time": "2026-10-12T15:20:59.600Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "3d5bac2670002380b2c2e284a522bfe299d981ae",
+          "content_digest": "c5c85ee8a4d74c33bc69e4ed2fb0967bf4c559a363c5325fa3097a2eeb970d78",
+          "output_sha256": "b9bfacb11885524bf940594c0284bd8c1becaaec4e46d5e4eb03a834694e0622",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818459684-844e2278.log",
+          "time": "2026-10-12T15:20:59.684Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T01Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3d5bac2670002380b2c2e284a522bfe299d981ae",
+          "content_digest": "c5c85ee8a4d74c33bc69e4ed2fb0967bf4c559a363c5325fa3097a2eeb970d78",
+          "output_sha256": "5487920ddddf1c23c94c75482883df98b67bb510e54646cb53df3dc72afc3a45",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791818460348-4a1cb454.log",
+          "time": "2026-10-12T15:21:00.349Z"
+        }
+      ],
+      "started_at": "2026-10-12T15:16:33.127Z"
     },
     {
       "id": "P001.2",

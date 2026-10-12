@@ -2,7 +2,7 @@
 
 ## 1. Start
 
-Bộ docs triển khai theo DOCS-KIT. Không phải plugin cài chạy WooCommerce; runtime chưa implement. 49 task, dependency DAG, database/API/CSV/event contracts, 202 regression requirements, native rollout/rollback gates. Đọc AGENTS.md rồi docs/02-domain.md, docs/01-architecture-and-stack.md và phase đầu docs/PROGRESS.md.
+Bộ docs triển khai theo DOCS-KIT. Runtime T01–T49 đã implement trên site1.localhost nhưng chưa có kết luận READY (xem docs/audits/READINESS-GATE.md). 49 task, dependency DAG, database/API/CSV/event contracts, 212 regression requirements, native rollout/rollback gates. Đọc AGENTS.md rồi docs/02-domain.md, docs/01-architecture-and-stack.md và phase đầu docs/PROGRESS.md.
 
 ## 2. Verify docs immediately
 

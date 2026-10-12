@@ -1,3 +1,3 @@
 # Plan index
 
-- P001 — Audit remediation (OD-01..OD-07) (approved)
+- P001 — Audit remediation (OD-01..OD-07) (in_progress)

@@ -2,7 +2,7 @@
 
 ## 1. Trạng thái
 
-Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation.
+Bộ docs đã tạo; runtime T01–T49 đã implement và có receipt. `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation. Kế hoạch P001 (docs/plans/P001-audit-remediation) đang chạy lại toàn bộ receipt trên runtime đã re-pin (WP 7.1.3, WC 11.2.1); cho tới khi P001.7 done, `[x]` phản ánh receipt cũ chưa được xác nhận lại.
 
 ## 2. P0 — Foundation
 
@@ -55,7 +55,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 ## 6. P4 — Migration/recovery
 
 - [x] T37 — Change capture và reconciliation
-- [x] T38 — Backfill triệu products và shadow diff
+- [x] T38 — Backfill catalog và shadow diff
 - [x] T39 — Native→legacy mirror và write ownership fence
 - [x] T40 — Rollback orchestration và deactivation safety
 - [x] T41 — Operations UI, health và CLI
@@ -63,7 +63,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 ## 7. P5 — Evidence và readiness
 
 - [x] T44 — Chứng minh đọc native không dựa core postmeta
-- [x] T47 — Benchmark realistic scale và EXPLAIN budgets
+- [x] T47 — Benchmark thực đo và EXPLAIN budgets (quy mô site1.localhost)
 - [x] T48 — E2E compatibility/security/fault-injection suite
 - [x] T42 — Readiness gates và cohort manifest
 

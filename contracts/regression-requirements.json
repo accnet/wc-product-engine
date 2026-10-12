@@ -4,1213 +4,1273 @@
       "id": "R01",
       "name": "baseline_cart_checkout_gallery_admin_csv",
       "task": "T01",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R02",
       "name": "unknown_extension_blocks_native",
       "task": "T01",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R03",
       "name": "activation_no_mutation",
       "task": "T02",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R04",
       "name": "flag_scope",
       "task": "T02",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R05",
       "name": "dependency_missing",
       "task": "T02",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R06",
       "name": "deactivate_retains_data",
       "task": "T02",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R203",
+      "name": "evidence_env_matches_runtime",
+      "task": "T02",
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R204",
+      "name": "evidence_binds_base_commit_and_files",
+      "task": "T02",
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R205",
+      "name": "per_requirement_receipt",
+      "task": "T02",
+      "status": "revalidation_pending"
     },
     {
       "id": "R07",
       "name": "contract_schema_validation",
       "task": "T03",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R08",
       "name": "decimal_id_roundtrip",
       "task": "T03",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R09",
       "name": "nullable_blank_semantics",
       "task": "T03",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R10",
       "name": "props_mapping_coverage",
       "task": "T03",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R11",
       "name": "fixture_invariants",
       "task": "T04",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R12",
       "name": "diff_detects_wrong_price_stock_variant",
       "task": "T04",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R13",
       "name": "snapshot_not_hiding_errors",
       "task": "T04",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R212",
+      "name": "test_residue_zero",
+      "task": "T04",
+      "status": "revalidation_pending"
     },
     {
       "id": "R14",
       "name": "migration_idempotent",
       "task": "T05",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R15",
       "name": "prefix_multisite",
       "task": "T05",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R16",
       "name": "crash_between_ddl",
       "task": "T05",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R17",
       "name": "decimal_precision_and_collation",
       "task": "T05",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R32",
       "name": "outbox_commit_crash",
       "task": "T09",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R33",
       "name": "duplicate_out_of_order_events",
       "task": "T09",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R34",
       "name": "worker_lease_takeover",
       "task": "T09",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R35",
       "name": "key_body_conflict",
       "task": "T09",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R36",
       "name": "stale_epoch",
       "task": "T09",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R18",
       "name": "aggregate_atomicity",
       "task": "T06",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R19",
       "name": "sku_race",
       "task": "T06",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R20",
       "name": "variant_wrong_parent",
       "task": "T06",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R21",
       "name": "deleted_product_order_reference",
       "task": "T06",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R22",
       "name": "stale_write_412",
       "task": "T06",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R23",
       "name": "unicode_value_key",
       "task": "T07",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R24",
       "name": "hash_collision_simulated",
       "task": "T07",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R25",
       "name": "rename_reorder_preserve_id",
       "task": "T07",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R26",
       "name": "any_vs_empty",
       "task": "T07",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R27",
       "name": "no_cartesian_variants",
       "task": "T07",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R28",
       "name": "gallery_order",
       "task": "T08",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R29",
       "name": "shared_asset_delete",
       "task": "T08",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R30",
       "name": "meta_serialized_repeated_ids",
       "task": "T08",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R31",
       "name": "download_ids_preserved",
       "task": "T08",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R37",
       "name": "datastore_interface_parity",
       "task": "T10",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R38",
       "name": "wc_object_class_and_hydration",
       "task": "T10",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R39",
       "name": "children_and_price_sync",
       "task": "T10",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R40",
       "name": "no_hidden_cpt_method_reads",
       "task": "T10",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R41",
       "name": "meta_bridge_single_multiple",
       "task": "T11",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R42",
       "name": "wp_meta_noop_return",
       "task": "T11",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R43",
       "name": "recursive_hook_guard",
       "task": "T11",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R44",
       "name": "unknown_meta_retention",
       "task": "T11",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R45",
       "name": "last_unit_race",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R46",
       "name": "parent_stock_shared_variants",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R47",
       "name": "reserve_expiry_and_own_order",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R48",
       "name": "payment_retry_reduce_once",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R49",
       "name": "partial_refund_restock",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R50",
       "name": "hpos_and_legacy_orders",
       "task": "T12",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R51",
       "name": "permalink_factory_ids",
       "task": "T13",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R52",
       "name": "taxonomy_hierarchy",
       "task": "T13",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R53",
       "name": "reviews_rating_projection",
       "task": "T13",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R54",
       "name": "nonproduct_queries_unchanged",
       "task": "T13",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R55",
       "name": "admin_crud_bulk_duplicate",
       "task": "T14",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R56",
       "name": "wc_rest_product_variation_roundtrip",
       "task": "T14",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R57",
       "name": "store_api_no_private_leak",
       "task": "T14",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R58",
       "name": "object_capability_denial",
       "task": "T14",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R59",
       "name": "hooks_payload_and_order",
       "task": "T15",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R60",
       "name": "type_transition_order_history",
       "task": "T15",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R61",
       "name": "persistent_cache_after_update",
       "task": "T15",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R62",
       "name": "projection_not_emitting_business_write_twice",
       "task": "T15",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R63",
       "name": "rebuild_under_writes",
       "task": "T16",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R64",
       "name": "tombstone_no_resurrection",
       "task": "T16",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R65",
       "name": "sale_clock_boundary_dst",
       "task": "T16",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R66",
       "name": "generation_cursor_retention",
       "task": "T16",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R67",
       "name": "filter_sort_diff",
       "task": "T17",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R68",
       "name": "equal_price_cursor_tie",
       "task": "T17",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R69",
       "name": "cursor_tamper_query_mismatch",
       "task": "T17",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R70",
       "name": "limit_cap_and_null_price",
       "task": "T17",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R71",
       "name": "impossible_combination_filter",
       "task": "T18",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R72",
       "name": "distinct_parent_counts",
       "task": "T18",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R73",
       "name": "self_exclusion_facets",
       "task": "T18",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R74",
       "name": "category_descendants_deleted_term",
       "task": "T18",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R75",
       "name": "archive_pagination_found_posts",
       "task": "T19",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R76",
       "name": "wc_query_args_coverage",
       "task": "T19",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R77",
       "name": "blocks_listing",
       "task": "T19",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R78",
       "name": "unsupported_filter_no_silent_omission",
       "task": "T19",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R79",
       "name": "context_cache_isolation",
       "task": "T20",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R80",
       "name": "visibility_cache_invalidate",
       "task": "T20",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R81",
       "name": "cache_stampede",
       "task": "T20",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R82",
       "name": "dynamic_price_filter_before_pagination",
       "task": "T20",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R83",
       "name": "ssrf_redirect_dns",
       "task": "T21",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R84",
       "name": "url_query_not_stripped",
       "task": "T21",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R85",
       "name": "rendition_dimensions",
       "task": "T21",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R86",
       "name": "render_no_network_probe",
       "task": "T21",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R87",
       "name": "real_attachment_race",
       "task": "T22",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R88",
       "name": "wp_image_srcset_metadata",
       "task": "T22",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R89",
       "name": "local_file_actions_explicit",
       "task": "T22",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R90",
       "name": "shared_attachment_delete",
       "task": "T22",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R91",
       "name": "classic_gallery_zoom_lightbox",
       "task": "T23",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R92",
       "name": "variant_image_reset",
       "task": "T23",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R93",
       "name": "multiple_variant_images",
       "task": "T23",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R94",
       "name": "missing_image_fallback",
       "task": "T23",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R95",
       "name": "cart_email_variant_image",
       "task": "T24",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R96",
       "name": "schema_og_sitemap",
       "task": "T24",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R97",
       "name": "blocks_gallery",
       "task": "T24",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R98",
       "name": "no_signed_secret_url_exposure",
       "task": "T24",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R99",
       "name": "partial_allowed_values",
       "task": "T25",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R100",
       "name": "wildcard_precedence_diff",
       "task": "T25",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R101",
       "name": "stock_price_revision",
       "task": "T25",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R102",
       "name": "unknown_option_wrong_product",
       "task": "T25",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R103",
       "name": "wc_ajax_variation_payload",
       "task": "T26",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R104",
       "name": "public_resolver_permissions",
       "task": "T26",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R105",
       "name": "payload_limits",
       "task": "T26",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R106",
       "name": "revision_refresh",
       "task": "T26",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R107",
       "name": "out_of_order_responses",
       "task": "T27",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R108",
       "name": "keyboard_accessibility",
       "task": "T27",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R109",
       "name": "reset_defaults",
       "task": "T27",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R110",
       "name": "large_variant_payload_budget",
       "task": "T27",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R211",
+      "name": "selector_stale_response_behavioral",
+      "task": "T27",
+      "status": "revalidation_pending"
     },
     {
       "id": "R111",
       "name": "tampered_cart_payload",
       "task": "T28",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R112",
       "name": "stock_changed_after_resolve",
       "task": "T28",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R113",
       "name": "cart_session_after_migration",
       "task": "T28",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R114",
       "name": "custom_cart_meta_retention",
       "task": "T28",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R115",
       "name": "csv_multiline_quotes_bom",
       "task": "T29",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R116",
       "name": "dryrun_no_side_effects",
       "task": "T29",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R117",
       "name": "group_shuffled_rows",
       "task": "T29",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R118",
       "name": "large_csv_memory",
       "task": "T29",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R119",
       "name": "private_upload_permissions",
       "task": "T29",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R120",
       "name": "import_crash_resume",
       "task": "T30",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R121",
       "name": "import_group_atomic",
       "task": "T30",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R122",
       "name": "import_vs_admin_conflict",
       "task": "T30",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R123",
       "name": "cancel_partial_commit_report",
       "task": "T30",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R124",
       "name": "export_snapshot_under_writes",
       "task": "T31",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R125",
       "name": "csv_formula_profiles",
       "task": "T31",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R126",
       "name": "download_auth_and_path",
       "task": "T31",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R127",
       "name": "export_loss_report_and_counts",
       "task": "T31",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R128",
       "name": "woo_csv_baseline_fixture",
       "task": "T32",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R129",
       "name": "woo_parent_sku_id",
       "task": "T32",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R130",
       "name": "native_importer_external_no_sideload",
       "task": "T32",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R131",
       "name": "stock_blank_published_values",
       "task": "T32",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R132",
       "name": "woo_export_into_baseline",
       "task": "T33",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R133",
       "name": "woo_csv_roundtrip_subset",
       "task": "T33",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R134",
       "name": "native_exporter_hooks",
       "task": "T33",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R135",
       "name": "image_url_order_and_loss",
       "task": "T33",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R136",
       "name": "shopify_header_aliases",
       "task": "T34",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R137",
       "name": "image_only_row_no_variant",
       "task": "T34",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R138",
       "name": "compare_at_units",
       "task": "T34",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R139",
       "name": "handle_idempotency_and_option_change",
       "task": "T34",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R140",
       "name": "unsupported_shopify_fields",
       "task": "T34",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R141",
       "name": "shopify_export_headers",
       "task": "T35",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R142",
       "name": "variant_image_association",
       "task": "T35",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R143",
       "name": "more_than_three_options_loss",
       "task": "T35",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R144",
       "name": "no_extra_native_columns",
       "task": "T35",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R145",
       "name": "cross_format_subset",
       "task": "T36",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R146",
       "name": "loss_not_hidden",
       "task": "T36",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R147",
       "name": "reimport_idempotent",
       "task": "T36",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R148",
       "name": "image_position_alt_and_variant_mapping",
       "task": "T36",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R149",
       "name": "missed_hook_reconcile",
       "task": "T37",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R150",
       "name": "term_stock_delete_capture",
       "task": "T37",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R151",
       "name": "raw_sql_detected_audit",
       "task": "T37",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R152",
       "name": "origin_guard_no_pingpong",
       "task": "T37",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R153",
       "name": "backfill_resume",
       "task": "T38",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R154",
       "name": "backfill_concurrent_edit_delete",
       "task": "T38",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R155",
       "name": "no_full_catalog_memory",
       "task": "T38",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R156",
       "name": "shadow_diff_detects_gap",
       "task": "T38",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R157",
       "name": "native_mirror_full_props",
       "task": "T39",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R158",
       "name": "mirror_out_of_order",
       "task": "T39",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R159",
       "name": "dual_writer_rejected",
       "task": "T39",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R160",
       "name": "projection_hook_side_effect_guard",
       "task": "T39",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R161",
       "name": "rollback_after_new_products_orders",
       "task": "T40",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R162",
       "name": "rollback_inflight_checkout",
       "task": "T40",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R163",
       "name": "rollback_timeout_no_switch",
       "task": "T40",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R164",
       "name": "deactivation_with_native_only_data",
       "task": "T40",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R210",
+      "name": "rollback_blocked_when_mirror_stopped",
+      "task": "T40",
+      "status": "revalidation_pending"
     },
     {
       "id": "R165",
       "name": "health_blocks_on_mismatch",
       "task": "T41",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R166",
       "name": "cli_ui_command_parity",
       "task": "T41",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R167",
       "name": "operations_auth_audit",
       "task": "T41",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R168",
       "name": "worker_starvation_alert",
       "task": "T41",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R177",
       "name": "poison_legacy_price_stock",
       "task": "T44",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R178",
       "name": "projection_off_native_crud",
       "task": "T44",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R179",
       "name": "factory_shell_retained",
       "task": "T44",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R180",
       "name": "native_reservation_independence",
       "task": "T44",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R189",
       "name": "scale_filter_facet_plan",
       "task": "T47",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R190",
       "name": "deep_page_budget",
       "task": "T47",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R191",
       "name": "concurrent_import_checkout",
       "task": "T47",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R192",
       "name": "memory_growth_bounded",
       "task": "T47",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R193",
       "name": "cache_cold_warm",
       "task": "T47",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R194",
       "name": "full_mode_matrix",
       "task": "T48",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R195",
       "name": "fault_injection_recovery",
       "task": "T48",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R196",
       "name": "api_auth_injection_ssrf",
       "task": "T48",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R197",
       "name": "supported_plugin_smoke",
       "task": "T48",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R198",
       "name": "no_core_file_changes",
       "task": "T48",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R169",
       "name": "missing_evidence_gate_fail",
       "task": "T42",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R170",
       "name": "cohort_epoch_hash_mismatch",
       "task": "T42",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R171",
       "name": "version_changed_gate_stale",
       "task": "T42",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R172",
       "name": "no_gate_bypass",
       "task": "T42",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R173",
       "name": "cutover_checkpoint_faults",
       "task": "T43",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R174",
       "name": "epoch_worker_fence",
       "task": "T43",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R175",
       "name": "canary_halt",
       "task": "T43",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R176",
       "name": "no_partial_parent_variant_cutover",
       "task": "T43",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R181",
       "name": "no_fallback_on_native_read_error",
       "task": "T45",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R182",
       "name": "owned_field_authority",
       "task": "T45",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R183",
       "name": "plugin_change_certification",
       "task": "T45",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R184",
       "name": "mirror_not_canonical",
       "task": "T45",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R199",
       "name": "release_install_upgrade",
       "task": "T49",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R200",
       "name": "package_default_safe_mode",
       "task": "T49",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R201",
       "name": "core_checksum",
       "task": "T49",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R202",
       "name": "restore_drill_from_backup_and_journal",
       "task": "T49",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R185",
       "name": "gc_shared_refs_and_orders",
       "task": "T46",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R186",
       "name": "cleanup_resume",
       "task": "T46",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R187",
       "name": "cleanup_requires_restore_gate",
       "task": "T46",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
     },
     {
       "id": "R188",
       "name": "rollback_after_mirror_stopped",
       "task": "T46",
-      "status": "specified_not_implemented"
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R206",
+      "name": "cleanup_requires_explicit_scope",
+      "task": "T46",
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R207",
+      "name": "cleanup_requires_native_row",
+      "task": "T46",
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R208",
+      "name": "cleanup_requires_rollback_window",
+      "task": "T46",
+      "status": "revalidation_pending"
+    },
+    {
+      "id": "R209",
+      "name": "restore_gate_is_per_cohort",
+      "task": "T46",
+      "status": "revalidation_pending"
     }
   ]
 }

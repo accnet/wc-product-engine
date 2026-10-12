@@ -52,7 +52,7 @@ class T01Test
      */
     private function testBaselineCartCheckoutGalleryAdminCsv(): bool
     {
-        echo "[R01] Verifying WooCommerce 11.1.2 baseline surfaces...\n";
+        echo "[R01] Verifying WooCommerce baseline surfaces...\n";
 
         // 1. Core host check
         if (!function_exists('WC') || !is_object(WC())) {
@@ -65,6 +65,23 @@ class T01Test
             return false;
         }
         echo "  [OK] WooCommerce version: {$wc_version}\n";
+
+        // 1b. Pinned versions must equal the live runtime (audit F01: no hard-coded stale pins)
+        $pins_path = $this->root . '/contracts/compatibility/pins.json';
+        $pins = json_decode((string) file_get_contents($pins_path), true);
+        $pinned = $pins['versions'] ?? [];
+        $live = [
+            'wordpress' => get_bloginfo('version'),
+            'woocommerce' => $wc_version,
+            'php' => PHP_VERSION,
+        ];
+        foreach ($live as $name => $live_version) {
+            if (($pinned[$name] ?? null) !== $live_version) {
+                echo "  [FAIL] pins.json {$name}=" . ($pinned[$name] ?? 'missing') . " but live runtime is {$live_version}.\n";
+                return false;
+            }
+        }
+        echo "  [OK] pins.json equals live runtime (WP {$live['wordpress']}, WC {$live['woocommerce']}, PHP {$live['php']}).\n";
 
         // 2. Cart & Session check
         if (!WC()->cart && function_exists('wc_load_cart')) {

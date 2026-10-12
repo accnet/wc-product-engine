@@ -23,7 +23,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Đọc trước:** 01 §8, 02 §1, 04 §1, 10 §2; artifacts của dependency. T01/T02 dùng draft contracts hiện có; T03 seal trước các consumer implementation.
 
-**Files:** `contracts/compatibility/pins.json`, `contracts/compatibility/matrix.json`, `docs/evidence/T01/baseline.json`, `tests/integration/T01Test.php`, `docs/evidence/T01/result.json`, `scripts/test-runtime.mjs`, `contracts/compatibility/baseline-lock.json`.
+**Files:** `contracts/compatibility/pins.json`, `contracts/compatibility/matrix.json`, `docs/evidence/T01/baseline.json`, `tests/integration/T01Test.php`, `docs/evidence/T01/result.json`, `contracts/compatibility/baseline-lock.json`.
 
 **Deliverables:** contracts/compatibility/matrix.json và pins.json; baseline-lock.json; minimal real baseline runner; docs/evidence/T01/baseline.json.
 
@@ -45,9 +45,9 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Đọc trước:** 01 §8, 02 §1, 04 §1, 10 §2; artifacts của dependency. T01/T02 dùng draft contracts hiện có; T03 seal trước các consumer implementation.
 
-**Files:** `wc-product-engine.php`, `composer.json`, `package.json`, `scripts/test-runtime.mjs`, `src/Bootstrap/PluginBootstrap.php`, `tests/integration/T02Test.php`, `docs/evidence/T02/result.json`, `composer.lock`, `package-lock.json`.
+**Files:** `wc-product-engine.php`, `composer.json`, `package.json`, `src/Bootstrap/PluginBootstrap.php`, `tests/integration/T02Test.php`, `docs/evidence/T02/result.json`, `composer.lock`, `package-lock.json`.
 
-**Deliverables:** Bootstrap/DI; config schema; capability registry; plugin lifecycle; WP-CLI command namespace.
+**Deliverables:** Bootstrap/DI; config schema; capability registry; plugin lifecycle; WP-CLI command namespace; evidence tooling (runtime environment detection, per-requirement receipts, base commit binding).
 
 **Triển khai:** Nạp plugin sau WC dependency; register Data Store đúng thời điểm, không activate native ngay khi bật plugin. Flags tách query/media/resolver/native writes; cohort routing có precedence rõ. Admin notices cho version unsupported. Deactivation không DROP data; uninstall không tự xóa bảng. Mở rộng runner do T01 tạo cho mọi task; tạo Composer/tooling lockfiles ở T02.
 
@@ -57,7 +57,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 - AC-T02-02 — Tắt feature query vẫn đọc WC ở legacy.
 - AC-T02-03 — Cohort conflict không chọn ngẫu nhiên; status endpoint phản ánh config thực.
 
-**Regression tests:** R03_activation_no_mutation, R04_flag_scope, R05_dependency_missing, R06_deactivate_retains_data.
+**Regression tests:** R03_activation_no_mutation, R04_flag_scope, R05_dependency_missing, R06_deactivate_retains_data, R203_evidence_env_matches_runtime, R204_evidence_binds_base_commit_and_files, R205_per_requirement_receipt.
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T02` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T02/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T02` exit0. Files implemented tồn tại và task dependency receipts pass.
 
@@ -88,7 +88,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Đọc trước:** 01 §8, 02 §1, 04 §1, 10 §2; artifacts của dependency. T01/T02 dùng draft contracts hiện có; T03 seal trước các consumer implementation.
 
-**Files:** `src/Bootstrap/FixtureHarness.php`, `tests/integration/T04Test.php`, `docs/evidence/T04/result.json`.
+**Files:** `src/Bootstrap/FixtureHarness.php`, `scripts/test-isolation.mjs`, `tests/integration/T04Test.php`, `docs/evidence/T04/result.json`.
 
 **Deliverables:** Factory datasets; baseline/native runners; canonical snapshot comparator; race harness; fixture CSV từ dialect pinned.
 
@@ -99,7 +99,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 - AC-T04-01 — Comparator phân biệt semantic difference và volatile timestamps; không normalize mất IDs/stock/gallery order.
 - AC-T04-02 — Dataset nhỏ reproducible, dataset scale có manifest và seed.
 
-**Regression tests:** R11_fixture_invariants, R12_diff_detects_wrong_price_stock_variant, R13_snapshot_not_hiding_errors.
+**Regression tests:** R11_fixture_invariants, R12_diff_detects_wrong_price_stock_variant, R13_snapshot_not_hiding_errors, R212_test_residue_zero.
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T04` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T04/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T04` exit0. Files implemented tồn tại và task dependency receipts pass.
 
@@ -576,7 +576,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Đọc trước:** 02 §7, 02 §8, 04 §3, 09 §3; artifacts của dependency. T01/T02 dùng draft contracts hiện có; T03 seal trước các consumer implementation.
 
-**Files:** `assets/variant-selector/selector.js`, `assets/variant-selector/selector.css`, `src/Compatibility/StoreApi/SelectorAdapter.php`, `tests/integration/T27Test.php`, `docs/evidence/T27/result.json`.
+**Files:** `assets/variant-selector/selector.js`, `assets/variant-selector/selector.css`, `src/Compatibility/StoreApi/SelectorAdapter.php`, `tests/integration/T27Test.php`, `docs/evidence/T27/result.json`, `playwright.config.mjs`, `tests/e2e/SelectorBehavior.spec.mjs`.
 
 **Deliverables:** Accessible option controls; selector state machine; classic/Blocks adapters; performance trace.
 
@@ -587,7 +587,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 - AC-T27-01 — Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image.
 - AC-T27-02 — Product 10k variations không embed toàn JSON; responsive không mất selection.
 
-**Regression tests:** R107_out_of_order_responses, R108_keyboard_accessibility, R109_reset_defaults, R110_large_variant_payload_budget.
+**Regression tests:** R107_out_of_order_responses, R108_keyboard_accessibility, R109_reset_defaults, R110_large_variant_payload_budget, R211_selector_stale_response_behavioral.
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T27` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T27/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T27` exit0. Files implemented tồn tại và task dependency receipts pass.
 
@@ -801,7 +801,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T37` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T37/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T37` exit0. Files implemented tồn tại và task dependency receipts pass.
 
-### T38 — Backfill triệu products và shadow diff
+### T38 — Backfill catalog và shadow diff
 
 **Module:** Legacy Sync. **Phase:** P4 — Migration/recovery. **Depends on:** T37, T16, T04.
 
@@ -861,7 +861,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 - AC-T40-02 — Safe fallback không chỉ đổi flag về CPT stale.
 - AC-T40-03 — Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code.
 
-**Regression tests:** R161_rollback_after_new_products_orders, R162_rollback_inflight_checkout, R163_rollback_timeout_no_switch, R164_deactivation_with_native_only_data.
+**Regression tests:** R161_rollback_after_new_products_orders, R162_rollback_inflight_checkout, R163_rollback_timeout_no_switch, R164_deactivation_with_native_only_data, R210_rollback_blocked_when_mirror_stopped.
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T40` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T40/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T40` exit0. Files implemented tồn tại và task dependency receipts pass.
 
@@ -908,7 +908,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T44` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T44/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T44` exit0. Files implemented tồn tại và task dependency receipts pass.
 
-### T47 — Benchmark realistic scale và EXPLAIN budgets
+### T47 — Benchmark thực đo và EXPLAIN budgets (quy mô site1.localhost)
 
 **Module:** QA Performance. **Phase:** P5 — Evidence và readiness. **Depends on:** T20, T28, T36, T38.
 
@@ -918,7 +918,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Deliverables:** Reproducible benchmark scripts/dataset manifest; p50/p95/p99, DB plans, RAM/storage/queue lag reports.
 
-**Triển khai:** So cùng máy/data/cache conditions WC optimized baseline và engine 100k/1M parent products trên site1.localhost (không test 5M) với variations/meta/media distribution. Warm/cold reads, exact counts, pagination, hydration, import/backfill under live load, variant resolution và checkout concurrency. Separate PHP/DB/CDN/network time.
+**Triển khai:** So cùng máy/data/cache conditions WC optimized baseline và engine trên dữ liệu thực của site1.localhost; quy mô đã đo (số products/catalog rows) phải ghi trong evidence. 100k/1M là mục tiêu tương lai chưa đo và không được tuyên bố đạt (ADR 003); không test 5M. Dữ liệu có variations/meta/media distribution thực có. Warm/cold reads, exact counts, pagination, hydration, import/backfill under live load, variant resolution và checkout concurrency. Separate PHP/DB/CDN/network time.
 
 **Acceptance criteria:**
 
@@ -1044,9 +1044,9 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Files:** `src/Application/Rollout/RetentionCleaner.php`, `tests/integration/T46Test.php`, `docs/evidence/T46/result.json`.
 
-**Deliverables:** Cleanup planner/dry-run; tombstone/asset/outbox/job retention; archival metadata; restore instructions.
+**Deliverables:** Cleanup planner/dry-run; guarded cleanup của duplicated owned postmeta (phạm vi tường minh, native row tồn tại, authority đã seal, rollback window, restore gate theo cohort); resumable chunks; reprojection-before-rollback với write barrier. Hoãn theo ADR 003: retention tombstone/asset/outbox/job, archival metadata, restore instructions.
 
-**Triển khai:** Sau rollback window do operator cấu hình và restore drill pass mới đề xuất dọn duplicated owned postmeta. Không xóa shell/taxonomy/attachments cần tương thích; bảo vệ variation ID/order refs/shared assets. Chunk delete/retry, no DROP entire CPT. Giữ audit/operation idempotency theo order lifecycle.
+**Triển khai:** Sau rollback window do operator cấu hình và restore drill pass mới đề xuất dọn duplicated owned postmeta. Không xóa shell/taxonomy/attachments cần tương thích; bảo vệ variation ID/order refs/shared assets. Chunk delete/retry, no DROP entire CPT. Giữ audit/operation idempotency theo order lifecycle. Theo ADR 003: cleanup bắt buộc product_ids/cohort tường minh, từ chối khi thiếu native row hoặc authority chưa seal, chặn trước khi hết rollback window (mặc định 30 ngày), restore gate gắn từng cohort; RollbackRunner từ chối switch authority khi mirror đã dừng mà chưa reproject.
 
 **Acceptance criteria:**
 
@@ -1054,7 +1054,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 - AC-T46-02 — Cleanup không automatic on upgrade/activate/deactivate.
 - AC-T46-03 — Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch.
 
-**Regression tests:** R185_gc_shared_refs_and_orders, R186_cleanup_resume, R187_cleanup_requires_restore_gate, R188_rollback_after_mirror_stopped.
+**Regression tests:** R185_gc_shared_refs_and_orders, R186_cleanup_resume, R187_cleanup_requires_restore_gate, R188_rollback_after_mirror_stopped, R206_cleanup_requires_explicit_scope, R207_cleanup_requires_native_row, R208_cleanup_requires_rollback_window, R209_restore_gate_is_per_cohort.
 
 **DoD:** DoD chung 06 §1; `npm run test:task -- T46` exit0; từng requirement trên có command/output evidence hoặc observation với artifact path. Result JSON tại `docs/evidence/T46/result.json` khớp commit/env, không chứa blockers hay skipped critical tests; `node scripts/verify-task.mjs T46` exit0. Files implemented tồn tại và task dependency receipts pass.
 

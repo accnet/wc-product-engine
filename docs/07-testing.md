@@ -12,7 +12,7 @@ Những scripts này chạy ngay từ docs package bằng Node ≥18, không c�
 
 ## 2. Matrix và test layers
 
-Task backlog định nghĩa **202 test requirements R01–R202**. Đây là yêu cầu kiểm thử để triển khai, chưa phải 202 test đã được viết/chạy. Có thể nhiều IDs dùng chung suite nhưng evidence phải trace được từng yêu cầu.
+Task backlog định nghĩa **212 test requirements R01–R212** (R203–R212 bổ sung bởi P001/ADR 003). Đây là yêu cầu kiểm thử để triển khai, chưa phải 212 test đã được viết/chạy. Có thể nhiều IDs dùng chung suite nhưng evidence phải trace được từng yêu cầu.
 
 | Test layer | Thực hiện trên | Nội dung |
 |---|---|---|
@@ -23,7 +23,7 @@ Task backlog định nghĩa **202 test requirements R01–R202**. Đây là yêu
 | Browser E2E | Certified theme + Blocks surfaces | Shop filtering/page counts, PDP selector, gallery/zoom, mini-cart/checkout, admin imports/operations |
 | Differential | Same seed legacy vs engine | Supported semantics: IDs/order/price/stock/options/media/meta/lifecycle/CSV subset |
 | Fault injection | site1.localhost dev, có backup | Crash preallocate/commit/postcommit, queue loss/out-of-order, DB/cache/CDN failure, migration barrier timeout |
-| Scale | Seeded 100k/1M datasets (không test 5M) | Query plans/latency/storage/RAM/freshness/worker throttling under storefront load |
+| Scale | Quy mô thực đo của site1.localhost (hiện ~vài trăm sản phẩm); 100k/1M là mục tiêu tương lai, chưa đo (ADR 003) | Query plans/latency/storage/RAM/freshness/worker throttling under storefront load |
 
 Các tình huống không được bỏ qua:
 
@@ -67,7 +67,7 @@ Những số dưới đây là **mục tiêu kiểm thử để chốt ở T01/T
 
 | Workload | Budget khởi điểm |
 |---|---|
-| Catalog IDs 48 items, selective indexed filter, warm DB, 1M parents | DB p95 ≤100 ms; so baseline cùng query, mục tiêu ≥2× nhanh hơn query đang bottleneck |
+| Catalog IDs 48 items, selective indexed filter, warm DB, quy mô đo thực tế (1M là mục tiêu tương lai) | DB p95 ≤100 ms; so baseline cùng query, mục tiêu ≥2× nhanh hơn query đang bottleneck |
 | Facet counts 3 facets có selectivity đủ | DB p95 ≤250 ms; exact all-catalog counts tách workload, không áp số này mọi trường hợp |
 | Resolver full selection, product 10k variants | Server p95 ≤150 ms trên DB warm; payload không tuyến tính theo tổng variants |
 | Catalog/PDP PHP processing tổng | p95 không chậm hơn baseline optimized >10% nếu không có ADR tradeoff; loại riêng CDN/browser/network khỏi server time |
@@ -77,7 +77,7 @@ Những số dưới đây là **mục tiêu kiểm thử để chốt ở T01/T
 | Background load | Trong import/rebuild concurrent load, checkout vẫn giữ budget accepted; worker concurrency/throttle đo được |
 | Recovery | Interrupted worker job resume không cần chạy lại toàn catalog; rollback RTO phải được đo theo cohort và mirror lag, không đặt một số chung triệu rows |
 
-Index/generation rebuild phát sinh storage tạm ≥2 generations cộng native/legacy mirrors; capacity planning gồm retained post shells, variation shells và external attachment records. Benchmarks 1M là stress/capacity evidence, không bắt buộc public count/facet query nào cũng đạt 100 ms.
+Index/generation rebuild phát sinh storage tạm ≥2 generations cộng native/legacy mirrors; capacity planning gồm retained post shells, variation shells và external attachment records. Benchmark 1M (mục tiêu tương lai, chưa thực hiện) sẽ là stress/capacity evidence, không bắt buộc public count/facet query nào cũng đạt 100 ms.
 
 ## 7. Required release gates
 
@@ -91,12 +91,12 @@ Index/generation rebuild phát sinh storage tạm ≥2 generations cộng native
 | G06 Media/selector | Native classic + chosen Blocks gallery; WP image APIs; selector/server cart guards | Wrong variant image/price, race stale selection, fake attachment ID |
 | G07 CSV | Woo native UI + plugin paths certified; Shopify local profiles; loss reports | Silent data loss, side-effect dry-run, duplicate resume, claim live verification khi chưa thử |
 | G08 Rollback | Reproject current data, barrier/epoch/cache switch, fresh orders/stock preserved | Chỉ đổi config flag hoặc restore snapshot cũ làm mất current stock |
-| G09 Performance | Reproducible scripts/dataset/EXPLAIN and proposed budgets accepted | Latency/load vượt budget chưa có ADR; đầy RAM theo catalog size |
+| G09 Performance | **Chưa đạt** (ADR 003): scripts/EXPLAIN chạy ở quy mô thực của site; chưa có dataset 100k/1M nên budget chưa được chứng minh ở quy mô mục tiêu | Latency/load vượt budget chưa có ADR; đầy RAM theo catalog size |
 | G10 Native independence | Legacy owned props poisoned/off mirror vẫn pass certified flows | Native đọc stock/price/options từ stale CPT/meta |
 | G11 Security/core integrity | Auth/permissions, SQL/CSV/URL/input tests; checksum Core | Public secrets/private products, injection/SSRF, Core file modified |
 | G12 Operations | Job resume/leases/DLQ/lag monitoring; recovery runbook; backup restore drill | Missing evidence, stale gates, bypass flags, single writer không enforce |
 
-Gate evidence gắn commit SHA, exact dependency versions, environment, cohort manifest hash, authority epoch, fixture/dataset ID, test commands, timestamps, kết quả pass/fail/blocked/skipped. Không lấy một README “tests passed” làm evidence. Gate hết hạn khi đổi versions, plugins, schema, pricing policy, source/cohort hoặc phát hiện reconciliation gap.
+Gate evidence gắn base commit + content digest, exact dependency versions, environment, cohort manifest hash, authority epoch, fixture/dataset ID, test commands, timestamps, kết quả pass/fail/blocked/skipped. Không lấy một README “tests passed” làm evidence. Gate hết hạn khi đổi versions, plugins, schema, pricing policy, source/cohort hoặc phát hiện reconciliation gap.
 
 ## 8. Lệnh lỗi và blocked environment
 

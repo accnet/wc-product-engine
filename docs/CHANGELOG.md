@@ -21,3 +21,16 @@ Không claim 202 tests đã chạy; requirements chưa implemented. Docs validat
 T01 owns baseline runner/lock manifest; T06 owns post ID allocator; T08 owns global meta ID allocator; T10 direct-object acceptance separates downstream factory/query certification. API schemas split gate/rollback requirements. Evidence completion validates content digests/output hashes and all acceptance IDs. Reservation unknown blocks native checkout. Verification date uses Asia/Ho_Chi_Minh 12/10/2026 (UTC 11/10/2026), no date contradiction.
 
 T02 Files/manifest bổ sung composer.lock và package-lock.json; T01 acceptance gọi đúng baseline-lock.json. Initial docs QA scripts/results và rendered milestone DAG được đóng gói để tái kiểm.
+
+## 3. P001 — audit remediation (2026-10-12)
+
+Kết quả audit hợp nhất (`docs/audits/FINAL-AUDIT.md`) và quyết định OD-01…OD-07 dẫn tới ADR 003:
+
+- Re-pin contracts/docs sang WP 7.1.3, WC 11.2.1, PHP 8.3.31; công cụ dev chưa cài ghi `not_installed`, Playwright 1.63.0.
+- Thêm R203–R212 (tổng 212 requirements); registry có trạng thái `revalidation_pending` cho đến khi evidence được chạy lại.
+- Scale 100k/1M hạ xuống mục tiêu tương lai; G09 ghi nhận chưa đạt.
+- T46 thu hẹp thành guarded postmeta cleanup; retention tombstone/asset/outbox/job hoãn.
+- T01/T02 không còn sở hữu `scripts/test-runtime.mjs`.
+- Evidence T01–T49 phải chạy lại và cô lập test (snapshot/residue gate).
+
+Không claim READY; xem `docs/audits/READINESS-GATE.md`.

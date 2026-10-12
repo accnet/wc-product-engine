@@ -1,8 +1,8 @@
 {
   "status": "sealed",
   "sealed_at": "2026-10-12T15:00:00+07:00",
-  "source_wp": "7.0",
-  "source_wc": "11.1.2",
+  "source_wp": "7.1.3",
+  "source_wc": "11.2.1",
   "properties_count": 55,
   "props_mapping": {
     "id": "products.id / variants.id + real WP shells",
@@ -103,5 +103,10 @@
     "update_rating_counts",
     "update_review_count"
   ],
-  "unsupported_custom_props_policy": "Direct postmeta writes outside declared props trigger blocker cohort native"
+  "unsupported_custom_props_policy": "Direct postmeta writes outside declared props trigger blocker cohort native",
+  "resealed_at": "2026-10-12T22:20:00+07:00",
+  "verification": {
+    "method": "Compared get_data() keys of WC_Product_Simple/WC_Product_Variation and get_class_methods(WC_Product_Data_Store_CPT) on the live host",
+    "result": "All 56 mapped properties present; 39/39 data store methods identical to the previous baseline; meta_data remains handled by metadata bridge, not props_mapping"
+  }
 }

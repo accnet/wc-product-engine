@@ -55,4 +55,4 @@ Thresholds proposed baseline; not operational guarantees. Native read error retu
 
 ## 9. Retention và cleanup
 
-Default rollback window30days, raw job artifacts7days/audit90days (02 §14). stock_operations/idempotency order lifecycle không purge chỉ vì job retention; operation key giữ để callbacks/refunds không double-mutate. Cleanup T46 dry-run và restore gates; không delete retained shells/taxonomies/order refs/shared media. Forced missing plugin code recovery theo 08 §7, không magic deactivation callback.
+Default rollback window30days, raw job artifacts7days/audit90days (02 §14). stock_operations/idempotency order lifecycle không purge chỉ vì job retention; operation key giữ để callbacks/refunds không double-mutate. Cleanup T46 dry-run, phạm vi tường minh, native row, rollback window và restore gate theo cohort; không delete retained shells/taxonomies/order refs/shared media. Retention job/outbox/tombstone/asset và archival hoãn theo ADR 003. Forced missing plugin code recovery theo 08 §7, không magic deactivation callback.

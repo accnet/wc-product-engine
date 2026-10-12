@@ -28,7 +28,7 @@
 | Theme | Chứng nhận classic Woo gallery + một theme tham chiếu; Blocks/Store API là adapter và gate riêng |
 | CSV | Adapter Woo native dialect và Shopify current/legacy dialect có version; loss report cho trường không thể chuyển đổi |
 | Admin | Màn quản trị WC hiện có và UI operations của plugin; không xây theme builder |
-| Giới hạn performance | Thiết kế để benchmark 100k/1M products trên site1.localhost; không tuyên bố mọi query nhanh hoặc hỗ trợ mọi plugin |
+| Giới hạn performance | 100k/1M products là mục tiêu tương lai, chưa đo và không được tuyên bố đạt (ADR 003). Evidence chỉ ghi quy mô đã đo thực trên site1.localhost; không tuyên bố mọi query nhanh hoặc hỗ trợ mọi plugin |
 
 ## 2. Thuật ngữ
 
@@ -153,7 +153,7 @@ Global WP product/variation IDs giữ bất biến; real shell preallocation l�
 | Stock locations | Một owner WC | Multi-warehouse plan riêng |
 | Native mode rollout | legacy/shadow default, canary manifest explicit | Cutover có current parity gates |
 | Rollback window | 30 ngày sau cohort cutover | Ops ADR, không cleanup trước restore drill |
-| Job raw/artifacts | Retention 7 ngày; audit 90 ngày | Compliance/operator cấu hình, no secret logs |
+| Job raw/artifacts | Retention 7 ngày; audit 90 ngày (giá trị mặc định cấu hình, enforcement hoãn theo ADR 003, không thuộc T46) | Compliance/operator cấu hình, no secret logs |
 | Public cursor | 15 phút, old generation grace 5 phút | Capacity/storage + config update |
 | Performance targets | Proposed 07 §6 | Benchmark evidence + ADR nếu thay budget |
 

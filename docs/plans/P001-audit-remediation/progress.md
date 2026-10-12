@@ -1,8 +1,8 @@
 # P001 — Audit remediation (OD-01..OD-07)
 
-Status: approved
+Status: in_progress
 
-- [ ] P001.1 — Re-baseline contracts, docs and validators (todo)
+- [x] P001.1 — Re-baseline contracts, docs and validators (done)
 - [ ] P001.2 — Evidence tooling: runtime env, per-requirement receipts, base commit binding (todo)
 - [ ] P001.3 — ReadinessGates full version staleness (todo)
 - [ ] P001.4 — Test isolation, residue gate and residue cleanup (todo)

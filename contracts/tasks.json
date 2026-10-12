@@ -18,7 +18,6 @@
         "docs/evidence/T01/baseline.json",
         "tests/integration/T01Test.php",
         "docs/evidence/T01/result.json",
-        "scripts/test-runtime.mjs",
         "contracts/compatibility/baseline-lock.json"
       ],
       "deliverables": "contracts/compatibility/matrix.json và pins.json; baseline-lock.json; minimal real baseline runner; docs/evidence/T01/baseline.json.",
@@ -67,14 +66,13 @@
         "wc-product-engine.php",
         "composer.json",
         "package.json",
-        "scripts/test-runtime.mjs",
         "src/Bootstrap/PluginBootstrap.php",
         "tests/integration/T02Test.php",
         "docs/evidence/T02/result.json",
         "composer.lock",
         "package-lock.json"
       ],
-      "deliverables": "Bootstrap/DI; config schema; capability registry; plugin lifecycle; WP-CLI command namespace.",
+      "deliverables": "Bootstrap/DI; config schema; capability registry; plugin lifecycle; WP-CLI command namespace; evidence tooling (runtime environment detection, per-requirement receipts, base commit binding).",
       "implementation": "Nạp plugin sau WC dependency; register Data Store đúng thời điểm, không activate native ngay khi bật plugin. Flags tách query/media/resolver/native writes; cohort routing có precedence rõ. Admin notices cho version unsupported. Deactivation không DROP data; uninstall không tự xóa bảng. Mở rộng runner do T01 tạo cho mọi task; tạo Composer/tooling lockfiles ở T02.",
       "acceptance": "Install không đổi authority/sản phẩm; unsupported version chặn bật native. Tắt feature query vẫn đọc WC ở legacy. Cohort conflict không chọn ngẫu nhiên; status endpoint phản ánh config thực.",
       "regression_requirements": [
@@ -93,6 +91,18 @@
         {
           "id": "R06",
           "name": "deactivate_retains_data"
+        },
+        {
+          "id": "R203",
+          "name": "evidence_env_matches_runtime"
+        },
+        {
+          "id": "R204",
+          "name": "evidence_binds_base_commit_and_files"
+        },
+        {
+          "id": "R205",
+          "name": "per_requirement_receipt"
         }
       ],
       "phase": 0,
@@ -183,6 +193,7 @@
       ],
       "files": [
         "src/Bootstrap/FixtureHarness.php",
+        "scripts/test-isolation.mjs",
         "tests/integration/T04Test.php",
         "docs/evidence/T04/result.json"
       ],
@@ -201,6 +212,10 @@
         {
           "id": "R13",
           "name": "snapshot_not_hiding_errors"
+        },
+        {
+          "id": "R212",
+          "name": "test_residue_zero"
         }
       ],
       "phase": 0,
@@ -1434,7 +1449,9 @@
         "assets/variant-selector/selector.css",
         "src/Compatibility/StoreApi/SelectorAdapter.php",
         "tests/integration/T27Test.php",
-        "docs/evidence/T27/result.json"
+        "docs/evidence/T27/result.json",
+        "playwright.config.mjs",
+        "tests/e2e/SelectorBehavior.spec.mjs"
       ],
       "deliverables": "Accessible option controls; selector state machine; classic/Blocks adapters; performance trace.",
       "implementation": "Dropdown baseline, optional color/image swatches đọc metadata; disable impossible values, loading state, price/stock/image update. Abort/sequence stale requests; reset default selection; form variation_id/attributes theo WC. Enqueue chỉ PDP cần dùng.",
@@ -1455,6 +1472,10 @@
         {
           "id": "R110",
           "name": "large_variant_payload_budget"
+        },
+        {
+          "id": "R211",
+          "name": "selector_stale_response_behavioral"
         }
       ],
       "phase": 2,
@@ -2005,7 +2026,7 @@
     {
       "id": "T38",
       "module": "Legacy Sync",
-      "title": "Backfill triệu products và shadow diff",
+      "title": "Backfill catalog và shadow diff",
       "depends_on": [
         "T37",
         "T16",
@@ -2148,6 +2169,10 @@
         {
           "id": "R164",
           "name": "deactivation_with_native_only_data"
+        },
+        {
+          "id": "R210",
+          "name": "rollback_blocked_when_mirror_stopped"
         }
       ],
       "phase": 4,
@@ -2284,7 +2309,7 @@
     {
       "id": "T47",
       "module": "QA Performance",
-      "title": "Benchmark realistic scale và EXPLAIN budgets",
+      "title": "Benchmark thực đo và EXPLAIN budgets (quy mô site1.localhost)",
       "depends_on": [
         "T20",
         "T28",
@@ -2302,7 +2327,7 @@
         "docs/evidence/T47/result.json"
       ],
       "deliverables": "Reproducible benchmark scripts/dataset manifest; p50/p95/p99, DB plans, RAM/storage/queue lag reports.",
-      "implementation": "So cùng máy/data/cache conditions WC optimized baseline và engine 100k/1M parent products trên site1.localhost (không test 5M) với variations/meta/media distribution. Warm/cold reads, exact counts, pagination, hydration, import/backfill under live load, variant resolution và checkout concurrency. Separate PHP/DB/CDN/network time.",
+      "implementation": "So cùng máy/data/cache conditions WC optimized baseline và engine trên dữ liệu thực của site1.localhost; quy mô đã đo (số products/catalog rows) phải ghi trong evidence. 100k/1M là mục tiêu tương lai chưa đo và không được tuyên bố đạt (ADR 003); không test 5M. Dữ liệu có variations/meta/media distribution thực có. Warm/cold reads, exact counts, pagination, hydration, import/backfill under live load, variant resolution và checkout concurrency. Separate PHP/DB/CDN/network time.",
       "acceptance": "Ngưỡng ở phần 9 được owner chốt trên baseline; critical p95 không suy giảm >10% proposed budget trừ ADR. Index query speed được measured, không suy từ row count. Báo retained shells/attachment storage cost và slow unsupported queries.",
       "regression_requirements": [
         {
@@ -2644,8 +2669,8 @@
         "tests/integration/T46Test.php",
         "docs/evidence/T46/result.json"
       ],
-      "deliverables": "Cleanup planner/dry-run; tombstone/asset/outbox/job retention; archival metadata; restore instructions.",
-      "implementation": "Sau rollback window do operator cấu hình và restore drill pass mới đề xuất dọn duplicated owned postmeta. Không xóa shell/taxonomy/attachments cần tương thích; bảo vệ variation ID/order refs/shared assets. Chunk delete/retry, no DROP entire CPT. Giữ audit/operation idempotency theo order lifecycle.",
+      "deliverables": "Cleanup planner/dry-run; guarded cleanup của duplicated owned postmeta (phạm vi tường minh, native row tồn tại, authority đã seal, rollback window, restore gate theo cohort); resumable chunks; reprojection-before-rollback với write barrier. Hoãn theo ADR 003: retention tombstone/asset/outbox/job, archival metadata, restore instructions.",
+      "implementation": "Sau rollback window do operator cấu hình và restore drill pass mới đề xuất dọn duplicated owned postmeta. Không xóa shell/taxonomy/attachments cần tương thích; bảo vệ variation ID/order refs/shared assets. Chunk delete/retry, no DROP entire CPT. Giữ audit/operation idempotency theo order lifecycle. Theo ADR 003: cleanup bắt buộc product_ids/cohort tường minh, từ chối khi thiếu native row hoặc authority chưa seal, chặn trước khi hết rollback window (mặc định 30 ngày), restore gate gắn từng cohort; RollbackRunner từ chối switch authority khi mirror đã dừng mà chưa reproject.",
       "acceptance": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ. Cleanup không automatic on upgrade/activate/deactivate. Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch.",
       "regression_requirements": [
         {
@@ -2663,6 +2688,22 @@
         {
           "id": "R188",
           "name": "rollback_after_mirror_stopped"
+        },
+        {
+          "id": "R206",
+          "name": "cleanup_requires_explicit_scope"
+        },
+        {
+          "id": "R207",
+          "name": "cleanup_requires_native_row"
+        },
+        {
+          "id": "R208",
+          "name": "cleanup_requires_rollback_window"
+        },
+        {
+          "id": "R209",
+          "name": "restore_gate_is_per_cohort"
         }
       ],
       "phase": 7,

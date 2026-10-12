@@ -2,7 +2,7 @@
 
 ## 1. Root và package responsibilities
 
-Đây là docs/scaffolding package, không plugin runtime hoàn chỉnh. Files trong danh sách là planned destinations; task tạo file cần thiết, không có nghĩa mọi PHP/test file đã tồn tại. `contracts/structure.json` canonical manifest cho checker. Guide DOCS-KIT đầu vào không copy vào repo.
+Files trong danh sách là destinations đã hoặc sẽ được task tạo; trạng thái thực của từng task nằm ở docs/PROGRESS.md và docs/evidence. `contracts/structure.json` canonical manifest cho checker. Guide DOCS-KIT đầu vào không copy vào repo.
 
 ## 2. Dependency directions
 
@@ -61,6 +61,7 @@ docs/QUESTIONS.md
 docs/REVIEW.md
 docs/adr/001-retained-shells.md
 docs/adr/002-single-writer.md
+docs/adr/003-audit-remediation-scope.md
 docs/diagrams/implementation-dag.mmd
 docs/diagrams/implementation-dag.png
 docs/diagrams/implementation-dag.svg
@@ -123,6 +124,7 @@ docs/plans/INDEX.md
 docs/plans/README.md
 package-lock.json
 package.json
+playwright.config.mjs
 scripts/check-docs.mjs
 scripts/docs-qa/contract-selftest.py
 scripts/docs-qa/tooling-selftest.py
@@ -131,6 +133,8 @@ scripts/guard.mjs
 scripts/hooks/pre-commit
 scripts/plan.mjs
 scripts/release/ReleasePackager.mjs
+scripts/rerun-evidence.mjs
+scripts/test-isolation.mjs
 scripts/test-runtime.mjs
 scripts/verify-task.mjs
 src/Admin/OperationsPage.php
@@ -181,6 +185,7 @@ src/Infrastructure/Database/OutboxWorker.php
 src/Infrastructure/Database/ProductRepository.php
 src/Infrastructure/Database/SchemaMigrator.php
 tests/e2e/CompatibilitySuite.mjs
+tests/e2e/SelectorBehavior.spec.mjs
 tests/integration/T01Test.php
 tests/integration/T02Test.php
 tests/integration/T04Test.php

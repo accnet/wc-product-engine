@@ -125,7 +125,8 @@
       "classification": "CRUD-safe",
       "status": "supported",
       "owner": "team-catalog",
-      "notes": "Bundles remain in legacy mode without direct SQL writes"
+      "notes": "Bundles remain in legacy mode without direct SQL writes",
+      "active": true
     },
     {
       "slug": "calora-companion",
@@ -133,15 +134,17 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-storefront",
-      "notes": "Theme helper using standard WordPress APIs"
+      "notes": "Theme helper using standard WordPress APIs",
+      "active": true
     },
     {
       "slug": "classic-editor",
-      "version": "1.6.7",
+      "version": "1.7.0",
       "classification": "CRUD-safe",
-      "status": "supported",
+      "status": "unknown",
       "owner": "team-admin",
-      "notes": "Admin editor using standard post editing"
+      "notes": "Admin editor using standard post editing (version changed from 1.6.7 to 1.7.0; not re-reviewed)",
+      "active": true
     },
     {
       "slug": "classic-widgets",
@@ -149,15 +152,17 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-storefront",
-      "notes": "Standard WordPress widget screen"
+      "notes": "Standard WordPress widget screen",
+      "active": true
     },
     {
       "slug": "contact-form-7",
-      "version": "6.1.6",
+      "version": "6.2.2",
       "classification": "WP API bridge",
-      "status": "supported",
+      "status": "unknown",
       "owner": "team-integration",
-      "notes": "Isolated forms post type"
+      "notes": "Isolated forms post type (version changed from 6.1.6 to 6.2.2; not re-reviewed)",
+      "active": false
     },
     {
       "slug": "disable-xml-rpc",
@@ -165,7 +170,8 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-security",
-      "notes": "Security filter"
+      "notes": "Security filter",
+      "active": true
     },
     {
       "slug": "duplicator",
@@ -173,7 +179,8 @@
       "classification": "SQL-reader",
       "status": "supported",
       "owner": "team-operations",
-      "notes": "Backup reader only, does not modify product tables during catalog operations"
+      "notes": "Backup reader only, does not modify product tables during catalog operations (currently inactive on host)",
+      "active": false
     },
     {
       "slug": "easy-wp-smtp",
@@ -181,7 +188,8 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-integration",
-      "notes": "Mail routing only"
+      "notes": "Mail routing only (currently inactive on host)",
+      "active": false
     },
     {
       "slug": "cards-shield",
@@ -189,7 +197,8 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-checkout",
-      "notes": "Payment protection gateway bridge"
+      "notes": "Payment protection gateway bridge (currently inactive on host)",
+      "active": false
     },
     {
       "slug": "unregistered-direct-sql-writer",
@@ -199,5 +208,6 @@
       "owner": "team-architecture",
       "notes": "Direct SQL writer without adapter is a strict blocker for native cohort rollout (AC-T01-03, R02)"
     }
-  ]
+  ],
+  "re_pinned_at": "2026-10-12T22:20:00+07:00"
 }

@@ -3,27 +3,29 @@
   "selected_at": "2026-10-12",
   "status": "site1_localhost_baseline_not_certified",
   "versions": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "node": "22.22.2",
-    "composer": "2.8.12",
-    "phpunit": "9.6.38",
-    "phpcodesniffer": "3.13.4",
-    "wordpress_coding_standards": "3.2.0",
-    "playwright": "1.56.1",
+    "composer": "not_installed",
+    "phpunit": "not_installed",
+    "phpcodesniffer": "not_installed",
+    "wordpress_coding_standards": "not_installed",
+    "playwright": "1.63.0",
     "theme": "calora 1.0.0",
     "mariadb": "11.8.6"
   },
-  "policy": "T01 reads versions from site1.localhost via WP-CLI; version changes reopen affected gates.",
+  "policy": "T01 reads versions from site1.localhost via WP-CLI; tests assert pins equal the live runtime (T01 R01, evidence R203); version changes reopen affected gates (R171). Tools marked not_installed are not used by any task command.",
   "environment": {
     "site_url": "http://site1.localhost",
     "path": "/var/www/site1.localhost",
     "plugin_dir": "wp-content/plugins/wc-product-engine",
     "database": "site MariaDB only (no MySQL matrix)",
-    "scale_datasets": [
+    "scale_targets_future": [
       "100k",
       "1M"
-    ]
-  }
+    ],
+    "scale_targets_note": "Future targets only. No 100k/1M dataset has been measured (ADR 003)."
+  },
+  "re_pinned_at": "2026-10-12T22:20:00+07:00"
 }

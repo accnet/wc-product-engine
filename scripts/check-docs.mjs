@@ -55,10 +55,12 @@ if(work&&structure){
  const vis=new Set(),seen=new Set();function visit(tid){if(vis.has(tid)){fail(`DAG cycle at ${tid}`);return;}if(seen.has(tid))return;vis.add(tid);for(const d of tasks.find(t=>t.id===tid)?.depends_on??[])if(ids.has(d))visit(d);vis.delete(tid);seen.add(tid);}
  for(const t of tasks)visit(t.id);
  for(const [name,s] of text){if(name.startsWith('docs/plans/P'))continue;for(const m of s.matchAll(/\bT\d\d\b/g))if(!ids.has(m[0]))fail(`${name}: unknown task ${m[0]}`);}
- const allReq=tasks.flatMap(t=>t.regression_requirements.map(r=>({...r,task:t.id,status:'specified_not_implemented'})));
- if(reg&&JSON.stringify(allReq)!==JSON.stringify(reg.requirements))fail('Regression registry differs from tasks');
+ const allReq=tasks.flatMap(t=>t.regression_requirements.map(r=>({...r,task:t.id})));
+ const statuses=new Set(['specified_not_implemented','revalidation_pending','verified']);
+ if(reg&&JSON.stringify(allReq)!==JSON.stringify((reg.requirements??[]).map(({status,...r})=>r)))fail('Regression registry differs from tasks');
+ for(const r of reg?.requirements??[]){if(!statuses.has(r.status))fail(`${r.id}: invalid status ${r.status}`);if(r.status==='verified'&&!fs.existsSync(path.join(root,'docs/evidence',r.task,'result.json')))fail(`${r.id}: verified without evidence`);}
  const reqIds=allReq.map(r=>r.id);if(new Set(reqIds).size!==reqIds.length)fail('Duplicate regression requirement IDs');
- if(allReq.length!==202)fail(`Expected 202 requirements, got ${allReq.length}`);
+ if(allReq.length!==212)fail(`Expected 212 requirements, got ${allReq.length}`);
  const completed=new Set(ps.filter(x=>x[2]==='x').map(x=>x[0]));
  for(const t of tasks)if(completed.has(t.id))for(const d of t.depends_on)if(!completed.has(d))fail(`${t.id} completed with unfinished dependency ${d}`);
  for(const t of tasks)if(completed.has(t.id)&&!fs.existsSync(path.join(root,'docs/evidence',t.id,'result.json')))fail(`${t.id} done without runtime evidence`);
