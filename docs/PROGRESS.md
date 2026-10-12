@@ -47,7 +47,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T30 — Commit worker, resume và conflict policy
 - [x] T31 — Snapshot export và secure report delivery
 - [x] T32 — Native Woo import adapter và external image mode
-- [ ] T33 — Woo export adapter và round-trip
+- [x] T33 — Woo export adapter và round-trip
 - [ ] T34 — Current/legacy parser và product grouping
 - [ ] T35 — Native Shopify exporter và loss policy
 - [ ] T36 — Cross-format equivalence và import/export QA

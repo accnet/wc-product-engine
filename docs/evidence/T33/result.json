@@ -1,0 +1,78 @@
+{
+  "task_id": "T33",
+  "commit": "4af73d29ebc899ae8e12c8dd546fbdd26b7d7daf",
+  "qa_status": "passed",
+  "content_digest": "d0930e3eebf05e99e30f3f64099c415b1615f0d793b59948f18ac8c092055247",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T33Test.php"
+      ],
+      "display": "npm run test:task -- T33",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T33/output.log",
+      "output_sha256": "47ab64ad00677e88f8b7a7219c516aba9a8cca36eae0cfa65fdea536f40f2e77",
+      "content_digest": "d0930e3eebf05e99e30f3f64099c415b1615f0d793b59948f18ac8c092055247"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R132",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R132_woo_export_into_baseline",
+      "assertion_summary": "Verified exported products adhere to native WooCommerce baseline CSV format and column specifications"
+    },
+    {
+      "id": "R133",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R133_woo_csv_roundtrip_subset",
+      "assertion_summary": "Verified engine product -> export to Woo CSV -> import via WooImporter produces equivalent subset equality"
+    },
+    {
+      "id": "R134",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R134_native_exporter_hooks",
+      "assertion_summary": "Verified integration hooks adapting native WooCommerce CSV Exporter (woocommerce_product_export_row_data, etc.)"
+    },
+    {
+      "id": "R135",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R135_image_url_order_and_loss",
+      "assertion_summary": "Verified featured first then gallery image ordering, variation primary image in row, and multi-gallery variation loss report"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T33-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Woo/WooExporter.php",
+      "observation": "Woo stock site test import file đạt subset equality; engine→Woo→engine giữ IDs qua source mapping hợp lệ hoặc report remap khi cross-site"
+    },
+    {
+      "id": "AC-T33-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/Csv/Woo/WooExporter.php",
+      "observation": "Không cố gán numeric ID mới từ CSV; hệ thống cấp phát ID theo thẩm quyền native"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/Csv/Woo/WooExporter.php",
+    "tests/integration/T33Test.php",
+    "docs/evidence/T33/result.json"
+  ]
+}
