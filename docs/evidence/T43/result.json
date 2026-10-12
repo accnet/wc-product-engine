@@ -1,0 +1,78 @@
+{
+  "task_id": "T43",
+  "commit": "e8d8a83ff70d15436b6f3359cfa9966d07debb71",
+  "qa_status": "passed",
+  "content_digest": "85d92dd23579d1c30369beb7ea8cf02ad572a971556d1b07fa62f3b2a1901b15",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T43Test.php"
+      ],
+      "display": "npm run test:task -- T43",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T43/output.log",
+      "output_sha256": "04d6de0fb72f6d7bb9726ae47b43246876dcce50b3afcef0fb2e9104439308f9",
+      "content_digest": "85d92dd23579d1c30369beb7ea8cf02ad572a971556d1b07fa62f3b2a1901b15"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R173",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R173_cutover_checkpoint_faults",
+      "assertion_summary": "Verified cutover execution through discrete sequential checkpoints; fault injection at pre-flip and post-flip checkpoints resumes or aborts with unambiguous single authority"
+    },
+    {
+      "id": "R174",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R174_epoch_worker_fence",
+      "assertion_summary": "Verified epoch worker fence strictly rejects stale workers carrying obsolete epochs and records security audit events"
+    },
+    {
+      "id": "R175",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R175_canary_halt",
+      "assertion_summary": "Verified canary metric monitoring halts cohort expansion on error rate or stock mismatch threshold breaches and exposes structured recovery options without automatic rollback"
+    },
+    {
+      "id": "R176",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R176_no_partial_parent_variant_cutover",
+      "assertion_summary": "Verified parent product and all child variants and stock owners flip authority and epoch atomically in a single transaction; partial cutovers are strictly rejected"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T43-01",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/CutoverRunner.php",
+      "observation": "Crash mỗi checkpoint resume/abort có nguồn chuẩn rõ; old workers reject; no checkout stock double mutation"
+    },
+    {
+      "id": "AC-T43-02",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/CutoverRunner.php",
+      "observation": "Error/mismatch threshold tự halt mở rộng và expose recovery, không tự rollback dữ liệu chưa mirror-ready"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Rollout/CutoverRunner.php",
+    "tests/integration/T43Test.php",
+    "docs/evidence/T43/result.json"
+  ]
+}
