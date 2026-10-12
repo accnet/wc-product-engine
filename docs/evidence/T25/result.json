@@ -1,0 +1,78 @@
+{
+  "task_id": "T25",
+  "commit": "dcf5b5102b81125ca32500100d6eebced0a3a35c",
+  "qa_status": "passed",
+  "content_digest": "b2f12d2f0341cbbb6bf212404f4a987494b1c40c78b5a829bd619e7a2a47603f",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T25Test.php"
+      ],
+      "display": "npm run test:task -- T25",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T25/output.log",
+      "output_sha256": "e7ff25e1ebf29723565433970e2ab65762af6bb9d4f05747d69cfbcfe4f81faa",
+      "content_digest": "b2f12d2f0341cbbb6bf212404f4a987494b1c40c78b5a829bd619e7a2a47603f"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R99",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R99_partial_allowed_values",
+      "assertion_summary": "Verified partial selection allowed values from compatible variants without Cartesian products"
+    },
+    {
+      "id": "R100",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R100_wildcard_precedence_diff",
+      "assertion_summary": "Verified wildcard ANY precedence matching WooCommerce baseline order"
+    },
+    {
+      "id": "R101",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R101_stock_price_revision",
+      "assertion_summary": "Verified stock inheritance, scheduled price, free vs missing price, and revision echo"
+    },
+    {
+      "id": "R102",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R102_unknown_option_wrong_product",
+      "assertion_summary": "Verified graceful rejection of unknown options, invalid values, and non-variable products"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T25-01",
+      "result": "passed",
+      "artifact": "src/Application/Variant/VariantResolver.php",
+      "observation": "None/partial/exact/ambiguous states đúng fixtures, inherited stock đúng; free vs missing price khác"
+    },
+    {
+      "id": "AC-T25-02",
+      "result": "passed",
+      "artifact": "src/Application/Variant/VariantResolver.php",
+      "observation": "Duplicate overlapping Any được report, không random selection"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Variant/VariantResolver.php",
+    "tests/integration/T25Test.php",
+    "docs/evidence/T25/result.json"
+  ]
+}
