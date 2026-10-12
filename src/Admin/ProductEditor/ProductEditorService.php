@@ -503,7 +503,7 @@ class ProductEditorService
             if ($expVer !== $currentVer) {
                 $latest = $this->getProductEditorData($productId);
                 throw new ConcurrencyConflictException(
-                    "Dữ liệu sản phẩm trên máy chủ đã thay đổi bởi người dùng khác (Phiên bản {$currentVer} so với {$expVer}).",
+                    "Product data on server has been modified by another process (Version {$currentVer} vs {$expVer}).",
                     $latest
                 );
             }
@@ -588,7 +588,7 @@ class ProductEditorService
             return [
                 'success'     => true,
                 'status'      => 'success',
-                'message'     => 'Lưu thuộc tính và biến thể sản phẩm thành công.',
+                'message'     => 'Product attributes and variants saved successfully.',
                 'new_version' => $newVersion,
                 'data'        => $this->getProductEditorData($productId),
             ];

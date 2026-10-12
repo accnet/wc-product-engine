@@ -68,7 +68,7 @@
     };
 
     /**
-     * API Client
+     * REST API Client
      */
     const api = {
         fetchData() {
@@ -141,7 +141,7 @@
             $container.html(`
                 <div class="wpe-editor-loading">
                     <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
-                    <span>Đang tải thuộc tính và biến thể sản phẩm...</span>
+                    <span>Loading attributes and variants...</span>
                 </div>
             `);
             return;
@@ -154,35 +154,35 @@
                 <!-- Top Status Bar -->
                 <div class="wpe-top-bar">
                     <div class="wpe-top-title-area">
-                        <h3 class="wpe-top-title">${isModal ? 'Quản lý biến thể (Toàn màn hình)' : 'Quản lý biến thể'}</h3>
+                        <h3 class="wpe-top-title">${isModal ? 'Variants Manager (Fullscreen)' : 'Variants Manager'}</h3>
                         <span class="wpe-dirty-badge ${wpeVariantStore.isDirty ? 'dirty' : 'clean'}">
                             <span class="dashicons dashicons-${wpeVariantStore.isDirty ? 'warning' : 'yes'}"></span>
-                            ${wpeVariantStore.isDirty ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'}
+                            ${wpeVariantStore.isDirty ? 'Unsaved changes' : 'In Sync'}
                         </span>
                     </div>
                     <div class="wpe-top-actions">
                         ${!isModal ? `
                             <button type="button" class="button wpe-btn-open-fullscreen">
-                                <span class="dashicons dashicons-editor-expand" style="margin-top:4px;"></span> Mở rộng editor
+                                <span class="dashicons dashicons-editor-expand"></span> Fullscreen Mode
                             </button>
                         ` : `
                             <button type="button" class="button wpe-btn-close-fullscreen">
-                                <span class="dashicons dashicons-editor-contract" style="margin-top:4px;"></span> Thu nhỏ
+                                <span class="dashicons dashicons-editor-contract"></span> Collapse
                             </button>
                         `}
                         <button type="button" class="button button-primary wpe-btn-save-api" ${!wpeVariantStore.isDirty ? 'disabled' : ''}>
-                            <span class="dashicons dashicons-saved" style="margin-top:4px;"></span> Lưu thay đổi
+                            <span class="dashicons dashicons-saved"></span> Save Changes
                         </button>
                     </div>
                 </div>
 
-                <!-- SECTION A: Thuộc tính mô tả -->
+                <!-- SECTION A: Descriptive Attributes -->
                 ${renderSectionA()}
 
-                <!-- SECTION B: Options tạo biến thể -->
+                <!-- SECTION B: Variation Options -->
                 ${renderSectionB()}
 
-                <!-- SECTION C: Danh sách biến thể -->
+                <!-- SECTION C: Variations Matrix -->
                 ${renderSectionC()}
             </div>
         `;
@@ -192,21 +192,21 @@
     }
 
     /**
-     * Render Section A: Thuộc tính mô tả (used_for_variation = 0)
+     * Render Section A: Descriptive Attributes (used_for_variation = 0)
      */
     function renderSectionA() {
         const attrs = wpeVariantStore.descriptiveAttributes;
         let itemsHtml = '';
 
         if (attrs.length === 0) {
-            itemsHtml = `<div style="color:#646970; font-style:italic; padding:8px 0;">Chưa có thuộc tính mô tả (Material, Brand, Fit...). Nhấn "Thêm thuộc tính mô tả" để tạo.</div>`;
+            itemsHtml = `<div style="color:#64748b; font-style:italic; padding:8px 0;">No descriptive attributes added yet (Material, Brand, Fit...). Click "Add Attribute" to create one.</div>`;
         } else {
             attrs.forEach((attr, idx) => {
                 const values = (attr.values || []).map(v => typeof v === 'object' ? v.label : v);
                 const chipsHtml = values.map((val, vIdx) => `
                     <span class="wpe-chip" data-attr-idx="${idx}" data-val-idx="${vIdx}">
                         <span>${escapeHtml(val)}</span>
-                        <span class="wpe-chip-remove" title="Xóa">&times;</span>
+                        <span class="wpe-chip-remove" title="Remove">&times;</span>
                     </span>
                 `).join('');
 
@@ -215,21 +215,21 @@
                         <div class="wpe-desc-attr-header">
                             <div class="wpe-desc-attr-name">
                                 <span>${escapeHtml(attr.name)}</span>
-                                ${attr.taxonomy ? `<span class="wpe-taxonomy-tag">Toàn hệ thống (${escapeHtml(attr.taxonomy)})</span>` : '<span class="wpe-taxonomy-tag" style="background:#f0f0f1; color:#50575e;">Thuộc tính riêng</span>'}
+                                ${attr.taxonomy ? `<span class="wpe-taxonomy-tag">Global Taxonomy (${escapeHtml(attr.taxonomy)})</span>` : '<span class="wpe-taxonomy-tag" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;">Custom Attribute</span>'}
                             </div>
                             <div class="wpe-desc-attr-controls">
-                                <label>
+                                <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
                                     <input type="checkbox" class="wpe-desc-visible-toggle" ${attr.is_visible || attr.visible ? 'checked' : ''} />
-                                    Hiển thị trên trang sản phẩm
+                                    Visible on product page
                                 </label>
-                                <button type="button" class="button-link-delete wpe-desc-attr-delete" title="Xóa thuộc tính này">
+                                <button type="button" class="button-link-delete wpe-desc-attr-delete" title="Delete attribute">
                                     <span class="dashicons dashicons-trash" style="font-size:16px;"></span>
                                 </button>
                             </div>
                         </div>
                         <div class="wpe-chips-container" data-attr-idx="${idx}">
                             ${chipsHtml}
-                            <input type="text" class="wpe-chip-input" placeholder="Gõ giá trị và nhấn Enter..." />
+                            <input type="text" class="wpe-chip-input" placeholder="Type a value and press Enter..." />
                         </div>
                     </div>
                 `;
@@ -237,7 +237,7 @@
         }
 
         // Global taxonomies dropdown options
-        let taxonomyOptions = '<option value="">-- Thuộc tính riêng của sản phẩm --</option>';
+        let taxonomyOptions = '<option value="">-- Custom Product Attribute --</option>';
         wpeVariantStore.taxonomies.forEach(t => {
             taxonomyOptions += `<option value="${escapeHtml(t.slug)}">${escapeHtml(t.name)}</option>`;
         });
@@ -246,20 +246,20 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-tag"></span>
-                        <h4 class="wpe-section-title">A. Thuộc tính mô tả</h4>
+                        <span class="dashicons dashicons-tag" style="color:#2563eb;"></span>
+                        <h4 class="wpe-section-title">A. Descriptive Attributes</h4>
                         <span class="wpe-section-count">${attrs.length}</span>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <select class="wpe-add-taxonomy-select" style="max-width:200px; font-size:12px;">
+                        <select class="wpe-add-taxonomy-select" style="max-width:220px; font-size:12px;">
                             ${taxonomyOptions}
                         </select>
                         <button type="button" class="button wpe-btn-add-desc-attr">
-                            <span class="dashicons dashicons-plus-alt2" style="margin-top:3px;"></span> Thêm thuộc tính
+                            <span class="dashicons dashicons-plus-alt2" style="margin-top:3px;"></span> Add Attribute
                         </button>
                     </div>
                 </div>
-                <p class="wpe-section-desc">Thuộc tính mô tả hiển thị thông tin chi tiết trên trang sản phẩm (Material, Brand, Style...) và không tạo ra biến thể.</p>
+                <p class="wpe-section-desc">Descriptive attributes showcase specifications (Material, Brand, Fit, Care...) on the storefront and do not generate product variations.</p>
                 <div class="wpe-section-body">
                     <div class="wpe-desc-attr-list">
                         ${itemsHtml}
@@ -270,37 +270,37 @@
     }
 
     /**
-     * Render Section B: Options tạo biến thể (used_for_variation = 1)
+     * Render Section B: Variation Options Cards (used_for_variation = 1)
      */
     function renderSectionB() {
         const options = wpeVariantStore.variationOptions;
         let cardsHtml = '';
 
         if (options.length === 0) {
-            cardsHtml = `<div style="color:#646970; font-style:italic; padding:8px 0;">Chưa có options biến thể (Color, Size...). Nhấn "Thêm option" để bắt đầu.</div>`;
+            cardsHtml = `<div style="color:#64748b; font-style:italic; padding:8px 0;">No variation options configured yet (Color, Size...). Click "Add Option" to begin.</div>`;
         } else {
             options.forEach((opt, idx) => {
                 const values = (opt.values || []).map(v => typeof v === 'object' ? v.label : v);
                 const chipsHtml = values.map((val, vIdx) => `
                     <span class="wpe-chip" data-opt-idx="${idx}" data-val-idx="${vIdx}">
                         <span>${escapeHtml(val)}</span>
-                        <span class="wpe-chip-remove" title="Xóa giá trị">&times;</span>
+                        <span class="wpe-chip-remove" title="Remove value">&times;</span>
                     </span>
                 `).join('');
 
                 cardsHtml += `
                     <div class="wpe-option-card" data-idx="${idx}">
                         <div class="wpe-option-card-header">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="dashicons dashicons-menu" style="color:#c3c4c7; cursor:grab;" title="Kéo sắp xếp"></span>
-                                <input type="text" class="wpe-option-name-input" value="${escapeHtml(opt.name)}" placeholder="Tên option (vd: Size, Color)" />
-                                <span style="font-size:11px; color:#646970;">(${values.length} giá trị)</span>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span class="dashicons dashicons-menu" style="color:#94a3b8; cursor:grab;" title="Drag to reorder"></span>
+                                <input type="text" class="wpe-option-name-input" value="${escapeHtml(opt.name)}" placeholder="Option name (e.g. Size, Color)" />
+                                <span style="font-size:12px; color:#64748b; font-weight:500;">(${values.length} values)</span>
                             </div>
                             <div class="wpe-option-card-actions">
                                 <button type="button" class="button button-small wpe-btn-toggle-bulk-paste">
-                                    <span class="dashicons dashicons-clipboard" style="margin-top:2px;"></span> Dán nhiều
+                                    <span class="dashicons dashicons-clipboard" style="margin-top:2px;"></span> Paste Values
                                 </button>
-                                <button type="button" class="button-link-delete wpe-btn-delete-option" title="Xóa option này">
+                                <button type="button" class="button-link-delete wpe-btn-delete-option" title="Delete option">
                                     <span class="dashicons dashicons-trash" style="font-size:16px;"></span>
                                 </button>
                             </div>
@@ -308,17 +308,17 @@
 
                         <!-- Bulk paste values box -->
                         <div class="wpe-bulk-paste-box">
-                            <p style="margin:0 0 6px 0; font-size:11px; color:#50575e;">Dán các giá trị phân cách bởi dấu phẩy, tab hoặc dòng mới:</p>
+                            <p style="margin:0 0 6px 0; font-size:11px; color:#475569;">Paste values separated by commas, tabs, or new lines:</p>
                             <textarea rows="2" placeholder="Red, Blue, Green, Yellow..."></textarea>
-                            <div style="margin-top:6px; display:flex; justify-content:flex-end; gap:6px;">
-                                <button type="button" class="button button-small wpe-btn-cancel-bulk-paste">Đóng</button>
-                                <button type="button" class="button button-small button-primary wpe-btn-apply-bulk-paste">Thêm nhanh</button>
+                            <div style="margin-top:8px; display:flex; justify-content:flex-end; gap:8px;">
+                                <button type="button" class="button button-small wpe-btn-cancel-bulk-paste">Close</button>
+                                <button type="button" class="button button-small button-primary wpe-btn-apply-bulk-paste">Add Values</button>
                             </div>
                         </div>
 
                         <div class="wpe-chips-container" data-opt-idx="${idx}">
                             ${chipsHtml}
-                            <input type="text" class="wpe-chip-input" placeholder="Nhập giá trị và nhấn Enter..." />
+                            <input type="text" class="wpe-chip-input" placeholder="Type a value and press Enter..." />
                         </div>
                     </div>
                 `;
@@ -329,17 +329,17 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-admin-settings"></span>
-                        <h4 class="wpe-section-title">B. Options tạo biến thể</h4>
+                        <span class="dashicons dashicons-admin-settings" style="color:#2563eb;"></span>
+                        <h4 class="wpe-section-title">B. Variation Options</h4>
                         <span class="wpe-section-count">${options.length}</span>
                     </div>
                     <div>
                         <button type="button" class="button wpe-btn-add-option">
-                            <span class="dashicons dashicons-plus-alt2" style="margin-top:3px;"></span> Thêm option mới
+                            <span class="dashicons dashicons-plus-alt2" style="margin-top:3px;"></span> Add Option
                         </button>
                     </div>
                 </div>
-                <p class="wpe-section-desc">Cấu hình các thuộc tính tạo biến thể (Color, Size...). Đổi tên hoặc sắp xếp giữ nguyên variation IDs.</p>
+                <p class="wpe-section-desc">Manage attributes used to form product variations (Color, Size...). Renaming or reordering preserves variation IDs.</p>
                 <div class="wpe-section-body">
                     <div class="wpe-options-list">
                         ${cardsHtml}
@@ -350,7 +350,7 @@
     }
 
     /**
-     * Render Section C: Danh sách biến thể (Variations Matrix)
+     * Render Section C: Variations Matrix Table
      */
     function renderSectionC() {
         const variations = wpeVariantStore.variations;
@@ -375,29 +375,16 @@
             return true;
         });
 
-        // Grouping
-        let groups = {};
-        if (filters.groupBy && filters.groupBy !== 'none') {
-            filtered.forEach(v => {
-                const attrs = v.attributes || v.combination || {};
-                const groupKey = attrs[filters.groupBy] || 'Chưa chọn';
-                if (!groups[groupKey]) groups[groupKey] = [];
-                groups[groupKey].push(v);
-            });
-        } else {
-            groups['all'] = filtered;
-        }
-
         // Pagination
         const totalItems = filtered.length;
         const totalPages = Math.ceil(totalItems / filters.pageSize) || 1;
         const startIdx = (filters.page - 1) * filters.pageSize;
         const paginatedList = filtered.slice(startIdx, startIdx + filters.pageSize);
 
-        // Options for Group By dropdown
-        let groupByOptions = '<option value="none">-- Không nhóm --</option>';
+        // Group by dropdown options
+        let groupByOptions = '<option value="none">-- No Grouping --</option>';
         options.forEach(opt => {
-            groupByOptions += `<option value="${escapeHtml(opt.name)}" ${filters.groupBy === opt.name ? 'selected' : ''}>Nhóm theo ${escapeHtml(opt.name)}</option>`;
+            groupByOptions += `<option value="${escapeHtml(opt.name)}" ${filters.groupBy === opt.name ? 'selected' : ''}>Group by ${escapeHtml(opt.name)}</option>`;
         });
 
         const selectedCount = wpeVariantStore.selection.size;
@@ -406,13 +393,13 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-grid-view"></span>
-                        <h4 class="wpe-section-title">C. Danh sách biến thể</h4>
+                        <span class="dashicons dashicons-grid-view" style="color:#2563eb;"></span>
+                        <h4 class="wpe-section-title">C. Variations Matrix</h4>
                         <span class="wpe-section-count">${variations.length}</span>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button type="button" class="button button-primary wpe-btn-open-generator">
-                            <span class="dashicons dashicons-forms" style="margin-top:3px;"></span> Tạo biến thể
+                            <span class="dashicons dashicons-forms" style="margin-top:3px;"></span> Generate Variations
                         </button>
                     </div>
                 </div>
@@ -420,18 +407,18 @@
                 <!-- Matrix Toolbar -->
                 <div class="wpe-matrix-toolbar">
                     <div class="wpe-toolbar-left">
-                        <input type="text" class="wpe-search-input" placeholder="Tìm theo SKU, tổ hợp, giá..." value="${escapeHtml(filters.search)}" />
+                        <input type="text" class="wpe-search-input" placeholder="Search by SKU, attributes, price..." value="${escapeHtml(filters.search)}" />
                         <select class="wpe-filter-select wpe-filter-status">
-                            <option value="">Trạng thái: Tất cả</option>
-                            <option value="publish" ${filters.status === 'publish' ? 'selected' : ''}>Đã xuất bản</option>
-                            <option value="private" ${filters.status === 'private' ? 'selected' : ''}>Riêng tư</option>
-                            <option value="draft" ${filters.status === 'draft' ? 'selected' : ''}>Bản nháp</option>
+                            <option value="">Status: All</option>
+                            <option value="publish" ${filters.status === 'publish' ? 'selected' : ''}>Published</option>
+                            <option value="private" ${filters.status === 'private' ? 'selected' : ''}>Private</option>
+                            <option value="draft" ${filters.status === 'draft' ? 'selected' : ''}>Draft</option>
                         </select>
                         <select class="wpe-filter-select wpe-filter-stock">
-                            <option value="">Tồn kho: Tất cả</option>
-                            <option value="instock" ${filters.stockStatus === 'instock' ? 'selected' : ''}>Còn hàng</option>
-                            <option value="outofstock" ${filters.stockStatus === 'outofstock' ? 'selected' : ''}>Hết hàng</option>
-                            <option value="parent_stock" ${filters.stockStatus === 'parent_stock' ? 'selected' : ''}>Dùng tồn chung</option>
+                            <option value="">Stock: All</option>
+                            <option value="instock" ${filters.stockStatus === 'instock' ? 'selected' : ''}>In Stock</option>
+                            <option value="outofstock" ${filters.stockStatus === 'outofstock' ? 'selected' : ''}>Out of Stock</option>
+                            <option value="parent_stock" ${filters.stockStatus === 'parent_stock' ? 'selected' : ''}>Shared Parent Stock</option>
                         </select>
                         <select class="wpe-filter-select wpe-group-by-select">
                             ${groupByOptions}
@@ -439,10 +426,10 @@
                     </div>
                     <div class="wpe-toolbar-right">
                         <button type="button" class="button wpe-btn-assign-media-by-option">
-                            <span class="dashicons dashicons-images-alt2" style="margin-top:3px;"></span> Gán ảnh theo nhóm
+                            <span class="dashicons dashicons-images-alt2" style="margin-top:3px;"></span> Assign by Group
                         </button>
                         <button type="button" class="button wpe-btn-open-bulk-edit" ${selectedCount === 0 ? 'disabled' : ''}>
-                            <span class="dashicons dashicons-edit" style="margin-top:3px;"></span> Chỉnh sửa hàng loạt (${selectedCount})
+                            <span class="dashicons dashicons-edit" style="margin-top:3px;"></span> Bulk Edit (${selectedCount})
                         </button>
                     </div>
                 </div>
@@ -450,12 +437,12 @@
                 <!-- Selection Bar -->
                 <div class="wpe-selection-bar ${selectedCount > 0 ? 'active' : ''}">
                     <div>
-                        <strong>${selectedCount}</strong> biến thể đã chọn
-                        <button type="button" class="button-link wpe-btn-select-all-filtered" style="margin-left:8px;">Chọn toàn bộ ${totalItems} kết quả lọc</button>
+                        <strong>${selectedCount}</strong> variants selected
+                        <button type="button" class="button-link wpe-btn-select-all-filtered" style="margin-left:8px;">Select all ${totalItems} filtered results</button>
                     </div>
                     <div class="wpe-selection-actions">
-                        <button type="button" class="button button-small wpe-btn-bulk-assign-media">Gán ảnh chung</button>
-                        <button type="button" class="button button-small wpe-btn-clear-selection">Bỏ chọn</button>
+                        <button type="button" class="button button-small wpe-btn-bulk-assign-media">Assign Media</button>
+                        <button type="button" class="button button-small wpe-btn-clear-selection">Deselect All</button>
                     </div>
                 </div>
 
@@ -464,15 +451,15 @@
                     <table class="wpe-table">
                         <thead>
                             <tr>
-                                <th style="width:30px;"><input type="checkbox" class="wpe-check-all-page" /></th>
-                                <th style="width:50px;">Ảnh</th>
-                                <th>Tổ hợp biến thể</th>
-                                <th style="width:130px;">SKU</th>
-                                <th style="width:110px;">Giá thường (${config.currencySymbol})</th>
-                                <th style="width:110px;">Giá sale (${config.currencySymbol})</th>
-                                <th style="width:130px;">Tồn kho</th>
-                                <th style="width:90px;">Trạng thái</th>
-                                <th style="width:90px; text-align:right;">Thao tác</th>
+                                <th style="width:34px;"><input type="checkbox" class="wpe-check-all-page" /></th>
+                                <th style="width:52px;">Image</th>
+                                <th>Combination</th>
+                                <th style="width:140px;">SKU</th>
+                                <th style="width:115px;">Regular Price (${config.currencySymbol})</th>
+                                <th style="width:115px;">Sale Price (${config.currencySymbol})</th>
+                                <th style="width:140px;">Stock</th>
+                                <th style="width:95px;">Status</th>
+                                <th style="width:90px; text-align:right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -484,12 +471,12 @@
                 <!-- Pagination -->
                 <div class="wpe-pagination">
                     <div>
-                        Hiển thị ${totalItems > 0 ? startIdx + 1 : 0} &ndash; ${Math.min(startIdx + filters.pageSize, totalItems)} trong tổng số ${totalItems} biến thể
+                        Showing ${totalItems > 0 ? startIdx + 1 : 0} &ndash; ${Math.min(startIdx + filters.pageSize, totalItems)} of ${totalItems} variants
                     </div>
                     <div class="wpe-pagination-controls">
-                        <button type="button" class="button button-small wpe-page-prev" ${filters.page <= 1 ? 'disabled' : ''}>&laquo; Trước</button>
-                        <span style="margin:0 8px;">Trang ${filters.page} / ${totalPages}</span>
-                        <button type="button" class="button button-small wpe-page-next" ${filters.page >= totalPages ? 'disabled' : ''}>Sau &raquo;</button>
+                        <button type="button" class="button button-small wpe-page-prev" ${filters.page <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
+                        <span style="margin:0 8px; font-weight:500;">Page ${filters.page} / ${totalPages}</span>
+                        <button type="button" class="button button-small wpe-page-next" ${filters.page >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
                     </div>
                 </div>
             </div>
@@ -501,7 +488,7 @@
      */
     function renderTableRows(variations, groupBy) {
         if (variations.length === 0) {
-            return `<tr><td colspan="9" style="text-align:center; padding:30px; color:#646970;">Không tìm thấy biến thể nào phù hợp.</td></tr>`;
+            return `<tr><td colspan="9" style="text-align:center; padding:36px; color:#64748b;">No matching variants found.</td></tr>`;
         }
 
         let html = '';
@@ -512,7 +499,7 @@
 
             // Group header row
             if (groupBy && groupBy !== 'none') {
-                const groupVal = attrs[groupBy] || 'Chưa chọn';
+                const groupVal = attrs[groupBy] || 'Unassigned';
                 if (groupVal !== currentGroup) {
                     currentGroup = groupVal;
                     html += `
@@ -537,8 +524,8 @@
                 <tr class="${isSelected ? 'selected' : ''}" data-variant-id="${v.id}">
                     <td><input type="checkbox" class="wpe-row-check" ${isSelected ? 'checked' : ''} /></td>
                     <td>
-                        <div class="wpe-media-slot" title="Click để chọn ảnh">
-                            ${v.image_url ? `<img src="${escapeHtml(v.image_url)}" alt="" /><span class="wpe-media-remove" title="Gỡ ảnh">&times;</span>` : '<span class="dashicons dashicons-format-image" style="color:#a7aaad;"></span>'}
+                        <div class="wpe-media-slot" title="Click to choose image">
+                            ${v.image_url ? `<img src="${escapeHtml(v.image_url)}" alt="" /><span class="wpe-media-remove" title="Unlink image">&times;</span>` : '<span class="dashicons dashicons-format-image" style="color:#94a3b8;"></span>'}
                         </div>
                     </td>
                     <td>${comboBadges}</td>
@@ -553,24 +540,24 @@
                     </td>
                     <td>
                         ${isParentStock ? `
-                            <span class="wpe-stock-pill parent-stock" title="Dùng tồn chung theo sản phẩm cha">Tồn chung</span>
+                            <span class="wpe-stock-pill parent-stock" title="Inherits stock from parent product">Shared Stock</span>
                         ` : `
-                            <input type="number" step="any" class="wpe-editable-input wpe-inline-stock-qty" value="${escapeHtml(v.stock_quantity !== null ? v.stock_quantity : '')}" placeholder="SL" style="width:70px; display:inline-block;" />
-                            <span class="wpe-stock-pill ${v.stock_status || 'instock'}">${v.stock_status === 'instock' ? 'Còn' : 'Hết'}</span>
+                            <input type="number" step="any" class="wpe-editable-input wpe-inline-stock-qty" value="${escapeHtml(v.stock_quantity !== null ? v.stock_quantity : '')}" placeholder="Qty" style="width:70px; display:inline-block;" />
+                            <span class="wpe-stock-pill ${v.stock_status || 'instock'}">${v.stock_status === 'instock' ? 'In Stock' : 'Out of Stock'}</span>
                         `}
                     </td>
                     <td>
                         <select class="wpe-editable-input wpe-inline-status" style="padding:2px 4px !important;">
-                            <option value="publish" ${v.status === 'publish' ? 'selected' : ''}>Hiện</option>
-                            <option value="private" ${v.status === 'private' ? 'selected' : ''}>Ẩn</option>
-                            <option value="draft" ${v.status === 'draft' ? 'selected' : ''}>Nháp</option>
+                            <option value="publish" ${v.status === 'publish' ? 'selected' : ''}>Active</option>
+                            <option value="private" ${v.status === 'private' ? 'selected' : ''}>Private</option>
+                            <option value="draft" ${v.status === 'draft' ? 'selected' : ''}>Draft</option>
                         </select>
                     </td>
                     <td style="text-align:right;">
-                        <button type="button" class="button button-small wpe-btn-open-drawer" title="Chỉnh sửa chi tiết">
+                        <button type="button" class="button button-small wpe-btn-open-drawer" title="Edit details">
                             <span class="dashicons dashicons-edit" style="font-size:14px; margin-top:2px;"></span>
                         </button>
-                        <button type="button" class="button-link-delete wpe-btn-delete-variant" title="Xóa biến thể">
+                        <button type="button" class="button-link-delete wpe-btn-delete-variant" title="Delete variant">
                             <span class="dashicons dashicons-trash" style="font-size:14px; margin-top:2px;"></span>
                         </button>
                     </td>
@@ -596,36 +583,36 @@
         const html = `
             <div class="wpe-drawer-header">
                 <div>
-                    <h4 class="wpe-drawer-title">Chi tiết biến thể #${variant.id}</h4>
+                    <h4 class="wpe-drawer-title">Variant Details #${variant.id}</h4>
                     <div style="margin-top:6px;">${badgesHtml}</div>
                 </div>
-                <button type="button" class="button-link wpe-btn-close-drawer" style="font-size:20px; text-decoration:none;">&times;</button>
+                <button type="button" class="button-link wpe-btn-close-drawer" style="font-size:22px; text-decoration:none; color:#64748b;">&times;</button>
             </div>
             <div class="wpe-drawer-body">
                 <!-- Basic info -->
                 <div class="wpe-drawer-section">
-                    <h5 class="wpe-drawer-section-title">Giá và SKU</h5>
+                    <h5 class="wpe-drawer-section-title">Pricing & SKU</h5>
                     <div class="wpe-form-row">
                         <div class="wpe-form-group">
                             <label>SKU</label>
                             <input type="text" id="wpe-drawer-sku" value="${escapeHtml(variant.sku || '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Trạng thái</label>
+                            <label>Status</label>
                             <select id="wpe-drawer-status">
-                                <option value="publish" ${variant.status === 'publish' ? 'selected' : ''}>Đã xuất bản</option>
-                                <option value="private" ${variant.status === 'private' ? 'selected' : ''}>Riêng tư</option>
-                                <option value="draft" ${variant.status === 'draft' ? 'selected' : ''}>Bản nháp</option>
+                                <option value="publish" ${variant.status === 'publish' ? 'selected' : ''}>Published</option>
+                                <option value="private" ${variant.status === 'private' ? 'selected' : ''}>Private</option>
+                                <option value="draft" ${variant.status === 'draft' ? 'selected' : ''}>Draft</option>
                             </select>
                         </div>
                     </div>
                     <div class="wpe-form-row">
                         <div class="wpe-form-group">
-                            <label>Giá thường (${config.currencySymbol})</label>
+                            <label>Regular Price (${config.currencySymbol})</label>
                             <input type="number" step="any" id="wpe-drawer-reg-price" value="${escapeHtml(variant.regular_price || '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Giá khuyến mãi (${config.currencySymbol})</label>
+                            <label>Sale Price (${config.currencySymbol})</label>
                             <input type="number" step="any" id="wpe-drawer-sale-price" value="${escapeHtml(variant.sale_price || '')}" />
                         </div>
                     </div>
@@ -633,24 +620,24 @@
 
                 <!-- Inventory -->
                 <div class="wpe-drawer-section">
-                    <h5 class="wpe-drawer-section-title">Quản lý tồn kho</h5>
+                    <h5 class="wpe-drawer-section-title">Inventory Management</h5>
                     <div style="margin-bottom:12px;">
-                        <label>
+                        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
                             <input type="checkbox" id="wpe-drawer-manage-stock" ${variant.manage_stock ? 'checked' : ''} />
-                            Theo dõi số lượng tồn kho riêng cho biến thể này
+                            Track stock quantity individually for this variant
                         </label>
                     </div>
                     <div class="wpe-form-row" id="wpe-drawer-stock-fields" style="${!variant.manage_stock ? 'display:none;' : ''}">
                         <div class="wpe-form-group">
-                            <label>Số lượng trong kho</label>
+                            <label>Stock Quantity</label>
                             <input type="number" step="any" id="wpe-drawer-stock-qty" value="${escapeHtml(variant.stock_quantity !== null ? variant.stock_quantity : '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Cho phép đặt hàng trước?</label>
+                            <label>Allow Backorders?</label>
                             <select id="wpe-drawer-backorders">
-                                <option value="no" ${(variant.inventory && variant.inventory.backorders === 'no') ? 'selected' : ''}>Không cho phép</option>
-                                <option value="notify" ${(variant.inventory && variant.inventory.backorders === 'notify') ? 'selected' : ''}>Cho phép, nhưng thông báo</option>
-                                <option value="yes" ${(variant.inventory && variant.inventory.backorders === 'yes') ? 'selected' : ''}>Cho phép</option>
+                                <option value="no" ${(variant.inventory && variant.inventory.backorders === 'no') ? 'selected' : ''}>Do not allow</option>
+                                <option value="notify" ${(variant.inventory && variant.inventory.backorders === 'notify') ? 'selected' : ''}>Allow, but notify customer</option>
+                                <option value="yes" ${(variant.inventory && variant.inventory.backorders === 'yes') ? 'selected' : ''}>Allow</option>
                             </select>
                         </div>
                     </div>
@@ -658,22 +645,22 @@
 
                 <!-- Dimensions & Shipping -->
                 <div class="wpe-drawer-section">
-                    <h5 class="wpe-drawer-section-title">Kích thước và Trọng lượng</h5>
+                    <h5 class="wpe-drawer-section-title">Dimensions & Weight</h5>
                     <div class="wpe-form-row">
                         <div class="wpe-form-group">
-                            <label>Cân nặng (kg)</label>
+                            <label>Weight (kg)</label>
                             <input type="text" id="wpe-drawer-weight" value="${escapeHtml(variant.weight || '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Dài (cm)</label>
+                            <label>Length (cm)</label>
                             <input type="text" id="wpe-drawer-length" value="${escapeHtml(variant.length || '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Rộng (cm)</label>
+                            <label>Width (cm)</label>
                             <input type="text" id="wpe-drawer-width" value="${escapeHtml(variant.width || '')}" />
                         </div>
                         <div class="wpe-form-group">
-                            <label>Cao (cm)</label>
+                            <label>Height (cm)</label>
                             <input type="text" id="wpe-drawer-height" value="${escapeHtml(variant.height || '')}" />
                         </div>
                     </div>
@@ -681,15 +668,15 @@
 
                 <!-- Description -->
                 <div class="wpe-drawer-section">
-                    <h5 class="wpe-drawer-section-title">Mô tả biến thể</h5>
+                    <h5 class="wpe-drawer-section-title">Variant Description</h5>
                     <div class="wpe-form-group">
                         <textarea rows="3" id="wpe-drawer-desc">${escapeHtml(variant.description || '')}</textarea>
                     </div>
                 </div>
             </div>
             <div class="wpe-drawer-footer">
-                <button type="button" class="button wpe-btn-close-drawer">Đóng</button>
-                <button type="button" class="button button-primary wpe-btn-save-drawer" data-variant-id="${variant.id}">Áp dụng chi tiết</button>
+                <button type="button" class="button wpe-btn-close-drawer">Close</button>
+                <button type="button" class="button button-primary wpe-btn-save-drawer" data-variant-id="${variant.id}">Apply Details</button>
             </div>
         `;
 
@@ -702,7 +689,7 @@
      */
     function openGeneratorModal() {
         if (wpeVariantStore.variationOptions.length === 0) {
-            alert('Vui lòng thêm ít nhất một Option tạo biến thể (vd: Color, Size) ở Mục B trước khi tạo biến thể.');
+            alert('Please add at least one Variation Option (e.g. Color, Size) in Section B before generating variants.');
             return;
         }
 
@@ -711,18 +698,18 @@
             <div class="wpe-modal-backdrop" id="wpe-generator-modal">
                 <div class="wpe-modal-dialog wpe-modal-dialog-lg">
                     <div class="wpe-modal-header">
-                        <h4 class="wpe-modal-title">Tạo biến thể có chọn lọc</h4>
+                        <h4 class="wpe-modal-title">Selectively Generate Variations</h4>
                         <button type="button" class="button-link wpe-btn-close-modal" style="font-size:20px;">&times;</button>
                     </div>
                     <div class="wpe-modal-body" id="wpe-generator-body">
                         <div style="text-align:center; padding:30px;">
                             <span class="spinner is-active" style="float:none;"></span>
-                            <p>Đang phân tích các tổ hợp có thể tạo...</p>
+                            <p>Analyzing potential combinations...</p>
                         </div>
                     </div>
                     <div class="wpe-modal-footer">
-                        <button type="button" class="button wpe-btn-close-modal">Hủy</button>
-                        <button type="button" class="button button-primary wpe-btn-apply-generator" disabled>Tạo biến thể đã chọn</button>
+                        <button type="button" class="button wpe-btn-close-modal">Cancel</button>
+                        <button type="button" class="button button-primary wpe-btn-apply-generator" disabled>Create Selected Variants</button>
                     </div>
                 </div>
             </div>
@@ -732,7 +719,7 @@
         api.previewGenerator(wpeVariantStore.variationOptions)
             .done(function (res) {
                 if (!res.success) {
-                    $('#wpe-generator-body').html(`<p style="color:#d63638;">Lỗi tạo tổ hợp: ${escapeHtml(res.message)}</p>`);
+                    $('#wpe-generator-body').html(`<p style="color:#ef4444;">Error generating combinations: ${escapeHtml(res.message)}</p>`);
                     return;
                 }
 
@@ -744,10 +731,10 @@
                 newCombos.forEach((nc, idx) => {
                     const badgeText = Object.entries(nc.combination || nc.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(' / ');
                     listHtml += `
-                        <label style="display:block; padding:6px 8px; border-bottom:1px solid #f0f0f1; cursor:pointer;">
+                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
                             <input type="checkbox" class="wpe-gen-check" checked data-idx="${idx}" />
                             <strong>${escapeHtml(badgeText)}</strong>
-                            <span style="font-size:11px; color:#046a38; margin-left:8px;">[Mới]</span>
+                            <span style="font-size:11px; color:#059669; margin-left:8px; font-weight:600;">[New]</span>
                         </label>
                     `;
                 });
@@ -755,46 +742,46 @@
                 existingCombos.forEach((ec) => {
                     const badgeText = Object.entries(ec.combination || ec.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(' / ');
                     listHtml += `
-                        <label style="display:block; padding:6px 8px; border-bottom:1px solid #f0f0f1; color:#8c8f94;">
+                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; color:#94a3b8;">
                             <input type="checkbox" checked disabled />
                             <span>${escapeHtml(badgeText)}</span>
-                            <span style="font-size:11px; margin-left:8px;">[Đã tồn tại - SKU: ${escapeHtml(ec.sku || '')}]</span>
+                            <span style="font-size:11px; margin-left:8px;">[Existing - SKU: ${escapeHtml(ec.sku || '')}]</span>
                         </label>
                     `;
                 });
 
                 const bodyHtml = `
-                    <div style="background:#f0f6fc; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:12px;">
-                        Tổng số tổ hợp: <strong>${result.total_possible || result.total_potential}</strong> |
-                        Đã tồn tại: <strong>${result.total_existing}</strong> |
-                        Tổ hợp mới có thể tạo: <strong>${result.total_new}</strong>
+                    <div style="background:#eff6ff; padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:12px; color:#1e40af;">
+                        Total Potential: <strong>${result.total_possible || result.total_potential}</strong> |
+                        Existing: <strong>${result.total_existing}</strong> |
+                        Available to Create: <strong>${result.total_new}</strong>
                     </div>
 
-                    <div style="display:flex; gap:12px; margin-bottom:14px; background:#fafafa; padding:10px; border-radius:4px;">
+                    <div style="display:flex; gap:14px; margin-bottom:16px; background:#f8fafc; padding:12px 14px; border-radius:6px; border:1px solid #e2e8f0;">
                         <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600;">Giá thường mặc định (${config.currencySymbol}):</label>
-                            <input type="number" step="any" id="wpe-gen-def-price" placeholder="0.00" style="width:100%; font-size:12px;" />
+                            <label style="font-size:11px; font-weight:600; color:#475569;">Default Regular Price (${config.currencySymbol}):</label>
+                            <input type="number" step="any" id="wpe-gen-def-price" placeholder="0.00" style="width:100%; font-size:12px; margin-top:4px;" />
                         </div>
                         <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600;">Tiền tố SKU:</label>
-                            <input type="text" id="wpe-gen-def-sku" placeholder="SKU-" style="width:100%; font-size:12px;" />
+                            <label style="font-size:11px; font-weight:600; color:#475569;">SKU Prefix:</label>
+                            <input type="text" id="wpe-gen-def-sku" placeholder="SKU-" style="width:100%; font-size:12px; margin-top:4px;" />
                         </div>
                         <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600;">Số lượng tồn kho:</label>
-                            <input type="number" step="any" id="wpe-gen-def-stock" placeholder="10" style="width:100%; font-size:12px;" />
+                            <label style="font-size:11px; font-weight:600; color:#475569;">Initial Stock Quantity:</label>
+                            <input type="number" step="any" id="wpe-gen-def-stock" placeholder="10" style="width:100%; font-size:12px; margin-top:4px;" />
                         </div>
                     </div>
 
                     <div style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600; font-size:12px;">Chọn các tổ hợp muốn tạo:</span>
+                        <span style="font-weight:600; font-size:12px; color:#0f172a;">Select combinations to create:</span>
                         <div>
-                            <button type="button" class="button-link wpe-btn-gen-select-all" style="font-size:11px;">Chọn tất cả</button> |
-                            <button type="button" class="button-link wpe-btn-gen-unselect-all" style="font-size:11px;">Bỏ chọn</button>
+                            <button type="button" class="button-link wpe-btn-gen-select-all" style="font-size:12px;">Select All</button> |
+                            <button type="button" class="button-link wpe-btn-gen-unselect-all" style="font-size:12px;">Deselect All</button>
                         </div>
                     </div>
 
-                    <div style="max-height:260px; overflow-y:auto; border:1px solid #dcdcde; border-radius:4px; background:#fff;">
-                        ${listHtml || '<div style="padding:20px; text-align:center; color:#646970;">Không có tổ hợp mới nào để tạo.</div>'}
+                    <div style="max-height:280px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
+                        ${listHtml || '<div style="padding:24px; text-align:center; color:#64748b;">No new combinations available to generate.</div>'}
                     </div>
                 `;
 
@@ -802,7 +789,7 @@
                 $('#wpe-generator-modal .wpe-btn-apply-generator').data('new-combos', newCombos).prop('disabled', newCombos.length === 0);
             })
             .fail(function (err) {
-                $('#wpe-generator-body').html(`<p style="color:#d63638;">Lỗi kết nối máy chủ.</p>`);
+                $('#wpe-generator-body').html(`<p style="color:#ef4444;">Server connection error.</p>`);
             });
     }
 
@@ -817,18 +804,18 @@
             <div class="wpe-modal-backdrop" id="wpe-bulk-modal">
                 <div class="wpe-modal-dialog wpe-modal-dialog-lg">
                     <div class="wpe-modal-header">
-                        <h4 class="wpe-modal-title">Chỉnh sửa hàng loạt (${selectedIds.length} biến thể đã chọn)</h4>
+                        <h4 class="wpe-modal-title">Bulk Edit (${selectedIds.length} variants selected)</h4>
                         <button type="button" class="button-link wpe-btn-close-modal" style="font-size:20px;">&times;</button>
                     </div>
                     <div class="wpe-modal-body" id="wpe-bulk-body">
                         <div style="margin-bottom:14px;">
-                            <label style="font-weight:600; display:block; margin-bottom:6px;">Chọn trường muốn cập nhật:</label>
+                            <label style="font-weight:600; display:block; margin-bottom:6px;">Select field to update:</label>
                             <select id="wpe-bulk-field" style="width:100%;">
-                                <option value="regular_price">Giá thường</option>
-                                <option value="sale_price">Giá khuyến mãi</option>
-                                <option value="status">Trạng thái xuất bản</option>
-                                <option value="manage_stock">Quản lý tồn kho</option>
-                                <option value="stock_quantity">Số lượng tồn kho</option>
+                                <option value="regular_price">Regular Price</option>
+                                <option value="sale_price">Sale Price</option>
+                                <option value="status">Publication Status</option>
+                                <option value="manage_stock">Stock Management</option>
+                                <option value="stock_quantity">Stock Quantity</option>
                             </select>
                         </div>
 
@@ -837,16 +824,16 @@
                         </div>
 
                         <button type="button" class="button wpe-btn-preview-bulk-diff">
-                            <span class="dashicons dashicons-visibility" style="margin-top:3px;"></span> Xem trước thay đổi
+                            <span class="dashicons dashicons-visibility" style="margin-top:3px;"></span> Preview Changes
                         </button>
 
-                        <div id="wpe-bulk-diff-preview" style="margin-top:14px; max-height:200px; overflow-y:auto; display:none;">
+                        <div id="wpe-bulk-diff-preview" style="margin-top:14px; max-height:220px; overflow-y:auto; display:none;">
                             <!-- Diff table will be rendered here -->
                         </div>
                     </div>
                     <div class="wpe-modal-footer">
-                        <button type="button" class="button wpe-btn-close-modal">Hủy</button>
-                        <button type="button" class="button button-primary wpe-btn-apply-bulk">Áp dụng thay đổi</button>
+                        <button type="button" class="button wpe-btn-close-modal">Cancel</button>
+                        <button type="button" class="button button-primary wpe-btn-apply-bulk">Apply Changes</button>
                     </div>
                 </div>
             </div>
@@ -859,36 +846,137 @@
         let html = '';
         if (field === 'regular_price' || field === 'sale_price') {
             html = `
-                <div style="display:flex; gap:8px;">
-                    <select id="wpe-bulk-price-type" style="width:160px;">
-                        <option value="fixed">Đặt giá cố định</option>
-                        <option value="increase_fixed">Tăng theo số tiền</option>
-                        <option value="decrease_fixed">Giảm theo số tiền</option>
-                        <option value="increase_percent">Tăng theo phần trăm (%)</option>
-                        <option value="decrease_percent">Giảm theo phần trăm (%)</option>
+                <div style="display:flex; gap:10px;">
+                    <select id="wpe-bulk-price-type" style="width:180px;">
+                        <option value="fixed">Set fixed price</option>
+                        <option value="increase_fixed">Increase by amount</option>
+                        <option value="decrease_fixed">Decrease by amount</option>
+                        <option value="increase_percent">Increase by percentage (%)</option>
+                        <option value="decrease_percent">Decrease by percentage (%)</option>
                     </select>
-                    <input type="number" step="any" id="wpe-bulk-price-val" placeholder="Nhập giá trị" style="flex:1;" />
+                    <input type="number" step="any" id="wpe-bulk-price-val" placeholder="Enter value" style="flex:1;" />
                 </div>
             `;
         } else if (field === 'status') {
             html = `
                 <select id="wpe-bulk-status-val" style="width:100%;">
-                    <option value="publish">Đã xuất bản (Hiện)</option>
-                    <option value="private">Riêng tư (Ẩn)</option>
-                    <option value="draft">Bản nháp</option>
+                    <option value="publish">Published (Active)</option>
+                    <option value="private">Private</option>
+                    <option value="draft">Draft</option>
                 </select>
             `;
         } else if (field === 'manage_stock') {
             html = `
                 <select id="wpe-bulk-manage-stock-val" style="width:100%;">
-                    <option value="1">Bật quản lý tồn kho riêng</option>
-                    <option value="0">Tắt (Dùng tồn chung của sản phẩm cha)</option>
+                    <option value="1">Enable individual stock tracking</option>
+                    <option value="0">Disable (Use shared parent stock)</option>
                 </select>
             `;
         } else if (field === 'stock_quantity') {
-            html = `<input type="number" step="any" id="wpe-bulk-stock-qty-val" placeholder="Nhập số lượng" style="width:100%;" />`;
+            html = `<input type="number" step="any" id="wpe-bulk-stock-qty-val" placeholder="Enter quantity" style="width:100%;" />`;
         }
         $('#wpe-bulk-field-controls').html(html);
+    }
+
+    /**
+     * Modal: Assign Media by Option Group
+     */
+    function openMediaByOptionModal() {
+        const options = wpeVariantStore.variationOptions;
+        if (options.length === 0) {
+            alert('No variation options available (Color, Size...) to assign images by group.');
+            return;
+        }
+
+        let optOptions = '';
+        options.forEach(opt => {
+            optOptions += `<option value="${escapeHtml(opt.name)}">${escapeHtml(opt.name)}</option>`;
+        });
+
+        const modalHtml = `
+            <div class="wpe-modal-backdrop" id="wpe-media-group-modal">
+                <div class="wpe-modal-dialog">
+                    <div class="wpe-modal-header">
+                        <h4 class="wpe-modal-title">Assign Media by Option Group</h4>
+                        <button type="button" class="button-link wpe-btn-close-modal" style="font-size:20px;">&times;</button>
+                    </div>
+                    <div class="wpe-modal-body">
+                        <div style="margin-bottom:14px;">
+                            <label style="font-weight:600; display:block; margin-bottom:5px;">Select Option:</label>
+                            <select id="wpe-media-group-opt" style="width:100%;">
+                                ${optOptions}
+                            </select>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="font-weight:600; display:block; margin-bottom:5px;">Select Option Value:</label>
+                            <select id="wpe-media-group-val" style="width:100%;"></select>
+                        </div>
+                        <div id="wpe-media-group-preview" style="margin-top:14px; font-size:12px; color:#1e40af; background:#eff6ff; padding:10px 14px; border-radius:6px;"></div>
+                    </div>
+                    <div class="wpe-modal-footer">
+                        <button type="button" class="button wpe-btn-close-modal">Cancel</button>
+                        <button type="button" class="button button-primary wpe-btn-pick-group-media">Choose Image from Library</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('body').append(modalHtml);
+
+        function updateValues() {
+            const optName = $('#wpe-media-group-opt').val();
+            const opt = wpeVariantStore.variationOptions.find(o => o.name === optName);
+            let valOptions = '';
+            if (opt && opt.values) {
+                opt.values.forEach(v => {
+                    const label = typeof v === 'object' ? v.label : v;
+                    valOptions += `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`;
+                });
+            }
+            $('#wpe-media-group-val').html(valOptions);
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const optName = $('#wpe-media-group-opt').val();
+            const val = $('#wpe-media-group-val').val();
+            const matching = wpeVariantStore.variations.filter(v => {
+                const attrs = v.attributes || v.combination || {};
+                return attrs[optName] === val;
+            });
+            $('#wpe-media-group-preview').html(`<strong>${matching.length}</strong> variants match this condition.`);
+        }
+
+        $('#wpe-media-group-opt').on('change', updateValues);
+        $('#wpe-media-group-val').on('change', updatePreview);
+        updateValues();
+
+        $('.wpe-btn-pick-group-media').on('click', function () {
+            const optName = $('#wpe-media-group-opt').val();
+            const val = $('#wpe-media-group-val').val();
+            const mediaFrame = wp.media({
+                title: `Assign image to all variants with ${optName}: ${val}`,
+                button: { text: 'Assign to Group' },
+                multiple: false
+            });
+
+            mediaFrame.on('select', function () {
+                const attachment = mediaFrame.state().get('selection').first().toJSON();
+                let count = 0;
+                wpeVariantStore.variations.forEach(v => {
+                    const attrs = v.attributes || v.combination || {};
+                    if (attrs[optName] === val) {
+                        v.image_url = attachment.url;
+                        v.attachment_id = attachment.id;
+                        count++;
+                    }
+                });
+                $('#wpe-media-group-modal').remove();
+                showToast(`Image assigned to ${count} variants with ${optName}: ${val}!`, 'success');
+                wpeVariantStore.markDirty();
+            });
+
+            mediaFrame.open();
+        });
     }
 
     /**
@@ -909,7 +997,7 @@
         // Save via REST API
         $container.find('.wpe-btn-save-api').off('click').on('click', function () {
             const $btn = $(this);
-            $btn.prop('disabled', true).text('Đang lưu...');
+            $btn.prop('disabled', true).text(config.i18n.saving);
 
             const payload = {
                 expected_version: wpeVariantStore.version,
@@ -933,11 +1021,11 @@
                     if (xhr.status === 409 && res.code === 'concurrency_conflict') {
                         alert(config.i18n.conflictError + '\n\n' + res.message);
                     } else {
-                        alert(config.i18n.saveError + ' ' + (res.message || 'Lỗi lưu biến thể.'));
+                        alert(config.i18n.saveError + ' ' + (res.message || 'Server error saving variants.'));
                     }
                 })
                 .always(function () {
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved" style="margin-top:4px;"></span> Lưu thay đổi');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Save Changes');
                 });
         });
 
@@ -952,7 +1040,7 @@
                 taxObj = wpeVariantStore.taxonomies.find(t => t.slug === taxSlug);
                 attrName = taxObj ? taxObj.name : taxSlug;
             } else {
-                attrName = prompt('Nhập tên thuộc tính mô tả (vd: Material, Brand, Fit):');
+                attrName = prompt('Enter descriptive attribute name (e.g. Material, Brand, Fit):');
                 if (!attrName || !attrName.trim()) return;
                 attrName = attrName.trim();
             }
@@ -1029,7 +1117,7 @@
 
                 if (affected.length > 0) {
                     const skuList = affected.map(v => v.sku || `#${v.id}`).slice(0, 5).join(', ');
-                    if (!confirm(`Xóa giá trị "${valLabel}" sẽ ảnh hưởng đến ${affected.length} biến thể (${skuList}...). Tiếp tục?`)) {
+                    if (!confirm(`Deleting value "${valLabel}" will affect ${affected.length} variants (${skuList}...). Continue?`)) {
                         return;
                     }
                 }
@@ -1041,7 +1129,7 @@
 
         // Section B: Add Variation Option
         $container.find('.wpe-btn-add-option').off('click').on('click', function () {
-            const name = prompt('Nhập tên option biến thể mới (vd: Color, Size, Material):');
+            const name = prompt('Enter new variation option name (e.g. Color, Size, Material):');
             if (!name || !name.trim()) return;
 
             wpeVariantStore.variationOptions.push({
@@ -1060,7 +1148,6 @@
 
             if (newName && newName !== oldName) {
                 wpeVariantStore.variationOptions[idx].name = newName;
-                // Update combination keys in variations preserving IDs
                 wpeVariantStore.variations.forEach(v => {
                     const combo = v.attributes || v.combination || {};
                     if (combo[oldName] !== undefined) {
@@ -1083,7 +1170,7 @@
             });
 
             if (affected.length > 0) {
-                if (!confirm(`Xóa option "${opt.name}" sẽ ảnh hưởng đến ${affected.length} biến thể hiện có. Bạn có chắc chắn muốn xóa?`)) {
+                if (!confirm(`Deleting option "${opt.name}" will affect ${affected.length} existing variants. Are you sure you want to delete?`)) {
                     return;
                 }
             }
@@ -1248,8 +1335,8 @@
             if (!v) return;
 
             const mediaFrame = wp.media({
-                title: 'Chọn ảnh biến thể',
-                button: { text: 'Gán ảnh này' },
+                title: 'Select Variant Image',
+                button: { text: 'Set as Variant Image' },
                 multiple: false
             });
 
@@ -1281,8 +1368,8 @@
             if (selectedIds.length === 0) return;
 
             const mediaFrame = wp.media({
-                title: `Gán ảnh cho ${selectedIds.length} biến thể đã chọn`,
-                button: { text: 'Gán ảnh hàng loạt' },
+                title: `Assign image to ${selectedIds.length} selected variants`,
+                button: { text: 'Assign Image to Selection' },
                 multiple: false
             });
 
@@ -1304,7 +1391,7 @@
         // Section C: Delete Single Variation
         $container.find('.wpe-btn-delete-variant').off('click').on('click', function () {
             const vId = $(this).closest('tr').data('variant-id');
-            if (confirm('Bạn có chắc chắn muốn xóa biến thể này?')) {
+            if (confirm('Are you sure you want to delete this variant?')) {
                 const idx = wpeVariantStore.variations.findIndex(v => v.id === vId);
                 if (idx !== -1) {
                     wpeVariantStore.variations.splice(idx, 1);
@@ -1333,107 +1420,6 @@
         // Open Assign Media by Option Modal
         $container.find('.wpe-btn-assign-media-by-option').off('click').on('click', function () {
             openMediaByOptionModal();
-        });
-    }
-
-    /**
-     * Modal: Assign Media by Option Group
-     */
-    function openMediaByOptionModal() {
-        const options = wpeVariantStore.variationOptions;
-        if (options.length === 0) {
-            alert('Chưa có option nào (Color, Size...) để gán ảnh.');
-            return;
-        }
-
-        let optOptions = '';
-        options.forEach(opt => {
-            optOptions += `<option value="${escapeHtml(opt.name)}">${escapeHtml(opt.name)}</option>`;
-        });
-
-        const modalHtml = `
-            <div class="wpe-modal-backdrop" id="wpe-media-group-modal">
-                <div class="wpe-modal-dialog">
-                    <div class="wpe-modal-header">
-                        <h4 class="wpe-modal-title">Gán ảnh theo nhóm Option</h4>
-                        <button type="button" class="button-link wpe-btn-close-modal" style="font-size:20px;">&times;</button>
-                    </div>
-                    <div class="wpe-modal-body">
-                        <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; display:block; margin-bottom:4px;">Chọn Option:</label>
-                            <select id="wpe-media-group-opt" style="width:100%;">
-                                ${optOptions}
-                            </select>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; display:block; margin-bottom:4px;">Chọn giá trị:</label>
-                            <select id="wpe-media-group-val" style="width:100%;"></select>
-                        </div>
-                        <div id="wpe-media-group-preview" style="margin-top:12px; font-size:12px; color:#50575e; background:#f0f6fc; padding:8px 12px; border-radius:4px;"></div>
-                    </div>
-                    <div class="wpe-modal-footer">
-                        <button type="button" class="button wpe-btn-close-modal">Hủy</button>
-                        <button type="button" class="button button-primary wpe-btn-pick-group-media">Chọn ảnh từ thư viện</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        $('body').append(modalHtml);
-
-        function updateValues() {
-            const optName = $('#wpe-media-group-opt').val();
-            const opt = wpeVariantStore.variationOptions.find(o => o.name === optName);
-            let valOptions = '';
-            if (opt && opt.values) {
-                opt.values.forEach(v => {
-                    const label = typeof v === 'object' ? v.label : v;
-                    valOptions += `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`;
-                });
-            }
-            $('#wpe-media-group-val').html(valOptions);
-            updatePreview();
-        }
-
-        function updatePreview() {
-            const optName = $('#wpe-media-group-opt').val();
-            const val = $('#wpe-media-group-val').val();
-            const matching = wpeVariantStore.variations.filter(v => {
-                const attrs = v.attributes || v.combination || {};
-                return attrs[optName] === val;
-            });
-            $('#wpe-media-group-preview').html(`Có <strong>${matching.length}</strong> biến thể thỏa mãn điều kiện này.`);
-        }
-
-        $('#wpe-media-group-opt').on('change', updateValues);
-        $('#wpe-media-group-val').on('change', updatePreview);
-        updateValues();
-
-        $('.wpe-btn-pick-group-media').on('click', function () {
-            const optName = $('#wpe-media-group-opt').val();
-            const val = $('#wpe-media-group-val').val();
-            const mediaFrame = wp.media({
-                title: `Gán ảnh cho nhóm ${optName}: ${val}`,
-                button: { text: 'Gán ảnh nhóm này' },
-                multiple: false
-            });
-
-            mediaFrame.on('select', function () {
-                const attachment = mediaFrame.state().get('selection').first().toJSON();
-                let count = 0;
-                wpeVariantStore.variations.forEach(v => {
-                    const attrs = v.attributes || v.combination || {};
-                    if (attrs[optName] === val) {
-                        v.image_url = attachment.url;
-                        v.attachment_id = attachment.id;
-                        count++;
-                    }
-                });
-                $('#wpe-media-group-modal').remove();
-                showToast(`Đã gán ảnh cho ${count} biến thể có ${optName}: ${val}!`, 'success');
-                wpeVariantStore.markDirty();
-            });
-
-            mediaFrame.open();
         });
     }
 
@@ -1516,7 +1502,6 @@
                 const skuSuffix = Object.values(combo).map(v => String(v).replace(/\s+/g, '-').toUpperCase()).join('-');
                 const sku = defSkuPrefix ? `${defSkuPrefix}${skuSuffix}` : '';
 
-                // Generate pseudo-id for new variation item
                 const maxId = wpeVariantStore.variations.reduce((max, v) => Math.max(max, v.id || 0), 0);
                 const newVarId = maxId + 1;
 
@@ -1546,7 +1531,7 @@
 
             $('#wpe-generator-modal').remove();
             if (addedCount > 0) {
-                showToast(`Đã thêm ${addedCount} biến thể mới vào danh sách!`, 'success');
+                showToast(`Added ${addedCount} new variants to the matrix!`, 'success');
                 wpeVariantStore.markDirty();
             }
         });
@@ -1599,7 +1584,7 @@
 
                         const tableHtml = `
                             <table class="wpe-diff-table">
-                                <thead><tr><th>Biến thể</th><th>Thay đổi dự kiến</th></tr></thead>
+                                <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
                                 <tbody>${rowsHtml}</tbody>
                             </table>
                         `;
@@ -1607,7 +1592,7 @@
                     }
                 })
                 .fail(function () {
-                    alert('Không thể tạo bản xem trước thay đổi.');
+                    alert('Unable to generate changes preview.');
                 });
         });
 
@@ -1646,7 +1631,7 @@
             });
 
             $('#wpe-bulk-modal').remove();
-            showToast(`Đã áp dụng thay đổi cho ${selectedIds.length} biến thể!`, 'success');
+            showToast(`Applied changes to ${selectedIds.length} variants!`, 'success');
             wpeVariantStore.markDirty();
         });
 
@@ -1687,7 +1672,7 @@
         setupProductTypeToggle();
         bindGlobalEvents();
 
-        // Subscribe stores to rerender active views
+        // Subscribe store to rerender active views
         wpeVariantStore.subscribe(() => {
             renderEditor('#wpe-product-editor-inline-app');
             if ($('#wpe-fullscreen-modal-overlay').is(':visible')) {
@@ -1713,7 +1698,7 @@
             .fail(function (err) {
                 $('#wpe-product-editor-inline-app').html(`
                     <div class="notice notice-error inline" style="margin:20px;">
-                        <p>Không thể tải dữ liệu biến thể: ${escapeHtml(err.statusText)}</p>
+                        <p>Unable to load variants data: ${escapeHtml(err.statusText)}</p>
                     </div>
                 `);
             });

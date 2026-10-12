@@ -52,7 +52,7 @@ class ProductEditorBridge
     public function filterProductDataTabs(array $tabs): array
     {
         $tabs['wpe_variants_manager'] = [
-            'label'    => __('Quản lý biến thể', 'wc-product-engine'),
+            'label'    => __('Variants Manager', 'wc-product-engine'),
             'target'   => 'wpe_variants_manager_data',
             'class'    => ['show_if_variable', 'wpe_variants_tab'],
             'priority' => 65,
@@ -84,13 +84,13 @@ class ProductEditorBridge
             <div id="wpe-product-editor-inline-app" data-product-id="<?php echo esc_attr($productId); ?>">
                 <div class="wpe-editor-loading">
                     <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
-                    <?php esc_html_e('Đang tải trình quản lý biến thể...', 'wc-product-engine'); ?>
+                    <?php esc_html_e('Loading variants manager...', 'wc-product-engine'); ?>
                 </div>
             </div>
         </div>
 
         <!-- Fullscreen Editor Modal (shared state with inline app) -->
-        <div id="wpe-fullscreen-modal-overlay" class="wpe-fullscreen-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Toàn màn hình quản lý biến thể', 'wc-product-engine'); ?>">
+        <div id="wpe-fullscreen-modal-overlay" class="wpe-fullscreen-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Fullscreen Variants Manager', 'wc-product-engine'); ?>">
             <div class="wpe-fullscreen-container">
                 <div id="wpe-product-editor-modal-app" data-product-id="<?php echo esc_attr($productId); ?>"></div>
             </div>
@@ -192,12 +192,12 @@ class ProductEditorBridge
             'currencySymbol'  => $currencySymbol,
             'productType'     => $productType,
             'i18n'            => [
-                'saveSuccess'     => __('Đã lưu biến thể thành công!', 'wc-product-engine'),
-                'saving'          => __('Đang lưu thay đổi...', 'wc-product-engine'),
-                'saveError'       => __('Lỗi lưu biến thể:', 'wc-product-engine'),
-                'conflictError'   => __('Dữ liệu trên máy chủ đã thay đổi. Vui lòng làm mới dữ liệu!', 'wc-product-engine'),
-                'confirmDelete'   => __('Bạn có chắc chắn muốn xóa option này?', 'wc-product-engine'),
-                'unsavedWarning'  => __('Bạn có các thay đổi chưa được lưu. Bạn có chắc muốn rời đi?', 'wc-product-engine'),
+                'saveSuccess'     => __('Variants saved successfully!', 'wc-product-engine'),
+                'saving'          => __('Saving changes...', 'wc-product-engine'),
+                'saveError'       => __('Error saving variants:', 'wc-product-engine'),
+                'conflictError'   => __('Server data has been modified by another process. Please reload data!', 'wc-product-engine'),
+                'confirmDelete'   => __('Are you sure you want to delete this option?', 'wc-product-engine'),
+                'unsavedWarning'  => __('You have unsaved changes. Are you sure you want to leave?', 'wc-product-engine'),
             ],
         ]);
     }
