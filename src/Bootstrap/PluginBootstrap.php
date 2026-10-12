@@ -237,8 +237,8 @@ class PluginBootstrap
 
         add_submenu_page(
             'wc-product-engine',
-            __('Cài đặt chung', 'wc-product-engine'),
-            __('Cài đặt chung', 'wc-product-engine'),
+            __('Settings', 'wc-product-engine'),
+            __('Settings', 'wc-product-engine'),
             'manage_woocommerce',
             'wc-product-engine',
             [\WPE\Admin\SettingsPage::class, 'render']
@@ -246,8 +246,8 @@ class PluginBootstrap
 
         add_submenu_page(
             'wc-product-engine',
-            __('Import CSV Shopify', 'wc-product-engine'),
-            __('Import CSV Shopify', 'wc-product-engine'),
+            __('Shopify CSV Import', 'wc-product-engine'),
+            __('Shopify CSV Import', 'wc-product-engine'),
             'wpe_import_products',
             'wpe-shopify-import',
             [\WPE\Admin\ShopifyImportPage::class, 'render']
@@ -255,8 +255,8 @@ class PluginBootstrap
 
         add_submenu_page(
             'wc-product-engine',
-            __('Vận hành & Giám sát', 'wc-product-engine'),
-            __('Vận hành & Giám sát', 'wc-product-engine'),
+            __('Operations & Monitoring', 'wc-product-engine'),
+            __('Operations & Monitoring', 'wc-product-engine'),
             'wpe_manage_operations',
             'wpe-operations',
             [\WPE\Admin\OperationsPage::getInstance(), 'renderPage']

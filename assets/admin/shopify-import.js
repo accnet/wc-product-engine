@@ -82,7 +82,7 @@
             });
 
             discardActiveJobBtn.on('click', function () {
-                if (confirm('Bạn có chắc muốn hủy bỏ tác vụ cũ này để bắt đầu import mới?')) {
+                if (confirm('Are you sure you want to discard this previous job and start a new import?')) {
                     $.ajax({
                         url: config.restUrl + 'shopify-import/cancel',
                         method: 'POST',
@@ -132,7 +132,7 @@
         checkServerBtn.on('click', function () {
             var path = $.trim(serverPathInput.val());
             if (!path) {
-                alert('Vui lòng nhập đường dẫn tệp trên máy chủ.');
+                alert('Please enter a valid file path on the server.');
                 return;
             }
 
@@ -140,8 +140,8 @@
             state.stagedFileId = null;
             state.fileName = path.split('/').pop().split('\\').pop();
 
-            selectedFilename.text('Tệp máy chủ: ' + state.fileName);
-            selectedMeta.text('Đường dẫn: ' + path);
+            selectedFilename.text('Server File: ' + state.fileName);
+            selectedMeta.text('Path: ' + path);
             selectedInfo.slideDown();
             startBtn.prop('disabled', false);
         });
@@ -153,12 +153,12 @@
 
         function handleFileUpload(file) {
             if (!file.name.toLowerCase().endsWith('.csv')) {
-                alert('Vui lòng chọn tệp định dạng .csv');
+                alert('Please select a valid .csv file.');
                 return;
             }
 
-            selectedFilename.text('Đang tải lên: ' + file.name + ' (' + formatBytes(file.size) + ')...');
-            selectedMeta.text('Vui lòng đợi...');
+            selectedFilename.text('Uploading: ' + file.name + ' (' + formatBytes(file.size) + ')...');
+            selectedMeta.text('Please wait...');
             selectedInfo.slideDown();
             startBtn.prop('disabled', true);
 
@@ -180,16 +180,16 @@
                         state.filePath = res.file_path;
                         state.fileName = res.original_filename;
 
-                        selectedFilename.text('Đã tải lên: ' + res.original_filename);
-                        selectedMeta.text('Dung lượng: ' + res.file_size_fmt + ' — Đã lưu an toàn trong thư mục tạm');
+                        selectedFilename.text('Uploaded: ' + res.original_filename);
+                        selectedMeta.text('Size: ' + res.file_size_fmt + ' — Staged securely in temp directory');
                         startBtn.prop('disabled', false);
                     } else {
-                        selectedFilename.text('Lỗi tải tệp: ' + res.message);
+                        selectedFilename.text('Upload error: ' + res.message);
                     }
                 },
                 error: function (xhr) {
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Lỗi không xác định khi tải tệp lên.';
-                    selectedFilename.text('Lỗi tải tệp: ' + msg);
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Unknown error uploading file.';
+                    selectedFilename.text('Upload error: ' + msg);
                 }
             });
         }
@@ -198,7 +198,7 @@
         startBtn.on('click', function (e) {
             e.preventDefault();
             if (!state.filePath && !state.stagedFileId) {
-                alert('Vui lòng chọn hoặc tải lên tệp CSV trước.');
+                alert('Please select or upload a CSV file first.');
                 return;
             }
 
@@ -237,13 +237,13 @@
                         startProcessingLoop();
                     } else {
                         startBtn.prop('disabled', false);
-                        alert('Khởi tạo import thất bại: ' + res.message);
+                        alert('Import initialization failed: ' + res.message);
                     }
                 },
                 error: function (xhr) {
                     startBtn.prop('disabled', false);
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Không thể khởi tạo import.';
-                    alert('Lỗi: ' + msg);
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not initialize import.';
+                    alert('Error: ' + msg);
                 }
             });
         });
@@ -257,7 +257,7 @@
 
             progressSpinner.addClass('is-active');
             progressBarFill.addClass('wpe-progress-pulsing');
-            statusDesc.text('Đang xử lý dữ liệu theo lô (' + state.batchSize + ' sản phẩm/lô)...');
+            statusDesc.text('Processing batch chunks (' + state.batchSize + ' products/batch)...');
 
             pauseBtn.show();
             resumeBtn.hide();
@@ -286,10 +286,10 @@
                     handleBatchResponse(res);
                 },
                 error: function (xhr) {
-                    appendLog('error', '[HỆ THỐNG] Lỗi kết nối HTTP khi gọi batch: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.statusText));
+                    appendLog('error', '[SYSTEM] HTTP connection error calling batch: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.statusText));
                     // If network glitch, retry after 3 seconds instead of failing completely
                     if (!state.isPaused && !state.isCancelled) {
-                        appendLog('warning', '[HỆ THỐNG] Thử lại lô tiếp theo sau 3 giây...');
+                        appendLog('warning', '[SYSTEM] Retrying next batch in 3 seconds...');
                         setTimeout(processNextBatch, 3000);
                     }
                 }
@@ -318,7 +318,7 @@
             // Speed
             var elapsedSec = Math.max(1, (Date.now() - state.startTime) / 1000);
             var speed = (state.totalProducts / elapsedSec).toFixed(1);
-            metricSpeed.text(speed + ' sp/s');
+            metricSpeed.text(speed + ' prod/s');
 
             // Progress bar
             var pct = res.percent || 0;
@@ -335,7 +335,7 @@
                 stopTimer();
                 progressSpinner.removeClass('is-active');
                 progressBarFill.removeClass('wpe-progress-pulsing');
-                statusDesc.html('<strong style="color: #008a20;">✓ Quá trình import và tái tạo catalog đã hoàn tất thành công!</strong>');
+                statusDesc.html('<strong style="color: #008a20;">✓ Import and catalog rebuild completed successfully!</strong>');
                 pauseBtn.hide();
                 resumeBtn.hide();
                 cancelBtn.hide();
@@ -348,7 +348,7 @@
                 stopTimer();
                 progressSpinner.removeClass('is-active');
                 progressBarFill.removeClass('wpe-progress-pulsing');
-                statusDesc.text('Tiến trình đang tạm dừng tại điểm kiểm tra.');
+                statusDesc.text('Process paused at checkpoint.');
                 pauseBtn.hide();
                 resumeBtn.show();
                 return;
@@ -360,7 +360,7 @@
                 stopTimer();
                 progressSpinner.removeClass('is-active');
                 progressBarFill.removeClass('wpe-progress-pulsing');
-                statusDesc.text('Tiến trình đã bị hủy bỏ bởi người vận hành.');
+                statusDesc.text('Process cancelled by operator.');
                 pauseBtn.hide();
                 resumeBtn.hide();
                 return;
@@ -373,7 +373,7 @@
         // Pause Action
         pauseBtn.on('click', function () {
             state.isPaused = true;
-            statusDesc.text('Đang yêu cầu tạm dừng...');
+            statusDesc.text('Requesting pause...');
             pauseBtn.prop('disabled', true);
 
             $.ajax({
@@ -387,8 +387,8 @@
                     resumeBtn.show();
                     progressSpinner.removeClass('is-active');
                     progressBarFill.removeClass('wpe-progress-pulsing');
-                    statusDesc.text('Đã tạm dừng. Dữ liệu đã lưu checkpoint an toàn.');
-                    appendLog('warning', '[HỆ THỐNG] Đã tạm dừng import.');
+                    statusDesc.text('Paused. Checkpoint saved securely.');
+                    appendLog('warning', '[SYSTEM] Import paused.');
                 }
             });
         });
@@ -402,7 +402,7 @@
             state.isPaused = false;
             state.isProcessing = true;
             resumeBtn.prop('disabled', true);
-            statusDesc.text('Đang tiếp tục import...');
+            statusDesc.text('Resuming import...');
 
             $.ajax({
                 url: config.restUrl + 'shopify-import/resume',
@@ -415,7 +415,7 @@
                     pauseBtn.show();
                     progressSpinner.addClass('is-active');
                     progressBarFill.addClass('wpe-progress-pulsing');
-                    appendLog('info', '[HỆ THỐNG] Đang tiếp tục import từ điểm kiểm tra...');
+                    appendLog('info', '[SYSTEM] Resuming import from checkpoint...');
                     startTimer();
                     processNextBatch();
                 }
@@ -424,7 +424,7 @@
 
         // Cancel Action
         cancelBtn.on('click', function () {
-            if (!confirm('Bạn có chắc chắn muốn hủy bỏ tiến trình import này không? Các sản phẩm đã commit trước đó vẫn được giữ nguyên.')) {
+            if (!confirm('Are you sure you want to cancel this import process? Previously committed products will be preserved.')) {
                 return;
             }
 
@@ -441,11 +441,11 @@
                 success: function () {
                     progressSpinner.removeClass('is-active');
                     progressBarFill.removeClass('wpe-progress-pulsing');
-                    statusDesc.text('Tiến trình đã bị hủy bỏ.');
+                    statusDesc.text('Process has been cancelled.');
                     pauseBtn.hide();
                     resumeBtn.hide();
                     cancelBtn.hide();
-                    appendLog('warning', '[HỆ THỐNG] Đã hủy bỏ tiến trình import.');
+                    appendLog('warning', '[SYSTEM] Import process cancelled.');
                 }
             });
         });
@@ -453,7 +453,7 @@
         // Download Log File
         downloadLogBtn.on('click', function () {
             if (!state.jobId) {
-                alert('Chưa có thông tin tác vụ.');
+                alert('No active job information available.');
                 return;
             }
             var downloadUrl = config.restUrl + 'shopify-import/download-log?job_id=' + encodeURIComponent(state.jobId) + '&_wpnonce=' + encodeURIComponent(config.nonce);

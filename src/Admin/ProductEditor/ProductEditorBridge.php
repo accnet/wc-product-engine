@@ -47,7 +47,7 @@ class ProductEditorBridge
     }
 
     /**
-     * Add 'Quản lý biến thể' tab to the product data metabox.
+     * Add 'Variants Manager' tab to the product data metabox.
      */
     public function filterProductDataTabs(array $tabs): array
     {
@@ -163,12 +163,17 @@ class ProductEditorBridge
 
         $pluginBaseUrl = plugins_url('', dirname(__DIR__, 2));
 
+        $cssPath = dirname(__DIR__, 2) . '/assets/admin/product-editor.css';
+        $jsPath  = dirname(__DIR__, 2) . '/assets/admin/product-editor.js';
+        $cssVer  = file_exists($cssPath) ? (string) filemtime($cssPath) : '1.4.0';
+        $jsVer   = file_exists($jsPath) ? (string) filemtime($jsPath) : '1.4.0';
+
         // Enqueue Editor Stylesheet
         wp_enqueue_style(
             'wpe-product-editor-css',
             $pluginBaseUrl . '/assets/admin/product-editor.css',
             [],
-            '1.3.0'
+            $cssVer
         );
 
         // Enqueue Editor Script
@@ -176,7 +181,7 @@ class ProductEditorBridge
             'wpe-product-editor-js',
             $pluginBaseUrl . '/assets/admin/product-editor.js',
             ['jquery', 'wp-util'],
-            '1.3.0',
+            $jsVer,
             true
         );
 

@@ -167,7 +167,7 @@ class AdminApiController
 
         return new WP_REST_Response([
             'status'  => 'success',
-            'message' => 'Cài đặt đã được lưu thành công.',
+            'message' => 'Settings saved successfully.',
             'flags'   => $flags,
         ], 200);
     }
@@ -182,12 +182,12 @@ class AdminApiController
             return new WP_REST_Response([
                 'status'     => 'success',
                 'generation' => $newGeneration,
-                'message'    => sprintf('Catalog Index đã được tái tạo thành công sang Thế hệ #%d.', $newGeneration),
+                'message'    => sprintf('Catalog index rebuilt successfully to Generation #%d.', $newGeneration),
             ], 200);
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Tái tạo Catalog Index thất bại: ' . $e->getMessage(),
+                'message' => 'Failed to rebuild Catalog Index: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -198,7 +198,7 @@ class AdminApiController
         if (empty($files['file'])) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Không tìm thấy tệp được tải lên trong request.',
+                'message' => 'No uploaded file found in request.',
             ], 400);
         }
 
@@ -206,7 +206,7 @@ class AdminApiController
         if (!empty($uploaded['error'])) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Lỗi tải tệp lên: mã ' . $uploaded['error'],
+                'message' => 'File upload error: code ' . $uploaded['error'],
             ], 400);
         }
 
@@ -246,7 +246,7 @@ class AdminApiController
             } catch (\Throwable $e) {
                 return new WP_REST_Response([
                     'status'  => 'error',
-                    'message' => 'Không tìm thấy tệp đã lưu: ' . $e->getMessage(),
+                    'message' => 'Staged file not found: ' . $e->getMessage(),
                 ], 404);
             }
         }
@@ -254,7 +254,7 @@ class AdminApiController
         if ($filePath === '' || !file_exists($filePath)) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Đường dẫn tệp không tồn tại hoặc không thể đọc: ' . $filePath,
+                'message' => 'File path does not exist or is not readable: ' . $filePath,
             ], 400);
         }
 
@@ -274,7 +274,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Khởi tạo tác vụ import thất bại: ' . $e->getMessage(),
+                'message' => 'Failed to initialize import job: ' . $e->getMessage(),
             ], 400);
         }
     }
@@ -288,7 +288,7 @@ class AdminApiController
         if ($jobId === '') {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Thiếu job_id trong request.',
+                'message' => 'Missing job_id in request.',
             ], 400);
         }
 
@@ -298,7 +298,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Lỗi xử lý lô: ' . $e->getMessage(),
+                'message' => 'Batch processing error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -309,7 +309,7 @@ class AdminApiController
         $jobId = sanitize_text_field($params['job_id'] ?? '');
 
         if ($jobId === '') {
-            return new WP_REST_Response(['status' => 'error', 'message' => 'Thiếu job_id'], 400);
+            return new WP_REST_Response(['status' => 'error', 'message' => 'Missing job_id'], 400);
         }
 
         $res = $this->batchImporter->pauseJob($jobId);
@@ -322,7 +322,7 @@ class AdminApiController
         $jobId = sanitize_text_field($params['job_id'] ?? '');
 
         if ($jobId === '') {
-            return new WP_REST_Response(['status' => 'error', 'message' => 'Thiếu job_id'], 400);
+            return new WP_REST_Response(['status' => 'error', 'message' => 'Missing job_id'], 400);
         }
 
         $res = $this->batchImporter->resumeJob($jobId);
@@ -335,7 +335,7 @@ class AdminApiController
         $jobId = sanitize_text_field($params['job_id'] ?? '');
 
         if ($jobId === '') {
-            return new WP_REST_Response(['status' => 'error', 'message' => 'Thiếu job_id'], 400);
+            return new WP_REST_Response(['status' => 'error', 'message' => 'Missing job_id'], 400);
         }
 
         $res = $this->batchImporter->cancelJob($jobId);
@@ -355,12 +355,12 @@ class AdminApiController
     {
         $jobId = sanitize_text_field($request->get_param('job_id') ?? '');
         if ($jobId === '') {
-            wp_die('Thiếu job_id');
+            wp_die('Missing job_id');
         }
 
         $logFile = $this->batchImporter->getLogFile($jobId);
         if (!$logFile || !file_exists($logFile)) {
-            wp_die('Không tìm thấy tệp nhật ký cho tác vụ này.');
+            wp_die('Log file not found for this job.');
         }
 
         header('Content-Description: File Transfer');

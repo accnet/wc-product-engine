@@ -51,12 +51,12 @@
                 success: function (res) {
                     saveBtn.prop('disabled', false);
                     spinner.removeClass('is-active');
-                    showNotice(res.message || 'Cài đặt đã được lưu thành công.', 'success');
+                    showNotice(res.message || 'Settings saved successfully.', 'success');
                 },
                 error: function (xhr) {
                     saveBtn.prop('disabled', false);
                     spinner.removeClass('is-active');
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Lỗi khi lưu cài đặt.';
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Error saving settings.';
                     showNotice(msg, 'error');
                 }
             });
@@ -65,12 +65,12 @@
         // Rebuild Index Generation
         rebuildBtn.on('click', function (e) {
             e.preventDefault();
-            if (!confirm('Bạn có chắc chắn muốn tính toán lại toàn bộ Catalog Index Generation không?')) {
+            if (!confirm('Are you sure you want to rebuild the entire Catalog Index Generation?')) {
                 return;
             }
 
             rebuildBtn.prop('disabled', true);
-            rebuildStatus.html('<span class="spinner is-active" style="float:none;"></span> Đang tính toán và tái tạo catalog generation...');
+            rebuildStatus.html('<span class="spinner is-active" style="float:none;"></span> Rebuilding catalog generation...');
 
             $.ajax({
                 url: config.restUrl + 'rebuild-index',
@@ -84,13 +84,13 @@
                         $('#wpe-current-gen').text('#' + res.generation);
                         rebuildStatus.html('<span style="color:#008a20; font-weight:bold;">✓ ' + res.message + '</span>');
                     } else {
-                        rebuildStatus.html('<span style="color:#d63638;">✕ ' + (res.message || 'Lỗi không xác định') + '</span>');
+                        rebuildStatus.html('<span style="color:#d63638;">✕ ' + (res.message || 'Unknown error') + '</span>');
                     }
                 },
                 error: function (xhr) {
                     rebuildBtn.prop('disabled', false);
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Tái tạo thất bại.';
-                    rebuildStatus.html('<span style="color:#d63638;">✕ Lỗi: ' + msg + '</span>');
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Rebuild failed.';
+                    rebuildStatus.html('<span style="color:#d63638;">✕ Error: ' + msg + '</span>');
                 }
             });
         });

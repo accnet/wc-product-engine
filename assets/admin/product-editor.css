@@ -2,7 +2,9 @@
 
 /* 1. WooCommerce Product Data Tab Integration */
 #woocommerce-product-data.wpe-is-variable .product_data_tabs li.attribute_options,
-#woocommerce-product-data.wpe-is-variable .product_data_tabs li.variations_options {
+#woocommerce-product-data.wpe-is-variable .product_data_tabs li.attribute_tab,
+#woocommerce-product-data.wpe-is-variable .product_data_tabs li.variations_options,
+#woocommerce-product-data.wpe-is-variable .product_data_tabs li.variations_tab {
     display: none !important;
 }
 
