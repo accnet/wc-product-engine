@@ -44,6 +44,9 @@ class T42Test
     private array $cleanProductIds = [];
     private array $cleanEventIds = [];
 
+    /** Hermetic evidence directory: passed receipts for every gate task on the CURRENT runtime. */
+    private string $fixtureEvidenceDir;
+
     public function __construct()
     {
         global $wpdb;
@@ -57,7 +60,26 @@ class T42Test
         $this->tableOutbox      = "{$prefix}wpe_outbox";
         $this->tableAudit       = "{$prefix}wpe_audit";
 
-        $this->gates     = new ReadinessGates($this->wpdb);
+        // Gate logic is tested against fixture receipts on the live runtime so the test does not
+        // depend on (or get invalidated by) the repository's historical evidence files.
+        $this->fixtureEvidenceDir = dirname(__DIR__, 2) . '/tmp_t42_evidence_' . uniqid('', true);
+        $current = (new ReadinessGates($this->wpdb, $this->fixtureEvidenceDir))->getCurrentEnvironment();
+        foreach (ReadinessGates::GATES as $gate) {
+            @mkdir("{$this->fixtureEvidenceDir}/{$gate['task']}", 0755, true);
+            file_put_contents("{$this->fixtureEvidenceDir}/{$gate['task']}/result.json", json_encode([
+                'task_id'        => $gate['task'],
+                'qa_status'      => 'passed',
+                'content_digest' => hash('sha256', 'fixture-' . $gate['task']),
+                'environment'    => [
+                    'wordpress'   => $current['wordpress'],
+                    'woocommerce' => $current['woocommerce'],
+                    'php'         => $current['php'],
+                    'database'    => $this->wpdb->db_version(),
+                ],
+            ]));
+        }
+
+        $this->gates     = new ReadinessGates($this->wpdb, $this->fixtureEvidenceDir);
         $this->allocator = new PostIdAllocator($this->wpdb);
     }
 
@@ -91,6 +113,12 @@ class T42Test
     public function tearDown(): void
     {
         $prefix = $this->wpdb->prefix;
+
+        foreach (glob($this->fixtureEvidenceDir . '/*/result.json') ?: [] as $file) {
+            @unlink($file);
+            @rmdir(dirname($file));
+        }
+        @rmdir($this->fixtureEvidenceDir);
 
         if (!empty($this->cleanProductIds)) {
             $ids = implode(',', array_map('intval', $this->cleanProductIds));
@@ -269,38 +297,59 @@ class T42Test
     {
         echo "Testing R171 (version_changed_gate_stale)...\n";
 
-        // 1. Simulate version change in evidence
-        $tempEvidenceDir = dirname(__DIR__, 2) . '/tmp_version_test_' . time();
-        @mkdir("{$tempEvidenceDir}/T03", 0755, true);
-
-        try {
-            // Write T03 evidence with an obsolete WordPress version (6.4 instead of current 7.0)
-            file_put_contents("{$tempEvidenceDir}/T03/result.json", json_encode([
-                'task_id'        => 'T03',
-                'qa_status'      => 'passed',
-                'content_digest' => 'dummy',
-                'environment'    => [
-                    'wordpress'   => '6.4.1', // Stale version!
-                    'woocommerce' => '11.1.2',
-                    'php'         => PHP_VERSION,
-                    'database'    => $this->wpdb->db_version(),
-                ],
-            ]));
-
-            $staleGates = new ReadinessGates($this->wpdb, $tempEvidenceDir);
-            $res = $staleGates->validateAllGates();
-
-            $g01 = $res['gates']['G01'] ?? [];
-            if (($g01['status'] ?? '') !== 'stale') {
-                throw new \RuntimeException("Version divergence was not classified as 'stale': got " . ($g01['status'] ?? 'unknown'));
+        // 1. Evidence from a different runtime must be stale, including minor/patch differences
+        $current = $this->gates->getCurrentEnvironment();
+        $base = [
+            'wordpress'   => $current['wordpress'],
+            'woocommerce' => $current['woocommerce'],
+            'php'         => $current['php'],
+            'database'    => $this->wpdb->db_version(),
+        ];
+        $bump = static function (string $version): string {
+            $parts = explode('.', $version);
+            $last = count($parts) - 1;
+            $parts[$last] = (string) ((int) $parts[$last] + 1);
+            return implode('.', $parts);
+        };
+        $cases = [
+            'WordPress 6.4.1 (major)'        => ['wordpress' => '6.4.1'],
+            'WordPress 7.0 (minor, audit F01)' => ['wordpress' => '7.0'],
+            'WordPress patch bump'           => ['wordpress' => $bump($current['wordpress'])],
+            'WooCommerce 11.1.2 (minor, audit F01)' => ['woocommerce' => '11.1.2'],
+            'WooCommerce patch bump'         => ['woocommerce' => $bump($current['woocommerce'])],
+            'PHP patch bump'                 => ['php' => $bump($current['php'])],
+            'missing WooCommerce version'    => ['woocommerce' => ''],
+        ];
+        $statusFor = function (array $env): string {
+            $dir = dirname(__DIR__, 2) . '/tmp_version_test_' . uniqid('', true);
+            @mkdir("{$dir}/T03", 0755, true);
+            try {
+                file_put_contents("{$dir}/T03/result.json", json_encode([
+                    'task_id'        => 'T03',
+                    'qa_status'      => 'passed',
+                    'content_digest' => 'dummy',
+                    'environment'    => $env,
+                ]));
+                $res = (new ReadinessGates($this->wpdb, $dir))->validateAllGates();
+                return (string) ($res['gates']['G01']['status'] ?? 'unknown');
+            } finally {
+                @unlink("{$dir}/T03/result.json");
+                @rmdir("{$dir}/T03");
+                @rmdir($dir);
             }
-
-            echo "  ✓ Version divergence detected: Obsolete WordPress version classified gate as 'stale'\n";
-        } finally {
-            @unlink("{$tempEvidenceDir}/T03/result.json");
-            @rmdir("{$tempEvidenceDir}/T03");
-            @rmdir($tempEvidenceDir);
+        };
+        foreach ($cases as $label => $override) {
+            $status = $statusFor(array_merge($base, $override));
+            if ($status !== 'stale') {
+                throw new \RuntimeException("{$label} was not classified 'stale': got {$status}");
+            }
+            echo "  ✓ Version divergence detected: {$label} classified gate as 'stale'\n";
         }
+        $suffixed = array_merge($base, ['database' => $base['database'] . '-MariaDB-ubu2204']);
+        if ($statusFor($suffixed) === 'stale') {
+            throw new \RuntimeException('Identical runtime with a database distribution suffix must not be stale');
+        }
+        echo "  ✓ Identical runtime (database distribution suffix ignored) is not stale\n";
 
         // 2. Environment fingerprinting
         $env = $this->gates->getCurrentEnvironment();

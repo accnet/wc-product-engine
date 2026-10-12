@@ -90,6 +90,36 @@ class ReadinessGates
     }
 
     /**
+     * Returns a reason when evidence was produced on a different runtime, otherwise null (R171).
+     *
+     * Compares complete version strings for WordPress, WooCommerce and PHP, and the numeric
+     * database version (the evidence may carry a distribution suffix such as "-MariaDB-ubu2204").
+     * Evidence without a recorded version is treated as stale, never as a pass.
+     *
+     * @param array<string,mixed> $evidenceEnv
+     * @param array<string,mixed> $currentEnv
+     */
+    private function detectVersionStaleness(array $evidenceEnv, array $currentEnv): ?string
+    {
+        $labels = ['wordpress' => 'WordPress', 'woocommerce' => 'WooCommerce', 'php' => 'PHP', 'database' => 'Database'];
+        foreach ($labels as $key => $label) {
+            $recorded = isset($evidenceEnv[$key]) ? trim((string) $evidenceEnv[$key]) : '';
+            $current = isset($currentEnv[$key]) ? trim((string) $currentEnv[$key]) : '';
+            if ($recorded === '') {
+                return "Evidence does not record the {$label} version";
+            }
+            if ($key === 'database') {
+                $recorded = preg_match('/^\d+(?:\.\d+)*/', $recorded, $a) ? $a[0] : $recorded;
+                $current = preg_match('/^\d+(?:\.\d+)*/', $current, $b) ? $b[0] : $current;
+            }
+            if ($recorded !== $current) {
+                return "{$label} version changed from {$recorded} to {$current}";
+            }
+        }
+        return null;
+    }
+
+    /**
      * Computes deterministic fingerprint hash of current environment (R171).
      */
     public function computeEnvironmentHash(array $env): string
@@ -209,41 +239,20 @@ class ReadinessGates
                 continue;
             }
 
-            // Check 2: Version staleness (R171)
+            // Check 2: Version staleness (R171). Full version strings are compared: a minor or
+            // patch change (e.g. WordPress 7.0 -> 7.1.3) invalidates the evidence, not only a major one.
             $evidenceEnv = $evidenceJson['environment'] ?? [];
-            if (!empty($evidenceEnv)) {
-                // If major versions diverged
-                if (isset($evidenceEnv['wordpress'])) {
-                    $evWp = explode('.', (string)$evidenceEnv['wordpress'])[0];
-                    $curWp = explode('.', (string)$currentEnv['wordpress'])[0];
-                    if ($evWp !== $curWp) {
-                        $gateResults[$gateId] = [
-                            'name'     => $gateMeta['name'],
-                            'task'     => $task,
-                            'status'   => 'stale',
-                            'reason'   => "WordPress major version changed from {$evidenceEnv['wordpress']} to {$currentEnv['wordpress']}",
-                            'artifact' => $evidencePath,
-                        ];
-                        $failedGates[] = $gateId;
-                        continue;
-                    }
-                }
-
-                if (isset($evidenceEnv['woocommerce'])) {
-                    $evWc = explode('.', (string)$evidenceEnv['woocommerce'])[0];
-                    $curWc = explode('.', (string)$currentEnv['woocommerce'])[0];
-                    if ($evWc !== $curWc) {
-                        $gateResults[$gateId] = [
-                            'name'     => $gateMeta['name'],
-                            'task'     => $task,
-                            'status'   => 'stale',
-                            'reason'   => "WooCommerce major version changed from {$evidenceEnv['woocommerce']} to {$currentEnv['woocommerce']}",
-                            'artifact' => $evidencePath,
-                        ];
-                        $failedGates[] = $gateId;
-                        continue;
-                    }
-                }
+            $staleReason = $this->detectVersionStaleness(is_array($evidenceEnv) ? $evidenceEnv : [], $currentEnv);
+            if ($staleReason !== null) {
+                $gateResults[$gateId] = [
+                    'name'     => $gateMeta['name'],
+                    'task'     => $task,
+                    'status'   => 'stale',
+                    'reason'   => $staleReason,
+                    'artifact' => $evidencePath,
+                ];
+                $failedGates[] = $gateId;
+                continue;
             }
 
             // Gate passed

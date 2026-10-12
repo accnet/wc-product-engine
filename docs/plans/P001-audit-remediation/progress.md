@@ -4,7 +4,7 @@ Status: in_progress
 
 - [x] P001.1 — Re-baseline contracts, docs and validators (done)
 - [x] P001.2 — Evidence tooling: runtime env, per-requirement receipts, base commit binding (done)
-- [ ] P001.3 — ReadinessGates full version staleness (todo)
+- [x] P001.3 — ReadinessGates full version staleness (done)
 - [ ] P001.4 — Test isolation, residue gate and residue cleanup (todo)
 - [ ] P001.5 — T46 guards and T40 mirror-stopped rollback block (todo)
 - [ ] P001.6 — Playwright selector stale-response behavior test (todo)
