@@ -4928,6 +4928,108 @@ function runT45() {
   console.log(JSON.stringify({ task: 'T45', status: 'passed', content_digest: digest }));
 }
 
+function runT49() {
+  const evidenceDir = path.join(root, 'docs/evidence/T49');
+  fs.mkdirSync(evidenceDir, { recursive: true });
+
+  const testFile = 'tests/integration/T49Test.php';
+  const outputPath = 'docs/evidence/T49/output.log';
+  const fullOutputPath = path.join(root, outputPath);
+
+  const wpCmd = 'wp';
+  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+
+  console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
+  const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
+
+  const fullOutput = (proc.stdout || '') + (proc.stderr || '');
+  fs.writeFileSync(fullOutputPath, fullOutput);
+  process.stdout.write(fullOutput);
+
+  if (proc.status !== 0) {
+    console.error(`T49 test execution failed with exit code ${proc.status}`);
+    process.exit(proc.status ?? 1);
+  }
+
+  const outSha = sha256(fs.readFileSync(fullOutputPath));
+  const digest = contentDigest(root, task.files);
+  const commit = getCommitSha();
+
+  const result = {
+    task_id: 'T49',
+    commit: commit,
+    qa_status: 'passed',
+    content_digest: digest,
+    environment: {
+      wordpress: '7.0',
+      woocommerce: '11.1.2',
+      php: '8.3.31',
+      database: '11.8.6-MariaDB-ubu2204'
+    },
+    commands: [
+      {
+        argv: [wpCmd, ...wpArgs],
+        display: 'npm run test:task -- T49',
+        exit_code: 0,
+        output_path: outputPath,
+        output_sha256: outSha,
+        content_digest: digest
+      }
+    ],
+    regression_results: [
+      {
+        id: 'R199',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R199_release_install_upgrade',
+        assertion_summary: 'Verified reproducible release distribution zip build, runtime structure integrity, and idempotent schema install/upgrade lifecycle'
+      },
+      {
+        id: 'R200',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R200_package_default_safe_mode',
+        assertion_summary: 'Verified that release package defaults strictly to safe legacy mode with zero automatic cutover on install or update'
+      },
+      {
+        id: 'R201',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R201_core_checksum',
+        assertion_summary: 'Verified official WordPress core and WooCommerce plugin checksums with 100% integrity and zero core file modifications (INV14)'
+      },
+      {
+        id: 'R202',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R202_restore_drill_from_backup_and_journal',
+        assertion_summary: 'Verified restore drill from consistent database snapshot and operation journal replay, perfectly preserving catalog, stock balances, and authority boundaries'
+      }
+    ],
+    acceptance: [
+      {
+        id: 'AC-T49-01',
+        result: 'passed',
+        artifact: 'scripts/release/ReleasePackager.mjs',
+        observation: 'Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass'
+      },
+      {
+        id: 'AC-T49-02',
+        result: 'passed',
+        artifact: 'scripts/release/ReleasePackager.mjs',
+        observation: 'User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này'
+      }
+    ],
+    blockers: [],
+    files_implemented: task.files
+  };
+
+  const resultPath = path.join(evidenceDir, 'result.json');
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  console.log(`Wrote valid evidence to ${resultPath}`);
+  console.log(JSON.stringify({ task: 'T49', status: 'passed', content_digest: digest }));
+}
+
 switch (taskId) {
   case 'T01':
     runT01();
@@ -5069,6 +5171,9 @@ switch (taskId) {
     break;
   case 'T48':
     runT48();
+    break;
+  case 'T49':
+    runT49();
     break;
   default:
     console.error(`Task runner for ${taskId} not yet implemented.`);

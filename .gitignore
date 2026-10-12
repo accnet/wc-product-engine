@@ -7,3 +7,4 @@ vendor/
 artifacts/
 private-staging/
 *.log
+dist/

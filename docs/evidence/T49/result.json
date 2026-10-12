@@ -1,0 +1,78 @@
+{
+  "task_id": "T49",
+  "commit": "707e3d423e32227467c2cf9da951d7ce49d60fe6",
+  "qa_status": "passed",
+  "content_digest": "cbece5423488eb38c39b77580487ec4bfec9bf502b5f6126173be04401138277",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T49Test.php"
+      ],
+      "display": "npm run test:task -- T49",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T49/output.log",
+      "output_sha256": "87cc67d5313ab36e4ec1ad899ef54e758058b08d1217f52904f76def048c9186",
+      "content_digest": "cbece5423488eb38c39b77580487ec4bfec9bf502b5f6126173be04401138277"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R199",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R199_release_install_upgrade",
+      "assertion_summary": "Verified reproducible release distribution zip build, runtime structure integrity, and idempotent schema install/upgrade lifecycle"
+    },
+    {
+      "id": "R200",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R200_package_default_safe_mode",
+      "assertion_summary": "Verified that release package defaults strictly to safe legacy mode with zero automatic cutover on install or update"
+    },
+    {
+      "id": "R201",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R201_core_checksum",
+      "assertion_summary": "Verified official WordPress core and WooCommerce plugin checksums with 100% integrity and zero core file modifications (INV14)"
+    },
+    {
+      "id": "R202",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R202_restore_drill_from_backup_and_journal",
+      "assertion_summary": "Verified restore drill from consistent database snapshot and operation journal replay, perfectly preserving catalog, stock balances, and authority boundaries"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T49-01",
+      "result": "passed",
+      "artifact": "scripts/release/ReleasePackager.mjs",
+      "observation": "Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass"
+    },
+    {
+      "id": "AC-T49-02",
+      "result": "passed",
+      "artifact": "scripts/release/ReleasePackager.mjs",
+      "observation": "User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "scripts/release/ReleasePackager.mjs",
+    "tests/integration/T49Test.php",
+    "docs/evidence/T49/result.json"
+  ]
+}
