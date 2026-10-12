@@ -65,7 +65,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T44 — Chứng minh đọc native không dựa core postmeta
 - [x] T47 — Benchmark realistic scale và EXPLAIN budgets
 - [x] T48 — E2E compatibility/security/fault-injection suite
-- [ ] T42 — Readiness gates và cohort manifest
+- [x] T42 — Readiness gates và cohort manifest
 
 ## 8. P6 — Controlled rollout/release
 

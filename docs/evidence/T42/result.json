@@ -1,0 +1,84 @@
+{
+  "task_id": "T42",
+  "commit": "26b319ec7d397fe27fff596cd6e9e184dd2031e0",
+  "qa_status": "passed",
+  "content_digest": "9023400c6a3dd17654cb699c494f8b77db34de548c18e8830f6dd119e60e1001",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T42Test.php"
+      ],
+      "display": "npm run test:task -- T42",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T42/output.log",
+      "output_sha256": "30e18a2d50fba80b5805a719cf6fa2d464941b9e6735c916b915157aacd591bf",
+      "content_digest": "9023400c6a3dd17654cb699c494f8b77db34de548c18e8830f6dd119e60e1001"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R169",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R169_missing_evidence_gate_fail",
+      "assertion_summary": "Missing evidence immediately triggers fail-closed rejection across all 12 release gates"
+    },
+    {
+      "id": "R170",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R170_cohort_epoch_hash_mismatch",
+      "assertion_summary": "Cohort manifest hashing, epoch validation, and unhandled DLQ errors strictly prevent unsafe cutover"
+    },
+    {
+      "id": "R171",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R171_version_changed_gate_stale",
+      "assertion_summary": "Software version divergence and active plugin list changes are reliably detected and classified as stale"
+    },
+    {
+      "id": "R172",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R172_no_gate_bypass",
+      "assertion_summary": "Bypass flags (skip_required_gate) are strictly prohibited in production and fully audited in non-production"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T42-01",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/ReadinessGates.php",
+      "observation": "Validator fail-closed khi thiếu artifact/stale evidence/new plugin/version/config changed qua toàn bộ G01–G12 matrix"
+    },
+    {
+      "id": "AC-T42-02",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/ReadinessGates.php",
+      "observation": "Cutover endpoint chỉ nhận gate ID pass đúng cohort và epoch thông qua signed HMAC token"
+    },
+    {
+      "id": "AC-T42-03",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/ReadinessGates.php",
+      "observation": "Không dùng admin flag skip_required_gate ở production; invariant INV16 được bảo đảm nghiêm ngặt"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Rollout/ReadinessGates.php",
+    "tests/integration/T42Test.php",
+    "docs/evidence/T42/result.json"
+  ]
+}
