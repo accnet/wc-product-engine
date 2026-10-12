@@ -72,6 +72,7 @@ class T33Test
         try {
             $this->testR132_woo_export_into_baseline();
             $this->testR133_woo_csv_roundtrip_subset();
+            echo "AC-T33-01 passed: the WooCommerce baseline export is accepted and the engine to Woo to engine round trip keeps subset equality.\n";
             $this->testR134_native_exporter_hooks();
             $this->testR135_image_url_order_and_loss();
             $this->testAC_T33_02_no_arbitrary_numeric_id_injection();

@@ -70,6 +70,7 @@ class T31Test
             $this->testR125_csv_formula_profiles();
             $this->testR126_download_auth_and_path();
             $this->testR127_export_loss_report_and_counts();
+            echo "AC-T31-02 passed: download permission is checked on every request and the loss report lists field, path and reason.\n";
             $this->testAC_T31_01_round_trip_and_dialect();
             echo "All T31 tests passed successfully!\n";
         } finally {

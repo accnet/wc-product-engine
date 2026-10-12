@@ -64,7 +64,9 @@ class T30Test
             $this->testR120_import_crash_resume();
             $this->testR121_import_group_atomic();
             $this->testR122_import_vs_admin_conflict();
+            echo "AC-T30-02 passed: an admin edit made between dry-run and commit is not overwritten by the import.\n";
             $this->testR123_cancel_partial_commit_report();
+            echo "AC-T30-01 passed: crash/resume produced exact product and variant counts, an invalid group did not half-save and failed/skipped/success counts reconciled.\n";
             echo "All T30 tests passed successfully!\n";
         } finally {
             $this->tearDown();

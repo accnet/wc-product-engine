@@ -151,8 +151,37 @@
           "T30,T31,T32,T33,T34"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+          "content_digest": "7236e45536ebd464af54e18e1add90ac40f151259302f0335fa9563161071f2c",
+          "output_sha256": "273d0fb8cd49d6054ce4542320c03e36062e7f7103d2b1abdc60679f55f5738d",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821552590-4847670d.log",
+          "time": "2026-10-12T16:12:32.590Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs",
+            "--only",
+            "T30,T31,T32,T33,T34"
+          ],
+          "exit_code": 0,
+          "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+          "content_digest": "7236e45536ebd464af54e18e1add90ac40f151259302f0335fa9563161071f2c",
+          "output_sha256": "b475796cf485e022f8853fa79fa3b68410eb3a299b413a9303fd45ff56074476",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821593660-d76869cc.log",
+          "time": "2026-10-12T16:13:13.661Z"
+        }
+      ],
+      "started_at": "2026-10-12T16:12:32.501Z"
     },
     {
       "id": "P002.4",

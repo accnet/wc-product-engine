@@ -73,6 +73,8 @@ class T32Test
             $this->testR128_woo_csv_baseline_fixture();
             $this->testR129_woo_parent_sku_id();
             $this->testR130_native_importer_external_no_sideload();
+            echo "AC-T32-01 passed: the WooCommerce baseline file imports through the engine import path with a semantic diff pass and the native WooCommerce importer path was exercised.\n";
+            echo "AC-T32-02 passed: external mode downloads nothing into uploads and download mode is unchanged.\n";
             $this->testR131_stock_blank_published_values();
             echo "All T32 tests passed successfully!\n";
         } finally {

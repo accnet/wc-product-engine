@@ -1,8 +1,8 @@
 {
   "task_id": "T34",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "qa_status": "passed",
-  "content_digest": "9370bd7c6bc6552aa62ea277b313ce31715094ea612cf74e7c5efdf6d9ca7b11",
+  "content_digest": "07ab17a92a09a154668bc24b9ffe99dc06bd775671966f1511ce075e9096cc31",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T34",
       "exit_code": 0,
       "output_path": "docs/evidence/T34/output.log",
-      "output_sha256": "c39657348b0123948ea4fdfa0303b42954bd7fb8b170239bac33edd09ad7dd07",
-      "content_digest": "9370bd7c6bc6552aa62ea277b313ce31715094ea612cf74e7c5efdf6d9ca7b11"
+      "output_sha256": "32f6023d6fe1a804e5897df44136ec5df573793071ae0164ae7671dd4e9129b5",
+      "content_digest": "07ab17a92a09a154668bc24b9ffe99dc06bd775671966f1511ce075e9096cc31"
     }
   ],
   "regression_results": [
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified Compare-at pricing calculation rules and weight unit conversions",
       "basis": "output_anchor",
       "anchor": {
-        "line": 7,
+        "line": 8,
         "text": "R138 passed: Compare-at pricing rules and weight conversions verified."
       }
     },
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified handle grouping idempotency and missing vs blank column overwrite policies",
       "basis": "output_anchor",
       "anchor": {
-        "line": 9,
+        "line": 10,
         "text": "R139 passed: Handle idempotency and missing vs blank overwrite policies verified."
       }
     },
@@ -82,7 +82,7 @@
       "assertion_summary": "Verified unsupported fields (>3 options, locations, metafields) captured in structured loss report",
       "basis": "output_anchor",
       "anchor": {
-        "line": 11,
+        "line": 13,
         "text": "R140 passed: Unsupported Shopify fields and extra options captured in loss report."
       }
     }
@@ -93,14 +93,22 @@
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
       "observation": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 6,
+        "text": "AC-T34-01 passed: current and legacy Shopify fixtures give the same canonical subset and an image-only row adds no variation."
+      }
     },
     {
       "id": "AC-T34-02",
       "result": "passed",
       "artifact": "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
       "observation": "Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 11,
+        "text": "AC-T34-02 passed: missing versus blank overwrite policy is honored and repeated handles do not duplicate a product."
+      }
     }
   ],
   "blockers": [],
@@ -114,7 +122,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -124,10 +132,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -143,7 +151,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4015,
+      "wp_wpe_audit": 4017,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -153,10 +161,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 346,
+      "wp_wpe_object_state": 348,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1161,
+      "wp_wpe_outbox": 1167,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -172,7 +180,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -182,10 +190,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -226,9 +234,9 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "file_hashes": {
     "src/Compatibility/Csv/Shopify/ShopifyImporter.php": "4f586851403a62b4e923fe67ce11fd9c86901217604e5b888b8b270d05de70f0",
-    "tests/integration/T34Test.php": "af328c0722400c2ab59e5ad230efd042cd58d73dd1be91c23bf36391856c2829"
+    "tests/integration/T34Test.php": "fa9b883eaa8605989ce7177e0c64fe2e4d2ef7d2c8d201b9de77f3ecff94358b"
   }
 }

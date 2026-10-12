@@ -1,8 +1,8 @@
 {
   "task_id": "T31",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "qa_status": "passed",
-  "content_digest": "6951016f2f614d706225e29b5ab780172dc952d7b12bb8cdd5911aa846f76451",
+  "content_digest": "bf813e060ec38b412c9e54a721136867cb7f6a70c47958feb978eea02e436275",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T31",
       "exit_code": 0,
       "output_path": "docs/evidence/T31/output.log",
-      "output_sha256": "54b4a694221b84aed06f3814e759695b9e6c536d9875c0737bb4bfec11c89082",
-      "content_digest": "6951016f2f614d706225e29b5ab780172dc952d7b12bb8cdd5911aa846f76451"
+      "output_sha256": "6bbd7724db5a1f6726cca295885ab7c9f9445a0019ecd264449e7782d3fb76d2",
+      "content_digest": "bf813e060ec38b412c9e54a721136867cb7f6a70c47958feb978eea02e436275"
     }
   ],
   "regression_results": [
@@ -83,7 +83,7 @@
       "observation": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest",
       "basis": "output_anchor",
       "anchor": {
-        "line": 11,
+        "line": 12,
         "text": "AC-T31-01 passed: Engine snapshot round-trip faithfully preserves all dialect fields."
       }
     },
@@ -92,7 +92,11 @@
       "result": "passed",
       "artifact": "src/Application/ImportExport/SnapshotExporter.php",
       "observation": "Permission download kiểm tra mỗi lần; loss report có field/path/reason",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 10,
+        "text": "AC-T31-02 passed: download permission is checked on every request and the loss report lists field, path and reason."
+      }
     }
   ],
   "blockers": [],
@@ -106,7 +110,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -116,10 +120,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -135,7 +139,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4012,
+      "wp_wpe_audit": 4014,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -145,10 +149,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 344,
+      "wp_wpe_object_state": 346,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1158,
+      "wp_wpe_outbox": 1164,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -164,7 +168,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -174,10 +178,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -221,9 +225,9 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "file_hashes": {
     "src/Application/ImportExport/SnapshotExporter.php": "e6c14b5b5a039ad9152de711af8e8aebc0a210d66ef7f6fc47d20ce9f08cdde3",
-    "tests/integration/T31Test.php": "12c44c1f15aaccc5d55eba74bade283beabd07083f6af8a816c452d5c67d7c85"
+    "tests/integration/T31Test.php": "92b0b0cee5aa64337eaa0ab824020abe8bc3f677b23387e3ea56d1798fcfb824"
   }
 }

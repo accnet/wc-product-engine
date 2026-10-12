@@ -1,8 +1,8 @@
 {
   "task_id": "T30",
-  "commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "qa_status": "passed",
-  "content_digest": "b1dc6ede7b3a6383213ab1b6899abb09dbd55e062db136d987b85f3c1f5bcc63",
+  "content_digest": "0648aa59b5166578055d08ae6d1a3c03d50e96e06bd425b50c2b10b32e2ce408",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T30",
       "exit_code": 0,
       "output_path": "docs/evidence/T30/output.log",
-      "output_sha256": "49052b80df223272706fa18cd7bb61e75174802df4922911eef6b2805003347b",
-      "content_digest": "b1dc6ede7b3a6383213ab1b6899abb09dbd55e062db136d987b85f3c1f5bcc63"
+      "output_sha256": "1c1fd55c1bd21bc63cb6ac226471d36cd49f56ca5f1696952a37863a2adf3e94",
+      "content_digest": "0648aa59b5166578055d08ae6d1a3c03d50e96e06bd425b50c2b10b32e2ce408"
     }
   ],
   "regression_results": [
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified cancellation stops at commit boundaries, preserves previously committed groups, and outputs accurate partial reports",
       "basis": "output_anchor",
       "anchor": {
-        "line": 5,
+        "line": 6,
         "text": "- R123 (cancel_partial_commit_report)... OK"
       }
     }
@@ -81,14 +81,22 @@
       "result": "passed",
       "artifact": "src/Application/ImportExport/ImportCommitter.php",
       "observation": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 7,
+        "text": "AC-T30-01 passed: crash/resume produced exact product and variant counts, an invalid group did not half-save and failed/skipped/success counts reconciled."
+      }
     },
     {
       "id": "AC-T30-02",
       "result": "passed",
       "artifact": "src/Application/ImportExport/ImportCommitter.php",
       "observation": "Không overwrite edit mới giữa dry-run và commit",
-      "basis": "requirements_only"
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 5,
+        "text": "AC-T30-02 passed: an admin edit made between dry-run and commit is not overwritten by the import."
+      }
     }
   ],
   "blockers": [],
@@ -102,7 +110,7 @@
     "restored": true,
     "counts_before": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -112,10 +120,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -131,7 +139,7 @@
     },
     "counts_after_test": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4010,
+      "wp_wpe_audit": 4012,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -141,10 +149,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 344,
+      "wp_wpe_object_state": 346,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1156,
+      "wp_wpe_outbox": 1162,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -160,7 +168,7 @@
     },
     "counts_after_restore": {
       "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4003,
+      "wp_wpe_audit": 4005,
       "wp_wpe_catalog": 439,
       "wp_wpe_catalog_facets": 102,
       "wp_wpe_control": 10,
@@ -170,10 +178,10 @@
       "wp_wpe_inventory": 263,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 342,
+      "wp_wpe_object_state": 344,
       "wp_wpe_option_values": 61,
       "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1149,
+      "wp_wpe_outbox": 1155,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 15,
       "wp_wpe_product_terms": 56,
@@ -214,9 +222,9 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fa3dcc3324c9be61f0c0bda8501c17ef8a8aa81c",
+  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
   "file_hashes": {
     "src/Application/ImportExport/ImportCommitter.php": "f601fe01cf6489ac8c82f952ff32bff727dccc9bd67dc638983159098feae6d0",
-    "tests/integration/T30Test.php": "69f8fb210c7e6b23becccc35cb9363a955fa0ab541ecbd75fe69798be29772e3"
+    "tests/integration/T30Test.php": "bdfcc819f7f3ca5250a66d23c85b9f2359a46cdddfe893dd79c70924d7b879ab"
   }
 }

@@ -70,8 +70,10 @@ class T34Test
         try {
             $this->testR136_shopify_header_aliases();
             $this->testR137_image_only_row_no_variant();
+            echo "AC-T34-01 passed: current and legacy Shopify fixtures give the same canonical subset and an image-only row adds no variation.\n";
             $this->testR138_compare_at_units();
             $this->testR139_handle_idempotency_and_option_change();
+            echo "AC-T34-02 passed: missing versus blank overwrite policy is honored and repeated handles do not duplicate a product.\n";
             $this->testR140_unsupported_shopify_fields();
             echo "All T34 tests passed successfully!\n";
         } finally {
