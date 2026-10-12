@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { contentDigest, sha256 } from './evidence-lib.mjs';
+import { contentDigest, sha256, runtimeEnvironment, finalizeEvidence } from './evidence-lib.mjs';
 
 const root = process.cwd();
 const taskId = process.argv[2];
@@ -18,6 +18,16 @@ const task = tasksJson.tasks.find(t => t.id === taskId);
 if (!task) {
   console.error(`Task ${taskId} not found in contracts/tasks.json`);
   process.exit(2);
+}
+
+// R203-R205: environment, base commit, file hashes and per-requirement receipts are computed here, not hard-coded per task.
+function writeEvidence(resultPath, result, task, output) {
+  const problems = finalizeEvidence(root, task, result, output);
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  if (problems.length) {
+    console.error(`${task.id} evidence rejected:\n  ` + problems.join('\n  '));
+    process.exit(1);
+  }
 }
 
 function getCommitSha() {
@@ -60,12 +70,7 @@ function runT01() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -82,7 +87,7 @@ function runT01() {
         status: 'passed',
         command_ref: 0,
         test_name: 'R01_baseline_cart_checkout_gallery_admin_csv',
-        assertion_summary: 'Verified WooCommerce 11.1.2 baseline cart, checkout, gallery, admin, and CSV surfaces are functional'
+        assertion_summary: 'Verified WooCommerce baseline cart, checkout, gallery, admin, and CSV surfaces are functional'
       },
       {
         id: 'R02',
@@ -117,7 +122,7 @@ function runT01() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T01', status: 'passed', content_digest: digest }));
 }
@@ -154,12 +159,7 @@ function runT02() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -225,7 +225,7 @@ function runT02() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T02', status: 'passed', content_digest: digest }));
 }
@@ -262,12 +262,7 @@ function runT03() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [phpCmd, ...phpArgs],
@@ -327,7 +322,7 @@ function runT03() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T03', status: 'passed', content_digest: digest }));
 }
@@ -364,12 +359,7 @@ function runT04() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -422,7 +412,7 @@ function runT04() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T04', status: 'passed', content_digest: digest }));
 }
@@ -459,12 +449,7 @@ function runT05() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -530,7 +515,7 @@ function runT05() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T05', status: 'passed', content_digest: digest }));
 }
@@ -567,12 +552,7 @@ function runT09() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -639,7 +619,7 @@ function runT09() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T09', status: 'passed', content_digest: digest }));
 }
@@ -676,12 +656,7 @@ function runT06() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -748,7 +723,7 @@ function runT06() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T06', status: 'passed', content_digest: digest }));
 }
@@ -785,12 +760,7 @@ function runT07() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [phpCmd, ...phpArgs],
@@ -857,7 +827,7 @@ function runT07() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T07', status: 'passed', content_digest: digest }));
 }
@@ -894,12 +864,7 @@ function runT08() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [phpCmd, ...phpArgs],
@@ -959,7 +924,7 @@ function runT08() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T08', status: 'passed', content_digest: digest }));
 }
@@ -996,12 +961,7 @@ function runT10() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1067,7 +1027,7 @@ function runT10() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T10', status: 'passed', content_digest: digest }));
 }
@@ -1104,12 +1064,7 @@ function runT11() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1169,7 +1124,7 @@ function runT11() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T11', status: 'passed', content_digest: digest }));
 }
@@ -1206,12 +1161,7 @@ function runT12() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1291,7 +1241,7 @@ function runT12() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T12', status: 'passed', content_digest: digest }));
 }
@@ -1328,12 +1278,7 @@ function runT13() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1393,7 +1338,7 @@ function runT13() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T13', status: 'passed', content_digest: digest }));
 }
@@ -1430,12 +1375,7 @@ function runT14() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1495,7 +1435,7 @@ function runT14() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T14', status: 'passed', content_digest: digest }));
 }
@@ -1531,12 +1471,7 @@ function runT15() {
     commit: getCommitSha(),
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: ['wp', '--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile],
@@ -1602,7 +1537,7 @@ function runT15() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T15', status: 'passed', content_digest: digest }));
 }
@@ -1638,12 +1573,7 @@ function runT16() {
     commit: getCommitSha(),
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: ['wp', '--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile],
@@ -1709,7 +1639,7 @@ function runT16() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T16', status: 'passed', content_digest: digest }));
 }
@@ -1746,12 +1676,7 @@ function runT17() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1811,7 +1736,7 @@ function runT17() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T17', status: 'passed', content_digest: digest }));
 }
@@ -1848,12 +1773,7 @@ function runT18() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -1907,7 +1827,7 @@ function runT18() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T18', status: 'passed', content_digest: digest }));
 }
@@ -1944,12 +1864,7 @@ function runT19() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2015,7 +1930,7 @@ function runT19() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T19', status: 'passed', content_digest: digest }));
 }
@@ -2052,12 +1967,7 @@ function runT20() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2117,7 +2027,7 @@ function runT20() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T20', status: 'passed', content_digest: digest }));
 }
@@ -2154,12 +2064,7 @@ function runT21() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2219,7 +2124,7 @@ function runT21() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T21', status: 'passed', content_digest: digest }));
 }
@@ -2256,12 +2161,7 @@ function runT22() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2321,7 +2221,7 @@ function runT22() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T22', status: 'passed', content_digest: digest }));
 }
@@ -2358,12 +2258,7 @@ function runT23() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2423,7 +2318,7 @@ function runT23() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T23', status: 'passed', content_digest: digest }));
 }
@@ -2460,12 +2355,7 @@ function runT24() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2525,7 +2415,7 @@ function runT24() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T24', status: 'passed', content_digest: digest }));
 }
@@ -2562,12 +2452,7 @@ function runT25() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2627,7 +2512,7 @@ function runT25() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T25', status: 'passed', content_digest: digest }));
 }
@@ -2664,12 +2549,7 @@ function runT26() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2729,7 +2609,7 @@ function runT26() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T26', status: 'passed', content_digest: digest }));
 }
@@ -2766,12 +2646,7 @@ function runT27() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2831,7 +2706,7 @@ function runT27() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T27', status: 'passed', content_digest: digest }));
 }
@@ -2868,12 +2743,7 @@ function runT28() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -2933,7 +2803,7 @@ function runT28() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T28', status: 'passed', content_digest: digest }));
 }
@@ -2970,12 +2840,7 @@ function runT29() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3042,7 +2907,7 @@ function runT29() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T29', status: 'passed', content_digest: digest }));
 }
@@ -3079,12 +2944,7 @@ function runT30() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3144,7 +3004,7 @@ function runT30() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T30', status: 'passed', content_digest: digest }));
 }
@@ -3181,12 +3041,7 @@ function runT31() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3246,7 +3101,7 @@ function runT31() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T31', status: 'passed', content_digest: digest }));
 }
@@ -3283,12 +3138,7 @@ function runT32() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3348,7 +3198,7 @@ function runT32() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T32', status: 'passed', content_digest: digest }));
 }
@@ -3385,12 +3235,7 @@ function runT33() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3450,7 +3295,7 @@ function runT33() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T33', status: 'passed', content_digest: digest }));
 }
@@ -3487,12 +3332,7 @@ function runT34() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3559,7 +3399,7 @@ function runT34() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T34', status: 'passed', content_digest: digest }));
 }
@@ -3596,12 +3436,7 @@ function runT35() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3661,7 +3496,7 @@ function runT35() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T35', status: 'passed', content_digest: digest }));
 }
@@ -3698,12 +3533,7 @@ function runT36() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3763,7 +3593,7 @@ function runT36() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T36', status: 'passed', content_digest: digest }));
 }
@@ -3800,12 +3630,7 @@ function runT37() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3865,7 +3690,7 @@ function runT37() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T37', status: 'passed', content_digest: digest }));
 }
@@ -3902,12 +3727,7 @@ function runT38() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -3967,7 +3787,7 @@ function runT38() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T38', status: 'passed', content_digest: digest }));
 }
@@ -4004,12 +3824,7 @@ function runT39() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4069,7 +3884,7 @@ function runT39() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T39', status: 'passed', content_digest: digest }));
 }
@@ -4106,12 +3921,7 @@ function runT40() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4177,7 +3987,7 @@ function runT40() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T40', status: 'passed', content_digest: digest }));
 }
@@ -4214,12 +4024,7 @@ function runT41() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4279,7 +4084,7 @@ function runT41() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T41', status: 'passed', content_digest: digest }));
 }
@@ -4316,12 +4121,7 @@ function runT44() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4387,7 +4187,7 @@ function runT44() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T44', status: 'passed', content_digest: digest }));
 }
@@ -4424,12 +4224,7 @@ function runT47() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4502,7 +4297,7 @@ function runT47() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T47', status: 'passed', content_digest: digest }));
 }
@@ -4539,12 +4334,7 @@ function runT48() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4611,7 +4401,7 @@ function runT48() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T48', status: 'passed', content_digest: digest }));
 }
@@ -4648,12 +4438,7 @@ function runT42() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4719,7 +4504,7 @@ function runT42() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T42', status: 'passed', content_digest: digest }));
 }
@@ -4756,12 +4541,7 @@ function runT43() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4821,7 +4601,7 @@ function runT43() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T43', status: 'passed', content_digest: digest }));
 }
@@ -4858,12 +4638,7 @@ function runT45() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -4923,7 +4698,7 @@ function runT45() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T45', status: 'passed', content_digest: digest }));
 }
@@ -4960,12 +4735,7 @@ function runT49() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -5025,7 +4795,7 @@ function runT49() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T49', status: 'passed', content_digest: digest }));
 }
@@ -5062,12 +4832,7 @@ function runT46() {
     commit: commit,
     qa_status: 'passed',
     content_digest: digest,
-    environment: {
-      wordpress: '7.0',
-      woocommerce: '11.1.2',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204'
-    },
+    environment: runtimeEnvironment(),
     commands: [
       {
         argv: [wpCmd, ...wpArgs],
@@ -5133,7 +4898,7 @@ function runT46() {
   };
 
   const resultPath = path.join(evidenceDir, 'result.json');
-  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  writeEvidence(resultPath, result, task, fullOutput);
   console.log(`Wrote valid evidence to ${resultPath}`);
   console.log(JSON.stringify({ task: 'T46', status: 'passed', content_digest: digest }));
 }

@@ -1,11 +1,11 @@
 {
   "task_id": "T02",
-  "commit": "172c2fab75e07a9fd04acfbe929fd1c03bc87dde",
+  "commit": "353bce78590f53bfd9ebd7850801fb03a96733cf",
   "qa_status": "passed",
-  "content_digest": "c434fae1cfa0309ecfef968e44673bffb631284d87de57f896b94c52e8805a91",
+  "content_digest": "14f62030d7bd63624fe419a42b8cb563805430b6324fb30a9504bfed4e35e225",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T02",
       "exit_code": 0,
       "output_path": "docs/evidence/T02/output.log",
-      "output_sha256": "6bbc8b0a04c877f7e5dbc2c4fdc5b16ffee85b5714ac3fdb709c13ede9054f4d",
-      "content_digest": "c434fae1cfa0309ecfef968e44673bffb631284d87de57f896b94c52e8805a91"
+      "output_sha256": "bc97027563865d93332e5978cc8109e2c58185ff7a7b7325732c55a135a0b01b",
+      "content_digest": "14f62030d7bd63624fe419a42b8cb563805430b6324fb30a9504bfed4e35e225"
     }
   ],
   "regression_results": [
@@ -31,28 +31,84 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R03_activation_no_mutation",
-      "assertion_summary": "Verified plugin activation does not mutate data, products, or default legacy authority"
+      "assertion_summary": "Verified plugin activation does not mutate data, products, or default legacy authority",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 24,
+        "text": "R03 (activation_no_mutation): PASSED"
+      }
     },
     {
       "id": "R04",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R04_flag_scope",
-      "assertion_summary": "Verified independent feature flag scoping and deterministic cohort precedence"
+      "assertion_summary": "Verified independent feature flag scoping and deterministic cohort precedence",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 25,
+        "text": "R04 (flag_scope): PASSED"
+      }
     },
     {
       "id": "R05",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R05_dependency_missing",
-      "assertion_summary": "Verified missing/unsupported dependencies block native features and render admin notice"
+      "assertion_summary": "Verified missing/unsupported dependencies block native features and render admin notice",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 26,
+        "text": "R05 (dependency_missing): PASSED"
+      }
     },
     {
       "id": "R06",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R06_deactivate_retains_data",
-      "assertion_summary": "Verified plugin deactivation retains all database tables and product records"
+      "assertion_summary": "Verified plugin deactivation retains all database tables and product records",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 27,
+        "text": "R06 (deactivate_retains_data): PASSED"
+      }
+    },
+    {
+      "id": "R203",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R203_evidence_env_matches_runtime",
+      "assertion_summary": "Task test output asserts requirement evidence_env_matches_runtime",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "[OK] R203 passed: environment equals live runtime and no version literal in the runner."
+      }
+    },
+    {
+      "id": "R204",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R204_evidence_binds_base_commit_and_files",
+      "assertion_summary": "Task test output asserts requirement evidence_binds_base_commit_and_files",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 19,
+        "text": "[OK] R204 passed: base commit exists in git, fake commit rejected, per-file hashes cover task files."
+      }
+    },
+    {
+      "id": "R205",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R205_per_requirement_receipt",
+      "assertion_summary": "Task test output asserts requirement per_requirement_receipt",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 21,
+        "text": "[OK] R205 passed: anchors required, fail marker rejected, 'fail-closed' accepted, AC basis recorded."
+      }
     }
   ],
   "acceptance": [
@@ -60,19 +116,22 @@
       "id": "AC-T02-01",
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
-      "observation": "Install does not alter authority or products; unsupported dependencies block native"
+      "observation": "Install does not alter authority or products; unsupported dependencies block native",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T02-02",
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
-      "observation": "When query feature flag is false, WooCommerce legacy queries remain active"
+      "observation": "When query feature flag is false, WooCommerce legacy queries remain active",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T02-03",
       "result": "passed",
       "artifact": "src/Bootstrap/PluginBootstrap.php",
-      "observation": "Cohort conflict resolved via deterministic precedence rules; status reflects real configuration"
+      "observation": "Cohort conflict resolved via deterministic precedence rules; status reflects real configuration",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -80,11 +139,20 @@
     "wc-product-engine.php",
     "composer.json",
     "package.json",
-    "scripts/test-runtime.mjs",
     "src/Bootstrap/PluginBootstrap.php",
     "tests/integration/T02Test.php",
     "docs/evidence/T02/result.json",
     "composer.lock",
     "package-lock.json"
-  ]
+  ],
+  "base_commit": "353bce78590f53bfd9ebd7850801fb03a96733cf",
+  "file_hashes": {
+    "composer.json": "6550998d046ccd98d2019b475163a888fe558d554393b9eaa3bdecedd5ddb9f4",
+    "composer.lock": "89b266b7e204ee1582cd36e271d626f811d855b102d0aadb03d53d230106c3d8",
+    "package-lock.json": "01ef5687db64b1dc684d9841627feda5f613cb8df770a20437ff86a7c475cc0e",
+    "package.json": "d62096d7f09621b6eee6a22235c1e9ea5f709d90e394904273fd711bc8623f5d",
+    "src/Bootstrap/PluginBootstrap.php": "ba1f628ed58e528e09445afd4e669fe62f3757205792a550e706832e3f297d2c",
+    "tests/integration/T02Test.php": "30eb1d715945460ea0481aecdfb4177dc6f308932ab6640c4363f01c5cc4160f",
+    "wc-product-engine.php": "d8527c326d33a414513d20f67f1027d7c6c26228aa4419cce2f3009069645a9f"
+  }
 }

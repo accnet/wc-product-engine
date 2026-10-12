@@ -1,11 +1,11 @@
 {
   "task_id": "T01",
-  "commit": "172c2fab75e07a9fd04acfbe929fd1c03bc87dde",
+  "commit": "353bce78590f53bfd9ebd7850801fb03a96733cf",
   "qa_status": "passed",
-  "content_digest": "7e3e4d7384799daa7509ec6f1e9f5a75007469f46ac9865205809ab67b41f068",
+  "content_digest": "6413a935b7618d042a7281aa39f02f4b24be180600556892888f03a16d077a2d",
   "environment": {
-    "wordpress": "7.0",
-    "woocommerce": "11.1.2",
+    "wordpress": "7.1.3",
+    "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T01",
       "exit_code": 0,
       "output_path": "docs/evidence/T01/output.log",
-      "output_sha256": "be06f804262c72f3e702ecb946b3f5a9755ca089731302ed58efe9e98596989f",
-      "content_digest": "7e3e4d7384799daa7509ec6f1e9f5a75007469f46ac9865205809ab67b41f068"
+      "output_sha256": "5487920ddddf1c23c94c75482883df98b67bb510e54646cb53df3dc72afc3a45",
+      "content_digest": "6413a935b7618d042a7281aa39f02f4b24be180600556892888f03a16d077a2d"
     }
   ],
   "regression_results": [
@@ -31,14 +31,24 @@
       "status": "passed",
       "command_ref": 0,
       "test_name": "R01_baseline_cart_checkout_gallery_admin_csv",
-      "assertion_summary": "Verified WooCommerce 11.1.2 baseline cart, checkout, gallery, admin, and CSV surfaces are functional"
+      "assertion_summary": "Verified WooCommerce baseline cart, checkout, gallery, admin, and CSV surfaces are functional",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 16,
+        "text": "R01 (baseline_cart_checkout_gallery_admin_csv): PASSED"
+      }
     },
     {
       "id": "R02",
       "status": "passed",
       "command_ref": 0,
       "test_name": "R02_unknown_extension_blocks_native",
-      "assertion_summary": "Verified unknown direct SQL writer extensions block native cohort migration"
+      "assertion_summary": "Verified unknown direct SQL writer extensions block native cohort migration",
+      "basis": "output_anchor",
+      "anchor": {
+        "line": 17,
+        "text": "R02 (unknown_extension_blocks_native): PASSED"
+      }
     }
   ],
   "acceptance": [
@@ -46,19 +56,22 @@
       "id": "AC-T01-01",
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
-      "observation": "Matrix defines exact versions, fixtures, baseline-lock.json reference, owners, tests, and surface status"
+      "observation": "Matrix defines exact versions, fixtures, baseline-lock.json reference, owners, tests, and surface status",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T01-02",
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
-      "observation": "Explicitly disclaims universal plugin compatibility; all extensions classified individually"
+      "observation": "Explicitly disclaims universal plugin compatibility; all extensions classified individually",
+      "basis": "requirements_only"
     },
     {
       "id": "AC-T01-03",
       "result": "passed",
       "artifact": "contracts/compatibility/matrix.json",
-      "observation": "Direct SQL writer plugins without adapters marked as blockers for native migration"
+      "observation": "Direct SQL writer plugins without adapters marked as blockers for native migration",
+      "basis": "requirements_only"
     }
   ],
   "blockers": [],
@@ -68,7 +81,15 @@
     "docs/evidence/T01/baseline.json",
     "tests/integration/T01Test.php",
     "docs/evidence/T01/result.json",
-    "scripts/test-runtime.mjs",
     "contracts/compatibility/baseline-lock.json"
-  ]
+  ],
+  "base_commit": "353bce78590f53bfd9ebd7850801fb03a96733cf",
+  "file_hashes": {
+    "contracts/compatibility/baseline-lock.json": "dc9888a67316de39ea547967b088fd7dd9cd9c571c80c1b6b0d4c2d95c4e3e0d",
+    "contracts/compatibility/matrix.json": "7b9687fbfdff707fe95e9610e14e331e5ce3fc5b0e77783c29a397960a0cbeac",
+    "contracts/compatibility/pins.json": "bd9346561656980ebc116c285c56da7b2f7f89039e25124a513181ae4c63452b",
+    "docs/evidence/T01/baseline.json": "e2a5cc9e29fdbd4deb06dd22e42d6113c0d6f9ef6b855e1bf5b664556f7252bc",
+    "docs/evidence/T01/result.json": "645c39003bbf552e26643d7d616c88586f50f24888d7d817e024c2d3ab577f15",
+    "tests/integration/T01Test.php": "6821c0e1f16adf5563f8b0276fa2171137bc40bcc9d66a70ad25038c975757fc"
+  }
 }

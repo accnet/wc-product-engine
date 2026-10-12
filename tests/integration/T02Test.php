@@ -4,6 +4,8 @@
  *
  * Verifies R03 (activation_no_mutation), R04 (flag_scope),
  * R05 (dependency_missing), and R06 (deactivate_retains_data).
+ * Also verifies the evidence tooling contract: R203 (evidence_env_matches_runtime),
+ * R204 (evidence_binds_base_commit_and_files), R205 (per_requirement_receipt).
  */
 
 if (!defined('ABSPATH')) {
@@ -35,14 +37,20 @@ class T02Test
         $r04 = $this->testFlagScope();
         $r05 = $this->testDependencyMissing();
         $r06 = $this->testDeactivateRetainsData();
+        $r203 = $this->testEvidenceEnvMatchesRuntime();
+        $r204 = $this->testEvidenceBindsBaseCommitAndFiles();
+        $r205 = $this->testPerRequirementReceipt();
 
         echo "\n=== Test Summary ===\n";
         echo "R03 (activation_no_mutation): " . ($r03 ? "PASSED" : "FAILED") . "\n";
         echo "R04 (flag_scope): " . ($r04 ? "PASSED" : "FAILED") . "\n";
         echo "R05 (dependency_missing): " . ($r05 ? "PASSED" : "FAILED") . "\n";
         echo "R06 (deactivate_retains_data): " . ($r06 ? "PASSED" : "FAILED") . "\n";
+        echo "R203 (evidence_env_matches_runtime): " . ($r203 ? "PASSED" : "FAILED") . "\n";
+        echo "R204 (evidence_binds_base_commit_and_files): " . ($r204 ? "PASSED" : "FAILED") . "\n";
+        echo "R205 (per_requirement_receipt): " . ($r205 ? "PASSED" : "FAILED") . "\n";
 
-        if ($r03 && $r04 && $r05 && $r06) {
+        if ($r03 && $r04 && $r05 && $r06 && $r203 && $r204 && $r205) {
             echo "All T02 tests passed successfully.\n";
             return 0;
         }
@@ -213,6 +221,114 @@ class T02Test
         }
 
         echo "  [OK] Deactivation safely retained all tables and data.\n";
+        return true;
+    }
+
+    /**
+     * Run a JS snippet against scripts/evidence-lib.mjs and return decoded JSON.
+     */
+    private function evidenceLib(string $js): ?array
+    {
+        $root = dirname(__DIR__, 2);
+        $cmd = 'cd ' . escapeshellarg($root) . ' && node --input-type=module -e ' . escapeshellarg(
+            "import * as L from './scripts/evidence-lib.mjs'; " . $js
+        ) . ' 2>&1';
+        $out = trim((string) shell_exec($cmd));
+        $lines = array_filter(explode("\n", $out));
+        $decoded = json_decode((string) end($lines), true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * R203: runner/verifier environment is read from the live runtime, not hard-coded.
+     */
+    private function testEvidenceEnvMatchesRuntime(): bool
+    {
+        echo "[R203] Verifying evidence environment equals the live runtime...\n";
+        global $wpdb;
+        $env = $this->evidenceLib('console.log(JSON.stringify(L.runtimeEnvironment()));');
+        $live = [
+            'wordpress' => get_bloginfo('version'),
+            'woocommerce' => WC_VERSION,
+            'php' => PHP_VERSION,
+            'database' => $wpdb->get_var('SELECT VERSION()'),
+        ];
+        if ($env !== $live) {
+            echo "  [FAIL] evidence environment " . json_encode($env) . " != live " . json_encode($live) . "\n";
+            return false;
+        }
+        $runner = (string) file_get_contents(dirname(__DIR__, 2) . '/scripts/test-runtime.mjs');
+        if (preg_match("/wordpress:\\s*'\\d/", $runner) || preg_match("/woocommerce:\\s*'\\d/", $runner)) {
+            echo "  [FAIL] scripts/test-runtime.mjs still hard-codes an environment version.\n";
+            return false;
+        }
+        echo "  [OK] R203 passed: environment equals live runtime and no version literal in the runner.\n";
+        return true;
+    }
+
+    /**
+     * R204: receipts bind an existing base commit and content hashes of every task file.
+     */
+    private function testEvidenceBindsBaseCommitAndFiles(): bool
+    {
+        echo "[R204] Verifying evidence binds base commit and file hashes...\n";
+        $js = "const base=L.baseCommit(process.cwd());"
+            . "const r={regression_results:[],acceptance:[]};"
+            . "const t={files:['scripts/evidence-lib.mjs','scripts/verify-task.mjs']};"
+            . "const p=L.finalizeEvidence(process.cwd(),t,r,'');"
+            . "const h=L.fileHashes(process.cwd(),t.files);"
+            . "const h2=L.fileHashes(process.cwd(),['scripts/evidence-lib.mjs']);"
+            . "console.log(JSON.stringify({base:r.base_commit,commit:r.commit,exists:L.commitExists(process.cwd(),r.base_commit),"
+            . "keys:Object.keys(r.file_hashes),same:JSON.stringify(h)===JSON.stringify(r.file_hashes),subset:h2['scripts/evidence-lib.mjs']===h['scripts/evidence-lib.mjs'],"
+            . "bad:L.commitExists(process.cwd(),'0000000000000000000000000000000000000000')}));";
+        $res = $this->evidenceLib($js);
+        if (!$res || empty($res['exists']) || $res['base'] !== $res['commit'] || !empty($res['bad'])) {
+            echo "  [FAIL] base commit is missing, not equal to commit, or fake commit accepted.\n";
+            return false;
+        }
+        if ($res['keys'] !== ['scripts/evidence-lib.mjs', 'scripts/verify-task.mjs'] || empty($res['same']) || empty($res['subset'])) {
+            echo "  [FAIL] file hashes do not cover exactly the task files.\n";
+            return false;
+        }
+        echo "  [OK] R204 passed: base commit exists in git, fake commit rejected, per-file hashes cover task files.\n";
+        return true;
+    }
+
+    /**
+     * R205: per-requirement receipts come from output anchors; missing anchor fails, fail marker rejects.
+     */
+    private function testPerRequirementReceipt(): bool
+    {
+        echo "[R205] Verifying per-requirement receipt derivation from test output...\n";
+        $js = "const out=['testR07_good OK','[R08] fail-closed path PASSED','R09 FAILED: boom','AC-T99-01 passed: ok'].join('\\n');"
+            . "const mk=()=>({regression_results:[{id:'R07'},{id:'R08'},{id:'R09'},{id:'R10'}],acceptance:[{id:'AC-T99-01'},{id:'AC-T99-02'}]});"
+            . "const r=mk();const problems=L.buildReceipts(r,out);"
+            . "const ok={regression_results:[{id:'R07'},{id:'R08'}],acceptance:[{id:'AC-T99-02'}]};const p2=L.buildReceipts(ok,out);"
+            . "console.log(JSON.stringify({st:r.regression_results.map(x=>x.status),basis:r.regression_results.map(x=>x.basis),"
+            . "ac:r.acceptance.map(x=>x.basis+':'+x.result),problems:problems.length,p2:p2.length,ok_ac:ok.acceptance[0].basis+':'+ok.acceptance[0].result}));";
+        $res = $this->evidenceLib($js);
+        if (!$res) {
+            echo "  [FAIL] could not execute evidence library.\n";
+            return false;
+        }
+        $expect_status = ['passed', 'passed', 'failed', 'failed'];
+        if ($res['st'] !== $expect_status) {
+            echo "  [FAIL] requirement statuses " . json_encode($res['st']) . " expected " . json_encode($expect_status) . "\n";
+            return false;
+        }
+        if ($res['basis'][0] !== 'output_anchor' || $res['basis'][2] !== 'no_output_anchor' || $res['basis'][3] !== 'no_output_anchor') {
+            echo "  [FAIL] requirement basis not derived from output.\n";
+            return false;
+        }
+        if ($res['ac'] !== ['output_anchor:passed', 'requirements_only:failed'] || $res['ok_ac'] !== 'requirements_only:passed') {
+            echo "  [FAIL] acceptance basis wrong: " . json_encode($res['ac']) . ' ' . $res['ok_ac'] . "\n";
+            return false;
+        }
+        if ($res['problems'] < 3 || $res['p2'] !== 0) {
+            echo "  [FAIL] problems not reported correctly.\n";
+            return false;
+        }
+        echo "  [OK] R205 passed: anchors required, fail marker rejected, 'fail-closed' accepted, AC basis recorded.\n";
         return true;
     }
 }
