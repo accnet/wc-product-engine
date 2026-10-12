@@ -75,4 +75,4 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 ## 9. P7 — Retention cleanup
 
-- [ ] T46 — Retention, garbage collection và legacy cleanup
+- [x] T46 — Retention, garbage collection và legacy cleanup

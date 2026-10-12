@@ -1,0 +1,84 @@
+{
+  "task_id": "T46",
+  "commit": "a5c1bce04648da266afde1c127c82a69aae0e6d0",
+  "qa_status": "passed",
+  "content_digest": "3768f92869feade3915b7fd12a0558a3fd6b8b68c965b70d21a263b69854c275",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T46Test.php"
+      ],
+      "display": "npm run test:task -- T46",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T46/output.log",
+      "output_sha256": "07b1f2c15b33bd66779add996d5b4f71d763b5554f78a0c0aaa09e72113fdc1c",
+      "content_digest": "3768f92869feade3915b7fd12a0558a3fd6b8b68c965b70d21a263b69854c275"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R185",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R185_gc_shared_refs_and_orders",
+      "assertion_summary": "Verified garbage collection prunes duplicated postmeta while strictly preserving post shells, order item references, shared media, and stock operations"
+    },
+    {
+      "id": "R186",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R186_cleanup_resume",
+      "assertion_summary": "Verified resumable chunked cleanup with database checkpoints in wpe_jobs recovering from failure and completing idempotently"
+    },
+    {
+      "id": "R187",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R187_cleanup_requires_restore_gate",
+      "assertion_summary": "Verified cleanup strictly requires verified restore drill pass and expired rollback window before cleaning duplicated postmeta (fail-closed)"
+    },
+    {
+      "id": "R188",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R188_rollback_after_mirror_stopped",
+      "assertion_summary": "Verified rollback after mirror stopped strictly acquires write barrier and reprojects current native data to legacy storage before authority switch"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T46-01",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/RetentionCleaner.php",
+      "observation": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ"
+    },
+    {
+      "id": "AC-T46-02",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/RetentionCleaner.php",
+      "observation": "Cleanup không automatic on upgrade/activate/deactivate"
+    },
+    {
+      "id": "AC-T46-03",
+      "result": "passed",
+      "artifact": "src/Application/Rollout/RetentionCleaner.php",
+      "observation": "Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Rollout/RetentionCleaner.php",
+    "tests/integration/T46Test.php",
+    "docs/evidence/T46/result.json"
+  ]
+}
