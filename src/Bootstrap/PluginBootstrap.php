@@ -54,6 +54,7 @@ class PluginBootstrap
         $this->registerCapabilities();
         $this->registerDataStores();
         $this->registerRestRoutes();
+        \WPE\Admin\OperationsPage::getInstance()->init();
     }
 
     public function checkDependencies(): bool
@@ -277,6 +278,8 @@ class PluginBootstrap
 
     private function registerCliCommands(): void
     {
+        \WPE\Cli\Commands::register();
+
         \WP_CLI::add_command('wpe status', function ($args, $assoc_args) {
             $status = $this->getRestStatus();
             \WP_CLI::log(json_encode($status, JSON_PRETTY_PRINT));

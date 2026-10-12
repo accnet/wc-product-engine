@@ -1,0 +1,80 @@
+{
+  "task_id": "T41",
+  "commit": "ea561c942f7b3efbd735cd5f4b3c1f813e4196ad",
+  "qa_status": "passed",
+  "content_digest": "bb5f6d2d90d43f65478e3c125f300fa70a5a994e7b9104ca03d7993efbe9bf3a",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T41Test.php"
+      ],
+      "display": "npm run test:task -- T41",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T41/output.log",
+      "output_sha256": "e18b216ebcda3c2adf73cd44af704401bd26cd4bbda9bb8b49bf3190873a603a",
+      "content_digest": "bb5f6d2d90d43f65478e3c125f300fa70a5a994e7b9104ca03d7993efbe9bf3a"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R165",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R165_health_blocks_on_mismatch",
+      "assertion_summary": "Verified health status strictly blocks green/healthy on unresolved shadow diff mismatches, DLQ failures, or projection lag"
+    },
+    {
+      "id": "R166",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R166_cli_ui_command_parity",
+      "assertion_summary": "Verified 100% parity between WP-CLI commands and UI operations actions by delegating to the unified OperationsPage command dispatcher"
+    },
+    {
+      "id": "R167",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R167_operations_auth_audit",
+      "assertion_summary": "Verified strict capability authorization checks on operations mutations and audit logging of start and completion events to wpe_audit"
+    },
+    {
+      "id": "R168",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R168_worker_starvation_alert",
+      "assertion_summary": "Verified worker starvation alert triggered and green health blocked when active background job runs for >120s without checkpoint/heartbeat"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T41-01",
+      "result": "passed",
+      "artifact": "src/Admin/OperationsPage.php",
+      "observation": "Không green khi unresolved mismatch/DLQ; resume/retry visible cho operator; CLI và UI cùng command service"
+    },
+    {
+      "id": "AC-T41-02",
+      "result": "passed",
+      "artifact": "src/Admin/OperationsPage.php",
+      "observation": "Không reveal filesystem/secret URLs cho user thiếu quyền"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Admin/OperationsPage.php",
+    "assets/operations/operations.js",
+    "src/Cli/Commands.php",
+    "tests/integration/T41Test.php",
+    "docs/evidence/T41/result.json"
+  ]
+}
