@@ -15,7 +15,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 
 - [x] T05 — DDL và migration runner
 - [x] T09 — Outbox, jobs, epoch và idempotency persistence
-- [ ] T06 — Product/variant repositories và aggregate commands
+- [x] T06 — Product/variant repositories và aggregate commands
 - [ ] T07 — Options, values và combination integrity
 - [ ] T08 — Media và metadata persistence
 - [ ] T10 — Woo Product Data Stores

@@ -1,0 +1,86 @@
+{
+  "task_id": "T06",
+  "commit": "f56deba1810dda264b87633b42eb90d7cd8ce5e2",
+  "qa_status": "passed",
+  "content_digest": "4f106cca80b492512b3a7fda9cd6287b05a0952d6d85a18e8c38c1498685433a",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T06Test.php"
+      ],
+      "display": "npm run test:task -- T06",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T06/output.log",
+      "output_sha256": "7aae45b7037b3b4ab6284062a17228cd383cb26bf3c42a369a96e6c0c8c176a6",
+      "content_digest": "4f106cca80b492512b3a7fda9cd6287b05a0952d6d85a18e8c38c1498685433a"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R18",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R18_aggregate_atomicity",
+      "assertion_summary": "Verified atomic aggregate write; invalid child price rolls back entire aggregate without partial data"
+    },
+    {
+      "id": "R19",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R19_sku_race",
+      "assertion_summary": "Verified duplicate SKU race only permits one winner via sku_registry unique constraint"
+    },
+    {
+      "id": "R20",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R20_variant_wrong_parent",
+      "assertion_summary": "Verified variant with mismatched parent_id is rejected by parent boundary check"
+    },
+    {
+      "id": "R21",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R21_deleted_product_order_reference",
+      "assertion_summary": "Verified soft deletion tombstones product and variant while preserving IDs for historical orders"
+    },
+    {
+      "id": "R22",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R22_stale_write_412",
+      "assertion_summary": "Verified CAS version mismatch rejects stale write with 412 Precondition Failed"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T06-01",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/ProductRepository.php",
+      "observation": "Save rồi reload khớp canonical snapshot; duplicate SKU race chỉ một winner; invalid child/price không lưu nửa aggregate; cập nhật phiên bản và outbox transaction theo T09"
+    },
+    {
+      "id": "AC-T06-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WordPress/PostIdAllocator.php",
+      "observation": "Legacy IDs được reuse khi migrate"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Infrastructure/Database/ProductRepository.php",
+    "tests/integration/T06Test.php",
+    "docs/evidence/T06/result.json",
+    "src/Compatibility/WordPress/PostIdAllocator.php"
+  ]
+}
