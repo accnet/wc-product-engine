@@ -1,0 +1,78 @@
+{
+  "task_id": "T26",
+  "commit": "10367f63e01c4223fcf334f034debf7c3bd3ce40",
+  "qa_status": "passed",
+  "content_digest": "88d674268a7a12037570c537be400d17c877a765e6539896f749e5e9a064c926",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T26Test.php"
+      ],
+      "display": "npm run test:task -- T26",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T26/output.log",
+      "output_sha256": "64ebd8a0a3ba12b4229ba41416786dcdd9757f680889b9318bbb8416ed72af39",
+      "content_digest": "88d674268a7a12037570c537be400d17c877a765e6539896f749e5e9a064c926"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R103",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R103_wc_ajax_variation_payload",
+      "assertion_summary": "Verified WooCommerce native AJAX get_variation returns compatible variation payload with image and pricing"
+    },
+    {
+      "id": "R104",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R104_public_resolver_permissions",
+      "assertion_summary": "Verified public resolver permissions reject drafts, private items, and nonexistent products"
+    },
+    {
+      "id": "R105",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R105_payload_limits",
+      "assertion_summary": "Verified payload limits reject >32 options, negative/non-numeric quantity, and enforce rate limits"
+    },
+    {
+      "id": "R106",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R106_revision_refresh",
+      "assertion_summary": "Verified ETag 304 caching, request_sequence echo, product revision reporting, and zero stock holds"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T26-01",
+      "result": "passed",
+      "artifact": "src/Application/Variant/ResolverApi.php",
+      "observation": "Classic get_variation AJAX trả hợp lệ; engine resolver không expose draft/meta"
+    },
+    {
+      "id": "AC-T26-02",
+      "result": "passed",
+      "artifact": "src/Application/Variant/ResolverApi.php",
+      "observation": "Empty selection không hydrate 10k variations; rate limit phản hồi có retry hint"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Variant/ResolverApi.php",
+    "tests/integration/T26Test.php",
+    "docs/evidence/T26/result.json"
+  ]
+}

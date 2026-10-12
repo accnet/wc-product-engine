@@ -37,7 +37,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T23 — Native gallery và variation image payload
 - [x] T24 — Ảnh trên cart/email/SEO/feed/Blocks
 - [x] T25 — Server resolver và allowed-values engine
-- [ ] T26 — Resolver API và native AJAX variation adapter
+- [x] T26 — Resolver API và native AJAX variation adapter
 - [ ] T27 — Selector UI, swatches và asynchronous behavior
 - [ ] T28 — Server add-to-cart validation và session restore
 
