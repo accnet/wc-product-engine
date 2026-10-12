@@ -1,6 +1,6 @@
 {
   "task_id": "T31",
-  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "qa_status": "passed",
   "content_digest": "bf813e060ec38b412c9e54a721136867cb7f6a70c47958feb978eea02e436275",
   "environment": {
@@ -225,7 +225,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "file_hashes": {
     "src/Application/ImportExport/SnapshotExporter.php": "e6c14b5b5a039ad9152de711af8e8aebc0a210d66ef7f6fc47d20ce9f08cdde3",
     "tests/integration/T31Test.php": "92b0b0cee5aa64337eaa0ab824020abe8bc3f677b23387e3ea56d1798fcfb824"

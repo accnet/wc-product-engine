@@ -2,7 +2,7 @@
 
 ## 1. Start
 
-Bộ docs triển khai theo DOCS-KIT. Runtime T01–T49 đã implement và có evidence 49/49 trên WP 7.1.3 / WC 11.2.1 của site1.localhost (không phải 100k/1M). Gate hiện là CONDITIONALLY READY, chưa READY, chưa authorize cutover (xem docs/audits/READINESS-GATE.md). 49 task, dependency DAG, database/API/CSV/event contracts, 212 regression requirements, native rollout/rollback gates. Đọc AGENTS.md rồi docs/02-domain.md, docs/01-architecture-and-stack.md và phase đầu docs/PROGRESS.md.
+Bộ docs triển khai theo DOCS-KIT. Runtime T01–T49 đã implement và có evidence 49/49 trên WP 7.1.3 / WC 11.2.1 của site1.localhost (không phải 100k/1M). Gate hiện là READY có waiver của user (không audit độc lập, không đo 100k/1M), chưa authorize cutover (xem docs/audits/READINESS-GATE.md). 49 task, dependency DAG, database/API/CSV/event contracts, 212 regression requirements, native rollout/rollback gates. Đọc AGENTS.md rồi docs/02-domain.md, docs/01-architecture-and-stack.md và phase đầu docs/PROGRESS.md.
 
 ## 2. Verify docs immediately
 

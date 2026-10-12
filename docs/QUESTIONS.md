@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Không có câu hỏi chặn. OD-01…OD-07 của audit (2026-10-12) đã được trả lời, xem mục 3. Hai quyết định mới không chặn, chưa chốt: (1) F15, `OutboxWorker::acquireBatch` bỏ qua `available_at`, sửa trong task riêng hay ghi nhận rủi ro; (2) 22 AC chỉ có `requirements_only`, thêm anchor hay chấp nhận. Evidence: `docs/audits/FINAL-AUDIT.md` §8, `READINESS-GATE.md` §4. Runtime pins/extensions chưa certified là T01 deliverables.
+Không có câu hỏi mở. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -19,5 +19,9 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-05 | Residue DB | answered | 06 T04 | A: backup mới, dọn residue, residue gate |
 | OD-06 | Test selector R107 | answered | 06 T27 | A: Playwright behavior test |
 | OD-07 | Mở lại contract | answered | 06 | A: một lần, thêm R203–R212 |
+| OD-08 | Audit độc lập | answered | audits/READINESS-GATE | Waiver của user: bỏ audit độc lập |
+| OD-09 | Seed/đo 100k/1M | answered | 07 §7 | Waiver của user: bỏ 100k/1M, G09 vẫn chưa đạt |
+| OD-10 | F15 acquireBatch | answered | P002.1 | Sửa code, có test hồi quy |
+| OD-11 | 22 AC requirements_only | answered | P002.2, P002.3 | Thêm anchor có điều kiện thật |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47.

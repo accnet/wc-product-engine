@@ -25,3 +25,5 @@ Reviewer độc lập đọc docs/contracts/scripts ở chế độ read-only tr
 ## 4. Addendum — audit remediation (P001, 2026-10-12)
 
 Mục 3 ở trên mô tả trạng thái trước khi implement. Hiện T01–T49 đã implement và được chạy lại trên WP 7.1.3 / WC 11.2.1 (`node scripts/rerun-evidence.mjs`: 49/49 verify, 212/212 requirement `verified`). Review này vẫn **không** thay thế audit độc lập: vòng audit hậu implementation do chính implementer thực hiện (`docs/audits/`), không có báo cáo Codex hoặc Claude. Các receipt và validator vẫn không chứng minh hiệu năng 100k/1M hay an toàn của production cutover.
+
+Cập nhật P002: user đã quyết định bỏ audit độc lập (waiver W1) và bỏ seed/đo 100k/1M (waiver W2). Vì vậy không có reviewer ngoài implementer cho T01–T49; điều này được ghi nhận là rủi ro đã chấp nhận, không phải là đã được kiểm chứng.

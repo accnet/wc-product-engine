@@ -1,6 +1,6 @@
 {
   "task_id": "T32",
-  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "qa_status": "passed",
   "content_digest": "9a585fa7ffc69b9627a4d7df6598e37d510ee3e477ee429048119da1e017459e",
   "environment": {
@@ -222,7 +222,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "file_hashes": {
     "src/Compatibility/Csv/Woo/WooImporter.php": "90dbf67fcf851a51d9d51a96dfee19638eb3a26da5e4d4c799f88e4cdc6bb9f5",
     "tests/integration/T32Test.php": "fccc30d0a2afdbef0bd617b0928920249b9f1a61decabab61c98cb373fb38d19"

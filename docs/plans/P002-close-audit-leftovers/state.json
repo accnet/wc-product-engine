@@ -225,8 +225,61 @@
           "scripts/rerun-evidence.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+          "content_digest": "c9bfd5d6b45fbd3653bcd485222ef2fdbbc42e425e747a906d7283e670ad72de",
+          "output_sha256": "273d0fb8cd49d6054ce4542320c03e36062e7f7103d2b1abdc60679f55f5738d",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821632210-06eb9174.log",
+          "time": "2026-10-12T16:13:52.211Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+          "content_digest": "c9bfd5d6b45fbd3653bcd485222ef2fdbbc42e425e747a906d7283e670ad72de",
+          "output_sha256": "e97a709ecaf0d98228c819141093b04c05db3769b928eeaaafd2ec1dd27d5210",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821632283-8b671d0a.log",
+          "time": "2026-10-12T16:13:52.284Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+          "content_digest": "c9bfd5d6b45fbd3653bcd485222ef2fdbbc42e425e747a906d7283e670ad72de",
+          "output_sha256": "8b39f3df131591148135da99f952897c0d4ada073b94bd6bb84c4aadbb681a26",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791821632367-04b7ab51.log",
+          "time": "2026-10-12T16:13:52.367Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/rerun-evidence.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+          "content_digest": "c9bfd5d6b45fbd3653bcd485222ef2fdbbc42e425e747a906d7283e670ad72de",
+          "output_sha256": "8789cc5940c979ecf6fbce92b2c7411c18b16c4f773add9c0553f2d5378a1c45",
+          "output_path": "docs/plans/P002-close-audit-leftovers/command-1791822035435-487c8d5e.log",
+          "time": "2026-10-12T16:20:35.435Z"
+        }
+      ],
+      "started_at": "2026-10-12T16:13:52.125Z"
     }
   ],
   "approved_hash": "c8e914189a6dca079093d51bd48bed1aaf06cea9c209821dfae2d44a15f3e546"

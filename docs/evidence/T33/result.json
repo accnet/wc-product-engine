@@ -1,6 +1,6 @@
 {
   "task_id": "T33",
-  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "qa_status": "passed",
   "content_digest": "01114122798438c65fb666c9620ed2920c2f92505fd6c5c62fd93c1516fb8ca7",
   "environment": {
@@ -223,7 +223,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "file_hashes": {
     "src/Compatibility/Csv/Woo/WooExporter.php": "b01243b147f5a10b3052ae915b10a04d171bf526c91050479ea9a2ed791a3a60",
     "tests/integration/T33Test.php": "f708ac35ad751a18d904381ec352a26bd9f7d9b318af2e98bc5389e90003a93a"

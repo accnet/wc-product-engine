@@ -1,6 +1,6 @@
 {
   "task_id": "T34",
-  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "qa_status": "passed",
   "content_digest": "07ab17a92a09a154668bc24b9ffe99dc06bd775671966f1511ce075e9096cc31",
   "environment": {
@@ -234,7 +234,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "file_hashes": {
     "src/Compatibility/Csv/Shopify/ShopifyImporter.php": "4f586851403a62b4e923fe67ce11fd9c86901217604e5b888b8b270d05de70f0",
     "tests/integration/T34Test.php": "fa9b883eaa8605989ce7177e0c64fe2e4d2ef7d2c8d201b9de77f3ecff94358b"

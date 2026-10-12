@@ -1,6 +1,6 @@
 # REMEDIATION PLAN (đề xuất, chưa thực hiện)
 
-> **Trạng thái (P001.8):** S1–S8 đã thực thi qua plan `docs/plans/P001-audit-remediation` (P001.1–P001.7 done và commit). ID regression test cuối cùng là R203–R212 (bảng §4 dưới đây là đề xuất ban đầu, đã được thay bằng `FINAL-AUDIT.md` §7). Việc còn lại: audit độc lập, 22 AC `requirements_only`, F15 (`acquireBatch`), claim 100k/1M. Xem `READINESS-GATE.md` §4.
+> **Trạng thái (P002.4):** S1–S8 đã thực thi qua P001 (P001.1–P001.8). Việc còn lại từ gate đã đóng qua P002: F15 sửa (P002.1), 22 AC có anchor (P002.2, P002.3), audit độc lập và 100k/1M bị user bỏ (waiver W1, W2). ID regression test cuối cùng là R203–R212 (bảng §4 dưới đây là đề xuất ban đầu, đã được thay bằng `FINAL-AUDIT.md` §7).
 
 - Dựa trên `FINAL-AUDIT.md`, git `1759717`.
 - **Chưa bắt đầu bước nào.** Cả 7 OD đã được user chốt (xem `OPEN-DECISIONS.md`). Remediation là implementation nên vẫn cần user cho phép bắt đầu, vì gate đang NOT READY và user yêu cầu không khởi động implementation khi chưa READY.

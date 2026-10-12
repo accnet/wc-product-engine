@@ -1,6 +1,6 @@
 # OPEN DECISIONS
 
-> **Trạng thái (P001.8):** OD-01 … OD-07 đã được user chốt và áp dụng, không còn decision blocker. Quyết định mới phát sinh (chưa chốt, không chặn): xử lý F15 (`OutboxWorker::acquireBatch` bỏ qua `available_at`) và việc chấp nhận 22 AC `requirements_only`. Chi tiết `READINESS-GATE.md` §4.
+> **Trạng thái (P002.4):** OD-01 … OD-11 đã được user chốt hoặc áp dụng theo mặc định đã công bố, không còn decision blocker. OD-08 và OD-09 là waiver của user (bỏ audit độc lập, bỏ 100k/1M), không phải kết quả kiểm tra.
 
 Trạng thái: **0 quyết định đang mở; cả 7 đã chốt (OD-01 = A, OD-02 = C, OD-03 = A, OD-04 = B, OD-05 = A, OD-06 = A, OD-07 = A)**. Agent không tự quyết định thay user. Thứ tự hỏi theo dependency: OD-01 chặn các mục còn lại, OD-07 chốt sau cùng. **Decision blocker đã đóng. Chưa có thay đổi nào được áp dụng vào source, contract hay docs gốc.**
 
@@ -95,3 +95,12 @@ Phạm vi: `contracts/regression-requirements.json`, `contracts/tasks.json`, `do
 | OD-05 | A: backup mới, dọn toàn bộ residue theo mẫu test, thêm namespace fixture + residue gate; user cho phép xoá dữ liệu test | 2026-10-12 | Khi gate cho phép (S3): `mysqldump` trước; xoá residue bằng danh sách ID được liệt kê và user xem trước; harness T04; 21 file test thiếu tearDown. Chưa xoá gì trong vòng audit này |
 | OD-06 | A: thêm Playwright chạy trên `WPE_TEST_BASE_URL` với theme `calora` | 2026-10-12 | Khi gate cho phép (S5): `package.json`/`package-lock.json` (dependency phải qua kiểm tra scan_dependencies trước khi thêm), `tests/e2e/`, `T27Test.php`, 01 §env, 07 §5. Cần browser cài trên host |
 | OD-07 | A: mở seal một lần bằng task contract có ADR; cập nhật `status` từ evidence (script sinh); thêm R203–R214 và R216 (R215 hoãn theo OD-04; R213/R214 bỏ theo OD-02 = C); seal lại | 2026-10-12 | Khi gate cho phép (S8): `contracts/regression-requirements.json`, `contracts/tasks.json`, `docs/06`, `docs/07`, `docs/adr/` (ADR mới), `scripts/check-docs.mjs` nếu đổi schema. Chưa sửa file nào |
+
+## Quyết định bổ sung sau P001 (2026-10-12)
+
+| ID | Quyết định | Chặn | Trạng thái |
+|---|---|---|---|
+| OD-08 | Bỏ audit độc lập (waiver W1): user "bỏ audit độc lập" | Tiêu chí 6, 8 | **Answered: waiver** |
+| OD-09 | Bỏ seed và đo 100k/1M (waiver W2): user "bỏ seed và đo 100k/1M" | G09 | **Answered: waiver** |
+| OD-10 | F15: sửa `OutboxWorker::acquireBatch` để tôn trọng `available_at` (mặc định agent đã công bố trong P002; user yêu cầu "làm các task còn lại") | P002.1 | **Applied** |
+| OD-11 | 22 AC `requirements_only` nhận anchor có điều kiện thật (cùng căn cứ như OD-10) | P002.2, P002.3 | **Applied** |

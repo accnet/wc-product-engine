@@ -1,6 +1,6 @@
 {
   "task_id": "T30",
-  "commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "qa_status": "passed",
   "content_digest": "0648aa59b5166578055d08ae6d1a3c03d50e96e06bd425b50c2b10b32e2ce408",
   "environment": {
@@ -222,7 +222,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "file_hashes": {
     "src/Application/ImportExport/ImportCommitter.php": "f601fe01cf6489ac8c82f952ff32bff727dccc9bd67dc638983159098feae6d0",
     "tests/integration/T30Test.php": "bdfcc819f7f3ca5250a66d23c85b9f2359a46cdddfe893dd79c70924d7b879ab"

@@ -1,17 +1,249 @@
 {
-  "generated_at": "2026-10-12T16:13:13.040Z",
+  "generated_at": "2026-10-12T16:20:34.918Z",
   "mode": "run_and_verify",
-  "base_commit": "144bb47e2a7f1e5dcc2a491471014ad750f696ea",
+  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
   "environment": {
     "wordpress": "7.1.3",
     "woocommerce": "11.2.1",
     "php": "8.3.31",
     "database": "11.8.6-MariaDB-ubu2204"
   },
-  "tasks": 5,
-  "passed": 5,
+  "tasks": 49,
+  "passed": 49,
   "failed": [],
   "results": [
+    {
+      "task": "T01",
+      "title": "Pin baseline và compatibility inventory",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T02",
+      "title": "Plugin bootstrap và feature flags",
+      "run_exit": 0,
+      "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T03",
+      "title": "Khóa database/API/event/CSV contracts",
+      "run_exit": 0,
+      "run_seconds": 5,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T04",
+      "title": "Fixture và differential test harness",
+      "run_exit": 0,
+      "run_seconds": 12,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T05",
+      "title": "DDL và migration runner",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T09",
+      "title": "Outbox, jobs, epoch và idempotency persistence",
+      "run_exit": 0,
+      "run_seconds": 8,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T06",
+      "title": "Product/variant repositories và aggregate commands",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T07",
+      "title": "Options, values và combination integrity",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T08",
+      "title": "Media và metadata persistence",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T10",
+      "title": "Woo Product Data Stores",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T11",
+      "title": "WC metadata và WordPress metadata bridge",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T12",
+      "title": "Stock owner, reservation và order lifecycle",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T13",
+      "title": "Post shell, factory, taxonomy và permalink bridge",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T14",
+      "title": "WC admin, REST v3 và Store API adapters",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T15",
+      "title": "Hooks, product transitions và cache lifecycle",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T16",
+      "title": "Projection builder và generation rebuild",
+      "run_exit": 0,
+      "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T17",
+      "title": "Fast query compiler và keyset pagination",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T18",
+      "title": "Facets coherent theo variant và counts",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T19",
+      "title": "Tích hợp wc_get_products, shop archives và admin lists",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T20",
+      "title": "Cache context, invalidation và pricing compatibility",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T21",
+      "title": "URL registry, providers và rendition contract",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T22",
+      "title": "Real attachment bridge và Media Library behavior",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T23",
+      "title": "Native gallery và variation image payload",
+      "run_exit": 0,
+      "run_seconds": 9,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T24",
+      "title": "Ảnh trên cart/email/SEO/feed/Blocks",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T25",
+      "title": "Server resolver và allowed-values engine",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T26",
+      "title": "Resolver API và native AJAX variation adapter",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T27",
+      "title": "Selector UI, swatches và asynchronous behavior",
+      "run_exit": 0,
+      "run_seconds": 12,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T28",
+      "title": "Server add-to-cart validation và session restore",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T29",
+      "title": "Streaming parser, staging và dry-run validation",
+      "run_exit": 0,
+      "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
     {
       "task": "T30",
       "title": "Commit worker, resume và conflict policy",
@@ -24,7 +256,7 @@
       "task": "T31",
       "title": "Snapshot export và secure report delivery",
       "run_exit": 0,
-      "run_seconds": 7,
+      "run_seconds": 6,
       "verify_exit": 0,
       "ok": true
     },
@@ -32,7 +264,7 @@
       "task": "T32",
       "title": "Native Woo import adapter và external image mode",
       "run_exit": 0,
-      "run_seconds": 7,
+      "run_seconds": 6,
       "verify_exit": 0,
       "ok": true
     },
@@ -49,6 +281,126 @@
       "title": "Current/legacy parser và product grouping",
       "run_exit": 0,
       "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T35",
+      "title": "Native Shopify exporter và loss policy",
+      "run_exit": 0,
+      "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T36",
+      "title": "Cross-format equivalence và import/export QA",
+      "run_exit": 0,
+      "run_seconds": 8,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T37",
+      "title": "Change capture và reconciliation",
+      "run_exit": 0,
+      "run_seconds": 10,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T38",
+      "title": "Backfill catalog và shadow diff",
+      "run_exit": 0,
+      "run_seconds": 21,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T39",
+      "title": "Native→legacy mirror và write ownership fence",
+      "run_exit": 0,
+      "run_seconds": 7,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T40",
+      "title": "Rollback orchestration và deactivation safety",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T41",
+      "title": "Operations UI, health và CLI",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T44",
+      "title": "Chứng minh đọc native không dựa core postmeta",
+      "run_exit": 0,
+      "run_seconds": 8,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T47",
+      "title": "Benchmark thực đo và EXPLAIN budgets (quy mô site1.localhost)",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T48",
+      "title": "E2E compatibility/security/fault-injection suite",
+      "run_exit": 0,
+      "run_seconds": 8,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T42",
+      "title": "Readiness gates và cohort manifest",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T43",
+      "title": "Cutover barrier, canary và monitored rollout",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T45",
+      "title": "Seal authority và chuyển full_native",
+      "run_exit": 0,
+      "run_seconds": 6,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T49",
+      "title": "Release packaging, docs và staged delivery",
+      "run_exit": 0,
+      "run_seconds": 11,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T46",
+      "title": "Retention, garbage collection và legacy cleanup",
+      "run_exit": 0,
+      "run_seconds": 6,
       "verify_exit": 0,
       "ok": true
     }

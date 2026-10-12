@@ -1,7 +1,7 @@
 # FINAL AUDIT — Consolidation
 
-- Phiên bản audit gốc: git `1759717` (T46), 2026-10-12 (Asia/Ho_Chi_Minh). Cập nhật sau remediation P001.1–P001.7 (commit `68b2879`), P001.8.
-- Kết luận ban đầu: **NOT READY**. Kết luận hiện tại: **CONDITIONALLY READY** (xem `READINESS-GATE.md`). Không READY.
+- Phiên bản audit gốc: git `1759717` (T46), 2026-10-12 (Asia/Ho_Chi_Minh). Cập nhật sau remediation P001 (commit `75b2340`) và P002.
+- Kết luận ban đầu: **NOT READY**. Sau P001: CONDITIONALLY READY. Sau P002: **READY có waiver** của user (xem `READINESS-GATE.md`): audit độc lập và 100k/1M bị bỏ theo quyết định của user, không phải đã đạt.
 - Cả 7 quyết định mở đã được user chốt (OD-01 = A, OD-02 = C, OD-03 = A, OD-04 = B, OD-05 = A, OD-06 = A, OD-07 = A) và đã được áp dụng bởi plan `docs/plans/P001-audit-remediation`.
 - Vòng audit gốc chỉ thêm file trong `docs/audits/`. Việc sửa source, contract và docs nằm trong P001, sau khi user cho phép ("thực hiện").
 
@@ -27,9 +27,9 @@ Thứ tự ưu tiên nguồn theo AGENTS: 02 > 03 > 04 > 10 > 01 > 09 > 07 > 08 
 |---|---|---|---|---|---|
 | F01 | P0 | Kỹ thuật + quyết định | 49/49 receipt khai WP 7.0 / WC 11.1.2; host 7.1.3 / 11.2.1; pins cũng là 7.0 / 11.1.2 | `wp core version`, đọc 49 `result.json`, grep runner | **Đã đóng** (P001.1–P001.2, P001.7): pins = runtime, 49/49 receipt khai đúng version |
 | F01b | P1 | Kỹ thuật | `ReadinessGates` chỉ so thành phần đầu của version | Đọc `ReadinessGates.php` L212–247 | **Đã đóng** (P001.3): so version đầy đủ, R171 |
-| F02 | P0 | Kỹ thuật + quyết định | Benchmark chạy trên 372 product / 1,213 catalog rows, không có 100k/1M | `wp db query`, đọc `T47Test`, `FixtureHarness` | **Đóng bằng quyết định** (OD-02 = C): claim đã hạ, G09 "chưa đạt". Không đo 100k/1M |
+| F02 | P0 | Kỹ thuật + quyết định | Benchmark chạy trên 372 product / 1,213 catalog rows, không có 100k/1M | `wp db query`, đọc `T47Test`, `FixtureHarness` | **Đóng bằng quyết định** (OD-02 = C, waiver W2): claim đã hạ, G09 "chưa đạt". Không đo 100k/1M |
 | F03 | P1 | Kỹ thuật + quyết định | 8 task `verify-task` fail vì evidence stale | Chạy `verify-task` T01–T49 | **Đã đóng** (P001.7): `verify-task` exit 0 cho 49/49 |
-| F04 | P1 | Kỹ thuật | Receipt "passed" cố định, 11 AC không anchor | Đọc runner, regex test | **Đóng một phần** (P001.2): receipt từng R từ output (212/212). 22/110 AC vẫn `requirements_only` |
+| F04 | P1 | Kỹ thuật | Receipt "passed" cố định, 11 AC không anchor | Đọc runner, regex test | **Đã đóng** (P001.2, P002.2, P002.3): receipt từng R từ output (212/212) và 110/110 AC có anchor |
 | F05 | P1 | Kỹ thuật + quyết định | R107 kiểm bằng `str_contains` trên JS source; không có browser test | Đọc `T27Test.php` L207–209, `ls tests/e2e` | **Đã đóng** (P001.6): Playwright 1.63.0 + mutation control, R211 |
 | F06 | P1 | Kỹ thuật + nghiệp vụ | T46 thiếu rollback window, gate theo cohort, retention/archival/restore instructions | Grep `src`, đọc `RetentionCleaner` | **Đã đóng theo scope hẹp** (P001.5, ADR 003): rollback window, gate theo cohort. Retention/archival hoãn (OD-04) |
 | F07 | P1 | Kỹ thuật | `mirror_stopped` không có consumer; rollback không bị chặn | Grep `src` | **Đã đóng** (P001.5): `assertMirrorNotStopped`, R210 |
@@ -79,7 +79,7 @@ R203–R212 (10 requirement, ID cuối cùng sau OD-07; kế hoạch ban đầu 
 | ID | Sev | Tóm tắt | Xử lý |
 |---|---|---|---|
 | F14 | P1 | Pins/receipt khai các version dev-tool không có thật trên máy (pin chỉ là chuỗi trong contract, không có thứ gì kiểm tra) | Đóng: T01Test so pins với runtime; cài `@playwright/test@1.63.0` pin chính xác |
-| F15 | P2 | T09 R32/R34 chỉ pass khi outbox trống: `OutboxWorker::acquireBatch` lấy `pending`/`failed` theo `created_at` và **bỏ qua `available_at`**, nên backlog thật (khoảng 1.1k event) làm sự kiện của test không bao giờ lọt vào batch; backoff retry cũng không có tác dụng | Test đã hermetic (park/restore backlog). `acquireBatch` **chưa sửa** (ngoài phạm vi), cần quyết định riêng |
+| F15 | P2 | **Đã sửa (P002.1).** T09 R32/R34 chỉ pass khi outbox trống: `OutboxWorker::acquireBatch` lấy `pending`/`failed` theo `created_at` và **bỏ qua `available_at`**, nên backlog thật (khoảng 1.1k event) làm sự kiện của test không bao giờ lọt vào batch; backoff retry cũng không có tác dụng | Test hermetic (park/restore backlog); `acquireBatch` giờ lọc `available_at <= now` (cả khi chọn và khi CAS) và sắp theo `available_at, created_at`. Test hồi quy trong T09 (AC-T09-01) fail trên code cũ và pass trên code mới |
 | F16 | P3 | Receipt trước đây chỉ đọc `qa_status`; kết luận "49/49 verified" ban đầu của tôi sai | Đóng: `verify-task` kiểm env, base_commit, file_hashes, isolation, anchor |
 | F17 | P3 | T11 AC-T11-02 hard-code `classic-editor`, plugin đã lên 1.7.0 và đúng ra là status `unknown` (bị chặn) | Test dùng plugin `supported` từ matrix và khẳng định `classic-editor` bị chặn |
 
@@ -87,6 +87,6 @@ Hai ghi chú về cô lập test: 1010 dòng do test tạo ra qua các lần ch�
 
 ## 9. Phát biểu giới hạn
 - `check-docs` và `plan.mjs check` pass chỉ chứng minh tài liệu nhất quán về cấu trúc. Bằng chứng tích hợp là 49 test chạy trên WP/WC thật của `site1.localhost`, không phải production.
-- Audit do implementer viết; không có Codex/Claude audit. Chưa có kết luận về production readiness, cutover chưa được authorize.
+- Audit do implementer viết; không có Codex/Claude audit và user đã bỏ việc này (waiver W1). Chưa có kết luận về production readiness, cutover chưa được authorize.
 - `scan_dependencies` không chạy được (SecureCoder tại 127.0.0.1:11911 không phản hồi); `@playwright/test@1.63.0` đã được cài với `npm audit` 0 lỗ hổng và registry đã đối chiếu.
 - Tôi chưa đọc lại toàn bộ source của 49 task. Danh sách finding là phần được chứng minh, không phải danh sách đầy đủ.
