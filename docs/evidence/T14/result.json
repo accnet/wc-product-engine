@@ -1,0 +1,78 @@
+{
+  "task_id": "T14",
+  "commit": "32d47e462eb843fc670e28b7a39dae27883726eb",
+  "qa_status": "passed",
+  "content_digest": "306b98f537eab163c31fa6fec8cc0ff986cefebaa4bf792fd6ef2c89fb74349d",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T14Test.php"
+      ],
+      "display": "npm run test:task -- T14",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T14/output.log",
+      "output_sha256": "1579464948b2cea8cee302184177a96f333b988a47a231ec593897305e680920",
+      "content_digest": "306b98f537eab163c31fa6fec8cc0ff986cefebaa4bf792fd6ef2c89fb74349d"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R55",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R55_admin_crud_bulk_duplicate",
+      "assertion_summary": "Verified admin CRUD, quick edit, bulk status and trash actions, and product duplication with shell and SKU"
+    },
+    {
+      "id": "R56",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R56_wc_rest_product_variation_roundtrip",
+      "assertion_summary": "Verified full WC REST v3 product and variation lifecycle persisted in native database"
+    },
+    {
+      "id": "R57",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R57_store_api_no_private_leak",
+      "assertion_summary": "Verified Store API and public response sanitation preventing draft, private, and cost data leakage"
+    },
+    {
+      "id": "R58",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R58_object_capability_denial",
+      "assertion_summary": "Verified object-level capability checks and denial for unauthorized actors"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T14-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/AdminApiBridge.php",
+      "observation": "Tạo/sửa/xóa qua WC admin và WC REST tồn tại cùng dữ liệu engine; public API không lộ draft/private/cost"
+    },
+    {
+      "id": "AC-T14-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/AdminApiBridge.php",
+      "observation": "Unsupported query chỉ fallback ở legacy authority, không query stale native postmeta"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/WooDataStore/AdminApiBridge.php",
+    "tests/integration/T14Test.php",
+    "docs/evidence/T14/result.json"
+  ]
+}

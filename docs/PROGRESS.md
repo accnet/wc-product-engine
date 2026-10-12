@@ -22,7 +22,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T11 — WC metadata và WordPress metadata bridge
 - [x] T12 — Stock owner, reservation và order lifecycle
 - [x] T13 — Post shell, factory, taxonomy và permalink bridge
-- [ ] T14 — WC admin, REST v3 và Store API adapters
+- [x] T14 — WC admin, REST v3 và Store API adapters
 - [ ] T15 — Hooks, product transitions và cache lifecycle
 
 ## 4. P2 — Catalog/media/variants

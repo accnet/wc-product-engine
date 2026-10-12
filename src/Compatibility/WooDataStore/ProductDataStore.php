@@ -883,6 +883,41 @@ class ProductVariableDataStore extends ProductDataStore
         parent::read($product);
         $this->read_children($product);
     }
+
+    public function read_price_data(&$product, $for_display = false): array
+    {
+        $prices = [
+            'price'         => [],
+            'regular_price' => [],
+            'sale_price'    => [],
+        ];
+        $children = $product->get_children();
+        if (empty($children)) {
+            return $prices;
+        }
+
+        foreach ($children as $childId) {
+            $child = wc_get_product($childId);
+            if (!$child) {
+                continue;
+            }
+            $reg = $child->get_regular_price();
+            $sale = $child->get_sale_price();
+            $p = $child->get_price();
+
+            if ($p !== '' && $p !== null) {
+                $prices['price'][$childId] = wc_format_decimal($p, wc_get_price_decimals());
+            }
+            if ($reg !== '' && $reg !== null) {
+                $prices['regular_price'][$childId] = wc_format_decimal($reg, wc_get_price_decimals());
+            }
+            if ($sale !== '' && $sale !== null) {
+                $prices['sale_price'][$childId] = wc_format_decimal($sale, wc_get_price_decimals());
+            }
+        }
+
+        return $prices;
+    }
 }
 
 /**
