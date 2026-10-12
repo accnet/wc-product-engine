@@ -17,7 +17,7 @@ Bộ docs đã tạo; runtime implementation chưa bắt đầu. `[x]` chỉ dù
 - [x] T09 — Outbox, jobs, epoch và idempotency persistence
 - [x] T06 — Product/variant repositories và aggregate commands
 - [x] T07 — Options, values và combination integrity
-- [ ] T08 — Media và metadata persistence
+- [x] T08 — Media và metadata persistence
 - [ ] T10 — Woo Product Data Stores
 - [ ] T11 — WC metadata và WordPress metadata bridge
 - [ ] T12 — Stock owner, reservation và order lifecycle

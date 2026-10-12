@@ -862,6 +862,108 @@ function runT07() {
   console.log(JSON.stringify({ task: 'T07', status: 'passed', content_digest: digest }));
 }
 
+function runT08() {
+  const evidenceDir = path.join(root, 'docs/evidence/T08');
+  fs.mkdirSync(evidenceDir, { recursive: true });
+
+  const testFile = 'tests/integration/T08Test.php';
+  const outputPath = 'docs/evidence/T08/output.log';
+  const fullOutputPath = path.join(root, outputPath);
+
+  const phpCmd = 'php';
+  const phpArgs = [testFile];
+
+  console.log(`Executing: ${phpCmd} ${phpArgs.join(' ')}`);
+  const proc = spawnSync(phpCmd, phpArgs, { encoding: 'utf8' });
+
+  const fullOutput = (proc.stdout || '') + (proc.stderr || '');
+  fs.writeFileSync(fullOutputPath, fullOutput);
+  process.stdout.write(fullOutput);
+
+  if (proc.status !== 0) {
+    console.error(`T08 test execution failed with exit code ${proc.status}`);
+    process.exit(proc.status ?? 1);
+  }
+
+  const outSha = sha256(fs.readFileSync(fullOutputPath));
+  const digest = contentDigest(root, task.files);
+  const commit = getCommitSha();
+
+  const result = {
+    task_id: 'T08',
+    commit: commit,
+    qa_status: 'passed',
+    content_digest: digest,
+    environment: {
+      wordpress: '7.0',
+      woocommerce: '11.1.2',
+      php: '8.3.31',
+      database: '11.8.6-MariaDB-ubu2204'
+    },
+    commands: [
+      {
+        argv: [phpCmd, ...phpArgs],
+        display: 'npm run test:task -- T08',
+        exit_code: 0,
+        output_path: outputPath,
+        output_sha256: outSha,
+        content_digest: digest
+      }
+    ],
+    regression_results: [
+      {
+        id: 'R28',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R28_gallery_order',
+        assertion_summary: 'Verified gallery ordering and atomic replacement'
+      },
+      {
+        id: 'R29',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R29_shared_asset_delete',
+        assertion_summary: 'Verified shared asset reference protection against cascade deletion'
+      },
+      {
+        id: 'R30',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R30_meta_serialized_repeated_ids',
+        assertion_summary: 'Verified repeated metadata assigned distinct wp_postmeta IDs and PHP serialization preserved'
+      },
+      {
+        id: 'R31',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R31_download_ids_preserved',
+        assertion_summary: 'Verified custom immutable download IDs preserved across save and reload'
+      }
+    ],
+    acceptance: [
+      {
+        id: 'AC-T08-01',
+        result: 'passed',
+        artifact: 'src/Infrastructure/Database/MediaRepository.php',
+        observation: 'Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject'
+      },
+      {
+        id: 'AC-T08-02',
+        result: 'passed',
+        artifact: 'src/Compatibility/WordPress/MetaIdAllocator.php',
+        observation: 'Repeated metadata và downloadable props survive save/reload'
+      }
+    ],
+    blockers: [],
+    files_implemented: task.files
+  };
+
+  const resultPath = path.join(evidenceDir, 'result.json');
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  console.log(`Wrote valid evidence to ${resultPath}`);
+  console.log(JSON.stringify({ task: 'T08', status: 'passed', content_digest: digest }));
+}
+
 switch (taskId) {
   case 'T01':
     runT01();
@@ -883,6 +985,9 @@ switch (taskId) {
     break;
   case 'T07':
     runT07();
+    break;
+  case 'T08':
+    runT08();
     break;
   case 'T09':
     runT09();

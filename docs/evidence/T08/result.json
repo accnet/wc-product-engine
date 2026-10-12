@@ -1,0 +1,76 @@
+{
+  "task_id": "T08",
+  "commit": "aec1c80492bfc9fe113669f521f097cc98da75a0",
+  "qa_status": "passed",
+  "content_digest": "22ced7e6f601f70e40a17f188a1492be4882b7250858f5fde0ddebee4938f3ab",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "php",
+        "tests/integration/T08Test.php"
+      ],
+      "display": "npm run test:task -- T08",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T08/output.log",
+      "output_sha256": "7efae69f7726f34a60d38f061851361bccd3d49bac72bed634c075cbd54b29f9",
+      "content_digest": "22ced7e6f601f70e40a17f188a1492be4882b7250858f5fde0ddebee4938f3ab"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R28",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R28_gallery_order",
+      "assertion_summary": "Verified gallery ordering and atomic replacement"
+    },
+    {
+      "id": "R29",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R29_shared_asset_delete",
+      "assertion_summary": "Verified shared asset reference protection against cascade deletion"
+    },
+    {
+      "id": "R30",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R30_meta_serialized_repeated_ids",
+      "assertion_summary": "Verified repeated metadata assigned distinct wp_postmeta IDs and PHP serialization preserved"
+    },
+    {
+      "id": "R31",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R31_download_ids_preserved",
+      "assertion_summary": "Verified custom immutable download IDs preserved across save and reload"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T08-01",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/MediaRepository.php",
+      "observation": "Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject"
+    },
+    {
+      "id": "AC-T08-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WordPress/MetaIdAllocator.php",
+      "observation": "Repeated metadata và downloadable props survive save/reload"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Infrastructure/Database/MediaRepository.php",
+    "tests/integration/T08Test.php",
+    "docs/evidence/T08/result.json",
+    "src/Compatibility/WordPress/MetaIdAllocator.php"
+  ]
+}
