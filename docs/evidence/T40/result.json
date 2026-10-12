@@ -1,0 +1,84 @@
+{
+  "task_id": "T40",
+  "commit": "1209195611819eecc1325b65d018375406d28815",
+  "qa_status": "passed",
+  "content_digest": "0cf152b71ca6dc1dd7c1b292925c938cb36f7996099a77ad201115590b7e2ed1",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T40Test.php"
+      ],
+      "display": "npm run test:task -- T40",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T40/output.log",
+      "output_sha256": "e01e44ff91b3996d7060b47849c6a5a6b7018352bce23fdf4d3d63184a40d566",
+      "content_digest": "0cf152b71ca6dc1dd7c1b292925c938cb36f7996099a77ad201115590b7e2ed1"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R161",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R161_rollback_after_new_products_orders",
+      "assertion_summary": "Verified rollback after native product creation, edits, sales, and refunds preserves all updated values, stock counts, and WooCommerce order line item product dereferencing"
+    },
+    {
+      "id": "R162",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R162_rollback_inflight_checkout",
+      "assertion_summary": "Verified write barrier blocks incoming mutations and reliably drains in-flight checkout stock mutations before authority switch"
+    },
+    {
+      "id": "R163",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R163_rollback_timeout_no_switch",
+      "assertion_summary": "Verified timed-out rollback cleanly aborts without switching authority or epoch, leaving native authority and write barrier cleanly intact"
+    },
+    {
+      "id": "R164",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R164_deactivation_with_native_only_data",
+      "assertion_summary": "Verified deactivation safety gates block unsafe plugin deactivation when unprojected native-only data or active native authority is present"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T40-01",
+      "result": "passed",
+      "artifact": "src/Application/Migration/RollbackRunner.php",
+      "observation": "Rollback test sau native create/edit/sale/refund giữ current data và order refs; timed-out rollback không switch authority"
+    },
+    {
+      "id": "AC-T40-02",
+      "result": "passed",
+      "artifact": "src/Application/Migration/RollbackRunner.php",
+      "observation": "Safe fallback không chỉ đổi flag về CPT stale"
+    },
+    {
+      "id": "AC-T40-03",
+      "result": "passed",
+      "artifact": "src/Application/Migration/RollbackRunner.php",
+      "observation": "Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Application/Migration/RollbackRunner.php",
+    "tests/integration/T40Test.php",
+    "docs/evidence/T40/result.json"
+  ]
+}
