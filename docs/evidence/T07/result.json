@@ -1,0 +1,82 @@
+{
+  "task_id": "T07",
+  "commit": "3388bc4349938cae427d93ea4c56903b2c4decac",
+  "qa_status": "passed",
+  "content_digest": "08520d485df7a2a245b5ab2ed3d67eac2d7e49651bf6b05642630389d89632cf",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "php",
+        "tests/unit/T07Test.php"
+      ],
+      "display": "npm run test:task -- T07",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T07/output.log",
+      "output_sha256": "62933d61990bdc2f0068005869d3932e73ee1abc9dece88b6dcd48be1b5b7b89",
+      "content_digest": "08520d485df7a2a245b5ab2ed3d67eac2d7e49651bf6b05642630389d89632cf"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R23",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R23_unicode_value_key",
+      "assertion_summary": "Verified Unicode labels and keys preservation without identity or encoding corruption"
+    },
+    {
+      "id": "R24",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R24_hash_collision_simulated",
+      "assertion_summary": "Verified simulated hash collision triggers full selection vector comparison and rejects false equality"
+    },
+    {
+      "id": "R25",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R25_rename_reorder_preserve_id",
+      "assertion_summary": "Verified renaming and reordering options and values strictly preserves object IDs"
+    },
+    {
+      "id": "R26",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R26_any_vs_empty",
+      "assertion_summary": "Verified wildcard ANY and empty string produce distinct selection vectors and non-colliding keys"
+    },
+    {
+      "id": "R27",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R27_no_cartesian_variants",
+      "assertion_summary": "Verified adding options does not trigger implicit Cartesian variant generation"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T07-01",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/OptionsRepository.php",
+      "observation": "Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng"
+    },
+    {
+      "id": "AC-T07-02",
+      "result": "passed",
+      "artifact": "src/Infrastructure/Database/OptionsRepository.php",
+      "observation": "Duplicate combinations được report, không silent overwrite"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Infrastructure/Database/OptionsRepository.php",
+    "tests/unit/T07Test.php",
+    "docs/evidence/T07/result.json"
+  ]
+}

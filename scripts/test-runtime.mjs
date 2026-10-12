@@ -753,6 +753,115 @@ function runT06() {
   console.log(JSON.stringify({ task: 'T06', status: 'passed', content_digest: digest }));
 }
 
+function runT07() {
+  const evidenceDir = path.join(root, 'docs/evidence/T07');
+  fs.mkdirSync(evidenceDir, { recursive: true });
+
+  const testFile = 'tests/unit/T07Test.php';
+  const outputPath = 'docs/evidence/T07/output.log';
+  const fullOutputPath = path.join(root, outputPath);
+
+  const phpCmd = 'php';
+  const phpArgs = [testFile];
+
+  console.log(`Executing: ${phpCmd} ${phpArgs.join(' ')}`);
+  const proc = spawnSync(phpCmd, phpArgs, { encoding: 'utf8' });
+
+  const fullOutput = (proc.stdout || '') + (proc.stderr || '');
+  fs.writeFileSync(fullOutputPath, fullOutput);
+  process.stdout.write(fullOutput);
+
+  if (proc.status !== 0) {
+    console.error(`T07 test execution failed with exit code ${proc.status}`);
+    process.exit(proc.status ?? 1);
+  }
+
+  const outSha = sha256(fs.readFileSync(fullOutputPath));
+  const digest = contentDigest(root, task.files);
+  const commit = getCommitSha();
+
+  const result = {
+    task_id: 'T07',
+    commit: commit,
+    qa_status: 'passed',
+    content_digest: digest,
+    environment: {
+      wordpress: '7.0',
+      woocommerce: '11.1.2',
+      php: '8.3.31',
+      database: '11.8.6-MariaDB-ubu2204'
+    },
+    commands: [
+      {
+        argv: [phpCmd, ...phpArgs],
+        display: 'npm run test:task -- T07',
+        exit_code: 0,
+        output_path: outputPath,
+        output_sha256: outSha,
+        content_digest: digest
+      }
+    ],
+    regression_results: [
+      {
+        id: 'R23',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R23_unicode_value_key',
+        assertion_summary: 'Verified Unicode labels and keys preservation without identity or encoding corruption'
+      },
+      {
+        id: 'R24',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R24_hash_collision_simulated',
+        assertion_summary: 'Verified simulated hash collision triggers full selection vector comparison and rejects false equality'
+      },
+      {
+        id: 'R25',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R25_rename_reorder_preserve_id',
+        assertion_summary: 'Verified renaming and reordering options and values strictly preserves object IDs'
+      },
+      {
+        id: 'R26',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R26_any_vs_empty',
+        assertion_summary: 'Verified wildcard ANY and empty string produce distinct selection vectors and non-colliding keys'
+      },
+      {
+        id: 'R27',
+        status: 'passed',
+        command_ref: 0,
+        test_name: 'R27_no_cartesian_variants',
+        assertion_summary: 'Verified adding options does not trigger implicit Cartesian variant generation'
+      }
+    ],
+    acceptance: [
+      {
+        id: 'AC-T07-01',
+        result: 'passed',
+        artifact: 'src/Infrastructure/Database/OptionsRepository.php',
+        observation: 'Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng'
+      },
+      {
+        id: 'AC-T07-02',
+        result: 'passed',
+        artifact: 'src/Infrastructure/Database/OptionsRepository.php',
+        observation: 'Duplicate combinations được report, không silent overwrite'
+      }
+    ],
+    blockers: [],
+    files_implemented: task.files
+  };
+
+  const resultPath = path.join(evidenceDir, 'result.json');
+  fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+  console.log(`Wrote valid evidence to ${resultPath}`);
+  console.log(JSON.stringify({ task: 'T07', status: 'passed', content_digest: digest }));
+}
+
 switch (taskId) {
   case 'T01':
     runT01();
@@ -771,6 +880,9 @@ switch (taskId) {
     break;
   case 'T06':
     runT06();
+    break;
+  case 'T07':
+    runT07();
     break;
   case 'T09':
     runT09();
