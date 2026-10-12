@@ -477,7 +477,7 @@ class MetaBridge
             case 'tax_class':
             case 'tax_status':
             case 'purchase_note':
-                return $row[$prop] !== null ? (string)$row[$prop] : '';
+                return isset($row[$prop]) && $row[$prop] !== null ? (string)$row[$prop] : '';
             case 'total_sales':
                 $extra = json_decode($row['extra_props'] ?? '{}', true) ?: [];
                 return (string)($extra['total_sales'] ?? '0');

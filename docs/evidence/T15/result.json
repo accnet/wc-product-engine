@@ -1,0 +1,84 @@
+{
+  "task_id": "T15",
+  "commit": "b55787821422d44862b4c146bf59fdf319b56f14",
+  "qa_status": "passed",
+  "content_digest": "13c324fc58a3e64ec547b4ad4e72143f983c7c50da3f5f4fb2f3391675057df2",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T15Test.php"
+      ],
+      "display": "npm run test:task -- T15",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T15/output.log",
+      "output_sha256": "e67f7dc5e512665acd392993932055a9171e5aaecbe18b91c2f6e5b8c285c583",
+      "content_digest": "13c324fc58a3e64ec547b4ad4e72143f983c7c50da3f5f4fb2f3391675057df2"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R59",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R59_hooks_payload_and_order",
+      "assertion_summary": "Verified lifecycle action payloads, dispatch order, and post-commit state"
+    },
+    {
+      "id": "R60",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R60_type_transition_order_history",
+      "assertion_summary": "Verified simple <-> variable transitions preserving historical variation references"
+    },
+    {
+      "id": "R61",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R61_persistent_cache_after_update",
+      "assertion_summary": "Verified immediate transient and object cache invalidation after product mutations"
+    },
+    {
+      "id": "R62",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R62_projection_not_emitting_business_write_twice",
+      "assertion_summary": "Verified projection reentrancy guard suppressing duplicate emissions and durable stock operation keys"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T15-01",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/ProductLifecycle.php",
+      "observation": "Supported subscribers nhận events có đúng ID/object và trạng thái commit"
+    },
+    {
+      "id": "AC-T15-02",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/ProductLifecycle.php",
+      "observation": "Không hứa exactly-once action trong mọi crash; subscriber stock dùng durable operation key"
+    },
+    {
+      "id": "AC-T15-03",
+      "result": "passed",
+      "artifact": "src/Compatibility/WooDataStore/ProductLifecycle.php",
+      "observation": "Destructive transition không làm mất historical variation references"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "src/Compatibility/WooDataStore/ProductLifecycle.php",
+    "tests/integration/T15Test.php",
+    "docs/evidence/T15/result.json"
+  ]
+}

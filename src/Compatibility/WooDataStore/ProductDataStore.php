@@ -18,6 +18,7 @@ use WPE\Infrastructure\Database\ProductRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Compatibility\WordPress\PostIdAllocator;
+use WPE\Compatibility\WooDataStore\ProductLifecycle;
 
 /**
  * WooCommerce Product Data Store adapter for native engine storage.
@@ -129,6 +130,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
         $product->apply_changes();
         $product->set_object_read(true);
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($productId);
     }
 
     /**
@@ -266,6 +268,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $this->save_downloads($product);
 
         $product->apply_changes();
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($productId);
     }
 
     /**
@@ -276,7 +279,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $productId = $product->get_id();
         $force = !empty($args['force_delete']);
 
-        $this->prodRepo->delete($productId, $force);
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->deleteProduct($productId, $force);
         $product->set_id(0);
     }
 
@@ -1025,6 +1028,7 @@ class ProductVariationDataStore extends ProductDataStore
 
         $product->apply_changes();
         $product->set_object_read(true);
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($parentId);
     }
 
     public function read(&$product): void
@@ -1142,11 +1146,13 @@ class ProductVariationDataStore extends ProductDataStore
         $this->save_downloads($product);
 
         $product->apply_changes();
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache((int)$product->get_parent_id());
     }
 
     public function delete(&$product, $args = []): void
     {
         $variantId = $product->get_id();
+        $parentId = (int)$product->get_parent_id();
         $force = !empty($args['force_delete']);
 
         if ($force) {
@@ -1167,6 +1173,7 @@ class ProductVariationDataStore extends ProductDataStore
             );
         }
 
+        (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($parentId > 0 ? $parentId : $variantId);
         $product->set_id(0);
     }
 }
