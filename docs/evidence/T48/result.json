@@ -1,0 +1,85 @@
+{
+  "task_id": "T48",
+  "commit": "944fee4657d0ade535d7ce01a1d722a8fa05e3ff",
+  "qa_status": "passed",
+  "content_digest": "a61de09a1046eb3d8b11b292825d8552e4f85296b787311dbb59d7cbe9419c66",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T48Test.php"
+      ],
+      "display": "npm run test:task -- T48",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T48/output.log",
+      "output_sha256": "b0f8905ec6d619d74ec60d8b10acd0b0526e68470d1ff0f2115d95976a2030b3",
+      "content_digest": "a61de09a1046eb3d8b11b292825d8552e4f85296b787311dbb59d7cbe9419c66"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R194",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R194_full_mode_matrix",
+      "assertion_summary": "Verified operational mode matrix (legacy, indexed, native_bridge, full_native) across product catalog, inventory, and order lifecycle with zero critical semantic diffs"
+    },
+    {
+      "id": "R195",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R195_fault_injection_recovery",
+      "assertion_summary": "Verified atomic rollback on aborted stock transactions, worker crash lease recovery without checkpoint loss, dead letter queue routing for poisoned outbox events, and epoch fence write blocking"
+    },
+    {
+      "id": "R196",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R196_api_auth_injection_ssrf",
+      "assertion_summary": "Verified wpe_manage_operations capability enforcement, SQL injection immunity on query filters, SSRF prevention blocking private/metadata IPs, and CSV formula injection escaping"
+    },
+    {
+      "id": "R197",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R197_supported_plugin_smoke",
+      "assertion_summary": "Verified WooCommerce core, HPOS order datastore, tax calculations, coupon validation, digital downloads, and theme smoke tests run cleanly without errors"
+    },
+    {
+      "id": "R198",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R198_no_core_file_changes",
+      "assertion_summary": "Verified WordPress official core file checksums and WooCommerce core directory integrity with zero core modifications or monkey patches (INV14)"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T48-01",
+      "result": "passed",
+      "artifact": "tests/e2e/CompatibilitySuite.mjs",
+      "observation": "0 critical semantic diffs; all critical security/stock tests pass; zero skipped critical requirements across R01–R188"
+    },
+    {
+      "id": "AC-T48-02",
+      "result": "passed",
+      "artifact": "tests/e2e/CompatibilitySuite.mjs",
+      "observation": "Matrix artifact lưu test version/commit/env/command/result, không credentials/customer info"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "tests/e2e/CompatibilitySuite.mjs",
+    "tests/integration/T48Test.php",
+    "docs/evidence/T48/result.json"
+  ]
+}
