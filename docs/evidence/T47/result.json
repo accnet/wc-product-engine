@@ -1,0 +1,91 @@
+{
+  "task_id": "T47",
+  "commit": "d205b40f8da94034692b2c540888c3e312e9ea76",
+  "qa_status": "passed",
+  "content_digest": "53620030eaddfde83213ce83bbc16ac46fe359c6b39606182118da685e790598",
+  "environment": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "database": "11.8.6-MariaDB-ubu2204"
+  },
+  "commands": [
+    {
+      "argv": [
+        "wp",
+        "--path=/var/www/site1.localhost",
+        "--allow-root",
+        "eval-file",
+        "tests/integration/T47Test.php"
+      ],
+      "display": "npm run test:task -- T47",
+      "exit_code": 0,
+      "output_path": "docs/evidence/T47/output.log",
+      "output_sha256": "cdec7b54520fd619a067a76d4cfb923da3a6d97cb011d60c78ba807d4d03f84a",
+      "content_digest": "53620030eaddfde83213ce83bbc16ac46fe359c6b39606182118da685e790598"
+    }
+  ],
+  "regression_results": [
+    {
+      "id": "R189",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R189_scale_filter_facet_plan",
+      "assertion_summary": "Verified EXPLAIN execution plans on native indexes (idx_cat_filter, PRIMARY) and validated selective catalog filter and facet calculation DB p95 latencies within budget"
+    },
+    {
+      "id": "R190",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R190_deep_page_budget",
+      "assertion_summary": "Verified keyset pagination executes with O(1) compound index lookup (idx_cat_filter) and deep page traversal DB p95 remains strictly within budget"
+    },
+    {
+      "id": "R191",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R191_concurrent_import_checkout",
+      "assertion_summary": "Verified concurrent keyset backfill and import write load does not regress storefront checkout latency; zero oversell and idempotency verified"
+    },
+    {
+      "id": "R192",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R192_memory_growth_bounded",
+      "assertion_summary": "Verified streaming catalog traversal maintains bounded flat memory consumption far below the 256 MiB worker budget"
+    },
+    {
+      "id": "R193",
+      "status": "passed",
+      "command_ref": 0,
+      "test_name": "R193_cache_cold_warm",
+      "assertion_summary": "Verified warm cache delivers strong speedup and atomic mutex stampede protection prevents duplicate database queries under concurrency"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-T47-01",
+      "result": "passed",
+      "artifact": "tests/performance/ScaleBenchmark.mjs",
+      "observation": "Ngưỡng ở phần 9/07 §6 được chốt trên baseline; critical p95 không suy giảm >10% proposed budget (catalog 48 filter <= 100ms, facets <= 250ms, keyset deep <= 100ms, checkout <= 50ms, RAM <= 256 MiB)"
+    },
+    {
+      "id": "AC-T47-02",
+      "result": "passed",
+      "artifact": "tests/integration/T47Test.php",
+      "observation": "Index query speed được directly measured bằng microtime timers qua nhiều iterations, báo cáo đầy đủ p50/p95/p99/min/max thay vì suy diễn từ row count"
+    },
+    {
+      "id": "AC-T47-03",
+      "result": "passed",
+      "artifact": "tests/performance/ScaleBenchmark.mjs",
+      "observation": "Báo cáo storage footprint chi tiết cho retained shells/meta và phân tích slow unsupported legacy queries (filesort và temporary tables do unindexed postmeta)"
+    }
+  ],
+  "blockers": [],
+  "files_implemented": [
+    "tests/performance/ScaleBenchmark.mjs",
+    "tests/integration/T47Test.php",
+    "docs/evidence/T47/result.json"
+  ]
+}
