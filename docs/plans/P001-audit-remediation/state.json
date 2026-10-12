@@ -494,8 +494,96 @@
           "tests/integration/T46Test.php"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "af19bc8e6d5422b001110bb7aa8d3c3798ef7c798aebaf1c4bf345b58bb3f3b0",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819162389-8304e64d.log",
+          "time": "2026-10-12T15:32:42.390Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "af19bc8e6d5422b001110bb7aa8d3c3798ef7c798aebaf1c4bf345b58bb3f3b0",
+          "output_sha256": "3be395f81097739a4733f6339f0955de84c0b400a7ed29d0f3149557691e6d8c",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819163260-28ac422d.log",
+          "time": "2026-10-12T15:32:43.261Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T46Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "af19bc8e6d5422b001110bb7aa8d3c3798ef7c798aebaf1c4bf345b58bb3f3b0",
+          "output_sha256": "9e8978e6976c557e149c8b014e093cb24c50339150071202d2c806abc2f24d75",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819164008-60e86734.log",
+          "time": "2026-10-12T15:32:44.008Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "81e11ce09189499555e1f64faa9505b5fbc6340f9c5ef728371a9e9cc8f3d523",
+          "output_sha256": "ab239af600aaa136d113c5f2702f70457c738dd1608ecd9eb425218003aab6e1",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819184062-998a9d43.log",
+          "time": "2026-10-12T15:33:04.062Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "81e11ce09189499555e1f64faa9505b5fbc6340f9c5ef728371a9e9cc8f3d523",
+          "output_sha256": "3be395f81097739a4733f6339f0955de84c0b400a7ed29d0f3149557691e6d8c",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819184937-0234fb22.log",
+          "time": "2026-10-12T15:33:04.937Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--allow-root",
+            "eval-file",
+            "tests/integration/T46Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "81a3a083853db004846b67b9cb3a1c8108750e81",
+          "content_digest": "81e11ce09189499555e1f64faa9505b5fbc6340f9c5ef728371a9e9cc8f3d523",
+          "output_sha256": "9e8978e6976c557e149c8b014e093cb24c50339150071202d2c806abc2f24d75",
+          "output_path": "docs/plans/P001-audit-remediation/command-1791819185623-e4a1307c.log",
+          "time": "2026-10-12T15:33:05.623Z"
+        }
+      ],
+      "started_at": "2026-10-12T15:29:03.284Z"
     },
     {
       "id": "P001.6",

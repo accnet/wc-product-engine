@@ -18,6 +18,10 @@ use WPE\Application\Migration\LegacyCapture;
  * - R186: Resumable chunked cleanup with database checkpoints in wpe_jobs.
  * - R187: Cleanup strictly gated on verified restore drill pass and expired rollback window.
  * - R188: Rollback after mirror stopped requires write barrier and full re-projection of current native data.
+ * - R206: Cleanup requires an explicit product scope; an empty scope never means the whole catalog.
+ * - R207: Cleanup requires a native row and a sealed full_native authority for every targeted product.
+ * - R208: Cleanup is refused until the operator-configured rollback window (default 30 days) has elapsed.
+ * - R209: The restore drill gate is recorded per cohort; there is no global shortcut.
  * - AC-T46-01: Dry-run planner reports IDs, bytes, rollback impact while protecting shared assets.
  * - AC-T46-02: Cleanup is strictly manual / operator-triggered; never automatic on upgrade/activate/deactivate.
  * - AC-T46-03: Reprojection with write barrier before authority switch when mirror was stopped.
@@ -34,6 +38,10 @@ class RetentionCleaner
         '_sku',
         '_weight',
     ];
+
+    /** Rollback window length in days; operators change it with the wpe_rollback_window_days option (R208). */
+    public const DEFAULT_ROLLBACK_WINDOW_DAYS = 30;
+    public const ROLLBACK_WINDOW_OPTION = 'wpe_rollback_window_days';
 
     private \wpdb $wpdb;
     private RollbackRunner $rollbackRunner;
@@ -79,12 +87,9 @@ class RetentionCleaner
      */
     public function planCleanup(string $cohortId, array $options = []): array
     {
-        $productIds = array_values(array_map('intval', (array)($options['product_ids'] ?? [])));
-        $whereSql = "1=1";
-        if (!empty($productIds)) {
-            $inIds = implode(',', $productIds);
-            $whereSql = "post_id IN ({$inIds})";
-        }
+        $productIds = $this->normalizeProductIds($options['product_ids'] ?? []);
+        // R206: an empty scope plans nothing instead of silently meaning "the whole catalog".
+        $whereSql = empty($productIds) ? "1=0" : "post_id IN (" . implode(',', $productIds) . ")";
 
         $escapedKeys = "'" . implode("','", self::REDUNDANT_OWNED_POSTMETA) . "'";
 
@@ -110,13 +115,6 @@ class RetentionCleaner
             $protectedStockOps = (int)$this->wpdb->get_var(
                 "SELECT count(*) FROM {$this->tableStockOperations} WHERE owner_id IN ({$inIds})"
             );
-        } else {
-            $protectedShells = (int)$this->wpdb->get_var(
-                "SELECT count(*) FROM {$this->wpdb->posts} WHERE post_type IN ('product', 'product_variation')"
-            );
-            $protectedStockOps = (int)$this->wpdb->get_var(
-                "SELECT count(*) FROM {$this->tableStockOperations}"
-            );
         }
 
         $tableOrderItems = "{$this->wpdb->prefix}woocommerce_order_items";
@@ -127,13 +125,17 @@ class RetentionCleaner
 
         $protectedMedia = (int)$this->wpdb->get_var("SELECT count(*) FROM {$this->tableAssets}");
 
-        // 3. Check restore drill gate (R187)
+        // 3. Check restore drill gate (R187) and every other cleanup guard (R206-R209)
         $restoreGate = $this->checkRestoreDrillGate($cohortId);
+        $blockers = $this->cleanupBlockers($cohortId, $productIds);
 
         return [
             'cohort_id'               => $cohortId,
             'dry_run'                 => true,
             'target_products'         => count($productIds),
+            'target_product_ids'      => $productIds,
+            'blockers'                => $blockers,
+            'rollback_window_days'    => $this->getRollbackWindowDays(),
             'redundant_postmeta_rows' => $redundantCount,
             'estimated_bytes_saved'   => $estimatedBytes,
             'restore_drill_gate'      => $restoreGate,
@@ -146,7 +148,7 @@ class RetentionCleaner
             'rollback_impact'         => [
                 'notice'             => 'Cleaning redundant postmeta stops real-time legacy mirror.',
                 'requirement'        => 'Future rollback will strictly require reprojectBeforeRollback() with write barrier before authority switch (AC-T46-03).',
-                'safe_to_clean'      => $restoreGate['passed'],
+                'safe_to_clean'      => empty($blockers),
             ],
         ];
     }
@@ -158,21 +160,15 @@ class RetentionCleaner
      */
     public function executeCleanup(string $cohortId, array $options = []): array
     {
-        // 1. Verify restore drill gate (R187)
-        $restoreGate = $this->checkRestoreDrillGate($cohortId);
-        if (!$restoreGate['passed']) {
-            throw new RuntimeException("Cleanup Gate Violation (R187): Cleanup requires verified restore drill pass and expired rollback window before cleaning duplicated postmeta.");
-        }
+        $productIds = $this->normalizeProductIds($options['product_ids'] ?? []);
+
+        // 1. Every guard must pass before anything is touched (R187, R206-R209)
+        $this->assertCleanupAllowed($cohortId, $productIds);
 
         $jobId = $options['job_id'] ?? wp_generate_uuid4();
         $chunkSize = max(1, (int)($options['chunk_size'] ?? 50));
         $faultAtChunk = $options['fault_at_chunk'] ?? null;
         $now = gmdate('Y-m-d H:i:s.u');
-
-        $productIds = array_values(array_map('intval', (array)($options['product_ids'] ?? [])));
-        if (empty($productIds)) {
-            $productIds = array_map('intval', $this->wpdb->get_col("SELECT id FROM {$this->tableProducts} ORDER BY id ASC"));
-        }
 
         $totalProducts = count($productIds);
         $totalChunks = (int)ceil($totalProducts / $chunkSize);
@@ -191,7 +187,7 @@ class RetentionCleaner
                 'id'               => $jobId,
                 'kind'             => 'cleanup',
                 'status'           => 'running',
-                'config'           => (string)wp_json_encode(['cohort_id' => $cohortId, 'chunk_size' => $chunkSize]),
+                'config'           => (string)wp_json_encode(['cohort_id' => $cohortId, 'chunk_size' => $chunkSize, 'product_ids' => $productIds]),
                 'checkpoint'       => (string)wp_json_encode(['chunk_index' => 0, 'cleaned_rows' => 0]),
                 'counts'           => (string)wp_json_encode(['total' => $totalProducts, 'processed' => 0]),
                 'lease_owner'      => 'cleaner_' . getmypid(),
@@ -255,6 +251,7 @@ class RetentionCleaner
                 'cohort_id'        => $cohortId,
                 'mirror_stopped'   => true,
                 'postmeta_cleaned' => true,
+                'product_ids'      => $productIds,
                 'stopped_at'       => gmdate('Y-m-d H:i:s.u'),
             ]),
             'version'    => 1,
@@ -295,6 +292,8 @@ class RetentionCleaner
 
         $options['job_id'] = $jobId;
         $options['chunk_size'] = $config['chunk_size'] ?? 50;
+        // The scope is fixed when the job is created; a resume can never widen it (R206).
+        $options['product_ids'] = $config['product_ids'] ?? [];
 
         return $this->executeCleanup($cohortId, $options);
     }
@@ -304,8 +303,21 @@ class RetentionCleaner
      */
     public function reprojectBeforeRollback(string $cohortId, array $options = []): array
     {
+        // 0. Scope: explicit product_ids, or the exact set recorded when the mirror was stopped (R206)
+        $productIds = $this->normalizeProductIds($options['product_ids'] ?? []);
+        if (empty($productIds)) {
+            $stopped = $this->getMirrorStoppedRecord($cohortId);
+            $productIds = $this->normalizeProductIds($stopped['product_ids'] ?? []);
+        }
+        if (empty($productIds)) {
+            throw new RuntimeException("Reprojection Scope Violation (R206): reprojectBeforeRollback requires explicit product_ids or a recorded mirror_stopped scope; an empty scope is never the whole catalog.");
+        }
+        $missingNative = $this->productsWithoutNativeRow($productIds);
+        if (!empty($missingNative)) {
+            throw new RuntimeException("Reprojection Native Row Violation (R207): no native row for product(s) " . implode(',', $missingNative) . ".");
+        }
+
         // 1. Acquire write barrier to freeze mutations (R188, AC-T46-03)
-        $productIds = array_values(array_map('intval', (array)($options['product_ids'] ?? [])));
         $barrierId = $this->rollbackRunner->acquireWriteBarrier($productIds);
 
         $now = gmdate('Y-m-d H:i:s.u');
@@ -313,11 +325,7 @@ class RetentionCleaner
 
         try {
             // 2. Fetch current native products and reproject to legacy postmeta
-            $whereSql = "1=1";
-            if (!empty($productIds)) {
-                $inIds = implode(',', $productIds);
-                $whereSql = "id IN ({$inIds})";
-            }
+            $whereSql = "id IN (" . implode(',', $productIds) . ")";
 
             $nativeProducts = $this->wpdb->get_results(
                 "SELECT id, sku, regular_price, sale_price FROM {$this->tableProducts} WHERE {$whereSql}",
@@ -358,6 +366,7 @@ class RetentionCleaner
                 'value'      => (string)wp_json_encode([
                     'cohort_id'          => $cohortId,
                     'reprojected_count'  => $reprojectedCount,
+                    'product_ids'        => $productIds,
                     'barrier_id'         => $barrierId,
                     'mirror_ready'       => true,
                     'restored_at'        => $now,
@@ -389,7 +398,7 @@ class RetentionCleaner
      */
     public function checkRestoreDrillGate(string $cohortId): array
     {
-        // 1. Check if explicit per-cohort gate flag is set in wpe_control
+        // 1. The per-cohort gate flag in wpe_control is the only source (R209)
         $manualGate = $this->wpdb->get_var($this->wpdb->prepare(
             "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
             "restore_drill_gate_{$cohortId}"
@@ -403,21 +412,11 @@ class RetentionCleaner
             ];
         }
 
-        // 2. Fall back to T49 restore drill evidence
-        $evidencePath = dirname(__DIR__, 3) . '/docs/evidence/T49/result.json';
-        if (file_exists($evidencePath)) {
-            $ev = json_decode((string)file_get_contents($evidencePath), true);
-            if (($ev['qa_status'] ?? '') === 'passed') {
-                return [
-                    'passed' => true,
-                    'reason' => 'Restore drill verified from T49 evidence',
-                ];
-            }
-        }
-
+        // 2. No cohort record means no verified drill. There is deliberately no global fallback to
+        //    T49 evidence: a drill proven for one cohort says nothing about another (R209).
         return [
             'passed' => false,
-            'reason' => 'Restore drill not yet verified',
+            'reason' => "No restore drill recorded for cohort {$cohortId}",
         ];
     }
 
@@ -437,6 +436,131 @@ class RetentionCleaner
             'version'    => 1,
             'updated_at' => $now,
         ]);
+    }
+
+    // --- Cleanup guards (R206-R209) ---
+
+    /**
+     * @param mixed $ids
+     * @return list<int>
+     */
+    private function normalizeProductIds($ids): array
+    {
+        $out = [];
+        foreach ((array) $ids as $id) {
+            $int = (int) $id;
+            if ($int > 0) {
+                $out[$int] = $int;
+            }
+        }
+        return array_values($out);
+    }
+
+    /** Rollback window in days, operator-configurable (R208). */
+    public function getRollbackWindowDays(): int
+    {
+        $days = (int) get_option(self::ROLLBACK_WINDOW_OPTION, self::DEFAULT_ROLLBACK_WINDOW_DAYS);
+        return $days >= 1 ? $days : self::DEFAULT_ROLLBACK_WINDOW_DAYS;
+    }
+
+    /**
+     * @param list<int> $productIds
+     * @return list<int>
+     */
+    private function productsWithoutNativeRow(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+        $in = implode(',', $productIds);
+        $have = array_map('intval', $this->wpdb->get_col(
+            "SELECT id FROM {$this->tableProducts} WHERE id IN ({$in}) AND deleted_at IS NULL"
+        ));
+        return array_values(array_diff($productIds, $have));
+    }
+
+    /** @return array<string,mixed>|null */
+    private function getMirrorStoppedRecord(string $cohortId): ?array
+    {
+        $raw = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+            "mirror_stopped_{$cohortId}"
+        ));
+        $decoded = $raw !== null ? json_decode((string) $raw, true) : null;
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Lists every reason cleanup must not run, in the order the guards are applied.
+     *
+     * @param list<int> $productIds
+     * @return list<array{code:string,message:string}>
+     */
+    public function cleanupBlockers(string $cohortId, array $productIds): array
+    {
+        $blockers = [];
+
+        // R206: explicit scope
+        if (empty($productIds)) {
+            return [['code' => 'R206', 'message' => 'Cleanup requires explicit product_ids; an empty scope is never interpreted as the whole catalog.']];
+        }
+
+        // R207: native row + sealed authority
+        $missing = $this->productsWithoutNativeRow($productIds);
+        if (!empty($missing)) {
+            $blockers[] = ['code' => 'R207', 'message' => 'No native row for product(s) ' . implode(',', $missing) . '; legacy data is the only copy.'];
+        }
+        $in = implode(',', $productIds);
+        $sealedIds = array_map('intval', $this->wpdb->get_col(
+            "SELECT object_id FROM {$this->tableObjectState} WHERE object_id IN ({$in}) AND authority = 'full_native' AND tombstone = 0"
+        ));
+        $unsealed = array_values(array_diff($productIds, $sealedIds));
+        if (!empty($unsealed)) {
+            $blockers[] = ['code' => 'R207', 'message' => 'Authority is not sealed (full_native) for product(s) ' . implode(',', $unsealed) . '.'];
+        }
+        $sealRaw = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+            "full_native_no_fallback_{$cohortId}"
+        ));
+        $seal = $sealRaw !== null ? json_decode((string) $sealRaw, true) : null;
+        if (!is_array($seal) || empty($seal['active']) || empty($seal['sealed_at'])) {
+            $blockers[] = ['code' => 'R207', 'message' => "No active authority seal recorded for cohort {$cohortId}."];
+        } else {
+            // R208: rollback window measured from the seal
+            $sealedAt = strtotime((string) $seal['sealed_at'] . ' UTC');
+            $days = $this->getRollbackWindowDays();
+            if ($sealedAt === false || time() < $sealedAt + $days * 86400) {
+                $blockers[] = ['code' => 'R208', 'message' => "Rollback window of {$days} day(s) has not elapsed since the authority seal."];
+            }
+        }
+
+        // R187 / R209: restore drill, per cohort
+        $gate = $this->checkRestoreDrillGate($cohortId);
+        if (!$gate['passed']) {
+            $blockers[] = ['code' => 'R187', 'message' => $gate['reason']];
+        }
+
+        return $blockers;
+    }
+
+    /**
+     * @param list<int> $productIds
+     * @throws RuntimeException with the first violated guard
+     */
+    private function assertCleanupAllowed(string $cohortId, array $productIds): void
+    {
+        $blockers = $this->cleanupBlockers($cohortId, $productIds);
+        if (empty($blockers)) {
+            return;
+        }
+        $first = $blockers[0];
+        $label = match ($first['code']) {
+            'R206' => 'Cleanup Scope Violation',
+            'R207' => 'Cleanup Native Row Violation',
+            'R208' => 'Cleanup Rollback Window Violation',
+            default => 'Cleanup Gate Violation',
+        };
+        throw new RuntimeException("{$label} ({$first['code']}): {$first['message']}");
     }
 
     // --- Helpers ---

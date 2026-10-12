@@ -14,6 +14,7 @@ use WPE\Application\Migration\LegacyCapture;
  * - R162: Write barrier and in-flight checkout stock mutation draining.
  * - R163: Rollback timeout safety (clean abort without switching authority or leaving corrupt state).
  * - R164: Deactivation safety verification blocking unsafe deactivation with native-only data.
+ * - R210: Authority switch to legacy is refused while the legacy mirror is stopped and no reprojection was recorded.
  * - AC-T40-01: Zero data or order reference loss; timed-out rollback does not switch authority.
  * - AC-T40-02: Safe fallback requires full reconciliation, rejecting simple flag flips to stale CPTs.
  * - AC-T40-03: Standalone recovery runbook for forced plugin directory deletion.
@@ -78,6 +79,10 @@ class T40Test
 
             $this->setUp();
             $this->testR164_deactivation_with_native_only_data();
+            $this->tearDown();
+
+            $this->setUp();
+            $this->testR210_rollback_blocked_when_mirror_stopped();
             $this->tearDown();
 
             $this->setUp();
@@ -582,6 +587,118 @@ class T40Test
         }
 
         echo "  ✓ AC-T40-02 passed: safe fallback strictly blocks simple flag flip to stale CPTs\n";
+    }
+
+    /**
+     * R210: switching authority to legacy is refused while the mirror is stopped and not reprojected.
+     */
+    public function testR210_rollback_blocked_when_mirror_stopped(): void
+    {
+        echo "Testing R210 (rollback_blocked_when_mirror_stopped)...\n";
+
+        $productId = $this->createTestNativeProduct('R210 Mirror Stopped Product', 310.0, 12);
+        $cohortId = 'cohort_r210_' . uniqid();
+        $controlKeys = ["mirror_stopped_{$cohortId}", "mirror_restored_{$cohortId}", 'restore_readiness_marker'];
+
+        // Remember global control rows a successful switch rewrites so the test leaves them as found.
+        $saved = [];
+        foreach (['authority_epoch', 'system_mode', 'restore_readiness_marker'] as $key) {
+            $saved[$key] = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$this->tableControl} WHERE `key` = %s",
+                $key
+            ), ARRAY_A);
+        }
+
+        try {
+            $stoppedAt = gmdate('Y-m-d H:i:s.u', time() - 60);
+            $this->wpdb->replace($this->tableControl, [
+                'key'        => "mirror_stopped_{$cohortId}",
+                'value'      => json_encode([
+                    'cohort_id'        => $cohortId,
+                    'mirror_stopped'   => true,
+                    'postmeta_cleaned' => true,
+                    'stopped_at'       => $stoppedAt,
+                    'product_ids'      => [$productId],
+                ]),
+                'version'    => 1,
+                'updated_at' => $stoppedAt,
+            ]);
+            // A ready marker is present, so only the stopped mirror can block the switch.
+            $this->wpdb->replace($this->tableControl, [
+                'key'        => 'restore_readiness_marker',
+                'value'      => json_encode(['status' => 'ready', 'cohort_ids' => [$productId]]),
+                'version'    => 1,
+                'updated_at' => gmdate('Y-m-d H:i:s.u'),
+            ]);
+
+            $nextEpoch = $this->mirror->getGlobalEpoch() + 1;
+            $authorityBefore = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT authority FROM {$this->tableObjectState} WHERE object_id = %d",
+                $productId
+            ));
+
+            $attempts = [
+                'switchAuthorityToLegacy by cohort' => fn() => $this->runner->switchAuthorityToLegacy([$productId], $nextEpoch, ['cohort_id' => $cohortId]),
+                'switchAuthorityToLegacy by product scope' => fn() => $this->runner->switchAuthorityToLegacy([$productId], $nextEpoch),
+                'switchAuthorityToLegacy with force_unsafe' => fn() => $this->runner->switchAuthorityToLegacy([$productId], $nextEpoch, ['force_unsafe' => true]),
+                'executeRollback' => fn() => $this->runner->executeRollback([$productId], ['cohort_id' => $cohortId]),
+            ];
+            foreach ($attempts as $label => $attempt) {
+                $blocked = false;
+                try {
+                    $attempt();
+                } catch (\RuntimeException $e) {
+                    $blocked = str_contains($e->getMessage(), 'R210');
+                }
+                if (!$blocked) {
+                    throw new \RuntimeException("{$label} was not blocked by R210 while the mirror was stopped!");
+                }
+                echo "  ✓ {$label} refused while the mirror is stopped\n";
+            }
+
+            $authorityAfter = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT authority FROM {$this->tableObjectState} WHERE object_id = %d",
+                $productId
+            ));
+            if ($authorityAfter !== $authorityBefore) {
+                throw new \RuntimeException("Authority changed ({$authorityBefore} -> {$authorityAfter}) despite R210 block!");
+            }
+            if ($this->runner->isWriteBlocked($productId)) {
+                throw new \RuntimeException("Write barrier left active after a refused rollback!");
+            }
+            echo "  ✓ Authority unchanged and no write barrier left behind\n";
+
+            // Once reprojection is recorded after the stop, the switch is allowed again.
+            $this->wpdb->replace($this->tableControl, [
+                'key'        => "mirror_restored_{$cohortId}",
+                'value'      => json_encode([
+                    'cohort_id'   => $cohortId,
+                    'mirror_ready' => true,
+                    'product_ids' => [$productId],
+                    'restored_at' => gmdate('Y-m-d H:i:s.u'),
+                ]),
+                'version'    => 1,
+                'updated_at' => gmdate('Y-m-d H:i:s.u'),
+            ]);
+            $res = $this->runner->switchAuthorityToLegacy([$productId], $nextEpoch, ['cohort_id' => $cohortId]);
+            if (($res['status'] ?? '') !== 'switched') {
+                throw new \RuntimeException("Switch was still refused after reprojection was recorded!");
+            }
+            echo "  ✓ Switch allowed after reprojection is recorded\n";
+        } finally {
+            foreach ($controlKeys as $key) {
+                $this->wpdb->delete($this->tableControl, ['key' => $key]);
+            }
+            foreach ($saved as $key => $row) {
+                if ($row) {
+                    $this->wpdb->replace($this->tableControl, $row);
+                } else {
+                    $this->wpdb->delete($this->tableControl, ['key' => $key]);
+                }
+            }
+        }
+
+        echo "  ✓ R210 passed: authority switch to legacy is blocked while the legacy mirror is stopped and not reprojected\n";
     }
 
     public function testAC_T40_03_forced_deletion_recovery_runbook(): void

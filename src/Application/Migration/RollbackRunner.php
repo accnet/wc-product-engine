@@ -264,11 +264,66 @@ class RollbackRunner
     }
 
     /**
+     * Refuses to switch authority to legacy while a cleanup stopped the legacy mirror for any cohort
+     * touching these aggregates and no reprojection has been recorded since (R210, AC-T46-03).
+     *
+     * This is not bypassable by force_unsafe: forcing a flip onto stale postmeta would lose current
+     * native prices and stock.
+     *
+     * @param list<int|string> $aggregateIds
+     * @param array<string,mixed> $options may carry cohort_id
+     * @throws \RuntimeException
+     */
+    public function assertMirrorNotStopped(array $aggregateIds, array $options = []): void
+    {
+        $ids = array_map('intval', $aggregateIds);
+        $cohort = isset($options['cohort_id']) ? (string) $options['cohort_id'] : null;
+
+        $rows = $this->wpdb->get_results(
+            "SELECT `key`, value FROM {$this->tableControl} WHERE `key` LIKE 'mirror\\_stopped\\_%'",
+            ARRAY_A
+        );
+        foreach ($rows as $row) {
+            $record = json_decode((string) $row['value'], true);
+            if (!is_array($record) || empty($record['mirror_stopped'])) {
+                continue;
+            }
+            $cohortId = (string) ($record['cohort_id'] ?? substr((string) $row['key'], strlen('mirror_stopped_')));
+            $scope = array_map('intval', (array) ($record['product_ids'] ?? []));
+            $touches = ($cohort !== null && $cohort === $cohortId) || !empty(array_intersect($ids, $scope));
+            if (!$touches) {
+                continue;
+            }
+
+            $restoredRaw = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+                "mirror_restored_{$cohortId}"
+            ));
+            $restored = $restoredRaw !== null ? json_decode((string) $restoredRaw, true) : null;
+            $reprojected = is_array($restored)
+                && !empty($restored['mirror_ready'])
+                && (string) ($restored['restored_at'] ?? '') >= (string) ($record['stopped_at'] ?? '');
+            if ($reprojected) {
+                continue;
+            }
+
+            $this->logAudit('rollback_blocked_mirror_stopped', 0, ['cohort_id' => $cohortId]);
+            throw new \RuntimeException(
+                "Rollback blocked (R210): the legacy mirror was stopped for cohort {$cohortId}. " .
+                "Run RetentionCleaner::reprojectBeforeRollback() with the write barrier before switching authority."
+            );
+        }
+    }
+
+    /**
      * Switch authority to Legacy and increment epoch atomically (AC-T40-01, AC-T40-02).
      * Enforces AC-T40-02: Safe fallback requires full reconciliation; refuses simple flag flip to stale CPT!
      */
     public function switchAuthorityToLegacy(array $aggregateIds, int $nextEpoch, array $options = []): array
     {
+        // 0. A stopped legacy mirror means legacy storage is stale: never switch to it without reprojection (R210).
+        $this->assertMirrorNotStopped($aggregateIds, $options);
+
         // 1. Guard against stale fallback without reconciliation (AC-T40-02)
         $markerRaw = $this->wpdb->get_var($this->wpdb->prepare(
             "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
@@ -378,6 +433,9 @@ class RollbackRunner
      */
     public function executeRollback(array $aggregateIds, array $options = []): array
     {
+        // Fail before any side effect (barrier, reconciliation) when the mirror is stopped (R210).
+        $this->assertMirrorNotStopped($aggregateIds, $options);
+
         $currentEpoch = $this->mirror->getGlobalEpoch();
         $nextEpoch = $currentEpoch + 1;
 
