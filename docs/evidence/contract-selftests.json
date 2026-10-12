@@ -1,0 +1,79 @@
+{
+  "scope": "contract structure and selected design assertions only; no full JSON Schema/OpenAPI conformance validator or runtime execution",
+  "count": 18,
+  "all_passed": true,
+  "tests": [
+    {
+      "name": "all local OpenAPI references resolve",
+      "passed": true
+    },
+    {
+      "name": "22 operations registered",
+      "passed": true
+    },
+    {
+      "name": "ValidateWrite required fields exist",
+      "passed": true
+    },
+    {
+      "name": "CutoverWrite required fields exist",
+      "passed": true
+    },
+    {
+      "name": "RollbackWrite required fields exist",
+      "passed": true
+    },
+    {
+      "name": "VariantMutationResult required fields exist",
+      "passed": true
+    },
+    {
+      "name": "cutover requires gate ID",
+      "passed": true
+    },
+    {
+      "name": "rollback requires reason and defaults dry run",
+      "passed": true
+    },
+    {
+      "name": "validation requires snapshot",
+      "passed": true
+    },
+    {
+      "name": "variant mutation requires parent version",
+      "passed": true
+    },
+    {
+      "name": "collection mutation requires collection mode",
+      "passed": true
+    },
+    {
+      "name": "stock string supports negative backorders",
+      "passed": true
+    },
+    {
+      "name": "price string rejects negative",
+      "passed": true
+    },
+    {
+      "name": "catalog facet mode is explicit",
+      "passed": true
+    },
+    {
+      "name": "product view/edit context exposed",
+      "passed": true
+    },
+    {
+      "name": "delete force exposed",
+      "passed": true
+    },
+    {
+      "name": "acceptance IDs unique and present",
+      "passed": true
+    },
+    {
+      "name": "T02 lockfiles declared",
+      "passed": true
+    }
+  ]
+}

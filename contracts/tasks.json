@@ -1,0 +1,2685 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {
+      "id": "T01",
+      "module": "Foundation",
+      "title": "Pin baseline và compatibility inventory",
+      "depends_on": [],
+      "read_first": [
+        "01 §8",
+        "02 §1",
+        "04 §1",
+        "10 §2"
+      ],
+      "files": [
+        "contracts/compatibility/pins.json",
+        "contracts/compatibility/matrix.json",
+        "docs/evidence/T01/baseline.json",
+        "tests/integration/T01Test.php",
+        "docs/evidence/T01/result.json",
+        "scripts/test-runtime.mjs",
+        "contracts/compatibility/baseline-lock.json"
+      ],
+      "deliverables": "contracts/compatibility/matrix.json và pins.json; baseline-lock.json; minimal real baseline runner; docs/evidence/T01/baseline.json.",
+      "implementation": "Chọn WP/WC/PHP/MariaDB versions đọc từ site1.localhost (không ma trận MySQL), một classic theme và Blocks build. Liệt kê plugin đang dùng: SEO, cache, swatches, imports, pricing, multilingual, feeds. Phân loại CRUD-safe, WP API bridge, SQL-reader, SQL-writer; ghi product types và reservation paths. T01 triển khai minimal test:task runner cho baseline smoke và source/package checksums; T02 mở rộng harness. baseline-lock.json là manifest version/checksum, không cần Composer lockfile trước T02.",
+      "acceptance": "Matrix có exact versions/baseline-lock.json/fixtures; mỗi bề mặt có owner, test và supported/blocked/unknown. Không ghi “mọi Woo plugin tương thích”. Direct SQL writer chưa có adapter là blocker cohort native.",
+      "regression_requirements": [
+        {
+          "id": "R01",
+          "name": "baseline_cart_checkout_gallery_admin_csv"
+        },
+        {
+          "id": "R02",
+          "name": "unknown_extension_blocks_native"
+        }
+      ],
+      "phase": 0,
+      "acceptance_checks": [
+        {
+          "id": "AC-T01-01",
+          "text": "Matrix có exact versions/baseline-lock.json/fixtures; mỗi bề mặt có owner, test và supported/blocked/unknown"
+        },
+        {
+          "id": "AC-T01-02",
+          "text": "Không ghi “mọi Woo plugin tương thích”"
+        },
+        {
+          "id": "AC-T01-03",
+          "text": "Direct SQL writer chưa có adapter là blocker cohort native"
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "module": "Foundation",
+      "title": "Plugin bootstrap và feature flags",
+      "depends_on": [
+        "T01"
+      ],
+      "read_first": [
+        "01 §8",
+        "02 §1",
+        "04 §1",
+        "10 §2"
+      ],
+      "files": [
+        "wc-product-engine.php",
+        "composer.json",
+        "package.json",
+        "scripts/test-runtime.mjs",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/T02Test.php",
+        "docs/evidence/T02/result.json",
+        "composer.lock",
+        "package-lock.json"
+      ],
+      "deliverables": "Bootstrap/DI; config schema; capability registry; plugin lifecycle; WP-CLI command namespace.",
+      "implementation": "Nạp plugin sau WC dependency; register Data Store đúng thời điểm, không activate native ngay khi bật plugin. Flags tách query/media/resolver/native writes; cohort routing có precedence rõ. Admin notices cho version unsupported. Deactivation không DROP data; uninstall không tự xóa bảng. Mở rộng runner do T01 tạo cho mọi task; tạo Composer/tooling lockfiles ở T02.",
+      "acceptance": "Install không đổi authority/sản phẩm; unsupported version chặn bật native. Tắt feature query vẫn đọc WC ở legacy. Cohort conflict không chọn ngẫu nhiên; status endpoint phản ánh config thực.",
+      "regression_requirements": [
+        {
+          "id": "R03",
+          "name": "activation_no_mutation"
+        },
+        {
+          "id": "R04",
+          "name": "flag_scope"
+        },
+        {
+          "id": "R05",
+          "name": "dependency_missing"
+        },
+        {
+          "id": "R06",
+          "name": "deactivate_retains_data"
+        }
+      ],
+      "phase": 0,
+      "acceptance_checks": [
+        {
+          "id": "AC-T02-01",
+          "text": "Install không đổi authority/sản phẩm; unsupported version chặn bật native"
+        },
+        {
+          "id": "AC-T02-02",
+          "text": "Tắt feature query vẫn đọc WC ở legacy"
+        },
+        {
+          "id": "AC-T02-03",
+          "text": "Cohort conflict không chọn ngẫu nhiên; status endpoint phản ánh config thực"
+        }
+      ]
+    },
+    {
+      "id": "T03",
+      "module": "Foundation",
+      "title": "Khóa database/API/event/CSV contracts",
+      "depends_on": [
+        "T01",
+        "T02"
+      ],
+      "read_first": [
+        "01 §8",
+        "02 §1",
+        "04 §1",
+        "10 §2"
+      ],
+      "files": [
+        "contracts/database/schema-contract.json",
+        "contracts/openapi/wpe-v1.json",
+        "contracts/api/endpoints.json",
+        "contracts/events/product-changed.schema.json",
+        "contracts/csv/dialects.json",
+        "contracts/compatibility/wc-props-mapping.json",
+        "tests/unit/T03Test.php",
+        "docs/evidence/T03/result.json"
+      ],
+      "deliverables": "contracts/database/schema-contract.json; contracts/openapi/wpe-v1.json; event JSON schemas; wc-props-mapping.json; CSV dialect profiles. Executable schema.sql do T05 triển khai.",
+      "implementation": "Chuyển contracts 03, 04 và 10 thành schema kiểm tra bằng máy; inventory mapping mọi WC Product/Variable/Variation prop và Data Store method, gồm callable methods ngoài interface. Chốt missing/null/empty, IDs, enums, authorization, compatibility errors. ADR cho retained shells và SKU policy.",
+      "acceptance": "OpenAPI validate pass; mọi endpoint ở matrix có request/response/errors/security; DB schema không thiếu field DTO; props chưa hỗ trợ có native blocker. Breaking change cần version/ADR.",
+      "regression_requirements": [
+        {
+          "id": "R07",
+          "name": "contract_schema_validation"
+        },
+        {
+          "id": "R08",
+          "name": "decimal_id_roundtrip"
+        },
+        {
+          "id": "R09",
+          "name": "nullable_blank_semantics"
+        },
+        {
+          "id": "R10",
+          "name": "props_mapping_coverage"
+        }
+      ],
+      "phase": 0,
+      "acceptance_checks": [
+        {
+          "id": "AC-T03-01",
+          "text": "OpenAPI validate pass; mọi endpoint ở matrix có request/response/errors/security; DB schema không thiếu field DTO; props chưa hỗ trợ có native blocker"
+        },
+        {
+          "id": "AC-T03-02",
+          "text": "Breaking change cần version/ADR"
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "module": "Foundation",
+      "title": "Fixture và differential test harness",
+      "depends_on": [
+        "T03"
+      ],
+      "read_first": [
+        "01 §8",
+        "02 §1",
+        "04 §1",
+        "10 §2"
+      ],
+      "files": [
+        "src/Bootstrap/FixtureHarness.php",
+        "tests/integration/T04Test.php",
+        "docs/evidence/T04/result.json"
+      ],
+      "deliverables": "Factory datasets; baseline/native runners; canonical snapshot comparator; race harness; fixture CSV từ dialect pinned.",
+      "implementation": "Tạo simple/variable, 0/1/3/>3 options, 10/100/10000 variations, Any/wildcards, inherited stock, free/missing price, sale schedules/DST, Unicode labels, repeated meta, shared images, downloads và historical orders. Dùng cùng seed để so legacy/native.",
+      "acceptance": "Comparator phân biệt semantic difference và volatile timestamps; không normalize mất IDs/stock/gallery order. Dataset nhỏ reproducible, dataset scale có manifest và seed.",
+      "regression_requirements": [
+        {
+          "id": "R11",
+          "name": "fixture_invariants"
+        },
+        {
+          "id": "R12",
+          "name": "diff_detects_wrong_price_stock_variant"
+        },
+        {
+          "id": "R13",
+          "name": "snapshot_not_hiding_errors"
+        }
+      ],
+      "phase": 0,
+      "acceptance_checks": [
+        {
+          "id": "AC-T04-01",
+          "text": "Comparator phân biệt semantic difference và volatile timestamps; không normalize mất IDs/stock/gallery order"
+        },
+        {
+          "id": "AC-T04-02",
+          "text": "Dataset nhỏ reproducible, dataset scale có manifest và seed"
+        }
+      ]
+    },
+    {
+      "id": "T05",
+      "module": "Custom Tables",
+      "title": "DDL và migration runner",
+      "depends_on": [
+        "T03"
+      ],
+      "read_first": [
+        "03 §1",
+        "03 §2",
+        "03 §4",
+        "03 §5",
+        "02 §13"
+      ],
+      "files": [
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "tests/integration/T05Test.php",
+        "docs/evidence/T05/result.json",
+        "contracts/database/schema.sql"
+      ],
+      "deliverables": "Schema migrations cho toàn bộ bảng phần 2; schema-version control; verify/repair CLI; migration lock.",
+      "implementation": "Implement create/upgrade theo expand-contract; prefix/charset site, checks capability DB, online/backfill index theo version. DDL tách checkpoint; chỉ một migrator giữ lease. Không tạo một index lớn ở request activate. Validate precision, UTF-8, JSON text và unique registries.",
+      "acceptance": "Fresh install + upgrade N-1 + interrupted migration resume pass trên cả DB target. Không khóa write dài vượt budget T01; partial schema không enable engine. Không sửa bảng Core trừ writes chuẩn qua bridge.",
+      "regression_requirements": [
+        {
+          "id": "R14",
+          "name": "migration_idempotent"
+        },
+        {
+          "id": "R15",
+          "name": "prefix_multisite"
+        },
+        {
+          "id": "R16",
+          "name": "crash_between_ddl"
+        },
+        {
+          "id": "R17",
+          "name": "decimal_precision_and_collation"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T05-01",
+          "text": "Fresh install + upgrade N-1 + interrupted migration resume pass trên cả DB target"
+        },
+        {
+          "id": "AC-T05-02",
+          "text": "Không khóa write dài vượt budget T01; partial schema không enable engine"
+        },
+        {
+          "id": "AC-T05-03",
+          "text": "Không sửa bảng Core trừ writes chuẩn qua bridge"
+        }
+      ]
+    },
+    {
+      "id": "T09",
+      "module": "Custom Tables",
+      "title": "Outbox, jobs, epoch và idempotency persistence",
+      "depends_on": [
+        "T05"
+      ],
+      "read_first": [
+        "03 §1",
+        "03 §2",
+        "03 §4",
+        "03 §5",
+        "02 §13"
+      ],
+      "files": [
+        "src/Infrastructure/Database/OutboxWorker.php",
+        "tests/integration/T09Test.php",
+        "docs/evidence/T09/result.json"
+      ],
+      "deliverables": "Outbox writer/consumer; jobs lease/checkpoint; command receipts; control CAS; audit redaction.",
+      "implementation": "Atomic native data+event+receipt transaction; consumer at-least-once, revision fence, dead-letter/replay. Epoch từ control/state; lease có expiry/owner CAS. Receipt lưu body hash/result. Hook external side effects sau commit, không replay nội dung secret.",
+      "acceptance": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject. Audit có actor/request ID.",
+      "regression_requirements": [
+        {
+          "id": "R32",
+          "name": "outbox_commit_crash"
+        },
+        {
+          "id": "R33",
+          "name": "duplicate_out_of_order_events"
+        },
+        {
+          "id": "R34",
+          "name": "worker_lease_takeover"
+        },
+        {
+          "id": "R35",
+          "name": "key_body_conflict"
+        },
+        {
+          "id": "R36",
+          "name": "stale_epoch"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T09-01",
+          "text": "Crash sau DB commit không mất event; duplicate event không revert dữ liệu mới; worker bị kill được worker khác resume; old epoch command bị reject"
+        },
+        {
+          "id": "AC-T09-02",
+          "text": "Audit có actor/request ID"
+        }
+      ]
+    },
+    {
+      "id": "T06",
+      "module": "Custom Tables",
+      "title": "Product/variant repositories và aggregate commands",
+      "depends_on": [
+        "T05",
+        "T04",
+        "T09"
+      ],
+      "read_first": [
+        "03 §1",
+        "03 §2",
+        "03 §4",
+        "03 §5",
+        "02 §13"
+      ],
+      "files": [
+        "src/Infrastructure/Database/ProductRepository.php",
+        "tests/integration/T06Test.php",
+        "docs/evidence/T06/result.json",
+        "src/Compatibility/WordPress/PostIdAllocator.php"
+      ],
+      "deliverables": "Repositories; create/update/trash/restore/delete commands; SKU registry service; version CAS.",
+      "implementation": "Persist canonical products/variants, links/downloads và typed props; assign ID qua real post shell allocator trong transaction adapter được kiểm chứng. Enforce one parent và SKU uniqueness cả native/legacy. Lock parent, atomic aggregate writes, IDs giữ cho orders. Soft deletion có tombstone. Minimal PostIdAllocator thuộc T06, không chờ T13; T13 hoàn thiện public shell projector/routing/factory.",
+      "acceptance": "Save rồi reload khớp canonical snapshot; duplicate SKU race chỉ một winner; invalid child/price không lưu nửa aggregate; cập nhật phiên bản và outbox transaction theo T09. Legacy IDs được reuse khi migrate.",
+      "regression_requirements": [
+        {
+          "id": "R18",
+          "name": "aggregate_atomicity"
+        },
+        {
+          "id": "R19",
+          "name": "sku_race"
+        },
+        {
+          "id": "R20",
+          "name": "variant_wrong_parent"
+        },
+        {
+          "id": "R21",
+          "name": "deleted_product_order_reference"
+        },
+        {
+          "id": "R22",
+          "name": "stale_write_412"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T06-01",
+          "text": "Save rồi reload khớp canonical snapshot; duplicate SKU race chỉ một winner; invalid child/price không lưu nửa aggregate; cập nhật phiên bản và outbox transaction theo T09"
+        },
+        {
+          "id": "AC-T06-02",
+          "text": "Legacy IDs được reuse khi migrate"
+        }
+      ]
+    },
+    {
+      "id": "T07",
+      "module": "Custom Tables",
+      "title": "Options, values và combination integrity",
+      "depends_on": [
+        "T06"
+      ],
+      "read_first": [
+        "03 §1",
+        "03 §2",
+        "03 §4",
+        "03 §5",
+        "02 §13"
+      ],
+      "files": [
+        "src/Infrastructure/Database/OptionsRepository.php",
+        "tests/unit/T07Test.php",
+        "docs/evidence/T07/result.json"
+      ],
+      "deliverables": "Option repository; normalized selection model; combination key builder; defaults validation.",
+      "implementation": "Hỗ trợ global/local attributes và Woo >3 options; không đồng nhất label với key. Wildcard Any giữ riêng khỏi value rỗng hợp lệ. Hash vector theo ordered option IDs/value IDs; so vector khi collision. Không generate variants ngầm khi thêm option.",
+      "acceptance": "Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng. Duplicate combinations được report, không silent overwrite.",
+      "regression_requirements": [
+        {
+          "id": "R23",
+          "name": "unicode_value_key"
+        },
+        {
+          "id": "R24",
+          "name": "hash_collision_simulated"
+        },
+        {
+          "id": "R25",
+          "name": "rename_reorder_preserve_id"
+        },
+        {
+          "id": "R26",
+          "name": "any_vs_empty"
+        },
+        {
+          "id": "R27",
+          "name": "no_cartesian_variants"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T07-01",
+          "text": "Không có value của parent khác; defaults phải tồn tại; rename/reorder giữ identity và update key đúng"
+        },
+        {
+          "id": "AC-T07-02",
+          "text": "Duplicate combinations được report, không silent overwrite"
+        }
+      ]
+    },
+    {
+      "id": "T08",
+      "module": "Custom Tables",
+      "title": "Media và metadata persistence",
+      "depends_on": [
+        "T06",
+        "T07"
+      ],
+      "read_first": [
+        "03 §1",
+        "03 §2",
+        "03 §4",
+        "03 §5",
+        "02 §13"
+      ],
+      "files": [
+        "src/Infrastructure/Database/MediaRepository.php",
+        "tests/integration/T08Test.php",
+        "docs/evidence/T08/result.json",
+        "src/Compatibility/WordPress/MetaIdAllocator.php"
+      ],
+      "deliverables": "Asset/media repository; repeated meta adapter; extension props/download/link persistence.",
+      "implementation": "Ghi ordered featured/gallery/variant media; shared refs không cascade xóa. WC meta có meta_id và serialization giữ nguyên. Source Shopify fields không đại diện được lưu namespaced extension có version, không trộn vào price query. MetaIdAllocator reserve ID thật wp_postmeta; không dùng AUTO namespace native độc lập (03 §5).",
+      "acceptance": "Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject. Repeated metadata và downloadable props survive save/reload.",
+      "regression_requirements": [
+        {
+          "id": "R28",
+          "name": "gallery_order"
+        },
+        {
+          "id": "R29",
+          "name": "shared_asset_delete"
+        },
+        {
+          "id": "R30",
+          "name": "meta_serialized_repeated_ids"
+        },
+        {
+          "id": "R31",
+          "name": "download_ids_preserved"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T08-01",
+          "text": "Một featured/primary hợp lệ; thay gallery atomic; malformed JSON/foreign asset reject"
+        },
+        {
+          "id": "AC-T08-02",
+          "text": "Repeated metadata và downloadable props survive save/reload"
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "module": "CRUD Compatibility",
+      "title": "Woo Product Data Stores",
+      "depends_on": [
+        "T06",
+        "T07",
+        "T08",
+        "T09"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "tests/integration/T10Test.php",
+        "docs/evidence/T10/result.json"
+      ],
+      "deliverables": "Simple/variable/variation Data Store adapters; registration filters; method parity report.",
+      "implementation": "Implement đúng interface pinned và methods product lookup/query, children, matching variation, price sync, SKU, stock, counts, sale lists, feature lists. Chặn inherited CPT method đọc postmeta vô tình. WC factory/discovery được bridge T13; preserve get_changes/apply_changes/set_object_read lifecycle.",
+      "acceptance": "Direct WC_Product_Simple/Variable/Variation save/read/getters/setters và Data Store ID query methods đúng classes/IDs. Factory/permalink qua wc_get_product được chứng nhận T13; full wc_get_products query surfaces T19. Mọi methods mapping T03 có integration test trong scope trực tiếp, không chỉ 4 CRUD methods.",
+      "regression_requirements": [
+        {
+          "id": "R37",
+          "name": "datastore_interface_parity"
+        },
+        {
+          "id": "R38",
+          "name": "wc_object_class_and_hydration"
+        },
+        {
+          "id": "R39",
+          "name": "children_and_price_sync"
+        },
+        {
+          "id": "R40",
+          "name": "no_hidden_cpt_method_reads"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T10-01",
+          "text": "Direct WC_Product_Simple/Variable/Variation save/read/getters/setters và Data Store ID query methods đúng classes/IDs"
+        },
+        {
+          "id": "AC-T10-02",
+          "text": "Factory/permalink qua wc_get_product được chứng nhận T13; full wc_get_products query surfaces T19"
+        },
+        {
+          "id": "AC-T10-03",
+          "text": "Mọi methods mapping T03 có integration test trong scope trực tiếp, không chỉ 4 CRUD methods"
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "module": "CRUD Compatibility",
+      "title": "WC metadata và WordPress metadata bridge",
+      "depends_on": [
+        "T10"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "tests/integration/T11Test.php",
+        "docs/evidence/T11/result.json"
+      ],
+      "deliverables": "WC meta CRUD; allowlisted WordPress metadata filters; owned-key registry; compatibility conflict report.",
+      "implementation": "Map known WC internal meta sang typed fields; arbitrary extension meta giữ source rõ theo authority. Adapter get/update/add/delete_post_meta cho key đã chứng nhận, giữ empty/single/repeated semantics và no-op return. Bypass guard theo request context để không sync loop.",
+      "acceptance": "get_post_meta và WC read_meta_data thống nhất trên owned keys trong supported mode; direct WP API writes có validation và event. Unknown SQL writer không được mặc nhiên native.",
+      "regression_requirements": [
+        {
+          "id": "R41",
+          "name": "meta_bridge_single_multiple"
+        },
+        {
+          "id": "R42",
+          "name": "wp_meta_noop_return"
+        },
+        {
+          "id": "R43",
+          "name": "recursive_hook_guard"
+        },
+        {
+          "id": "R44",
+          "name": "unknown_meta_retention"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T11-01",
+          "text": "get_post_meta và WC read_meta_data thống nhất trên owned keys trong supported mode; direct WP API writes có validation và event"
+        },
+        {
+          "id": "AC-T11-02",
+          "text": "Unknown SQL writer không được mặc nhiên native"
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "module": "CRUD Compatibility",
+      "title": "Stock owner, reservation và order lifecycle",
+      "depends_on": [
+        "T10",
+        "T09"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/InventoryBridge.php",
+        "tests/integration/T12Test.php",
+        "docs/evidence/T12/result.json"
+      ],
+      "deliverables": "Inventory Data Store methods; atomic stock commands; reservation adapter; order transition idempotency.",
+      "implementation": "Trace wc_update_product_stock, reserve/hold/reduce/restore, checkout classic/Blocks và HPOS modes trên pinned WC. Chọn một reservation backend mỗi cohort; custom helper qua extension point hợp lệ hoặc giữ mode bị block nếu không thể thay. Implement parent inheritance, backorders, sold individually, low stock và partial refunds.",
+      "acceptance": "Concurrent buyers cuối stock không oversell khi no-backorder; duplicate webhook/retry không double-reduce; cancel/fail/timeout release đúng. Không đọc quantity stale từ postmeta/lookup tại checkout native. Không thay order/payment engine.",
+      "regression_requirements": [
+        {
+          "id": "R45",
+          "name": "last_unit_race"
+        },
+        {
+          "id": "R46",
+          "name": "parent_stock_shared_variants"
+        },
+        {
+          "id": "R47",
+          "name": "reserve_expiry_and_own_order"
+        },
+        {
+          "id": "R48",
+          "name": "payment_retry_reduce_once"
+        },
+        {
+          "id": "R49",
+          "name": "partial_refund_restock"
+        },
+        {
+          "id": "R50",
+          "name": "hpos_and_legacy_orders"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T12-01",
+          "text": "Concurrent buyers cuối stock không oversell khi no-backorder; duplicate webhook/retry không double-reduce; cancel/fail/timeout release đúng"
+        },
+        {
+          "id": "AC-T12-02",
+          "text": "Không đọc quantity stale từ postmeta/lookup tại checkout native"
+        },
+        {
+          "id": "AC-T12-03",
+          "text": "Không thay order/payment engine"
+        }
+      ]
+    },
+    {
+      "id": "T13",
+      "module": "CRUD Compatibility",
+      "title": "Post shell, factory, taxonomy và permalink bridge",
+      "depends_on": [
+        "T10",
+        "T11"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/PostShellBridge.php",
+        "tests/integration/T13Test.php",
+        "docs/evidence/T13/result.json"
+      ],
+      "deliverables": "Real ID allocator; shell projector; discovery/routing adapters; term/review bridge.",
+      "implementation": "Giữ shell product/variation type/title/status/slug/parent và lifecycle thông qua WP APIs. Taxonomy/reviews vẫn WP authoritative; versioned projection native index. Product factory có thể đọc CPT/terms nên không xóa shell. WP_Query không được coi tự native chỉ vì thay Data Store.",
+      "acceptance": "Permalink cũ/new slug redirects và variation discovery ổn; get_post_type/reviews/category counts phù hợp policy. Non-product posts không bị can thiệp; shell-only không chứa stock/price canonical.",
+      "regression_requirements": [
+        {
+          "id": "R51",
+          "name": "permalink_factory_ids"
+        },
+        {
+          "id": "R52",
+          "name": "taxonomy_hierarchy"
+        },
+        {
+          "id": "R53",
+          "name": "reviews_rating_projection"
+        },
+        {
+          "id": "R54",
+          "name": "nonproduct_queries_unchanged"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T13-01",
+          "text": "Permalink cũ/new slug redirects và variation discovery ổn; get_post_type/reviews/category counts phù hợp policy"
+        },
+        {
+          "id": "AC-T13-02",
+          "text": "Non-product posts không bị can thiệp; shell-only không chứa stock/price canonical"
+        }
+      ]
+    },
+    {
+      "id": "T14",
+      "module": "CRUD Compatibility",
+      "title": "WC admin, REST v3 và Store API adapters",
+      "depends_on": [
+        "T13",
+        "T12",
+        "T07"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/AdminApiBridge.php",
+        "tests/integration/T14Test.php",
+        "docs/evidence/T14/result.json"
+      ],
+      "deliverables": "Admin product edit/list/bulk actions; REST adapter coverage; Store API/Blocks integration report.",
+      "implementation": "Trace CRUD và query thực cho edit, quick edit, bulk edit, duplicate, REST product/variation CRUD, Store API images/attributes/cart. Bridge query riêng từng surface; permissions object-level, không chỉ manage_woocommerce. Unknown meta query hiện warning/unsupported/fallback theo mode.",
+      "acceptance": "Tạo/sửa/xóa qua WC admin và WC REST tồn tại cùng dữ liệu engine; public API không lộ draft/private/cost. Unsupported query chỉ fallback ở legacy authority, không query stale native postmeta.",
+      "regression_requirements": [
+        {
+          "id": "R55",
+          "name": "admin_crud_bulk_duplicate"
+        },
+        {
+          "id": "R56",
+          "name": "wc_rest_product_variation_roundtrip"
+        },
+        {
+          "id": "R57",
+          "name": "store_api_no_private_leak"
+        },
+        {
+          "id": "R58",
+          "name": "object_capability_denial"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T14-01",
+          "text": "Tạo/sửa/xóa qua WC admin và WC REST tồn tại cùng dữ liệu engine; public API không lộ draft/private/cost"
+        },
+        {
+          "id": "AC-T14-02",
+          "text": "Unsupported query chỉ fallback ở legacy authority, không query stale native postmeta"
+        }
+      ]
+    },
+    {
+      "id": "T15",
+      "module": "CRUD Compatibility",
+      "title": "Hooks, product transitions và cache lifecycle",
+      "depends_on": [
+        "T10",
+        "T11",
+        "T12",
+        "T13"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §8",
+        "03 §5",
+        "10 §2"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/ProductLifecycle.php",
+        "tests/integration/T15Test.php",
+        "docs/evidence/T15/result.json"
+      ],
+      "deliverables": "Lifecycle action matrix; transition commands; cache invalidation integration.",
+      "implementation": "Preserve các action payload/timing cần tương thích theo fixture, dispatch sau commit và chống duplicate do mirror. Test simple↔variable có preview/remap, trash/restore/permanent delete. Cache WC object/transient và Redis persistent không giữ wrong type/price sau save.",
+      "acceptance": "Supported subscribers nhận events có đúng ID/object và trạng thái commit. Không hứa exactly-once action trong mọi crash; subscriber stock dùng durable operation key. Destructive transition không làm mất historical variation references.",
+      "regression_requirements": [
+        {
+          "id": "R59",
+          "name": "hooks_payload_and_order"
+        },
+        {
+          "id": "R60",
+          "name": "type_transition_order_history"
+        },
+        {
+          "id": "R61",
+          "name": "persistent_cache_after_update"
+        },
+        {
+          "id": "R62",
+          "name": "projection_not_emitting_business_write_twice"
+        }
+      ],
+      "phase": 1,
+      "acceptance_checks": [
+        {
+          "id": "AC-T15-01",
+          "text": "Supported subscribers nhận events có đúng ID/object và trạng thái commit"
+        },
+        {
+          "id": "AC-T15-02",
+          "text": "Không hứa exactly-once action trong mọi crash; subscriber stock dùng durable operation key"
+        },
+        {
+          "id": "AC-T15-03",
+          "text": "Destructive transition không làm mất historical variation references"
+        }
+      ]
+    },
+    {
+      "id": "T16",
+      "module": "Catalog Index",
+      "title": "Projection builder và generation rebuild",
+      "depends_on": [
+        "T06",
+        "T07",
+        "T08",
+        "T09"
+      ],
+      "read_first": [
+        "02 §9",
+        "03 §4",
+        "04 §1.3",
+        "07 §6"
+      ],
+      "files": [
+        "src/Application/Catalog/CatalogProjector.php",
+        "tests/integration/T16Test.php",
+        "docs/evidence/T16/result.json"
+      ],
+      "deliverables": "Catalog/facet projector; active generation pointer; rebuild/resume commands; lag metrics.",
+      "implementation": "Đọc canonical theo authority; compute min/max purchasable variation prices, on_sale/stock/ratings/sales từ sources rõ. Build generation mới side-by-side, catch-up revision fence rồi atomic switch; tombstone không resurrect. Stock/sale boundary/review/order updates trigger index.",
+      "acceptance": "Dirty product cuối rebuild vẫn đúng; previous generation giữ đến cursor expiry. Price schedule tự chuyển dù không save. No orphan facets và source_version audit pass.",
+      "regression_requirements": [
+        {
+          "id": "R63",
+          "name": "rebuild_under_writes"
+        },
+        {
+          "id": "R64",
+          "name": "tombstone_no_resurrection"
+        },
+        {
+          "id": "R65",
+          "name": "sale_clock_boundary_dst"
+        },
+        {
+          "id": "R66",
+          "name": "generation_cursor_retention"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T16-01",
+          "text": "Dirty product cuối rebuild vẫn đúng; previous generation giữ đến cursor expiry"
+        },
+        {
+          "id": "AC-T16-02",
+          "text": "Price schedule tự chuyển dù không save"
+        },
+        {
+          "id": "AC-T16-03",
+          "text": "No orphan facets và source_version audit pass"
+        }
+      ]
+    },
+    {
+      "id": "T17",
+      "module": "Catalog Index",
+      "title": "Fast query compiler và keyset pagination",
+      "depends_on": [
+        "T16",
+        "T03"
+      ],
+      "read_first": [
+        "02 §9",
+        "03 §4",
+        "04 §1.3",
+        "07 §6"
+      ],
+      "files": [
+        "src/Application/Catalog/CatalogQuery.php",
+        "tests/integration/T17Test.php",
+        "docs/evidence/T17/result.json"
+      ],
+      "deliverables": "Typed filter grammar; parameterized SQL compiler; catalog public endpoint; cursor signer.",
+      "implementation": "Compile supported filter/sort thành bounded prepared SQL trên index tables; stable ID tie-break và null handling. Validate sort/query hash/epoch/expiry cursor. Batch hydration/card projection, không SELECT mọi matching ID. Separate exact count khi cần.",
+      "acceptance": "Result IDs/order khớp fixture semantic mode; injection/cursor tamper reject; page 1 size đúng không N+1 theo số matches. Live traversal semantics documented, export không reuse cursor như snapshot.",
+      "regression_requirements": [
+        {
+          "id": "R67",
+          "name": "filter_sort_diff"
+        },
+        {
+          "id": "R68",
+          "name": "equal_price_cursor_tie"
+        },
+        {
+          "id": "R69",
+          "name": "cursor_tamper_query_mismatch"
+        },
+        {
+          "id": "R70",
+          "name": "limit_cap_and_null_price"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T17-01",
+          "text": "Result IDs/order khớp fixture semantic mode; injection/cursor tamper reject; page 1 size đúng không N+1 theo số matches"
+        },
+        {
+          "id": "AC-T17-02",
+          "text": "Live traversal semantics documented, export không reuse cursor như snapshot"
+        }
+      ]
+    },
+    {
+      "id": "T18",
+      "module": "Catalog Index",
+      "title": "Facets coherent theo variant và counts",
+      "depends_on": [
+        "T17",
+        "T07"
+      ],
+      "read_first": [
+        "02 §9",
+        "03 §4",
+        "04 §1.3",
+        "07 §6"
+      ],
+      "files": [
+        "src/Application/Catalog/FacetQuery.php",
+        "tests/integration/T18Test.php",
+        "docs/evidence/T18/result.json"
+      ],
+      "deliverables": "Facet query service; disjunctive count contract; variant-coherent/WC-compatible policies.",
+      "implementation": "AND khác facet, OR cùng facet; variation filters join cùng variation, inheritance stock resolve. Category descendants expand theo term version. Count distinct parents, self-exclude current facet; price facet policy và stock/backorder policy rõ.",
+      "acceptance": "Black-M/White-L không match Black-L trong coherent mode; counts không double khi nhiều variants/terms; WC-compatible fixture nếu khác được tách tên/mode.",
+      "regression_requirements": [
+        {
+          "id": "R71",
+          "name": "impossible_combination_filter"
+        },
+        {
+          "id": "R72",
+          "name": "distinct_parent_counts"
+        },
+        {
+          "id": "R73",
+          "name": "self_exclusion_facets"
+        },
+        {
+          "id": "R74",
+          "name": "category_descendants_deleted_term"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T18-01",
+          "text": "Black-M/White-L không match Black-L trong coherent mode; counts không double khi nhiều variants/terms; WC-compatible fixture nếu khác được tách tên/mode"
+        }
+      ]
+    },
+    {
+      "id": "T19",
+      "module": "Catalog Index",
+      "title": "Tích hợp wc_get_products, shop archives và admin lists",
+      "depends_on": [
+        "T17",
+        "T18",
+        "T14"
+      ],
+      "read_first": [
+        "02 §9",
+        "03 §4",
+        "04 §1.3",
+        "07 §6"
+      ],
+      "files": [
+        "src/Application/Catalog/CatalogAdapters.php",
+        "tests/integration/T19Test.php",
+        "docs/evidence/T19/result.json"
+      ],
+      "deliverables": "Scoped Woo query/Data Store adapters; archive pagination integration; block query adapter; query capability registry.",
+      "implementation": "Shop/category/tag/attribute listing dùng engine cho queries chứng nhận, giữ WP loop pagination/total/visibility. Numbered pages giữ query/count riêng; deep page budget/cap. Query không hỗ trợ explicit fallback legacy hoặc native feature blocker; không chèn triệu IDs vào post__in.",
+      "acceptance": "Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals. Main WP_Query non-product không đổi. Query unsupported không trả list “thành công” thiếu điều kiện.",
+      "regression_requirements": [
+        {
+          "id": "R75",
+          "name": "archive_pagination_found_posts"
+        },
+        {
+          "id": "R76",
+          "name": "wc_query_args_coverage"
+        },
+        {
+          "id": "R77",
+          "name": "blocks_listing"
+        },
+        {
+          "id": "R78",
+          "name": "unsupported_filter_no_silent_omission"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T19-01",
+          "text": "Classic pagination, layered nav, Woo REST list và chosen Blocks product collection cho đúng IDs/totals"
+        },
+        {
+          "id": "AC-T19-02",
+          "text": "Main WP_Query non-product không đổi"
+        },
+        {
+          "id": "AC-T19-03",
+          "text": "Query unsupported không trả list “thành công” thiếu điều kiện"
+        }
+      ]
+    },
+    {
+      "id": "T20",
+      "module": "Catalog Index",
+      "title": "Cache context, invalidation và pricing compatibility",
+      "depends_on": [
+        "T19",
+        "T15"
+      ],
+      "read_first": [
+        "02 §9",
+        "03 §4",
+        "04 §1.3",
+        "07 §6"
+      ],
+      "files": [
+        "src/Application/Catalog/ContextCache.php",
+        "tests/integration/T20Test.php",
+        "docs/evidence/T20/result.json"
+      ],
+      "deliverables": "Cache keys/context policy; epoch/generation invalidation; freshness display; pricing compatibility gate.",
+      "implementation": "Cache theo filter/sort/generation/locale/currency/customer-price context allowlist; bounded TTL và stampede protection. Delete/update invalidate via revision. Dynamic price filter không representable trước pagination phải disable engine price filter cho surface đó hoặc block native feature.",
+      "acceptance": "Hai tax/customer/currency contexts không dùng chung giá; changed visibility không leak draft qua cache. Outbox backlog có observable lag và fallback chỉ về canonical đúng authority.",
+      "regression_requirements": [
+        {
+          "id": "R79",
+          "name": "context_cache_isolation"
+        },
+        {
+          "id": "R80",
+          "name": "visibility_cache_invalidate"
+        },
+        {
+          "id": "R81",
+          "name": "cache_stampede"
+        },
+        {
+          "id": "R82",
+          "name": "dynamic_price_filter_before_pagination"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T20-01",
+          "text": "Hai tax/customer/currency contexts không dùng chung giá; changed visibility không leak draft qua cache"
+        },
+        {
+          "id": "AC-T20-02",
+          "text": "Outbox backlog có observable lag và fallback chỉ về canonical đúng authority"
+        }
+      ]
+    },
+    {
+      "id": "T21",
+      "module": "External CDN Images",
+      "title": "URL registry, providers và rendition contract",
+      "depends_on": [
+        "T08",
+        "T09"
+      ],
+      "read_first": [
+        "03 §3",
+        "09 §4",
+        "10 §3",
+        "10 §4"
+      ],
+      "files": [
+        "src/Compatibility/Gallery/AssetService.php",
+        "tests/integration/T21Test.php",
+        "docs/evidence/T21/result.json"
+      ],
+      "deliverables": "Asset service; provider interface; URL validator; health-check workers.",
+      "implementation": "URL dedup so exact canonical URL, giữ query/version; provider mapping widths/formats explicit. HTTPS/image MIME policy, DNS/redirect SSRF checks khi fetch, timeout/body limit; health probes chạy background. Signed delivery separate stable provider key.",
+      "acceptance": "Không network call từng ảnh khi render; invalid/private redirect không fetch; duplicate URL idempotent nhưng per-product alt vẫn riêng. Broken URL có placeholder, không làm PDP fatal.",
+      "regression_requirements": [
+        {
+          "id": "R83",
+          "name": "ssrf_redirect_dns"
+        },
+        {
+          "id": "R84",
+          "name": "url_query_not_stripped"
+        },
+        {
+          "id": "R85",
+          "name": "rendition_dimensions"
+        },
+        {
+          "id": "R86",
+          "name": "render_no_network_probe"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T21-01",
+          "text": "Không network call từng ảnh khi render; invalid/private redirect không fetch; duplicate URL idempotent nhưng per-product alt vẫn riêng"
+        },
+        {
+          "id": "AC-T21-02",
+          "text": "Broken URL có placeholder, không làm PDP fatal"
+        }
+      ]
+    },
+    {
+      "id": "T22",
+      "module": "External CDN Images",
+      "title": "Real attachment bridge và Media Library behavior",
+      "depends_on": [
+        "T21",
+        "T13",
+        "T11"
+      ],
+      "read_first": [
+        "03 §3",
+        "09 §4",
+        "10 §3",
+        "10 §4"
+      ],
+      "files": [
+        "src/Compatibility/Gallery/AttachmentBridge.php",
+        "tests/integration/T22Test.php",
+        "docs/evidence/T22/result.json"
+      ],
+      "deliverables": "Lazy/eager attachment bridge policy; WP image filters; attachment mapping migration.",
+      "implementation": "Cấp ID attachment thật cho assets cần native gallery; metadata dimensions/renditions/alt; WP image URL/downsize/srcset adapters scoped đúng attachment. Không fake local files cho crop/regeneration. Shared deletion safeguards và media REST preview.",
+      "acceptance": "wp_get_attachment_image và Media Library preview thấy CDN ảnh đúng; bridge không tạo attachment trùng khi race. Delete attachment có references tạo warning/rebind policy, không xóa CDN ngoài.",
+      "regression_requirements": [
+        {
+          "id": "R87",
+          "name": "real_attachment_race"
+        },
+        {
+          "id": "R88",
+          "name": "wp_image_srcset_metadata"
+        },
+        {
+          "id": "R89",
+          "name": "local_file_actions_explicit"
+        },
+        {
+          "id": "R90",
+          "name": "shared_attachment_delete"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T22-01",
+          "text": "wp_get_attachment_image và Media Library preview thấy CDN ảnh đúng; bridge không tạo attachment trùng khi race"
+        },
+        {
+          "id": "AC-T22-02",
+          "text": "Delete attachment có references tạo warning/rebind policy, không xóa CDN ngoài"
+        }
+      ]
+    },
+    {
+      "id": "T23",
+      "module": "External CDN Images",
+      "title": "Native gallery và variation image payload",
+      "depends_on": [
+        "T22",
+        "T10"
+      ],
+      "read_first": [
+        "03 §3",
+        "09 §4",
+        "10 §3",
+        "10 §4"
+      ],
+      "files": [
+        "src/Compatibility/Gallery/GalleryAdapter.php",
+        "tests/integration/T23Test.php",
+        "docs/evidence/T23/result.json"
+      ],
+      "deliverables": "Gallery mapping adapter; classic template integration; variant image serializer; reset behavior.",
+      "implementation": "Giữ WC gallery markup/hooks, featured/gallery order và thumbnails. Variant primary và multi-image extension có deterministic fallback; native Woo contract chỉ primary, multi-image gallery của engine qua JS adapter. Reset trả parent featured/gallery.",
+      "acceptance": "Zoom/lightbox/swipe/keyboard và chọn/reset variation chạy; kích thước srcset đúng, không thumbnail ảnh A full_src ảnh B. Không cần sửa WC template Core.",
+      "regression_requirements": [
+        {
+          "id": "R91",
+          "name": "classic_gallery_zoom_lightbox"
+        },
+        {
+          "id": "R92",
+          "name": "variant_image_reset"
+        },
+        {
+          "id": "R93",
+          "name": "multiple_variant_images"
+        },
+        {
+          "id": "R94",
+          "name": "missing_image_fallback"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T23-01",
+          "text": "Zoom/lightbox/swipe/keyboard và chọn/reset variation chạy; kích thước srcset đúng, không thumbnail ảnh A full_src ảnh B"
+        },
+        {
+          "id": "AC-T23-02",
+          "text": "Không cần sửa WC template Core"
+        }
+      ]
+    },
+    {
+      "id": "T24",
+      "module": "External CDN Images",
+      "title": "Ảnh trên cart/email/SEO/feed/Blocks",
+      "depends_on": [
+        "T23",
+        "T14"
+      ],
+      "read_first": [
+        "03 §3",
+        "09 §4",
+        "10 §3",
+        "10 §4"
+      ],
+      "files": [
+        "src/Compatibility/Gallery/ImageSurfaces.php",
+        "tests/integration/T24Test.php",
+        "docs/evidence/T24/result.json"
+      ],
+      "deliverables": "Cart/order/email image adapters; schema/feed/SEO compatibility matrix; Blocks image adapter.",
+      "implementation": "Thử featured/variant ảnh trên cart, mini-cart, checkout, order history/email và WC schema. Certify SEO plugin chosen; sitemap/social/feed link CDN stable. Chặn private token URL trong public/export. Blocks gallery/API cần test riêng.",
+      "acceptance": "Ảnh đúng variation trên các surfaces; OG/schema không rỗng; alt override policy rõ nơi chỉ một attachment alt được hỗ trợ. Unsupported SEO/feed plugin được ghi blocked/unknown.",
+      "regression_requirements": [
+        {
+          "id": "R95",
+          "name": "cart_email_variant_image"
+        },
+        {
+          "id": "R96",
+          "name": "schema_og_sitemap"
+        },
+        {
+          "id": "R97",
+          "name": "blocks_gallery"
+        },
+        {
+          "id": "R98",
+          "name": "no_signed_secret_url_exposure"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T24-01",
+          "text": "Ảnh đúng variation trên các surfaces; OG/schema không rỗng; alt override policy rõ nơi chỉ một attachment alt được hỗ trợ"
+        },
+        {
+          "id": "AC-T24-02",
+          "text": "Unsupported SEO/feed plugin được ghi blocked/unknown"
+        }
+      ]
+    },
+    {
+      "id": "T25",
+      "module": "Variant Selector",
+      "title": "Server resolver và allowed-values engine",
+      "depends_on": [
+        "T07",
+        "T10",
+        "T12"
+      ],
+      "read_first": [
+        "02 §7",
+        "02 §8",
+        "04 §3",
+        "09 §3"
+      ],
+      "files": [
+        "src/Application/Variant/VariantResolver.php",
+        "tests/integration/T25Test.php",
+        "docs/evidence/T25/result.json"
+      ],
+      "deliverables": "Resolve service; selection normalization; wildcard precedence policy; bounded candidate queries.",
+      "implementation": "Partial/full selection theo options IDs và existing combinations; no Cartesian. Match WC wildcard baseline thứ tự đã pin; stock/price/current revision canonical. Allowed exists/purchasable tách, batch query tránh scan JSON tất cả variations.",
+      "acceptance": "None/partial/exact/ambiguous states đúng fixtures, inherited stock đúng; free vs missing price khác. Duplicate overlapping Any được report, không random selection.",
+      "regression_requirements": [
+        {
+          "id": "R99",
+          "name": "partial_allowed_values"
+        },
+        {
+          "id": "R100",
+          "name": "wildcard_precedence_diff"
+        },
+        {
+          "id": "R101",
+          "name": "stock_price_revision"
+        },
+        {
+          "id": "R102",
+          "name": "unknown_option_wrong_product"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T25-01",
+          "text": "None/partial/exact/ambiguous states đúng fixtures, inherited stock đúng; free vs missing price khác"
+        },
+        {
+          "id": "AC-T25-02",
+          "text": "Duplicate overlapping Any được report, không random selection"
+        }
+      ]
+    },
+    {
+      "id": "T26",
+      "module": "Variant Selector",
+      "title": "Resolver API và native AJAX variation adapter",
+      "depends_on": [
+        "T25",
+        "T23",
+        "T03"
+      ],
+      "read_first": [
+        "02 §7",
+        "02 §8",
+        "04 §3",
+        "09 §3"
+      ],
+      "files": [
+        "src/Application/Variant/ResolverApi.php",
+        "tests/integration/T26Test.php",
+        "docs/evidence/T26/result.json"
+      ],
+      "deliverables": "POST resolve route; wc-ajax variation adapter; serializer; ETag/rate-limits.",
+      "implementation": "Support Woo native variation resolution path và engine path; event/payload expected JS contract. Public only visible products/variants. request_sequence echo, revision mismatch actionable; resolver không reserve stock. Limit selection size/quantity malformed input.",
+      "acceptance": "Classic get_variation AJAX trả hợp lệ; engine resolver không expose draft/meta. Empty selection không hydrate 10k variations; rate limit phản hồi có retry hint.",
+      "regression_requirements": [
+        {
+          "id": "R103",
+          "name": "wc_ajax_variation_payload"
+        },
+        {
+          "id": "R104",
+          "name": "public_resolver_permissions"
+        },
+        {
+          "id": "R105",
+          "name": "payload_limits"
+        },
+        {
+          "id": "R106",
+          "name": "revision_refresh"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T26-01",
+          "text": "Classic get_variation AJAX trả hợp lệ; engine resolver không expose draft/meta"
+        },
+        {
+          "id": "AC-T26-02",
+          "text": "Empty selection không hydrate 10k variations; rate limit phản hồi có retry hint"
+        }
+      ]
+    },
+    {
+      "id": "T27",
+      "module": "Variant Selector",
+      "title": "Selector UI, swatches và asynchronous behavior",
+      "depends_on": [
+        "T26",
+        "T24"
+      ],
+      "read_first": [
+        "02 §7",
+        "02 §8",
+        "04 §3",
+        "09 §3"
+      ],
+      "files": [
+        "assets/variant-selector/selector.js",
+        "assets/variant-selector/selector.css",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "tests/integration/T27Test.php",
+        "docs/evidence/T27/result.json"
+      ],
+      "deliverables": "Accessible option controls; selector state machine; classic/Blocks adapters; performance trace.",
+      "implementation": "Dropdown baseline, optional color/image swatches đọc metadata; disable impossible values, loading state, price/stock/image update. Abort/sequence stale requests; reset default selection; form variation_id/attributes theo WC. Enqueue chỉ PDP cần dùng.",
+      "acceptance": "Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image. Product 10k variations không embed toàn JSON; responsive không mất selection.",
+      "regression_requirements": [
+        {
+          "id": "R107",
+          "name": "out_of_order_responses"
+        },
+        {
+          "id": "R108",
+          "name": "keyboard_accessibility"
+        },
+        {
+          "id": "R109",
+          "name": "reset_defaults"
+        },
+        {
+          "id": "R110",
+          "name": "large_variant_payload_budget"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T27-01",
+          "text": "Keyboard/screen-reader dùng được; fast switching không chọn sai variant hoặc stale image"
+        },
+        {
+          "id": "AC-T27-02",
+          "text": "Product 10k variations không embed toàn JSON; responsive không mất selection"
+        }
+      ]
+    },
+    {
+      "id": "T28",
+      "module": "Variant Selector",
+      "title": "Server add-to-cart validation và session restore",
+      "depends_on": [
+        "T27",
+        "T12",
+        "T15"
+      ],
+      "read_first": [
+        "02 §7",
+        "02 §8",
+        "04 §3",
+        "09 §3"
+      ],
+      "files": [
+        "src/Application/Variant/CartValidation.php",
+        "tests/integration/T28Test.php",
+        "docs/evidence/T28/result.json"
+      ],
+      "deliverables": "Classic/Store API add-to-cart guards; cart revalidation; session persistence tests.",
+      "implementation": "Validate parent/variant/options ownership, current purchasability/price/stock/sold-individually tại server. Cart restore xử lý variant deleted/changed, không tin UI price. Giữ metadata customization của plugin đã chứng nhận, không biến resolver thành payment endpoint.",
+      "acceptance": "Tampered variant hoặc price không mua được; stale stock bị xử lý rõ; cart restore sau migrate giữ IDs, invalid variation báo người dùng. Classic và Blocks parity.",
+      "regression_requirements": [
+        {
+          "id": "R111",
+          "name": "tampered_cart_payload"
+        },
+        {
+          "id": "R112",
+          "name": "stock_changed_after_resolve"
+        },
+        {
+          "id": "R113",
+          "name": "cart_session_after_migration"
+        },
+        {
+          "id": "R114",
+          "name": "custom_cart_meta_retention"
+        }
+      ],
+      "phase": 2,
+      "acceptance_checks": [
+        {
+          "id": "AC-T28-01",
+          "text": "Tampered variant hoặc price không mua được; stale stock bị xử lý rõ; cart restore sau migrate giữ IDs, invalid variation báo người dùng"
+        },
+        {
+          "id": "AC-T28-02",
+          "text": "Classic và Blocks parity"
+        }
+      ]
+    },
+    {
+      "id": "T29",
+      "module": "CSV Pipeline",
+      "title": "Streaming parser, staging và dry-run validation",
+      "depends_on": [
+        "T03",
+        "T09",
+        "T07",
+        "T21"
+      ],
+      "read_first": [
+        "02 §11",
+        "04 §2",
+        "10 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Application/ImportExport/CsvStager.php",
+        "tests/integration/T29Test.php",
+        "docs/evidence/T29/result.json"
+      ],
+      "deliverables": "Private upload/staging; dialect detection; validator; dry-run report and immutable file hash.",
+      "implementation": "Streaming UTF-8/BOM/quoted multiline; preserve missing vs blank; limits file/field/row, no arbitrary path fetch. Stage shuffled parent/child rows rồi group trên DB/disk. Dry-run validate SKU/options/images/type/capability, không create products/terms/attachments.",
+      "acceptance": "Dry-run không mutation catalog; malformed row giữ exact row/column error. File/config sửa sau validation làm commit reject; file 1M rows không giữ RAM tỷ lệ kích thước toàn file.",
+      "regression_requirements": [
+        {
+          "id": "R115",
+          "name": "csv_multiline_quotes_bom"
+        },
+        {
+          "id": "R116",
+          "name": "dryrun_no_side_effects"
+        },
+        {
+          "id": "R117",
+          "name": "group_shuffled_rows"
+        },
+        {
+          "id": "R118",
+          "name": "large_csv_memory"
+        },
+        {
+          "id": "R119",
+          "name": "private_upload_permissions"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T29-01",
+          "text": "Dry-run không mutation catalog; malformed row giữ exact row/column error"
+        },
+        {
+          "id": "AC-T29-02",
+          "text": "File/config sửa sau validation làm commit reject; file 1M rows không giữ RAM tỷ lệ kích thước toàn file"
+        }
+      ]
+    },
+    {
+      "id": "T30",
+      "module": "CSV Pipeline",
+      "title": "Commit worker, resume và conflict policy",
+      "depends_on": [
+        "T29",
+        "T10",
+        "T09"
+      ],
+      "read_first": [
+        "02 §11",
+        "04 §2",
+        "10 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Application/ImportExport/ImportCommitter.php",
+        "tests/integration/T30Test.php",
+        "docs/evidence/T30/result.json"
+      ],
+      "deliverables": "Per-product committer; chunk checkpoints; import idempotency; cancel and row reports.",
+      "implementation": "Reuse domain/WC commands theo authority, không raw bulk insert bỏ validation/events. Atomically group parent/options/variants; limit giant group và spill. Actor permissions recheck, version conflicts fail/skip policy explicit. Cancel sau commit boundary; retry không duplicate attachments/stock.",
+      "acceptance": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp. Không overwrite edit mới giữa dry-run và commit.",
+      "regression_requirements": [
+        {
+          "id": "R120",
+          "name": "import_crash_resume"
+        },
+        {
+          "id": "R121",
+          "name": "import_group_atomic"
+        },
+        {
+          "id": "R122",
+          "name": "import_vs_admin_conflict"
+        },
+        {
+          "id": "R123",
+          "name": "cancel_partial_commit_report"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T30-01",
+          "text": "Worker crash/resume tạo đúng số products/variants; một group invalid không half-save; rows failed/skipped/success counts khớp"
+        },
+        {
+          "id": "AC-T30-02",
+          "text": "Không overwrite edit mới giữa dry-run và commit"
+        }
+      ]
+    },
+    {
+      "id": "T31",
+      "module": "CSV Pipeline",
+      "title": "Snapshot export và secure report delivery",
+      "depends_on": [
+        "T30",
+        "T17",
+        "T08"
+      ],
+      "read_first": [
+        "02 §11",
+        "04 §2",
+        "10 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Application/ImportExport/SnapshotExporter.php",
+        "tests/integration/T31Test.php",
+        "docs/evidence/T31/result.json"
+      ],
+      "deliverables": "Snapshot staging exporter; chunk stream; loss report; private download endpoint/retention.",
+      "implementation": "Capture ID/version/payload per aggregate vào staging bất biến; export từ snapshot không lẫn post-change data. Stable deterministic ordering; machine/spreadsheet-safe profiles tách. CSV escaping, control chars, no download arbitrary path; expire artifacts/jobs raw theo policy.",
+      "acceptance": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest. Permission download kiểm tra mỗi lần; loss report có field/path/reason.",
+      "regression_requirements": [
+        {
+          "id": "R124",
+          "name": "export_snapshot_under_writes"
+        },
+        {
+          "id": "R125",
+          "name": "csv_formula_profiles"
+        },
+        {
+          "id": "R126",
+          "name": "download_auth_and_path"
+        },
+        {
+          "id": "R127",
+          "name": "export_loss_report_and_counts"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T31-01",
+          "text": "Import same engine snapshot đạt fields thuộc dialect; export write concurrent không làm mất/duplicate rows trong manifest"
+        },
+        {
+          "id": "AC-T31-02",
+          "text": "Permission download kiểm tra mỗi lần; loss report có field/path/reason"
+        }
+      ]
+    },
+    {
+      "id": "T32",
+      "module": "Woo CSV",
+      "title": "Native Woo import adapter và external image mode",
+      "depends_on": [
+        "T30",
+        "T22",
+        "T14"
+      ],
+      "read_first": [
+        "10 §6",
+        "03 §2",
+        "09 §5"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Woo/WooImporter.php",
+        "tests/integration/T32Test.php",
+        "docs/evidence/T32/result.json"
+      ],
+      "deliverables": "Woo dialect schema/mapper; native importer hooks; UI field/image mode extension.",
+      "implementation": "Pin header/schema/identity precedence và update/create variation semantics theo WC version. Parent id:/SKU, attributes global/local/defaults, dates, stock, descriptions, downloads, linked products. External mode intercept image sideload ở hook hợp lệ; nếu hook không đủ thì UI plugin dùng riêng, native UI flag phải blocked rõ.",
+      "acceptance": "File export Woo baseline import engine đạt semantic diff pass; cả UI plugin và native Woo importer paths tested hoặc capability bị block. External mode không tải ảnh về uploads; download mode không bị đổi.",
+      "regression_requirements": [
+        {
+          "id": "R128",
+          "name": "woo_csv_baseline_fixture"
+        },
+        {
+          "id": "R129",
+          "name": "woo_parent_sku_id"
+        },
+        {
+          "id": "R130",
+          "name": "native_importer_external_no_sideload"
+        },
+        {
+          "id": "R131",
+          "name": "stock_blank_published_values"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T32-01",
+          "text": "File export Woo baseline import engine đạt semantic diff pass; cả UI plugin và native Woo importer paths tested hoặc capability bị block"
+        },
+        {
+          "id": "AC-T32-02",
+          "text": "External mode không tải ảnh về uploads; download mode không bị đổi"
+        }
+      ]
+    },
+    {
+      "id": "T33",
+      "module": "Woo CSV",
+      "title": "Woo export adapter và round-trip",
+      "depends_on": [
+        "T31",
+        "T32"
+      ],
+      "read_first": [
+        "10 §6",
+        "03 §2",
+        "09 §5"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Woo/WooExporter.php",
+        "tests/integration/T33Test.php",
+        "docs/evidence/T33/result.json"
+      ],
+      "deliverables": "Woo exporter hooks; mapping metadata/attributes/images; loss matrix.",
+      "implementation": "Export matching native columns theo profile; first image featured, parent ưu tiên SKU khi hợp lệ. Variations image mapping theo row. Native Woo không chứa multi-gallery variation/alt custom, đưa loss report hoặc sidecar trong engine archive, không gắn cột bất hợp lệ ngầm.",
+      "acceptance": "Woo stock site test import file đạt subset equality; engine→Woo→engine giữ IDs qua source mapping hợp lệ hoặc report remap khi cross-site. Không cố gán numeric ID mới từ CSV.",
+      "regression_requirements": [
+        {
+          "id": "R132",
+          "name": "woo_export_into_baseline"
+        },
+        {
+          "id": "R133",
+          "name": "woo_csv_roundtrip_subset"
+        },
+        {
+          "id": "R134",
+          "name": "native_exporter_hooks"
+        },
+        {
+          "id": "R135",
+          "name": "image_url_order_and_loss"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T33-01",
+          "text": "Woo stock site test import file đạt subset equality; engine→Woo→engine giữ IDs qua source mapping hợp lệ hoặc report remap khi cross-site"
+        },
+        {
+          "id": "AC-T33-02",
+          "text": "Không cố gán numeric ID mới từ CSV"
+        }
+      ]
+    },
+    {
+      "id": "T34",
+      "module": "Shopify CSV",
+      "title": "Current/legacy parser và product grouping",
+      "depends_on": [
+        "T30",
+        "T07",
+        "T22"
+      ],
+      "read_first": [
+        "10 §7",
+        "02 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
+        "tests/integration/T34Test.php",
+        "docs/evidence/T34/result.json"
+      ],
+      "deliverables": "Shopify dialect version profiles; aliases; source handle/variant mappings; data loss validation.",
+      "implementation": "Group handle; recognize image-only rows/default title, real option tuples and variant images. Map current/legacy field names; compare-at/price rule và unit conversion. >3 options/market/metaobject/multi-location fields không được âm thầm cắt; source preservation có report.",
+      "acceptance": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation. Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product.",
+      "regression_requirements": [
+        {
+          "id": "R136",
+          "name": "shopify_header_aliases"
+        },
+        {
+          "id": "R137",
+          "name": "image_only_row_no_variant"
+        },
+        {
+          "id": "R138",
+          "name": "compare_at_units"
+        },
+        {
+          "id": "R139",
+          "name": "handle_idempotency_and_option_change"
+        },
+        {
+          "id": "R140",
+          "name": "unsupported_shopify_fields"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T34-01",
+          "text": "Current và legacy Shopify fixtures cho cùng canonical subset; image-only row không thêm variation"
+        },
+        {
+          "id": "AC-T34-02",
+          "text": "Missing vs blank overwrite policy đúng profile; repeated handles ở file khác không duplicate product"
+        }
+      ]
+    },
+    {
+      "id": "T35",
+      "module": "Shopify CSV",
+      "title": "Native Shopify exporter và loss policy",
+      "depends_on": [
+        "T31",
+        "T34"
+      ],
+      "read_first": [
+        "10 §7",
+        "02 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyExporter.php",
+        "tests/integration/T35Test.php",
+        "docs/evidence/T35/result.json"
+      ],
+      "deliverables": "Shopify current/legacy exporter; option/media row serializer; strict/lossy controls.",
+      "implementation": "Xuất profile headers hợp lệ không WPE_*; tối đa 3 options và image rows có handle/position/alt. Primary variant image mapping. Private/archived/status và inventory policy theo rule. IDs và unsupported engine fields lưu sidecar archive nếu chọn, không thêm cột vào CSV Shopify.",
+      "acceptance": "Schema snapshot Shopify profile validate; exact image/variant association; >3 options strict fails có report. Shopify CSV export có subset declaration, không quảng cáo giữ native variant IDs.",
+      "regression_requirements": [
+        {
+          "id": "R141",
+          "name": "shopify_export_headers"
+        },
+        {
+          "id": "R142",
+          "name": "variant_image_association"
+        },
+        {
+          "id": "R143",
+          "name": "more_than_three_options_loss"
+        },
+        {
+          "id": "R144",
+          "name": "no_extra_native_columns"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T35-01",
+          "text": "Schema snapshot Shopify profile validate; exact image/variant association; >3 options strict fails có report"
+        },
+        {
+          "id": "AC-T35-02",
+          "text": "Shopify CSV export có subset declaration, không quảng cáo giữ native variant IDs"
+        }
+      ]
+    },
+    {
+      "id": "T36",
+      "module": "Shopify CSV",
+      "title": "Cross-format equivalence và import/export QA",
+      "depends_on": [
+        "T33",
+        "T35",
+        "T04"
+      ],
+      "read_first": [
+        "10 §7",
+        "02 §6",
+        "09 §5"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/CsvParityHarness.php",
+        "tests/integration/T36Test.php",
+        "docs/evidence/T36/result.json"
+      ],
+      "deliverables": "Round-trip compatibility reports; fixture golden CSVs; documented unsupported fields.",
+      "implementation": "Chạy engine↔Woo và engine↔Shopify supported subset; common subset Woo→engine→Shopify→engine. Kiểm tra SKU/price/options/media/stock và list field mất. Actual Shopify staging import nếu có môi trường; nếu chưa có chỉ đánh dấu local contract pass, live verified pending.",
+      "acceptance": "Không tính unsupported fields là pass sau normalize; reports chỉ rõ local vs live verification. File URL images truy cập public ổn định; row count khác do image-only rows được explain bằng canonical diff.",
+      "regression_requirements": [
+        {
+          "id": "R145",
+          "name": "cross_format_subset"
+        },
+        {
+          "id": "R146",
+          "name": "loss_not_hidden"
+        },
+        {
+          "id": "R147",
+          "name": "reimport_idempotent"
+        },
+        {
+          "id": "R148",
+          "name": "image_position_alt_and_variant_mapping"
+        }
+      ],
+      "phase": 3,
+      "acceptance_checks": [
+        {
+          "id": "AC-T36-01",
+          "text": "Không tính unsupported fields là pass sau normalize; reports chỉ rõ local vs live verification"
+        },
+        {
+          "id": "AC-T36-02",
+          "text": "File URL images truy cập public ổn định; row count khác do image-only rows được explain bằng canonical diff"
+        }
+      ]
+    },
+    {
+      "id": "T37",
+      "module": "Legacy Sync",
+      "title": "Change capture và reconciliation",
+      "depends_on": [
+        "T10",
+        "T11",
+        "T15",
+        "T09"
+      ],
+      "read_first": [
+        "02 §4",
+        "03 §5",
+        "08 §6",
+        "08 §7"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyCapture.php",
+        "tests/integration/T37Test.php",
+        "docs/evidence/T37/result.json"
+      ],
+      "deliverables": "CRUD/post/term/meta hooks; dirty aggregate registry; reconciliation scanner; origin guards.",
+      "implementation": "Legacy writes tạo changes best-effort, coalesce parent/variation changes; source canonical sau save. Stock/taxonomy/ratings/sales changes ngoài CRUD cũng capture. Raw SQL không trigger hook: scanner high-water + content hashes; define full audit cadence và cutover barrier.",
+      "acceptance": "Missed hook được reconciliation repair; projection không gọi lại sync loop. Native authority legacy mismatches tạo alert, không overwrite native tự động.",
+      "regression_requirements": [
+        {
+          "id": "R149",
+          "name": "missed_hook_reconcile"
+        },
+        {
+          "id": "R150",
+          "name": "term_stock_delete_capture"
+        },
+        {
+          "id": "R151",
+          "name": "raw_sql_detected_audit"
+        },
+        {
+          "id": "R152",
+          "name": "origin_guard_no_pingpong"
+        }
+      ],
+      "phase": 4,
+      "acceptance_checks": [
+        {
+          "id": "AC-T37-01",
+          "text": "Missed hook được reconciliation repair; projection không gọi lại sync loop"
+        },
+        {
+          "id": "AC-T37-02",
+          "text": "Native authority legacy mismatches tạo alert, không overwrite native tự động"
+        }
+      ]
+    },
+    {
+      "id": "T38",
+      "module": "Legacy Sync",
+      "title": "Backfill triệu products và shadow diff",
+      "depends_on": [
+        "T37",
+        "T16",
+        "T04"
+      ],
+      "read_first": [
+        "02 §4",
+        "03 §5",
+        "08 §6",
+        "08 §7"
+      ],
+      "files": [
+        "src/Application/Migration/BackfillRunner.php",
+        "tests/integration/T38Test.php",
+        "docs/evidence/T38/result.json"
+      ],
+      "deliverables": "Keyset backfill CLI/job; aggregate snapshots; parity report; resumable checkpoints.",
+      "implementation": "Quét ID ranges không OFFSET, chunk size adaptive; parent + variations cùng checkpoint. Concurrent edit/delete revision fence, final quiescent diff. Không transaction toàn catalog hoặc call wc_get_products lấy hết IDs. Runtime progress/ETA dựa measured throughput.",
+      "acceptance": "Resume không mất/duplicate aggregate; source counts và hashes khớp semantic snapshot, trừ differences approved. Backfill write load giữ storefront trong budget T47.",
+      "regression_requirements": [
+        {
+          "id": "R153",
+          "name": "backfill_resume"
+        },
+        {
+          "id": "R154",
+          "name": "backfill_concurrent_edit_delete"
+        },
+        {
+          "id": "R155",
+          "name": "no_full_catalog_memory"
+        },
+        {
+          "id": "R156",
+          "name": "shadow_diff_detects_gap"
+        }
+      ],
+      "phase": 4,
+      "acceptance_checks": [
+        {
+          "id": "AC-T38-01",
+          "text": "Resume không mất/duplicate aggregate; source counts và hashes khớp semantic snapshot, trừ differences approved"
+        },
+        {
+          "id": "AC-T38-02",
+          "text": "Backfill write load giữ storefront trong budget T47"
+        }
+      ]
+    },
+    {
+      "id": "T39",
+      "module": "Legacy Sync",
+      "title": "Native→legacy mirror và write ownership fence",
+      "depends_on": [
+        "T38",
+        "T10",
+        "T11",
+        "T12",
+        "T22"
+      ],
+      "read_first": [
+        "02 §4",
+        "03 §5",
+        "08 §6",
+        "08 §7"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/T39Test.php",
+        "docs/evidence/T39/result.json"
+      ],
+      "deliverables": "Legacy projection writer; applied revisions; cohort fences; projection lag dashboard.",
+      "implementation": "Native mutation outbox project CPT/postmeta/taxonomy/media khi enabled; capture guard origin để tránh business events lặp. Canonical diff đủ rollback, gồm arbitrary meta/downloads/IDs. Legacy API writes của supported plugins route native; unsupported writes được report/block.",
+      "acceptance": "Mirror restart/out-of-order không làm revert native/legacy mới; native writes không mất historical stock operations. Epoch fence ngăn stale worker sau authority switch.",
+      "regression_requirements": [
+        {
+          "id": "R157",
+          "name": "native_mirror_full_props"
+        },
+        {
+          "id": "R158",
+          "name": "mirror_out_of_order"
+        },
+        {
+          "id": "R159",
+          "name": "dual_writer_rejected"
+        },
+        {
+          "id": "R160",
+          "name": "projection_hook_side_effect_guard"
+        }
+      ],
+      "phase": 4,
+      "acceptance_checks": [
+        {
+          "id": "AC-T39-01",
+          "text": "Mirror restart/out-of-order không làm revert native/legacy mới; native writes không mất historical stock operations"
+        },
+        {
+          "id": "AC-T39-02",
+          "text": "Epoch fence ngăn stale worker sau authority switch"
+        }
+      ]
+    },
+    {
+      "id": "T40",
+      "module": "Legacy Sync",
+      "title": "Rollback orchestration và deactivation safety",
+      "depends_on": [
+        "T39",
+        "T12"
+      ],
+      "read_first": [
+        "02 §4",
+        "03 §5",
+        "08 §6",
+        "08 §7"
+      ],
+      "files": [
+        "src/Application/Migration/RollbackRunner.php",
+        "tests/integration/T40Test.php",
+        "docs/evidence/T40/result.json"
+      ],
+      "deliverables": "Rollback runner/runbook; write barrier; final reconciliation; restore readiness marker; deactivation strategy.",
+      "implementation": "Đóng cohort writes/checkout stock mutations đang active, drain workers/reservations, mirror current native values; verify IDs/stock/prices/meta, switch epoch/authority atomic, invalidate caches rồi mở writes. Không restore old backup đè stock/order mới. Deactivate an toàn chỉ khi legacy projection ready; nếu còn native-only data giữ mandatory bridge hoặc maintenance path được triển khai rõ.",
+      "acceptance": "Rollback test sau native create/edit/sale/refund giữ current data và order refs; timed-out rollback không switch authority. Safe fallback không chỉ đổi flag về CPT stale. Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code.",
+      "regression_requirements": [
+        {
+          "id": "R161",
+          "name": "rollback_after_new_products_orders"
+        },
+        {
+          "id": "R162",
+          "name": "rollback_inflight_checkout"
+        },
+        {
+          "id": "R163",
+          "name": "rollback_timeout_no_switch"
+        },
+        {
+          "id": "R164",
+          "name": "deactivation_with_native_only_data"
+        }
+      ],
+      "phase": 4,
+      "acceptance_checks": [
+        {
+          "id": "AC-T40-01",
+          "text": "Rollback test sau native create/edit/sale/refund giữ current data và order refs; timed-out rollback không switch authority"
+        },
+        {
+          "id": "AC-T40-02",
+          "text": "Safe fallback không chỉ đổi flag về CPT stale"
+        },
+        {
+          "id": "AC-T40-03",
+          "text": "Forced deletion plugin vẫn có recovery runbook vì cannot execute absent code"
+        }
+      ]
+    },
+    {
+      "id": "T41",
+      "module": "Legacy Sync",
+      "title": "Operations UI, health và CLI",
+      "depends_on": [
+        "T38",
+        "T40",
+        "T20"
+      ],
+      "read_first": [
+        "02 §4",
+        "03 §5",
+        "08 §6",
+        "08 §7"
+      ],
+      "files": [
+        "src/Admin/OperationsPage.php",
+        "assets/operations/operations.js",
+        "src/Cli/Commands.php",
+        "tests/integration/T41Test.php",
+        "docs/evidence/T41/result.json"
+      ],
+      "deliverables": "Admin operations screen; WP-CLI migrate/rebuild/audit/rollback/export commands; health counters.",
+      "implementation": "Hiển thị mode/cohort, source count, index lag, dead-letter, mismatches, gate blockers và job checkpoints. Control validation/dry-run trước cutover; request permissions/audit cho every mutation. Thêm scheduled system cron guidance, worker concurrency limits và alert thresholds.",
+      "acceptance": "Không green khi unresolved mismatch/DLQ; resume/retry visible cho operator; CLI và UI cùng command service. Không reveal filesystem/secret URLs cho user thiếu quyền.",
+      "regression_requirements": [
+        {
+          "id": "R165",
+          "name": "health_blocks_on_mismatch"
+        },
+        {
+          "id": "R166",
+          "name": "cli_ui_command_parity"
+        },
+        {
+          "id": "R167",
+          "name": "operations_auth_audit"
+        },
+        {
+          "id": "R168",
+          "name": "worker_starvation_alert"
+        }
+      ],
+      "phase": 4,
+      "acceptance_checks": [
+        {
+          "id": "AC-T41-01",
+          "text": "Không green khi unresolved mismatch/DLQ; resume/retry visible cho operator; CLI và UI cùng command service"
+        },
+        {
+          "id": "AC-T41-02",
+          "text": "Không reveal filesystem/secret URLs cho user thiếu quyền"
+        }
+      ]
+    },
+    {
+      "id": "T44",
+      "module": "Full Native",
+      "title": "Chứng minh đọc native không dựa core postmeta",
+      "depends_on": [
+        "T14",
+        "T19",
+        "T24",
+        "T28",
+        "T39"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §13",
+        "08 §6",
+        "08 §7",
+        "07 §7"
+      ],
+      "files": [
+        "src/Application/Rollout/NativeIndependenceHarness.php",
+        "tests/integration/T44Test.php",
+        "docs/evidence/T44/result.json"
+      ],
+      "deliverables": "Instrumented native staging harness; query classification; projection-disabled independence report.",
+      "implementation": "Trong isolated test cohort bật native Data Store, bỏ/poison owned price/stock/variant meta legacy và dừng full mirror; giữ shells/terms/attachments hợp đồng. Exercise discovery, admin, REST, Store API, query, checkout reservations, CSV và gallery. Phân biệt shell/SEO/review reads hợp lệ với business prop fallback.",
+      "acceptance": "Không lấy giá/stock/options từ poison meta; zero unsupported business-prop CPT reads trên certified paths. Không test phá data production. Path chưa đạt giữ native_bridge/indexed và blocker rõ.",
+      "regression_requirements": [
+        {
+          "id": "R177",
+          "name": "poison_legacy_price_stock"
+        },
+        {
+          "id": "R178",
+          "name": "projection_off_native_crud"
+        },
+        {
+          "id": "R179",
+          "name": "factory_shell_retained"
+        },
+        {
+          "id": "R180",
+          "name": "native_reservation_independence"
+        }
+      ],
+      "phase": 5,
+      "acceptance_checks": [
+        {
+          "id": "AC-T44-01",
+          "text": "Không lấy giá/stock/options từ poison meta; zero unsupported business-prop CPT reads trên certified paths"
+        },
+        {
+          "id": "AC-T44-02",
+          "text": "Không test phá data production"
+        },
+        {
+          "id": "AC-T44-03",
+          "text": "Path chưa đạt giữ native_bridge/indexed và blocker rõ"
+        }
+      ]
+    },
+    {
+      "id": "T47",
+      "module": "QA Performance",
+      "title": "Benchmark realistic scale và EXPLAIN budgets",
+      "depends_on": [
+        "T20",
+        "T28",
+        "T36",
+        "T38"
+      ],
+      "read_first": [
+        "07 §6",
+        "07 §3",
+        "02 §9"
+      ],
+      "files": [
+        "tests/performance/ScaleBenchmark.mjs",
+        "tests/integration/T47Test.php",
+        "docs/evidence/T47/result.json"
+      ],
+      "deliverables": "Reproducible benchmark scripts/dataset manifest; p50/p95/p99, DB plans, RAM/storage/queue lag reports.",
+      "implementation": "So cùng máy/data/cache conditions WC optimized baseline và engine 100k/1M parent products trên site1.localhost (không test 5M) với variations/meta/media distribution. Warm/cold reads, exact counts, pagination, hydration, import/backfill under live load, variant resolution và checkout concurrency. Separate PHP/DB/CDN/network time.",
+      "acceptance": "Ngưỡng ở phần 9 được owner chốt trên baseline; critical p95 không suy giảm >10% proposed budget trừ ADR. Index query speed được measured, không suy từ row count. Báo retained shells/attachment storage cost và slow unsupported queries.",
+      "regression_requirements": [
+        {
+          "id": "R189",
+          "name": "scale_filter_facet_plan"
+        },
+        {
+          "id": "R190",
+          "name": "deep_page_budget"
+        },
+        {
+          "id": "R191",
+          "name": "concurrent_import_checkout"
+        },
+        {
+          "id": "R192",
+          "name": "memory_growth_bounded"
+        },
+        {
+          "id": "R193",
+          "name": "cache_cold_warm"
+        }
+      ],
+      "phase": 5,
+      "acceptance_checks": [
+        {
+          "id": "AC-T47-01",
+          "text": "Ngưỡng ở phần 9 được owner chốt trên baseline; critical p95 không suy giảm >10% proposed budget trừ ADR"
+        },
+        {
+          "id": "AC-T47-02",
+          "text": "Index query speed được measured, không suy từ row count"
+        },
+        {
+          "id": "AC-T47-03",
+          "text": "Báo retained shells/attachment storage cost và slow unsupported queries"
+        }
+      ]
+    },
+    {
+      "id": "T48",
+      "module": "QA Regression",
+      "title": "E2E compatibility/security/fault-injection suite",
+      "depends_on": [
+        "T04",
+        "T15",
+        "T19",
+        "T24",
+        "T28",
+        "T36",
+        "T40",
+        "T44"
+      ],
+      "read_first": [
+        "07 §2",
+        "07 §3",
+        "07 §7",
+        "02 §13"
+      ],
+      "files": [
+        "tests/e2e/CompatibilitySuite.mjs",
+        "tests/integration/T48Test.php",
+        "docs/evidence/T48/result.json"
+      ],
+      "deliverables": "Matrix integration/E2E reports; injected fault evidence; test IDs R01–R188 coverage mapping.",
+      "implementation": "Chạy legacy/indexed/native_bridge/full_native test harness/rollback với certified versions, HPOS/order legacy, classic/Blocks/cart, REST/admin/gallery/tax/coupon/downloads. Inject DB/worker/cache/CDN failures và malicious inputs/permissions. Real integrations không thay bằng mocks ở critical stock path.",
+      "acceptance": "0 critical semantic diffs; all critical security/stock tests pass; skipped/blocked tests không tính pass. Matrix artifact lưu test version/commit/env/command/result, không credentials/customer info.",
+      "regression_requirements": [
+        {
+          "id": "R194",
+          "name": "full_mode_matrix"
+        },
+        {
+          "id": "R195",
+          "name": "fault_injection_recovery"
+        },
+        {
+          "id": "R196",
+          "name": "api_auth_injection_ssrf"
+        },
+        {
+          "id": "R197",
+          "name": "supported_plugin_smoke"
+        },
+        {
+          "id": "R198",
+          "name": "no_core_file_changes"
+        }
+      ],
+      "phase": 5,
+      "acceptance_checks": [
+        {
+          "id": "AC-T48-01",
+          "text": "0 critical semantic diffs; all critical security/stock tests pass; skipped/blocked tests không tính pass"
+        },
+        {
+          "id": "AC-T48-02",
+          "text": "Matrix artifact lưu test version/commit/env/command/result, không credentials/customer info"
+        }
+      ]
+    },
+    {
+      "id": "T42",
+      "module": "Full Native",
+      "title": "Readiness gates và cohort manifest",
+      "depends_on": [
+        "T41",
+        "T36",
+        "T44",
+        "T47",
+        "T48"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §13",
+        "08 §6",
+        "08 §7",
+        "07 §7"
+      ],
+      "files": [
+        "src/Application/Rollout/ReadinessGates.php",
+        "tests/integration/T42Test.php",
+        "docs/evidence/T42/result.json"
+      ],
+      "deliverables": "Versioned readiness evidence bundle; compatibility allowlist; gate validator; cohort hash.",
+      "implementation": "Gate schema/data/API/query/gallery/CSV/stock/rollback/performance matrix; exact versions + evidence timestamps + manifest hash/epoch. Sample shadow parity không đủ thay full critical-field reconciliation. Unknown direct SQL writer/reservation path/missing price context adapter chặn native.",
+      "acceptance": "Validator fail-closed khi thiếu artifact/stale evidence/new plugin/version/config changed. Cutover endpoint chỉ nhận gate ID pass đúng cohort. Không dùng admin flag skip_required_gate ở production.",
+      "regression_requirements": [
+        {
+          "id": "R169",
+          "name": "missing_evidence_gate_fail"
+        },
+        {
+          "id": "R170",
+          "name": "cohort_epoch_hash_mismatch"
+        },
+        {
+          "id": "R171",
+          "name": "version_changed_gate_stale"
+        },
+        {
+          "id": "R172",
+          "name": "no_gate_bypass"
+        }
+      ],
+      "phase": 5,
+      "acceptance_checks": [
+        {
+          "id": "AC-T42-01",
+          "text": "Validator fail-closed khi thiếu artifact/stale evidence/new plugin/version/config changed"
+        },
+        {
+          "id": "AC-T42-02",
+          "text": "Cutover endpoint chỉ nhận gate ID pass đúng cohort"
+        },
+        {
+          "id": "AC-T42-03",
+          "text": "Không dùng admin flag skip_required_gate ở production"
+        }
+      ]
+    },
+    {
+      "id": "T43",
+      "module": "Full Native",
+      "title": "Cutover barrier, canary và monitored rollout",
+      "depends_on": [
+        "T42",
+        "T39",
+        "T12"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §13",
+        "08 §6",
+        "08 §7",
+        "07 §7"
+      ],
+      "files": [
+        "src/Application/Rollout/CutoverRunner.php",
+        "tests/integration/T43Test.php",
+        "docs/evidence/T43/result.json"
+      ],
+      "deliverables": "Cutover job; canary routing; automatic halt triggers; epoch flip journal.",
+      "implementation": "Khởi đầu cohort nhỏ + types/plugins certified. Acquire distributed lock, block writes, wait in-flight commands/stock reservations policy, final diff/index catch-up, atomic registry switch epoch; cache purge rồi resume. Monitor exact critical metrics; increase cohorts sau observation windows.",
+      "acceptance": "Crash mỗi checkpoint resume/abort có nguồn chuẩn rõ; old workers reject; no checkout stock double mutation. Error/mismatch threshold tự halt mở rộng và expose recovery, không tự rollback dữ liệu chưa mirror-ready.",
+      "regression_requirements": [
+        {
+          "id": "R173",
+          "name": "cutover_checkpoint_faults"
+        },
+        {
+          "id": "R174",
+          "name": "epoch_worker_fence"
+        },
+        {
+          "id": "R175",
+          "name": "canary_halt"
+        },
+        {
+          "id": "R176",
+          "name": "no_partial_parent_variant_cutover"
+        }
+      ],
+      "phase": 6,
+      "acceptance_checks": [
+        {
+          "id": "AC-T43-01",
+          "text": "Crash mỗi checkpoint resume/abort có nguồn chuẩn rõ; old workers reject; no checkout stock double mutation"
+        },
+        {
+          "id": "AC-T43-02",
+          "text": "Error/mismatch threshold tự halt mở rộng và expose recovery, không tự rollback dữ liệu chưa mirror-ready"
+        }
+      ]
+    },
+    {
+      "id": "T45",
+      "module": "Full Native",
+      "title": "Seal authority và chuyển full_native",
+      "depends_on": [
+        "T43",
+        "T44"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §13",
+        "08 §6",
+        "08 §7",
+        "07 §7"
+      ],
+      "files": [
+        "src/Application/Rollout/AuthoritySeal.php",
+        "tests/integration/T45Test.php",
+        "docs/evidence/T45/result.json"
+      ],
+      "deliverables": "Authority seal policy; no-fallback flag; full_native certification report.",
+      "implementation": "Sau canary đạt observation gate, lock owned props nguồn native; direct legacy writers không được silent accepted. Retain minimal shells/taxonomy/media; mirror rollback retention independent khỏi query. Health record phiên bản certification; plugin/version change auto demote readiness, không overwrite source.",
+      "acceptance": "Full native đọc/ghi đúng và không fallback stale. CRUD-safe supported plugins hoạt động; unsupported plugin enable khiến native rollout bị chặn/cảnh báo vận hành, không tự chuyển source nguy hiểm.",
+      "regression_requirements": [
+        {
+          "id": "R181",
+          "name": "no_fallback_on_native_read_error"
+        },
+        {
+          "id": "R182",
+          "name": "owned_field_authority"
+        },
+        {
+          "id": "R183",
+          "name": "plugin_change_certification"
+        },
+        {
+          "id": "R184",
+          "name": "mirror_not_canonical"
+        }
+      ],
+      "phase": 6,
+      "acceptance_checks": [
+        {
+          "id": "AC-T45-01",
+          "text": "Full native đọc/ghi đúng và không fallback stale"
+        },
+        {
+          "id": "AC-T45-02",
+          "text": "CRUD-safe supported plugins hoạt động; unsupported plugin enable khiến native rollout bị chặn/cảnh báo vận hành, không tự chuyển source nguy hiểm"
+        }
+      ]
+    },
+    {
+      "id": "T49",
+      "module": "Release",
+      "title": "Release packaging, docs và staged delivery",
+      "depends_on": [
+        "T45",
+        "T47",
+        "T48"
+      ],
+      "read_first": [
+        "08 §2",
+        "08 §6",
+        "docs/REVIEW.md"
+      ],
+      "files": [
+        "scripts/release/ReleasePackager.mjs",
+        "tests/integration/T49Test.php",
+        "docs/evidence/T49/result.json"
+      ],
+      "deliverables": "Plugin zip; changelog; install/upgrade/rollback runbooks; support matrix; gate evidence; release manifest.",
+      "implementation": "Build reproducible có deps/license/security audit phù hợp; core checksums kiểm trước/sau. Publish tài liệu mode limitations, CLI cron, CSV loss policy, media local-file limitations, recovery forced uninstall. Staging rollout hoàn tất, production package mặc định legacy/shadow; không tự cutover khi update.",
+      "acceptance": "Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass. User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này.",
+      "regression_requirements": [
+        {
+          "id": "R199",
+          "name": "release_install_upgrade"
+        },
+        {
+          "id": "R200",
+          "name": "package_default_safe_mode"
+        },
+        {
+          "id": "R201",
+          "name": "core_checksum"
+        },
+        {
+          "id": "R202",
+          "name": "restore_drill_from_backup_and_journal"
+        }
+      ],
+      "phase": 6,
+      "acceptance_checks": [
+        {
+          "id": "AC-T49-01",
+          "text": "Release chỉ certified matrix, smoke install/upgrade/deactivate và restore drill pass"
+        },
+        {
+          "id": "AC-T49-02",
+          "text": "User có concrete package/evidence để quyết định production rollout; không tuyên bố triển khai production từ spec này"
+        }
+      ]
+    },
+    {
+      "id": "T46",
+      "module": "Full Native",
+      "title": "Retention, garbage collection và legacy cleanup",
+      "depends_on": [
+        "T45",
+        "T49",
+        "T40"
+      ],
+      "read_first": [
+        "02 §4",
+        "02 §13",
+        "08 §6",
+        "08 §7",
+        "07 §7"
+      ],
+      "files": [
+        "src/Application/Rollout/RetentionCleaner.php",
+        "tests/integration/T46Test.php",
+        "docs/evidence/T46/result.json"
+      ],
+      "deliverables": "Cleanup planner/dry-run; tombstone/asset/outbox/job retention; archival metadata; restore instructions.",
+      "implementation": "Sau rollback window do operator cấu hình và restore drill pass mới đề xuất dọn duplicated owned postmeta. Không xóa shell/taxonomy/attachments cần tương thích; bảo vệ variation ID/order refs/shared assets. Chunk delete/retry, no DROP entire CPT. Giữ audit/operation idempotency theo order lifecycle.",
+      "acceptance": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ. Cleanup không automatic on upgrade/activate/deactivate. Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch.",
+      "regression_requirements": [
+        {
+          "id": "R185",
+          "name": "gc_shared_refs_and_orders"
+        },
+        {
+          "id": "R186",
+          "name": "cleanup_resume"
+        },
+        {
+          "id": "R187",
+          "name": "cleanup_requires_restore_gate"
+        },
+        {
+          "id": "R188",
+          "name": "rollback_after_mirror_stopped"
+        }
+      ],
+      "phase": 7,
+      "acceptance_checks": [
+        {
+          "id": "AC-T46-01",
+          "text": "Dry-run liệt kê IDs/bytes/rollback impact; shared media và historical references giữ"
+        },
+        {
+          "id": "AC-T46-02",
+          "text": "Cleanup không automatic on upgrade/activate/deactivate"
+        },
+        {
+          "id": "AC-T46-03",
+          "text": "Nếu mirror đã dừng, rollback cần reproject current native với barrier trước switch"
+        }
+      ]
+    }
+  ]
+}

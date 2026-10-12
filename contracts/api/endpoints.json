@@ -1,0 +1,207 @@
+{
+  "namespace": "/wp-json/wpe/v1",
+  "errors": [
+    {
+      "code": "invalid_request",
+      "http": 400
+    },
+    {
+      "code": "unauthenticated",
+      "http": 401
+    },
+    {
+      "code": "forbidden",
+      "http": 403
+    },
+    {
+      "code": "not_found",
+      "http": 404
+    },
+    {
+      "code": "conflict",
+      "http": 409
+    },
+    {
+      "code": "idempotency_conflict",
+      "http": 409
+    },
+    {
+      "code": "invalid_transition",
+      "http": 409
+    },
+    {
+      "code": "stale_epoch",
+      "http": 409
+    },
+    {
+      "code": "ambiguous_variant",
+      "http": 409
+    },
+    {
+      "code": "stale_version",
+      "http": 412
+    },
+    {
+      "code": "validation_failed",
+      "http": 422
+    },
+    {
+      "code": "unsupported_feature",
+      "http": 422
+    },
+    {
+      "code": "precondition_required",
+      "http": 428
+    },
+    {
+      "code": "rate_limited",
+      "http": 429
+    },
+    {
+      "code": "migration_barrier",
+      "http": 503
+    },
+    {
+      "code": "index_unavailable",
+      "http": 503
+    },
+    {
+      "code": "dependency_unavailable",
+      "http": 503
+    }
+  ],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/catalog",
+      "contract": "category/tag/attribute IDs, min/max base_price, in_stock, sort, limit, cursor, count_mode → card list + next_cursor + index_generation/freshness + total nếu yêu cầu",
+      "permission": "Public published/catalog-visible only; cursor gắn query hash/sort/cohort/generation"
+    },
+    {
+      "method": "GET",
+      "path": "/products/{id}",
+      "contract": "ProductView gồm content, options, default_selection, media, price_summary, revision",
+      "permission": "Public purchasable/visible policy; admin `context=edit` riêng permission"
+    },
+    {
+      "method": "GET",
+      "path": "/products/{id}/variants",
+      "contract": "cursor, limit → variant summaries/options/primary_media; stock availability, không public quantity chính xác mặc định",
+      "permission": "Publish visibility; không trả toàn bộ 10k variants trong một request"
+    },
+    {
+      "method": "POST",
+      "path": "/products/{id}/resolve",
+      "contract": "selection map, quantity, expected_revision?, request_sequence → none/partial/exact/ambiguous + allowed_values + exact variant",
+      "permission": "Public; canonical resolver, rate-limited; không tạo cart/hold stock"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/products",
+      "contract": "ProductWrite + optional variants/media → id/version",
+      "permission": "`edit_products`; native writer hoặc route WC CRUD theo authority"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/products/{id}",
+      "contract": "chỉ field hiện diện; collection mode merge/replace bắt buộc rõ → id/version",
+      "permission": "object edit cap + CAS; không implicit xóa variants khi PATCH thiếu"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/products/{id}/variants",
+      "contract": "VariantWrite/options/SKU → id/version,parent_version",
+      "permission": "cap + parent If-Match"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/variants/{id}",
+      "contract": "VariantWrite patch → version,parent_version",
+      "permission": "CAS variation + lock parent"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/products/{id}",
+      "contract": "`force=false` mặc định → tombstone/version",
+      "permission": "trash/delete capability tương ứng; order giữ reference"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/assets",
+      "contract": "URL + metadata/renditions/provider → asset ID/version",
+      "permission": "`upload_files` + engine edit policy; URL/fetch validation"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/products/{id}/media",
+      "contract": "ordered refs + featured asset + variation mappings → product revision",
+      "permission": "cap + parent CAS; invalid ref không cập nhật nửa chừng"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/imports",
+      "contract": "staged file ID, format/profile, update_mode, image_mode, dry_run=true mặc định → job ID",
+      "permission": "`manage_woocommerce` + import capability; không URL/path máy chủ tùy ý"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/imports/{job}/commit",
+      "contract": "validated snapshot hash + conflict_policy → accepted job",
+      "permission": "cap; file/config bất biến sau validate; nếu đổi phải validate lại"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/exports",
+      "contract": "format/profile, filters, field set, strict/lossy → job ID",
+      "permission": "cap; cursor traversal snapshot semantics khai báo"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/jobs/{id}",
+      "contract": "status/checkpoint/counts/errors/report artifact",
+      "permission": "creator hoặc operations cap; không expose filesystem path"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/jobs/{id}/cancel",
+      "contract": "cancel requested → status",
+      "permission": "cancel giữa chunks, không rollback rows đã commit"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/jobs/{id}/download",
+      "contract": "CSV/report stream/private redirect có expiry",
+      "permission": "permission mỗi download; name/path sanitize"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/health",
+      "contract": "authority/cohorts, queue lag, mismatches, index, blockers, current epoch",
+      "permission": "operations cap; health public chỉ coarse status nếu cần"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/migrations",
+      "contract": "direction, cohort manifest, dry_run → migration job",
+      "permission": "operations cap; cohort immutable/hash"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/rollouts/{cohort}/validate",
+      "contract": "evidence snapshot → gates pass/fail",
+      "permission": "không đổi authority"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/rollouts/{cohort}/cutover",
+      "contract": "gate ID, expected epoch, manifest hash → job",
+      "permission": "operations cap; gates hết hạn/phát sinh write gap phải revalidate"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/rollouts/{cohort}/rollback",
+      "contract": "expected epoch, reason, dry_run → job",
+      "permission": "explicit restore hiện tại, không restore snapshot làm mất đơn/stock mới"
+    }
+  ]
+}

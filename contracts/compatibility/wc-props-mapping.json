@@ -1,0 +1,17 @@
+{
+  "status": "design_seed_not_sealed",
+  "source_wp": "7.0",
+  "source_wc": "11.1.2",
+  "instruction": "T03 must enumerate exact release WC_Product/Variable/Variation props + interface and actually called methods; unknown props native blocker. See docs/03 and T03.",
+  "mapping": {
+    "id": "products.id / variants.id + real WP shells",
+    "sku": "sku_registry + object sku",
+    "price": "effective regular/sale schedule, native amount string",
+    "attributes": "options + option_values + variant_values",
+    "stock_quantity": "resolved inventory.owner_id",
+    "image_id": "assets.attachment_id via ordered media mappings",
+    "gallery_image_ids": "product_media + assets.attachment_id",
+    "meta_data": "meta repeated values/meta IDs",
+    "downloads": "downloads + extra_props limit/expiry"
+  }
+}

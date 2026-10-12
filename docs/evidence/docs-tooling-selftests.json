@@ -1,0 +1,171 @@
+{
+  "scope": "documentation tooling only, isolated copies, no runtime WC tests",
+  "tests": [
+    {
+      "test": "valid docs",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "empty initial plan registry",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "valid guard",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "unimplemented task cannot pass",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "missing runtime runner cannot fake pass",
+      "expected_exit": 2,
+      "exit_code": 2
+    },
+    {
+      "test": "bad section reference",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "duplicate section",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "unbalanced fence",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "template strict fail",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "invalid table",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "unknown task",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "done requires runtime evidence",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "DAG cycle fails",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "OpenAPI missing endpoint",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "task Files outside structure",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "focused tests rejected",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "create draft plan",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "draft template cannot approve",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "sync authored plan",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "approve concrete test plan",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "done before start blocked",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "start approved task",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "done without DoD blocked",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "undeclared command blocked",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "execute declared DoD",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "uncommitted edit invalidates test receipt",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "rerun after content change",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "done with fresh receipt",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "close without report blocked",
+      "expected_exit": 1,
+      "exit_code": 1
+    },
+    {
+      "test": "record authored report",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "close completed test plan",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "closed state/log/projections valid",
+      "expected_exit": 0,
+      "exit_code": 0
+    },
+    {
+      "test": "generated progress tampering blocked",
+      "expected_exit": 1,
+      "exit_code": 1
+    }
+  ],
+  "count": 33
+}

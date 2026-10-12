@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "prefix": "site_prefix+wpe_",
+  "authority_doc": "docs/03-database-schema.md",
+  "tables": [
+    {
+      "name": "products",
+      "columns_contract": "`id ID`, `type V20`, `status V20`, `slug V200`, `title TEXT`, `description LONGTEXT`, `short_description TEXT`, `catalog_visibility V20`, `sku V191?`, `regular_price AMT?`, `sale_price AMT?`, `sale_from DATETIME?`, `sale_to DATETIME?`, `virtual B`, `downloadable B`, `tax_status V20`, `tax_class V200`, `sold_individually B`, `purchase_note TEXT`, `menu_order INT`, `featured B`, `shipping_class_id ID?`, `weight AMT?`, `length AMT?`, `width AMT?`, `height AMT?`, `stock_owner_id ID?`, `default_selection TEXT_JSON`, `extra_props TEXT_JSON`, `created_at TS`, `updated_at TS`, `deleted_at TS?`, `version VER`",
+      "keys_contract": "PK id; `(status,created_at,id)`; `(slug,id)`. Slug uniqueness theo WP permalink namespace, không chỉ unique toàn DB. Variable parent không dùng price field làm giá bán authoritative"
+    },
+    {
+      "name": "variants",
+      "columns_contract": "`id ID`, `product_id ID`, `status V20`, `sku V191?`, `combination_key BINARY(32)`, `active_combination_key BINARY(32)?`, `regular_price AMT?`, `sale_price AMT?`, `sale_from TS?`, `sale_to TS?`, `tax_class V200?`, `virtual B`, `downloadable B`, `weight AMT?`, `length AMT?`, `width AMT?`, `height AMT?`, `shipping_class_id ID?`, `description TEXT`, `stock_owner_id ID?`, `position INT`, `extra_props TEXT_JSON`, `version VER`, `created_at TS`, `updated_at TS`, `deleted_at TS?`",
+      "keys_contract": "PK id; `(product_id,status,position,id)`; UNIQUE `(product_id,active_combination_key)`; active key = combination key khi chưa deleted, NULL khi tombstone, cho phép giữ lịch sử rồi tạo combination mới. Hash collision phải so vector đầy đủ và báo conflict, không coi hash là equality. Restore phải revalidate unique key"
+    },
+    {
+      "name": "sku_registry",
+      "columns_contract": "`normalized_sku VARBINARY(764)`, `object_id ID`, `object_kind V16`, `original_sku V191`",
+      "keys_contract": "PK normalized_sku; UNIQUE object_id; áp dụng chung parent/simple/variation và legacy cohort. Empty SKU không có row. Policy trim/case/accent phải xác nhận tương thích baseline; không tự lowercase Unicode"
+    },
+    {
+      "name": "options",
+      "columns_contract": "`id ID`, `product_id ID`, `key V191`, `name V200`, `taxonomy V64?`, `position SMALLINT`, `visible B`, `used_for_variation B`, `default_value_id ID?`",
+      "keys_contract": "PK id; UNIQUE `(product_id,key)`; UNIQUE `(product_id,position)`; WC có thể >3 options, Shopify export phải báo lỗi/loss chứ không cắt"
+    },
+    {
+      "name": "option_values",
+      "columns_contract": "`id ID`, `option_id ID`, `value_key V191`, `label TEXT`, `term_id ID?`, `position INT`, `swatch TEXT_JSON?`",
+      "keys_contract": "PK id; UNIQUE `(option_id,value_key)`; `(option_id,position,id)`; global taxonomy term giữ ID WP"
+    },
+    {
+      "name": "variant_values",
+      "columns_contract": "`variant_id ID`, `option_id ID`, `value_id ID?`, `is_any B`",
+      "keys_contract": "PK `(variant_id,option_id)`; `(option_id,value_id,variant_id)`; NULL chỉ hợp lệ khi wildcard WC `is_any=1`; value phải thuộc option của parent"
+    },
+    {
+      "name": "product_terms",
+      "columns_contract": "`product_id ID`, `term_taxonomy_id ID`, `role V32`",
+      "keys_contract": "PK `(product_id,term_taxonomy_id)`; `(term_taxonomy_id,product_id)`; WP terms canonical, engine lưu projection mapping; role là category/tag/visibility/attribute/brand đã đăng ký"
+    },
+    {
+      "name": "meta",
+      "columns_contract": "`meta_id ID`, `object_id ID`, `object_kind V16`, `meta_key V255`, `meta_value LONGTEXT`",
+      "keys_contract": "PK meta_id; `(object_id,meta_key prefix phù hợp DB)`; giữ repeated keys và WC meta IDs; serialize/unserialize đúng WP, không JSON hóa PHP serialized tùy tiện; native IDs reserve global WP postmeta anchors, no independent AUTO"
+    },
+    {
+      "name": "product_links",
+      "columns_contract": "`product_id ID`, `target_id ID`, `kind V16`, `position INT`",
+      "keys_contract": "PK `(product_id,kind,target_id)`; `(target_id,kind)`; kinds upsell/crosssell; target legacy được phép"
+    },
+    {
+      "name": "downloads",
+      "columns_contract": "`object_id ID`, `download_id V64`, `name TEXT`, `file_url TEXT`, `position INT`",
+      "keys_contract": "PK `(object_id,download_id)`; WC download IDs bất biến, quyền tải file vẫn do WC; limit/expiry nằm trong extra_props đã mapping"
+    },
+    {
+      "name": "inventory",
+      "columns_contract": "`owner_id ID`, `manage_stock B`, `quantity QTY?`, `backorders V16`, `stock_status V20`, `low_stock_amount QTY?`, `version VER`, `updated_at TS`",
+      "keys_contract": "PK owner_id; không có quantity nếu unmanaged; backorders no/notify/yes; resolved owner là parent hoặc variation, không trừ cả hai"
+    },
+    {
+      "name": "stock_operations",
+      "columns_contract": "`operation_key VARBINARY(191)`, `owner_id ID`, `order_id ID?`, `order_item_id ID?`, `kind V24`, `delta QTY`, `quantity_after QTY`, `created_at TS`",
+      "keys_contract": "PK operation_key; `(owner_id,created_at)`; key idempotency theo order/item/event, không dùng chỉ order_id vì refund từng phần"
+    },
+    {
+      "name": "reservation_bridge",
+      "columns_contract": "`order_id ID`, `owner_id ID`, `quantity QTY`, `expires_at TS`, `state V16`, `version VER`, `updated_at TS`",
+      "keys_contract": "PK `(order_id,owner_id)`; `(owner_id,state,expires_at)`; là hợp đồng adapter nếu WC reservation không đọc native được. Chỉ một backend reservation sở hữu từng cohort; không ghi đồng thời hai hệ thống"
+    },
+    {
+      "name": "assets",
+      "columns_contract": "`id ID AUTO`, `kind V16`, `source_url TEXT`, `url_key BINARY(32)`, `provider V64`, `provider_key TEXT?`, `mime V100?`, `width INT?`, `height INT?`, `alt_text TEXT`, `title TEXT`, `caption TEXT`, `attachment_id ID?`, `delivery_policy TEXT_JSON`, `renditions TEXT_JSON`, `health V16`, `created_at TS`, `updated_at TS`, `version VER`",
+      "keys_contract": "PK id; UNIQUE attachment_id nếu không null; `(url_key,id)`; collision so URL đầy đủ. Không loại query string chứa resize/version/signature khi dedup; không lưu URL ký sắp hết hạn làm canonical"
+    },
+    {
+      "name": "product_media",
+      "columns_contract": "`product_id ID`, `asset_id ID`, `role V16`, `position INT`, `alt_override TEXT?`",
+      "keys_contract": "PK `(product_id,asset_id,role)`; UNIQUE `(product_id,role,position)`; featured tối đa một, role gallery có thứ tự; alt của cùng asset có thể khác theo product"
+    },
+    {
+      "name": "variant_media",
+      "columns_contract": "`variant_id ID`, `asset_id ID`, `position INT`, `is_primary B`, `alt_override TEXT?`",
+      "keys_contract": "PK `(variant_id,asset_id)`; UNIQUE `(variant_id,position)`; primary tối đa một theo application invariant"
+    },
+    {
+      "name": "catalog",
+      "columns_contract": "`generation ID`, `product_id ID`, `source_version VER`, `type V20`, `status V20`, `visibility V20`, `in_stock B`, `featured B`, `on_sale B`, `min_price AMT?`, `max_price AMT?`, `total_sales QTY`, `rating_average DECIMAL(4,2)`, `rating_count BIGINT`, `created_at TS`, `menu_order INT`, `title_sort V191`, `image_asset_id ID?`, `indexed_at TS`, `next_price_change TS?`",
+      "keys_contract": "PK `(generation,product_id)`; `(generation,status,visibility,in_stock,min_price,product_id)`; `(generation,status,created_at,product_id)`; `(generation,status,total_sales,product_id)`; index riêng rating/menu_order theo workload. Giá min/max chỉ của variation khả dụng theo policy được pin"
+    },
+    {
+      "name": "catalog_facets",
+      "columns_contract": "`generation ID`, `product_id ID`, `variant_id ID` (0 cho product-level), `facet_key VARBINARY(191)`, `value_key VARBINARY(191)`",
+      "keys_contract": "PK `(generation,facet_key,value_key,product_id,variant_id)`; `(generation,product_id,variant_id)`; variant-level JOIN phải cùng variant khi filter tổ hợp"
+    },
+    {
+      "name": "object_state",
+      "columns_contract": "`object_id ID`, `kind V16`, `parent_id ID?`, `authority V16`, `epoch VER`, `legacy_revision VER`, `native_revision VER`, `legacy_applied VER`, `native_applied VER`, `legacy_hash BINARY(32)?`, `native_hash BINARY(32)?`, `tombstone B`, `updated_at TS`",
+      "keys_contract": "PK object_id; `(authority,parent_id,object_id)`; revisions monotonic theo nguồn, không thay bằng updated_at"
+    },
+    {
+      "name": "outbox",
+      "columns_contract": "`event_id CHAR(36)`, `aggregate_id ID`, `revision VER`, `epoch VER`, `event_type V64`, `payload TEXT_JSON`, `state V16`, `attempts INT`, `available_at TS`, `lease_owner V100?`, `lease_until TS?`, `created_at TS`, `last_error TEXT?`",
+      "keys_contract": "PK event_id; UNIQUE `(aggregate_id,epoch,revision,event_type)`; `(state,available_at,lease_until,event_id)`; consumer dùng applied revision để retry idempotent"
+    },
+    {
+      "name": "jobs",
+      "columns_contract": "`id CHAR(36)`, `kind V24`, `status V24`, `config TEXT_JSON`, `checkpoint TEXT_JSON`, `counts TEXT_JSON`, `lease_owner V100?`, `lease_until TS?`, `cancel_requested B`, `created_at TS`, `updated_at TS`, `error_code V64?`",
+      "keys_contract": "PK id; `(status,lease_until,id)`; resume dựa persisted checkpoint, không UI request"
+    },
+    {
+      "name": "import_rows",
+      "columns_contract": "`job_id CHAR(36)`, `row_number BIGINT`, `group_key VARBINARY(191)`, `raw_fields TEXT_JSON`, `mapped_payload LONGTEXT?`, `status V24`, `errors TEXT_JSON`, `warnings TEXT_JSON`, `target_id ID?`, `content_hash BINARY(32)`",
+      "keys_contract": "PK `(job_id,row_number)`; `(job_id,group_key,row_number)`; nhóm quá lớn spill disk/private staging, không giữ toàn file RAM"
+    },
+    {
+      "name": "external_ids",
+      "columns_contract": "`source V64`, `source_scope VARBINARY(191)`, `external_key VARBINARY(191)`, `object_kind V16`, `object_id ID`",
+      "keys_contract": "PK `(source,source_scope,external_key,object_kind)`; `(object_id,source)`; handle mutable không dùng làm identity native sau import"
+    },
+    {
+      "name": "control",
+      "columns_contract": "`key VARBINARY(191)`, `value TEXT_JSON`, `version VER`, `updated_at TS`",
+      "keys_contract": "PK key; lưu generation đang active, cohort config, epoch và cutover checkpoint qua CAS"
+    },
+    {
+      "name": "audit",
+      "columns_contract": "`id ID AUTO`, `actor_id ID?`, `request_id CHAR(36)`, `operation V64`, `target_id ID?`, `job_id CHAR(36)?`, `before_revision VER?`, `after_revision VER?`, `summary TEXT_JSON`, `created_at TS`",
+      "keys_contract": "PK id; `(target_id,created_at,id)`; không log secret, signed URL query/token hoặc toàn bộ import raw vào audit"
+    }
+  ],
+  "ddl_status": "T05_must_implement_and_verify"
+}

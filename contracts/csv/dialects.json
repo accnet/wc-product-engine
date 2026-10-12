@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "woo": {
+    "target_wc": "11.1.2",
+    "parent_refs": [
+      "id:ID",
+      "SKU"
+    ],
+    "images_default": "external",
+    "matching": "T03/T32 snapshot pinned native behavior including global unique ID eligibility"
+  },
+  "shopify": {
+    "current_headers": [
+      "URL handle",
+      "Title",
+      "Description",
+      "SKU",
+      "Price",
+      "Compare-at price",
+      "Option1 name",
+      "Option1 value",
+      "Product image URL",
+      "Image position",
+      "Image alt text",
+      "Variant image URL"
+    ],
+    "legacy_aliases": {
+      "Handle": "URL handle",
+      "Body (HTML)": "Description",
+      "Variant SKU": "SKU",
+      "Variant Price": "Price",
+      "Image Src": "Product image URL",
+      "Variant Image": "Variant image URL"
+    },
+    "max_options": 3,
+    "unknown_columns": "strict_fail_or_loss_report"
+  },
+  "field_states": [
+    "absent",
+    "blank",
+    "value"
+  ],
+  "defaults": {
+    "dry_run": true,
+    "update_mode": "merge",
+    "export": "strict"
+  }
+}

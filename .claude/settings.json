@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.production)",
+      "Bash(git push *)",
+      "Bash(git * --no-verify *)",
+      "Bash(git * --force *)",
+      "Edit(./scripts/check-docs.mjs)",
+      "Write(./scripts/check-docs.mjs)",
+      "Edit(./scripts/plan.mjs)",
+      "Write(./scripts/plan.mjs)",
+      "Edit(./scripts/hooks/*)",
+      "Write(./scripts/hooks/*)",
+      "Edit(./docs/plans/*/progress.md)",
+      "Write(./docs/plans/*/progress.md)",
+      "Edit(./docs/plans/*/state.json)",
+      "Write(./docs/plans/*/state.json)",
+      "Edit(./docs/plans/*/log.jsonl)",
+      "Write(./docs/plans/*/log.jsonl)",
+      "Edit(./docs/plans/INDEX.md)",
+      "Write(./docs/plans/INDEX.md)",
+      "Read(./.env.local)",
+      "Read(./.env.staging)",
+      "Read(./.env.test)",
+      "Read(./.env.development)",
+      "Bash(git push)"
+    ],
+    "allow": [
+      "Read(./.env.example)"
+    ]
+  }
+}

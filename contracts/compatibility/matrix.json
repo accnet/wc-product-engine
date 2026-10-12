@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "certified": false,
+  "versions_ref": "pins.json",
+  "surfaces": [
+    {
+      "name": "wc-crud",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "wc-admin",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "wc-rest-v3",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "classic-catalog",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "classic-gallery",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "store-api",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "blocks-cart-checkout",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "native-reservation",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "woo-native-csv",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "shopify-local-csv",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "rollback",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    },
+    {
+      "name": "native-independence",
+      "status": "not_tested",
+      "required": true,
+      "evidence": []
+    }
+  ],
+  "third_party_plugins": []
+}

@@ -1,0 +1,18 @@
+flowchart TD
+  A["Contracts / baseline"] --> B["Tables / outbox"]
+  B --> C["CRUD / stock bridge"]
+  B --> D["Catalog / facets"]
+  C --> E["CDN / gallery"]
+  C --> F["Variants / cart guards"]
+  E --> F
+  C --> G["CSV pipeline"]
+  E --> G
+  G --> H["Woo / Shopify adapters"]
+  C --> I["Legacy sync / rollback"]
+  D --> J["Evidence / native independence"]
+  F --> J
+  H --> J
+  I --> J
+  J --> K["Gates / cutover"]
+  K --> L["Full Native / release"]
+  L --> M["Retention cleanup"]

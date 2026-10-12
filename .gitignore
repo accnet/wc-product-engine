@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+!*.example
+node_modules/
+vendor/
+artifacts/
+private-staging/
+*.log

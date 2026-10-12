@@ -1,0 +1,66 @@
+{
+  "scope": "documentation kit QA only",
+  "verified_at_utc": "2026-10-11T20:39:55.545007+00:00",
+  "user_timezone": "Asia/Ho_Chi_Minh",
+  "document_date": "2026-10-12",
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "scripts/check-docs.mjs",
+        "--strict"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"check\":\"docs\",\"strict\":true,\"files\":25,\"tasks\":49,\"regression_requirements\":202,\"errors\":0,\"warnings\":0}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/plan.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"check\":\"plans\",\"plans\":0,\"errors\":0}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/guard.mjs",
+        "--all"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"check\":\"guard\",\"files\":55,\"errors\":0}",
+      "stderr": ""
+    }
+  ],
+  "tooling_selftests": {
+    "count": 33,
+    "all_passed": true,
+    "artifact": "docs/evidence/docs-tooling-selftests.json"
+  },
+  "contract_structural_checks": {
+    "count": 18,
+    "all_passed": true,
+    "artifact": "docs/evidence/contract-selftests.json",
+    "full_openapi_schema_validation": false
+  },
+  "independent_review": {
+    "artifact": "docs/evidence/independent-review.md",
+    "critical_unresolved": 0,
+    "minor_lockfile_paths_fixed_after_review": true
+  },
+  "diagram": {
+    "source": "docs/diagrams/implementation-dag.mmd",
+    "svg": "docs/diagrams/implementation-dag.svg",
+    "png": "docs/diagrams/implementation-dag.png",
+    "visual_inspection": "passed",
+    "render_method": "deterministic SVG matching milestone Mermaid topology, rasterized with sharp; not Mermaid layout engine",
+    "exact_task_dag": "contracts/tasks.json"
+  },
+  "runtime_status": "not_implemented_not_tested",
+  "implementation_tasks_completed": 0,
+  "regression_requirements_executed_on_WC": 0,
+  "core_modifications": false
+}

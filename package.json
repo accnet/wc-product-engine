@@ -1,0 +1,16 @@
+{
+  "name": "wc-product-engine-docs",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check:docs": "node scripts/check-docs.mjs --strict",
+    "check:plans": "node scripts/plan.mjs check",
+    "check:guard": "node scripts/guard.mjs --all",
+    "verify": "npm run check:docs && npm run check:plans && npm run check:guard",
+    "test:task": "node scripts/test-runtime.mjs"
+  }
+}

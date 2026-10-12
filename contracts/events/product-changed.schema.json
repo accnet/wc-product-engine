@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProductChangedV1",
+  "type": "object",
+  "required": [
+    "event_id",
+    "schema_version",
+    "type",
+    "aggregate_id",
+    "authority",
+    "authority_epoch",
+    "revision",
+    "occurred_at",
+    "origin",
+    "changed_fields",
+    "correlation_id"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "type": {
+      "const": "wpe.product.changed.v1"
+    },
+    "aggregate_id": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "authority": {
+      "enum": [
+        "legacy",
+        "native"
+      ]
+    },
+    "authority_epoch": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "changed_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "additionalProperties": false
+}

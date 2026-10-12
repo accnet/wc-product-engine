@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "selected_at": "2026-10-12",
+  "status": "site1_localhost_baseline_not_certified",
+  "versions": {
+    "wordpress": "7.0",
+    "woocommerce": "11.1.2",
+    "php": "8.3.31",
+    "node": "22.22.2",
+    "composer": "2.8.12",
+    "phpunit": "9.6.38",
+    "phpcodesniffer": "3.13.4",
+    "wordpress_coding_standards": "3.2.0",
+    "playwright": "1.56.1",
+    "theme": "calora 1.0.0",
+    "mariadb": "11.8.6"
+  },
+  "policy": "T01 reads versions from site1.localhost via WP-CLI; version changes reopen affected gates.",
+  "environment": {
+    "site_url": "http://site1.localhost",
+    "path": "/var/www/site1.localhost",
+    "plugin_dir": "wp-content/plugins/wc-product-engine",
+    "database": "site MariaDB only (no MySQL matrix)",
+    "scale_datasets": [
+      "100k",
+      "1M"
+    ]
+  }
+}

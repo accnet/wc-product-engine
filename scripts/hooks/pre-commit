@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+node scripts/check-docs.mjs --strict
+node scripts/plan.mjs check
+node scripts/guard.mjs --staged
+git diff --cached --check
