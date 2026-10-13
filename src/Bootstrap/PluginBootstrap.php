@@ -339,6 +339,7 @@ class PluginBootstrap
             \WPE\Application\ImportExport\CsvStager::getInstance()->registerRestRoutes();
             \WPE\Admin\Rest\AdminApiController::getInstance()->registerRoutes();
             \WPE\Admin\ProductEditor\ProductEditorApiController::getInstance()->registerRoutes();
+            \WPE\Admin\ProductEditor\ProductMediaApiController::getInstance()->registerRoutes();
         });
     }
 

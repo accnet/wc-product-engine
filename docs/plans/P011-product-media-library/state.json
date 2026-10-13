@@ -482,8 +482,54 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "5c00d722a5a6be3d1bf429c4f5219d0cb5dc6bdf",
+          "content_digest": "4a0ad09366773bd593557aecc99c52b67009c9a2c581a80010860cf28c659bb5",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874972948-b388688d.log",
+          "time": "2026-10-13T07:02:52.949Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductMediaRestTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5c00d722a5a6be3d1bf429c4f5219d0cb5dc6bdf",
+          "content_digest": "4a0ad09366773bd593557aecc99c52b67009c9a2c581a80010860cf28c659bb5",
+          "output_sha256": "60f106bb37ffd595fb724efa39fa544fe025d8b436656d9677dcb9ef489573c5",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874974062-9e3dd121.log",
+          "time": "2026-10-13T07:02:54.062Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "5c00d722a5a6be3d1bf429c4f5219d0cb5dc6bdf",
+          "content_digest": "4a0ad09366773bd593557aecc99c52b67009c9a2c581a80010860cf28c659bb5",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874974151-6c14ec7c.log",
+          "time": "2026-10-13T07:02:54.151Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:57:39.461Z"
     },
     {
       "id": "P011.7",

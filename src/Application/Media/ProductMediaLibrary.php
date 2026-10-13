@@ -707,7 +707,8 @@ final class ProductMediaLibrary
             'v' => array_map(static fn ($rows) => array_map(static fn ($r) => [$r['asset_id'], $r['is_primary'], $r['alt']], $rows), $state['variants']),
         ];
         ksort($canon['v']);
-        return substr(hash('sha256', (string) wp_json_encode($canon)), 0, 32);
+        // Decimal token: the API contract types every version as digits.
+        return (string) hexdec(substr(hash('sha256', (string) wp_json_encode($canon)), 0, 12));
     }
 
     /** @return array<int,array<string,mixed>> */
