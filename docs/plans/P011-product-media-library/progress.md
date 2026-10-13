@@ -6,7 +6,7 @@ Status: in_progress
 - [x] P011.2 — Schema for managed files and upload items, repository methods (done)
 - [x] P011.3 — Storage provider layer: resolver, storage plugin adapter, local provider, no silent fallback (done)
 - [x] P011.4 — Managed upload service: validation, upload, verification, idempotent registration, upload intents (done)
-- [ ] P011.5 — Product library service: list, link, reorder, featured, alt, impact preview, safe unlink, membership (todo)
+- [x] P011.5 — Product library service: list, link, reorder, featured, alt, impact preview, safe unlink, membership (done)
 - [ ] P011.6 — REST routes: upload, URL add, library read and patch, unlink preview, session claim (todo)
 - [ ] P011.7 — Variant image assignment by asset id, membership enforcement, group and selection preview, editor save integration (todo)
 - [ ] P011.8 — Native image box replacement and single writer guard for thumbnail and gallery keys (todo)
