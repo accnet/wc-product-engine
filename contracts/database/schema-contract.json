@@ -127,6 +127,16 @@
       "name": "audit",
       "columns_contract": "`id ID AUTO`, `actor_id ID?`, `request_id CHAR(36)`, `operation V64`, `target_id ID?`, `job_id CHAR(36)?`, `before_revision VER?`, `after_revision VER?`, `summary TEXT_JSON`, `created_at TS`",
       "keys_contract": "PK id; `(target_id,created_at,id)`; không log secret, signed URL query/token hoặc toàn bộ import raw vào audit"
+    },
+    {
+      "name": "asset_storage",
+      "columns_contract": "`asset_id ID`, `storage_provider V32`, `bucket V191`, `object_key TEXT`, `object_key_hash BINARY(32)`, `file_name V255`, `size_bytes BIGINT`, `content_hash BINARY(32)`, `etag V128?`, `state V16`, `created_by ID?`, `created_at TS`, `updated_at TS`, `deleted_at TS?`",
+      "keys_contract": "PK asset_id; UNIQUE `(storage_provider,bucket,object_key_hash)`; `(state,created_at)`. Asset có dòng này là managed; không có dòng là external. Provider/bucket/key lưu theo từng asset, đổi storage mặc định không sửa dòng cũ"
+    },
+    {
+      "name": "upload_items",
+      "columns_contract": "`id ID AUTO`, `upload_key V64`, `user_id ID`, `session_id V64`, `product_id ID?`, `state V16`, `file_name V255`, `mime V100?`, `size_bytes BIGINT?`, `content_hash BINARY(32)?`, `storage_provider V32?`, `bucket V191`, `object_key TEXT?`, `object_key_hash BINARY(32)?`, `asset_id ID?`, `error_reason V64?`, `error_message TEXT?`, `attempts INT`, `created_at TS`, `updated_at TS`, `expires_at TS`",
+      "keys_contract": "PK id; UNIQUE `(user_id,upload_key)`; `(session_id,state)`; `(state,updated_at)`; `(product_id,state)`. State receiving/stored/registered/failed/cleaned; không tạo asset trước khi object được xác nhận"
     }
   ],
   "ddl_status": "T05_must_implement_and_verify"

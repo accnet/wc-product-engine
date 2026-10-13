@@ -77,8 +77,12 @@ WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể c�
 | `POST /admin/products/{id}/variants` | VariantWrite/options/SKU → id/version,parent_version | cap + parent If-Match |
 | `PATCH /admin/variants/{id}` | VariantWrite patch → version,parent_version | CAS variation + lock parent |
 | `DELETE /admin/products/{id}` | `force=false` mặc định → tombstone/version | trash/delete capability tương ứng; order giữ reference |
-| `POST /admin/assets` | URL + metadata/renditions/provider → asset ID/version | `upload_files` + engine edit policy; URL/fetch validation |
-| `PATCH /admin/products/{id}/media` | ordered refs + featured asset + variation mappings → product revision | cap + parent CAS; invalid ref không cập nhật nửa chừng |
+| `POST /admin/assets` | multipart file (managed upload) hoặc URL + metadata/renditions/provider (external) → asset ID/version, origin managed hoặc external, upload_key idempotent | `upload_files` + `edit_post` trên product; kiểm tra loại/kích thước; không fallback storage âm thầm |
+| `PATCH /admin/products/{id}/media` | ordered refs + featured asset + variation mappings + alt override → product revision; asset phải thuộc thư viện product hoặc được link cùng request | cap + parent CAS; invalid ref hoặc ảnh đang dùng chưa có thay thế không cập nhật nửa chừng |
+| `GET /admin/products/{id}/media` | thư viện ảnh của product: featured, gallery có thứ tự, ảnh chỉ gắn variation, upload chờ link, origin và trạng thái từng ảnh | `edit_post` trên product + `upload_files` |
+| `POST /admin/products/{id}/media/unlink-preview` | asset IDs muốn gỡ → các vị trí bị ảnh hưởng (featured, gallery, variations) và yêu cầu thay thế; không ghi dữ liệu | `edit_post` trên product + `upload_files` |
+| `DELETE /admin/assets/{id}/file` | xóa file storage của managed asset sau khi quét toàn bộ references → kết quả hoặc danh sách references chặn | `upload_files` + `delete_post` và không còn reference; external asset luôn bị từ chối |
+| `POST /admin/upload-sessions/{session}/claim` | gán upload của session cho product vừa tạo → số asset đã claim | chỉ user tạo session + `edit_post` trên product |
 | `POST /admin/imports` | staged file ID, format/profile, update_mode, image_mode, dry_run=true mặc định → job ID | `manage_woocommerce` + import capability; không URL/path máy chủ tùy ý |
 | `POST /admin/imports/{job}/commit` | validated snapshot hash + conflict_policy → accepted job | cap; file/config bất biến sau validate; nếu đổi phải validate lại |
 | `POST /admin/exports` | format/profile, filters, field set, strict/lossy → job ID | cap; cursor traversal snapshot semantics khai báo |
@@ -164,3 +168,21 @@ Không có engine webhook endpoint ngoài REST ở V1. Existing WC webhooks/orde
 ## 6. Rollout và nested mutation schema requirements
 
 ValidateWrite requires expected_epoch/manifest_hash/evidence_snapshot (evidence_id/artifact_hashes/generated_at). CutoverWrite requires gate_id/expected_epoch/manifest_hash. RollbackWrite requires expected_epoch/manifest_hash/reason, dry_run=true default. VariantMutationResult requires id/version/parent_version. Product PATCH có options/terms/meta/variants phải collection_mode; MediaPatch collection_mode luôn required. GET product context=view public, context=edit auth+edit_post. DELETE force=false param có trong OpenAPI.
+
+## 7. Media library và managed upload
+
+Thư viện ảnh của product là các dòng liên kết `product_media` (tối đa một featured, gallery có thứ tự). File thực tế nằm tại provider đã lưu cho asset.
+
+**Upload.** `POST /admin/assets` nhận multipart với `file` và `upload_key` do client sinh, dùng lại khi retry. Backend kiểm tra quyền, loại file (jpeg, png, gif, webp, avif; SVG bị từ chối) bằng nội dung, và kích thước (nhỏ hơn giữa giới hạn WordPress và cấu hình plugin). Storage mặc định do hệ thống chọn; khi storage mặc định bật nhưng không dùng được, lỗi trả `dependency_unavailable` (503) với `details[].reason = storage_unavailable` và `retryable = true`; không bao giờ chuyển sang provider khác. Chỉ sau khi object được xác nhận mới tạo asset và dòng managed storage. Cùng `upload_key` trả lại cùng asset, không tạo asset hoặc liên kết trùng.
+
+**Lý do chi tiết** dùng mã lỗi đã đăng ký kèm `details[].reason`: `file_type_not_allowed` và `file_too_large` (`validation_failed`), `asset_not_in_product` (`validation_failed`), `impact_requires_resolution` (`conflict`), `storage_unavailable` (`dependency_unavailable`), `asset_in_use` và `asset_external` cho xóa file (`conflict`, `validation_failed`).
+
+**Membership.** Mọi asset được gán làm ảnh variation, featured hoặc gallery phải thuộc thư viện product hoặc được link trong cùng request; backend từ chối asset khác, không chỉ UI. Ảnh variation hiện có nhưng chưa nằm trong thư viện hiển thị là `variant_only`; giữ nguyên khi lưu không bị chặn.
+
+**Gỡ ảnh.** Gỡ chỉ xóa liên kết. `POST /admin/products/{id}/media/unlink-preview` liệt kê vị trí bị ảnh hưởng. `PATCH` với `unlink` bắt buộc mỗi ảnh đang dùng có `replacement_asset_id` hoặc `fallback = true`, nếu không trả `impact_requires_resolution`. Thay đổi atomic.
+
+**Xóa file.** `DELETE /admin/assets/{id}/file` chỉ cho managed asset, kiểm tra quyền và toàn bộ references, không bao giờ xóa external hay asset còn dùng bởi product khác.
+
+**Sản phẩm chưa có ID.** Upload mang `session_id`; sau khi tạo product `POST /admin/upload-sessions/{session}/claim` gán các upload. Trong classic editor product auto-draft đã có ID nên upload dùng `product_id`.
+
+**Đổi storage mặc định** chỉ ảnh hưởng upload mới; asset cũ giữ provider, bucket, key, URL đã lưu.

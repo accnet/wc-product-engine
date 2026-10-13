@@ -115,6 +115,8 @@ Stock operation idempotency theo order/item/kind/event. Inherited-stock variants
 
 Asset identity giữ query/version URL; không automatic CDN delete. Shared asset alt có product-level override; WP attachment default alt dùng fallback/context adapter, không hứa one attachment metadata biểu diễn mọi product alt. Native gallery/SEO integration tại 10 §3 và 09 §4.
 
+Asset có hai nguồn: external URL (không yêu cầu object key hay quyền xóa storage) và managed file do hệ thống upload lên storage mặc định (có provider, bucket, object key, kích thước, hash). Managed file nằm trong V1 qua upload server-side; vẫn không có sửa/crop file local. Mỗi product có thư viện ảnh riêng là các liên kết; ảnh variation chỉ chọn từ thư viện đó. Gỡ ảnh khỏi product chỉ bỏ liên kết; xóa file là thao tác riêng, chỉ managed asset không còn reference, không bao giờ tự động khi gỡ liên kết hay hủy bản nháp. Đổi storage mặc định không di chuyển hay viết lại ảnh cũ; upload thất bại không được thay bằng provider khác.
+
 ## 11. Import/export rules
 
 Rules canonical tại 10 §6 và 10 §7. Dry-run không tạo products/terms/attachments. Default merge, dry_run=true, image_mode=external, strict export. Replace variations chỉ explicit preview/tombstone IDs, không tự xóa vì thiếu row. Cancel không undo committed groups.

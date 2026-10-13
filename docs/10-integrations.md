@@ -32,6 +32,8 @@ Provider contract `can_transform`, `get_rendition`, `stable_export_url`, `probe`
 
 Attachment ID thật; no fake local path cho crop/regenerate/edit. Materialize phải explicit actor upload_files, URL allowed và bounded download task riêng; chưa có trong V1 nên local file editing trả unsupported_feature. Không tự sideload vì một theme gọi metadata.
 
+Managed upload (P011): backend upload qua adapter của plugin object storage khi cài đặt của plugin đó đang bật, ngược lại ghi vào uploads local. Khi cài đặt bật nhưng plugin không nạp được hoặc adapter chưa cấu hình, upload trả lỗi storage không khả dụng, không chuyển sang local. Credentials chỉ nằm trong plugin storage, không trả ra trình duyệt, log hay test. Object được xác nhận (tồn tại, đúng kích thước) trước khi tạo asset. Attachment do bridge tạo không có file local nên phải được đánh dấu không đồng bộ lại bởi plugin storage. Presigned upload chưa nằm trong phạm vi; nếu bổ sung thì URL phải ngắn hạn, giới hạn một object key và backend xác minh object trước khi tạo media.
+
 ## 6. CSV pipeline và Woo dialect
 
 ### 6.1 Pipeline chung

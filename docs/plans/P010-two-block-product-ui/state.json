@@ -1,7 +1,7 @@
 {
   "id": "P010",
   "title": "Two-block product management UI",
-  "status": "draft",
+  "status": "approved",
   "content_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571",
   "tasks": [
     {
@@ -510,5 +510,5 @@
       "runs": []
     }
   ],
-  "approved_hash": null
+  "approved_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571"
 }

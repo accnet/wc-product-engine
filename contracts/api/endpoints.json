@@ -128,14 +128,38 @@
     {
       "method": "POST",
       "path": "/admin/assets",
-      "contract": "URL + metadata/renditions/provider → asset ID/version",
-      "permission": "`upload_files` + engine edit policy; URL/fetch validation"
+      "contract": "multipart file (managed upload) hoặc URL + metadata/renditions/provider (external) → asset ID/version, origin managed|external, upload_key idempotent",
+      "permission": "`upload_files` + `edit_post` trên product; kiểm tra loại/kích thước; không fallback storage âm thầm"
     },
     {
       "method": "PATCH",
       "path": "/admin/products/{id}/media",
-      "contract": "ordered refs + featured asset + variation mappings → product revision",
-      "permission": "cap + parent CAS; invalid ref không cập nhật nửa chừng"
+      "contract": "ordered refs + featured asset + variation mappings + alt override → product revision; asset phải thuộc thư viện product hoặc được link cùng request",
+      "permission": "cap + parent CAS; invalid ref hoặc ảnh đang dùng chưa có thay thế không cập nhật nửa chừng"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/products/{id}/media",
+      "contract": "thư viện ảnh của product: featured, gallery có thứ tự, ảnh chỉ gắn variation, upload chờ link, origin và trạng thái từng ảnh",
+      "permission": "`edit_post` trên product + `upload_files`"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/products/{id}/media/unlink-preview",
+      "contract": "asset IDs muốn gỡ → các vị trí bị ảnh hưởng (featured, gallery, variations) và yêu cầu thay thế; không ghi dữ liệu",
+      "permission": "`edit_post` trên product + `upload_files`"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/assets/{id}/file",
+      "contract": "xóa file storage của managed asset sau khi quét toàn bộ references → kết quả hoặc danh sách references chặn",
+      "permission": "`upload_files` + `delete_post` và không còn reference; external asset luôn bị từ chối"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/upload-sessions/{session}/claim",
+      "contract": "gán upload của session cho product vừa tạo → số asset đã claim",
+      "permission": "chỉ user tạo session + `edit_post` trên product"
     },
     {
       "method": "POST",

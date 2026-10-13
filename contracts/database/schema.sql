@@ -217,6 +217,55 @@ CREATE TABLE IF NOT EXISTS `{prefix}wpe_assets` (
   KEY `idx_url_key_id` (`url_key`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `{prefix}wpe_asset_storage` (
+  `asset_id` BIGINT UNSIGNED NOT NULL,
+  `storage_provider` VARCHAR(32) NOT NULL,
+  `bucket` VARCHAR(191) NOT NULL DEFAULT '',
+  `object_key` TEXT NOT NULL,
+  `object_key_hash` BINARY(32) NOT NULL,
+  `file_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `size_bytes` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `content_hash` BINARY(32) NOT NULL,
+  `etag` VARCHAR(128) NULL DEFAULT NULL,
+  `state` VARCHAR(16) NOT NULL DEFAULT 'active',
+  `created_by` BIGINT UNSIGNED NULL DEFAULT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  `deleted_at` DATETIME(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`asset_id`),
+  UNIQUE KEY `uniq_storage_object` (`storage_provider`, `bucket`, `object_key_hash`),
+  KEY `idx_state_created` (`state`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `{prefix}wpe_upload_items` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `upload_key` VARCHAR(64) NOT NULL,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `session_id` VARCHAR(64) NOT NULL,
+  `product_id` BIGINT UNSIGNED NULL DEFAULT NULL,
+  `state` VARCHAR(16) NOT NULL DEFAULT 'receiving',
+  `file_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `mime` VARCHAR(100) NULL DEFAULT NULL,
+  `size_bytes` BIGINT UNSIGNED NULL DEFAULT NULL,
+  `content_hash` BINARY(32) NULL DEFAULT NULL,
+  `storage_provider` VARCHAR(32) NULL DEFAULT NULL,
+  `bucket` VARCHAR(191) NOT NULL DEFAULT '',
+  `object_key` TEXT NULL DEFAULT NULL,
+  `object_key_hash` BINARY(32) NULL DEFAULT NULL,
+  `asset_id` BIGINT UNSIGNED NULL DEFAULT NULL,
+  `error_reason` VARCHAR(64) NULL DEFAULT NULL,
+  `error_message` TEXT NULL DEFAULT NULL,
+  `attempts` INT NOT NULL DEFAULT 0,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  `expires_at` DATETIME(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_user_upload_key` (`user_id`, `upload_key`),
+  KEY `idx_session_state` (`session_id`, `state`),
+  KEY `idx_state_updated` (`state`, `updated_at`),
+  KEY `idx_product_state` (`product_id`, `state`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `{prefix}wpe_product_media` (
   `product_id` BIGINT UNSIGNED NOT NULL,
   `asset_id` BIGINT UNSIGNED NOT NULL,

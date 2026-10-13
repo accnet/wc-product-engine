@@ -1,7 +1,7 @@
 {
   "id": "P011",
   "title": "Per-product media library and variant image picker",
-  "status": "draft",
+  "status": "in_progress",
   "content_hash": "0805a5eeffba8af3c815a04d00c18c3fb513ad2b4ecae4ee374ec6b92f200153",
   "tasks": [
     {
@@ -39,8 +39,36 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "6cb646759d8656d44355fc4bfc39c3fa495b6ecd",
+          "content_digest": "e522e061611de9b9652ca0f9da17def74a24b2a06e413883a1ea285050cc4985",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P011-product-media-library/command-1791873866924-87c29b64.log",
+          "time": "2026-10-13T06:44:26.924Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "6cb646759d8656d44355fc4bfc39c3fa495b6ecd",
+          "content_digest": "e522e061611de9b9652ca0f9da17def74a24b2a06e413883a1ea285050cc4985",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P011-product-media-library/command-1791873867009-de155167.log",
+          "time": "2026-10-13T06:44:27.009Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:42:23.159Z"
     },
     {
       "id": "P011.2",
@@ -529,5 +557,5 @@
       "runs": []
     }
   ],
-  "approved_hash": null
+  "approved_hash": "0805a5eeffba8af3c815a04d00c18c3fb513ad2b4ecae4ee374ec6b92f200153"
 }

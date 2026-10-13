@@ -1455,7 +1455,7 @@
     "/admin/assets": {
       "post": {
         "operationId": "post_admin_assets",
-        "summary": "URL + metadata/renditions/provider → asset ID/version",
+        "summary": "multipart file (managed upload) hoặc URL + metadata/renditions/provider (external) → asset ID/version, origin managed|external, upload_key idempotent",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -1594,6 +1594,11 @@
               "schema": {
                 "$ref": "#/components/schemas/AssetWrite"
               }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUpload"
+              }
             }
           }
         }
@@ -1602,7 +1607,7 @@
     "/admin/products/{id}/media": {
       "patch": {
         "operationId": "patch_admin_products_id_media",
-        "summary": "ordered refs + featured asset + variation mappings → product revision",
+        "summary": "ordered refs + featured asset + variation mappings + alt override → product revision; asset phải thuộc thư viện product hoặc được link cùng request",
         "parameters": [
           {
             "name": "id",
@@ -1757,6 +1762,141 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/MediaPatch"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "get_admin_products_id_media",
+        "summary": "thư viện ảnh của product: featured, gallery có thứ tự, ảnh chỉ gắn variation, upload chờ link, origin và trạng thái từng ảnh",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "wpCookie": []
+          },
+          {
+            "applicationPassword": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ambiguous_variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "stale_version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unsupported_feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dependency_unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaLibrary"
+                }
               }
             }
           }
@@ -3378,6 +3518,463 @@
           }
         }
       }
+    },
+    "/admin/products/{id}/media/unlink-preview": {
+      "post": {
+        "operationId": "post_admin_products_id_media_unlink_preview",
+        "summary": "asset IDs muốn gỡ → các vị trí bị ảnh hưởng (featured, gallery, variations) và yêu cầu thay thế; không ghi dữ liệu",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "wpCookie": []
+          },
+          {
+            "applicationPassword": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlinkPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ambiguous_variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "stale_version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unsupported_feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dependency_unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlinkPreview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/assets/{id}/file": {
+      "delete": {
+        "operationId": "delete_admin_assets_id_file",
+        "summary": "xóa file storage của managed asset sau khi quét toàn bộ references → kết quả hoặc danh sách references chặn",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "wpCookie": []
+          },
+          {
+            "applicationPassword": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ambiguous_variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "stale_version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unsupported_feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dependency_unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileDeleteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/upload-sessions/{session}/claim": {
+      "post": {
+        "operationId": "post_admin_upload_sessions_session_claim",
+        "summary": "gán upload của session cho product vừa tạo → số asset đã claim",
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9-]{8,64}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "security": [
+          {
+            "wpCookie": []
+          },
+          {
+            "applicationPassword": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadClaim"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ambiguous_variant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "stale_version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unsupported_feature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dependency_unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadClaimResult"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3999,6 +4596,59 @@
               "merge",
               "replace"
             ]
+          },
+          "alt_overrides": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                },
+                "alt_override": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "asset_id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "unlink": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                },
+                "replacement_asset_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fallback": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "asset_id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "pending_upload_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -4751,6 +5401,259 @@
           "parent_version"
         ],
         "additionalProperties": false
+      },
+      "AssetUpload": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "upload_key": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 64
+          },
+          "product_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "session_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{8,64}$"
+          },
+          "alt_text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "upload_key"
+        ],
+        "additionalProperties": false
+      },
+      "MediaLibraryItem": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "role": {
+            "enum": [
+              "featured",
+              "gallery",
+              "variant_only",
+              "pending_link"
+            ]
+          },
+          "position": {
+            "type": "integer"
+          },
+          "origin": {
+            "enum": [
+              "managed",
+              "external"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "size_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "alt_text": {
+            "type": "string"
+          },
+          "alt_override": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "storage_provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "used_by_variants": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          }
+        },
+        "required": [
+          "asset_id",
+          "role",
+          "origin",
+          "url"
+        ]
+      },
+      "MediaLibrary": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "version": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaLibraryItem"
+            }
+          },
+          "upload_limits": {
+            "type": "object",
+            "properties": {
+              "max_bytes": {
+                "type": "integer"
+              },
+              "mime_types": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "product_id",
+          "version",
+          "items"
+        ]
+      },
+      "UnlinkPreviewRequest": {
+        "type": "object",
+        "properties": {
+          "asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "asset_ids"
+        ],
+        "additionalProperties": false
+      },
+      "UnlinkPreview": {
+        "type": "object",
+        "properties": {
+          "affected": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                },
+                "place": {
+                  "enum": [
+                    "featured",
+                    "gallery",
+                    "variant"
+                  ]
+                },
+                "variant_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "asset_id",
+                "place"
+              ]
+            }
+          },
+          "requires_resolution": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "affected",
+          "requires_resolution"
+        ]
+      },
+      "AssetFileDeleteResult": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "blocking_references": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "UploadClaim": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "additionalProperties": false
+      },
+      "UploadClaimResult": {
+        "type": "object",
+        "properties": {
+          "claimed": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "claimed"
+        ]
       }
     },
     "securitySchemes": {

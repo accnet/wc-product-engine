@@ -1,6 +1,6 @@
 # P010 — Two-block product management UI
 
-Status: draft
+Status: approved
 
 - [ ] P010.1 — Contract and docs amendment for common price, pricing mode, type derivation and save result (todo)
 - [ ] P010.2 — Shared effective-price resolver adopted by resolver, cart, projector and meta bridge (todo)
