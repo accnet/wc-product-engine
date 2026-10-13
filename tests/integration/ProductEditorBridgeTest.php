@@ -34,6 +34,7 @@ class ProductEditorBridgeTest
             $this->testNoProductDataTab();
             $this->testMetaBoxRegistration();
             $this->testBoxVisibilityClass();
+            $this->testAdminBodyClass();
             $this->testNativeImageBoxesFollowProductType();
             $this->testMetaBoxAndOverlayRendering();
             $this->testProcessProductMetaSave();
@@ -41,6 +42,7 @@ class ProductEditorBridgeTest
             $this->testFailedSaveKeepsErrorAndDraft();
             $this->testRejectedRequestsAreReported();
             $this->testDraftIsHandedToEditorOnce();
+            $this->testAssetsLocalization();
             $this->tearDown();
 
             echo "All ProductEditorBridge tests passed successfully!\n";
@@ -146,18 +148,44 @@ class ProductEditorBridgeTest
         $this->bridge->registerMetaBox('post');
         assert(empty($wp_meta_boxes['post']), 'Nothing may be registered on other post types');
 
+        // 1. In MODE_BLOCKS (default)
+        delete_option('wpe_editor_mode');
         $this->bridge->registerMetaBox('product');
-        $box = $wp_meta_boxes['product']['normal']['default'][ProductEditorBridge::BOX_ID] ?? null;
-        assert(is_array($box), 'Meta box must be registered on product, normal context, default priority');
+
+        $infoBox = $wp_meta_boxes['product']['normal']['default'][ProductEditorBridge::PRODUCT_INFO_BOX_ID] ?? null;
+        assert(is_array($infoBox), 'Product Info meta box must be registered on product, normal context, default priority');
+        assert($infoBox['title'] === 'Product Information', 'Product Info meta box title must be "Product Information"');
+        assert(is_callable($infoBox['callback']), 'Product Info meta box callback must be callable');
+
+        $variantsBox = $wp_meta_boxes['product']['normal']['default'][ProductEditorBridge::BOX_ID] ?? null;
+        assert(is_array($variantsBox), 'Variants meta box must be registered on product, normal context, default priority');
         assert(!isset($wp_meta_boxes['product']['normal']['high'][ProductEditorBridge::BOX_ID]), "Must not use 'high' priority: it renders above user-sorted boxes such as Product data");
-        assert($box['title'] === 'Variants Manager', 'Meta box title');
-        assert(is_callable($box['callback']), 'Meta box callback must be callable');
+        assert($variantsBox['title'] === 'Variants', 'Variants meta box title in MODE_BLOCKS must be "Variants"');
+        assert(is_callable($variantsBox['callback']), 'Variants meta box callback must be callable');
 
         // Registered after WooCommerce (priority 30) so that it lands below Product data.
         $priority = has_action('add_meta_boxes', [$this->bridge, 'registerMetaBox']);
         assert($priority !== false && $priority > 30, 'Must be registered after WooCommerce Product data (priority 30), got ' . var_export($priority, true));
-        assert(has_filter('postbox_classes_product_' . ProductEditorBridge::BOX_ID, [$this->bridge, 'filterBoxClasses']) !== false, 'Class filter must be hooked');
+        assert(has_filter('postbox_classes_product_' . ProductEditorBridge::BOX_ID, [$this->bridge, 'filterBoxClasses']) !== false, 'Variants class filter must be hooked');
+        assert(has_filter('postbox_classes_product_' . ProductEditorBridge::PRODUCT_INFO_BOX_ID, [$this->bridge, 'filterProductInfoBoxClasses']) !== false, 'Product info class filter must be hooked');
+        assert(has_filter('admin_body_class', [$this->bridge, 'filterAdminBodyClass']) !== false, 'Admin body class filter must be hooked');
 
+        // 2. In MODE_METABOX (P005 recovery)
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_METABOX);
+        $wp_meta_boxes = [];
+        $this->bridge->registerMetaBox('product');
+        assert(!isset($wp_meta_boxes['product']['normal']['default'][ProductEditorBridge::PRODUCT_INFO_BOX_ID]), 'Product Info box must NOT be registered in MODE_METABOX');
+        $boxMetabox = $wp_meta_boxes['product']['normal']['default'][ProductEditorBridge::BOX_ID] ?? null;
+        assert(is_array($boxMetabox), 'Variants Manager meta box must be registered in MODE_METABOX');
+        assert($boxMetabox['title'] === 'Variants Manager', 'Meta box title in MODE_METABOX must be "Variants Manager"');
+
+        // 3. In MODE_LEGACY
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_LEGACY);
+        $wp_meta_boxes = [];
+        $this->bridge->registerMetaBox('product');
+        assert(empty($wp_meta_boxes['product']['normal']['default']), 'No meta boxes must be registered in MODE_LEGACY');
+
+        delete_option('wpe_editor_mode');
         $wp_meta_boxes = $backup;
         echo " OK\n";
     }
@@ -166,17 +194,107 @@ class ProductEditorBridgeTest
     {
         echo " - testBoxVisibilityClass...";
 
-        $variableId = $this->createTestProduct();
+        $variableId = $this->createTestProduct('variable');
+        $simpleId   = $this->createTestProduct('simple');
+        $groupedId  = $this->createTestProduct('grouped');
+
+        // 1. In MODE_BLOCKS (default)
+        delete_option('wpe_editor_mode');
+
+        // Variable product: both boxes visible
         $this->setCurrentPost($variableId);
-        $classes = $this->bridge->filterBoxClasses(['postbox']);
-        assert(!in_array('wpe-box-hidden', $classes, true), 'A variable product must show the box');
-        assert(in_array('postbox', $classes, true), 'Existing classes must be kept');
+        $vClasses = $this->bridge->filterBoxClasses(['postbox']);
+        assert(!in_array('wpe-box-hidden', $vClasses, true), 'MODE_BLOCKS: variable product must show variants box');
+        $infoClasses = $this->bridge->filterProductInfoBoxClasses(['postbox']);
+        assert(!in_array('wpe-box-hidden', $infoClasses, true), 'MODE_BLOCKS: variable product must show product info box');
 
-        $simpleId = $this->createTestProduct('simple');
+        // Simple product: both boxes visible
         $this->setCurrentPost($simpleId);
-        $classes = $this->bridge->filterBoxClasses(['postbox']);
-        assert(in_array('wpe-box-hidden', $classes, true), 'A non-variable product must render the box hidden');
+        $sClasses = $this->bridge->filterBoxClasses(['postbox']);
+        assert(!in_array('wpe-box-hidden', $sClasses, true), 'MODE_BLOCKS: simple product must show variants box');
+        $infoClasses = $this->bridge->filterProductInfoBoxClasses(['postbox']);
+        assert(!in_array('wpe-box-hidden', $infoClasses, true), 'MODE_BLOCKS: simple product must show product info box');
 
+        // Grouped product (unsupported): both boxes hidden
+        $this->setCurrentPost($groupedId);
+        $gClasses = $this->bridge->filterBoxClasses(['postbox']);
+        assert(in_array('wpe-box-hidden', $gClasses, true), 'MODE_BLOCKS: grouped product must hide variants box');
+        $infoClasses = $this->bridge->filterProductInfoBoxClasses(['postbox']);
+        assert(in_array('wpe-box-hidden', $infoClasses, true), 'MODE_BLOCKS: grouped product must hide product info box');
+
+        // 2. In MODE_METABOX (P005 recovery)
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_METABOX);
+
+        // Variable product: variants visible, info hidden
+        $this->setCurrentPost($variableId);
+        $vClasses = $this->bridge->filterBoxClasses(['postbox']);
+        assert(!in_array('wpe-box-hidden', $vClasses, true), 'MODE_METABOX: variable product must show variants box');
+        $infoClasses = $this->bridge->filterProductInfoBoxClasses(['postbox']);
+        assert(in_array('wpe-box-hidden', $infoClasses, true), 'MODE_METABOX: product info box must be hidden');
+
+        // Simple product: variants hidden, info hidden
+        $this->setCurrentPost($simpleId);
+        $sClasses = $this->bridge->filterBoxClasses(['postbox']);
+        assert(in_array('wpe-box-hidden', $sClasses, true), 'MODE_METABOX: simple product must hide variants box');
+
+        // 3. In MODE_LEGACY
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_LEGACY);
+        $infoClasses = $this->bridge->filterProductInfoBoxClasses(['postbox']);
+        assert(in_array('wpe-box-hidden', $infoClasses, true), 'MODE_LEGACY: product info box must be hidden');
+
+        delete_option('wpe_editor_mode');
+        echo " OK\n";
+    }
+
+    public function testAdminBodyClass(): void
+    {
+        echo " - testAdminBodyClass...";
+
+        $variableId = $this->createTestProduct('variable');
+        $simpleId   = $this->createTestProduct('simple');
+        $groupedId  = $this->createTestProduct('grouped');
+
+        // 1. In MODE_BLOCKS (default)
+        delete_option('wpe_editor_mode');
+
+        // Simple product
+        $this->setCurrentPost($simpleId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') !== false, 'MODE_BLOCKS: simple product must add wpe-mode-blocks');
+        assert(strpos($classes, 'wpe-supported-product') !== false, 'MODE_BLOCKS: simple product must add wpe-supported-product');
+
+        // Variable product
+        $this->setCurrentPost($variableId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') !== false, 'MODE_BLOCKS: variable product must add wpe-mode-blocks');
+        assert(strpos($classes, 'wpe-supported-product') !== false, 'MODE_BLOCKS: variable product must add wpe-supported-product');
+
+        // Grouped product (unsupported)
+        $this->setCurrentPost($groupedId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') === false, 'MODE_BLOCKS: grouped product must NOT add wpe-mode-blocks');
+        assert(strpos($classes, 'wpe-supported-product') === false, 'MODE_BLOCKS: grouped product must NOT add wpe-supported-product');
+
+        // Non-product post
+        $blogPostId = wp_insert_post(['post_title' => 'Blog Post ' . uniqid(), 'post_type' => 'post', 'post_status' => 'publish']);
+        $this->setCurrentPost((int)$blogPostId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') === false, 'MODE_BLOCKS: non-product screen must NOT add wpe-mode-blocks');
+        wp_delete_post((int)$blogPostId, true);
+
+        // 2. In MODE_METABOX
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_METABOX);
+        $this->setCurrentPost($variableId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') === false, 'MODE_METABOX: must NOT add wpe-mode-blocks');
+
+        // 3. In MODE_LEGACY
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_LEGACY);
+        $this->setCurrentPost($variableId);
+        $classes = $this->bridge->filterAdminBodyClass('post-php');
+        assert(strpos($classes, 'wpe-mode-blocks') === false, 'MODE_LEGACY: must NOT add wpe-mode-blocks');
+
+        delete_option('wpe_editor_mode');
         echo " OK\n";
     }
 
@@ -223,6 +341,13 @@ class ProductEditorBridgeTest
         assert(preg_match('/name="wpe_variants_payload"[^>]*value=""/', $html) === 1, 'Payload must start empty');
         assert(strpos($html, 'wpe-fullscreen-modal-overlay') === false, 'Overlays must not be inside the postbox');
         assert(strpos($html, 'woocommerce_options_panel') === false, 'WooCommerce panel classes must not be used');
+
+        ob_start();
+        $fresh->renderProductInfoBox(get_post($productId));
+        $infoHtml = ob_get_clean();
+        assert(strpos($infoHtml, 'id="wpe-product-info-box-body"') !== false, 'Product info box body container must exist');
+        assert(strpos($infoHtml, 'id="wpe-product-info-app"') !== false, 'Product info app container must exist');
+        assert(strpos($infoHtml, 'data-product-id="' . $productId . '"') !== false, 'Product id must be on product info app');
 
         ob_start();
         $fresh->renderOverlays();
@@ -424,6 +549,44 @@ class ProductEditorBridgeTest
         $data = (string)wp_scripts()->get_data('wpe-product-editor-js', 'data');
         assert(strpos($data, '"restoredDraft":null') !== false, 'A second load must not restore the draft again');
 
+        echo " OK\n";
+    }
+
+    public function testAssetsLocalization(): void
+    {
+        echo " - testAssetsLocalization...";
+
+        $variableId = $this->createTestProduct('variable');
+        $this->setCurrentPost($variableId);
+
+        // 1. In MODE_BLOCKS (default)
+        delete_option('wpe_editor_mode');
+        wp_dequeue_script('wpe-product-editor-js');
+        wp_deregister_script('wpe-product-editor-js');
+        $this->bridge->enqueueProductEditorAssets('post.php');
+        $data = (string)wp_scripts()->get_data('wpe-product-editor-js', 'data');
+        assert(strpos($data, '"editorMode":"blocks"') !== false, 'Localized config must contain editorMode=blocks');
+        assert(strpos($data, '"infoBoxId":"wpe_product_info"') !== false, 'Localized config must contain infoBoxId=wpe_product_info');
+        assert(strpos($data, '"variantsBoxId":"wpe_variants_manager"') !== false, 'Localized config must contain variantsBoxId=wpe_variants_manager');
+        assert(strpos($data, '"boxId":"wpe_variants_manager"') !== false, 'Localized config must contain backward-compat boxId');
+        assert(strpos($data, '"supportedTypes":["simple","variable"]') !== false, 'Localized config must contain supportedTypes');
+
+        // 2. In MODE_METABOX
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_METABOX);
+        wp_dequeue_script('wpe-product-editor-js');
+        wp_deregister_script('wpe-product-editor-js');
+        $this->bridge->enqueueProductEditorAssets('post.php');
+        $data = (string)wp_scripts()->get_data('wpe-product-editor-js', 'data');
+        assert(strpos($data, '"editorMode":"metabox"') !== false, 'Localized config must contain editorMode=metabox');
+
+        // 3. In MODE_LEGACY
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_LEGACY);
+        wp_dequeue_script('wpe-product-editor-js');
+        wp_deregister_script('wpe-product-editor-js');
+        $this->bridge->enqueueProductEditorAssets('post.php');
+        assert(!wp_script_is('wpe-product-editor-js', 'enqueued'), 'Scripts must NOT be enqueued in MODE_LEGACY');
+
+        delete_option('wpe_editor_mode');
         echo " OK\n";
     }
 }

@@ -9,7 +9,7 @@ Status: in_progress
 - [x] P010.5 — Type derivation and previewed Simple/Variable transitions around ProductLifecycle (done)
 - [x] P010.6 — Variants rules: selective generator, stable variation IDs, inventory modes, bulk scope and owner grouping, media (done)
 - [x] P010.7 — Unified save endpoint, atomic transaction, conflict tokens, partial projection result and legacy single-writer guard (done)
-- [ ] P010.8 — Bridge: two meta boxes, legacy panel replacement, editor mode switch, assets enqueue (todo)
+- [x] P010.8 — Bridge: two meta boxes, legacy panel replacement, editor mode switch, assets enqueue (done)
 - [ ] P010.9 — Product information block UI with reference price, transition dialogs and common-price removal dialog (todo)
 - [ ] P010.10 — Variants block UI: option cards, selective generator, table, bulk preview, drawer, shared-draft full screen modal (todo)
 - [ ] P010.11 — Regression, recovery switch verification, docs and notes closeout (todo)

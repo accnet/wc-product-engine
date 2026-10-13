@@ -10,27 +10,34 @@ use Throwable;
 /**
  * ProductEditorBridge
  *
- * Mounts the WC Product Engine variants manager on the WooCommerce product edit screen as its own
- * meta box (`wpe_variants_manager`), below the Product data box.
+ * Mounts the WC Product Engine two-block product management UI ("Product Information" and "Variants")
+ * on the WooCommerce product edit screen.
  *
- * - The meta box is shown for variable products only. The server renders the initial visibility and the
- *   editor script follows the product type selector. Other product types are left untouched.
- * - The legacy Attributes and Variations tabs stay hidden for variable products by CSS in
- *   product-editor.css; no tab is added to Product data any more.
+ * - In MODE_BLOCKS (default):
+ *   - Registers `wpe_product_info` ("Product Information") and `wpe_variants_manager` ("Variants")
+ *     below Product data with default priority.
+ *   - Both blocks are visible on supported products (Simple and Variable); hidden for unsupported types.
+ *   - Filters `admin_body_class` adding `wpe-mode-blocks wpe-supported-product` on supported products.
+ * - In MODE_METABOX (P005 recovery):
+ *   - Registers only `wpe_variants_manager` ("Variants Manager"), visible only on variable products.
+ * - In MODE_LEGACY:
+ *   - Registers neither meta box and leaves native WooCommerce panels untouched.
  * - Persistence goes through the standard Update/Publish submit (`woocommerce_process_product_meta`) using
- *   a hidden payload that the editor fills only when its draft is dirty.
+ *   a hidden payload (`wpe_variants_payload`) that the editor fills only when its draft is dirty.
+ * - Single writer guard strips owned legacy POST keys at priority 1 of `woocommerce_process_product_meta`.
  * - A failed save is never silent: the error and the submitted draft are kept per user and product, the
  *   next load shows an admin notice and the editor restores the draft as unsaved changes.
  * - Fullscreen modal and drawer are printed in the admin footer, outside the postbox.
- * - On Simple and Variable products the native Product image and Product gallery boxes are hidden and the
- *   product image library is the single writer of the featured image and the gallery: the posted
- *   `_thumbnail_id` and `product_image_gallery` keys are removed before WordPress and WooCommerce read them,
- *   and WooCommerce's gallery save callback is not run for that request. The legacy mirror projects the
- *   library into the post meta. Other product types keep the native boxes.
+ * - On Simple and Variable products the native Product image and Product gallery boxes are hidden when
+ *   the product media library is enabled.
  */
 class ProductEditorBridge
 {
     public const BOX_ID = 'wpe_variants_manager';
+    public const PRODUCT_INFO_BOX_ID = 'wpe_product_info';
+
+    /** Product types supported by the two-block product management UI. */
+    public const SUPPORTED_PRODUCT_TYPES = ['simple', 'variable'];
 
     /** Editor mode constants (recovery switch). */
     public const MODE_BLOCKS  = 'blocks';
@@ -124,6 +131,8 @@ class ProductEditorBridge
         // WooCommerce's Product data box. Register later than WooCommerce (priority 30) instead.
         add_action('add_meta_boxes', [$this, 'registerMetaBox'], 40, 2);
         add_filter('postbox_classes_product_' . self::BOX_ID, [$this, 'filterBoxClasses']);
+        add_filter('postbox_classes_product_' . self::PRODUCT_INFO_BOX_ID, [$this, 'filterProductInfoBoxClasses']);
+        add_filter('admin_body_class', [$this, 'filterAdminBodyClass']);
         add_action('admin_footer', [$this, 'renderOverlays']);
         add_action('admin_notices', [$this, 'renderSaveNotices']);
         add_action('woocommerce_process_product_meta', [$this, 'guardLegacyProductKeys'], 1, 2);
@@ -143,6 +152,10 @@ class ProductEditorBridge
      */
     public static function supportsMediaLibrary(string $productType): bool
     {
+        if (self::getEditorMode() === self::MODE_LEGACY) {
+            return false;
+        }
+
         /**
          * Lets an operator bring the native image boxes back (for example while the library UI is unavailable).
          *
@@ -260,7 +273,7 @@ class ProductEditorBridge
     }
 
     /**
-     * Register the Variants Manager meta box on the product screen.
+     * Register the product editor meta boxes on the product screen according to active editor mode.
      */
     public function registerMetaBox(string $postType, $post = null): void
     {
@@ -268,31 +281,152 @@ class ProductEditorBridge
             return;
         }
 
+        $mode = self::getEditorMode();
+        if ($mode === self::MODE_LEGACY) {
+            return;
+        }
+
+        if ($mode === self::MODE_BLOCKS) {
+            add_meta_box(
+                self::PRODUCT_INFO_BOX_ID,
+                __('Product Information', 'wc-product-engine'),
+                [$this, 'renderProductInfoBox'],
+                'product',
+                'normal',
+                'default'
+            );
+
+            add_meta_box(
+                self::BOX_ID,
+                __('Variants', 'wc-product-engine'),
+                [$this, 'renderMetaBox'],
+                'product',
+                'normal',
+                'default'
+            );
+            return;
+        }
+
+        // MODE_METABOX (P005 recovery fallback)
         add_meta_box(
             self::BOX_ID,
             __('Variants Manager', 'wc-product-engine'),
             [$this, 'renderMetaBox'],
             'product',
             'normal',
-            // Not 'high': WordPress renders 'high' boxes before any box the user has re-ordered, which would
-            // put this box above Product data for every user who has ever saved a box order.
             'default'
         );
     }
 
     /**
-     * Hide the box on first paint when the product is not variable, so it does not flash.
-     * The editor script keeps it in sync with the product type selector afterwards.
+     * Filter postbox classes for the Variants meta box.
+     * In MODE_BLOCKS, shown for supported types (simple, variable); hidden for unsupported types.
+     * In MODE_METABOX, shown only for variable products.
      *
      * @param array<int,string> $classes
      * @return array<int,string>
      */
     public function filterBoxClasses(array $classes): array
     {
-        if ($this->currentProductType() !== 'variable') {
+        $mode = self::getEditorMode();
+        $type = $this->currentProductType();
+
+        if ($mode === self::MODE_BLOCKS) {
+            if (!in_array($type, self::SUPPORTED_PRODUCT_TYPES, true)) {
+                $classes[] = 'wpe-box-hidden';
+            }
+        } else {
+            if ($type !== 'variable') {
+                $classes[] = 'wpe-box-hidden';
+            }
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Filter postbox classes for the Product Information meta box.
+     * Shown in MODE_BLOCKS for supported product types (simple, variable); hidden otherwise.
+     *
+     * @param array<int,string> $classes
+     * @return array<int,string>
+     */
+    public function filterProductInfoBoxClasses(array $classes): array
+    {
+        $mode = self::getEditorMode();
+        $type = $this->currentProductType();
+
+        if ($mode !== self::MODE_BLOCKS || !in_array($type, self::SUPPORTED_PRODUCT_TYPES, true)) {
             $classes[] = 'wpe-box-hidden';
         }
+
         return $classes;
+    }
+
+    /**
+     * Filter admin_body_class to mark supported products in blocks mode.
+     */
+    public function filterAdminBodyClass(string $classes): string
+    {
+        if (self::getEditorMode() !== self::MODE_BLOCKS) {
+            return $classes;
+        }
+
+        if (!$this->isProductScreen()) {
+            return $classes;
+        }
+
+        $type = $this->currentProductType();
+        if (in_array($type, self::SUPPORTED_PRODUCT_TYPES, true)) {
+            $classes .= ' wpe-mode-blocks wpe-supported-product';
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Whether the current screen is editing a product post.
+     */
+    public function isProductScreen(): bool
+    {
+        global $post;
+        if ($post instanceof WP_Post && $post->post_type === 'product') {
+            return true;
+        }
+        if (function_exists('get_current_screen')) {
+            $screen = get_current_screen();
+            if ($screen && $screen->post_type === 'product') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Render the Product Information meta box body: container for the block app.
+     */
+    public function renderProductInfoBox($post = null): void
+    {
+        $productId = $post instanceof WP_Post ? (int)$post->ID : 0;
+        if ($productId <= 0) {
+            global $thepostid;
+            $productId = $thepostid ? (int)$thepostid : 0;
+        }
+        if ($productId <= 0) {
+            return;
+        }
+
+        $this->boxRendered = true;
+        ?>
+        <div id="wpe-product-info-box-body" class="wpe-product-editor-panel">
+            <div id="wpe-product-info-app" data-product-id="<?php echo esc_attr((string)$productId); ?>">
+                <div class="wpe-editor-loading">
+                    <span class="spinner is-active"></span>
+                    <?php esc_html_e('Loading product information...', 'wc-product-engine'); ?>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     /**
@@ -454,6 +588,11 @@ class ProductEditorBridge
             return;
         }
 
+        $editorMode = self::getEditorMode();
+        if ($editorMode === self::MODE_LEGACY) {
+            return;
+        }
+
         global $post;
         if (!$post || $post->post_type !== 'product') {
             return;
@@ -501,21 +640,25 @@ class ProductEditorBridge
 
         wp_localize_script('wpe-product-editor-js', 'wpeEditorConfig', [
             'productId'       => $productId,
+            'editorMode'      => $editorMode,
+            'infoBoxId'       => self::PRODUCT_INFO_BOX_ID,
+            'variantsBoxId'   => self::BOX_ID,
             'boxId'           => self::BOX_ID,
+            'supportedTypes'  => self::SUPPORTED_PRODUCT_TYPES,
             'restBase'        => esc_url_raw(rest_url('wpe/v1/admin/product/' . $productId . '/variants')),
             'nonce'           => wp_create_nonce('wp_rest'),
             'currencySymbol'  => $currencySymbol,
             'productType'     => $productType,
             'restoredDraft'   => $draft,
             'i18n'            => [
-                'saveSuccess'     => __('Variants saved successfully!', 'wc-product-engine'),
-                'saving'          => __('Saving changes...', 'wc-product-engine'),
-                'saveError'       => __('Error saving variants:', 'wc-product-engine'),
-                'conflictError'   => __('Server data has been modified by another process. Please reload data!', 'wc-product-engine'),
-                'confirmDelete'   => __('Are you sure you want to delete this option?', 'wc-product-engine'),
-                'unsavedWarning'  => __('You have unsaved changes. Are you sure you want to leave?', 'wc-product-engine'),
+                'saveSuccess'       => __('Variants saved successfully!', 'wc-product-engine'),
+                'saving'            => __('Saving changes...', 'wc-product-engine'),
+                'saveError'         => __('Error saving variants:', 'wc-product-engine'),
+                'conflictError'     => __('Server data has been modified by another process. Please reload data!', 'wc-product-engine'),
+                'confirmDelete'     => __('Are you sure you want to delete this option?', 'wc-product-engine'),
+                'unsavedWarning'    => __('You have unsaved changes. Are you sure you want to leave?', 'wc-product-engine'),
                 'typeChangeWarning' => __('You have unsaved variant changes, but the product type is no longer Variable, so they will NOT be saved. Continue anyway?', 'wc-product-engine'),
-                'draftRestored'   => __('Your unsaved variant changes were restored after the failed save.', 'wc-product-engine'),
+                'draftRestored'     => __('Your unsaved variant changes were restored after the failed save.', 'wc-product-engine'),
                 'projectionWarning' => __('Saved, but the WooCommerce compatibility projection did not complete:', 'wc-product-engine'),
             ],
         ]);
