@@ -279,14 +279,51 @@ class PluginBootstrap
                 'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
                 'nonce'   => wp_create_nonce('wp_rest'),
             ]);
-        } else {
-            $jsUrl = plugins_url('assets/admin/settings.js', dirname(__DIR__, 1));
-            wp_enqueue_script('wpe-settings-js', $jsUrl, ['jquery'], '1.2.0', true);
-            wp_localize_script('wpe-settings-js', 'wpeAdminConfig', [
-                'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
-                'nonce'   => wp_create_nonce('wp_rest'),
-            ]);
+            return;
         }
+
+        // Settings assets belong to the Settings screen only (the top-level page).
+        // Sibling plugin screens such as Operations also contain 'wc-product-engine' in their hook.
+        if ($hook !== 'toplevel_page_wc-product-engine') {
+            return;
+        }
+
+        $assetDir = WPE_PLUGIN_DIR . 'assets/admin/';
+        $cssVer = (string)(@filemtime($assetDir . 'settings.css') ?: '1.2.0');
+        $jsVer = (string)(@filemtime($assetDir . 'settings.js') ?: '1.2.0');
+
+        wp_enqueue_style(
+            'wpe-settings-css',
+            plugins_url('assets/admin/settings.css', dirname(__DIR__, 1)),
+            ['wpe-admin-css'],
+            $cssVer
+        );
+        wp_enqueue_script(
+            'wpe-settings-js',
+            plugins_url('assets/admin/settings.js', dirname(__DIR__, 1)),
+            ['jquery'],
+            $jsVer,
+            true
+        );
+        wp_localize_script('wpe-settings-js', 'wpeAdminConfig', [
+            'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
+            'nonce'   => wp_create_nonce('wp_rest'),
+            'i18n'    => [
+                /* translators: %d: number of changed settings */
+                'unsavedOne'     => __('%d unsaved change', 'wc-product-engine'),
+                /* translators: %d: number of changed settings */
+                'unsavedMany'    => __('%d unsaved changes', 'wc-product-engine'),
+                'saving'         => __('Saving…', 'wc-product-engine'),
+                'saveLabel'      => __('Save changes', 'wc-product-engine'),
+                'saved'          => __('Settings saved.', 'wc-product-engine'),
+                'saveFailed'     => __('Settings could not be saved.', 'wc-product-engine'),
+                'discarded'      => __('Changes discarded.', 'wc-product-engine'),
+                'rebuilding'     => __('Rebuilding catalog index…', 'wc-product-engine'),
+                'rebuilt'        => __('Catalog index rebuilt.', 'wc-product-engine'),
+                'rebuildFailed'  => __('Rebuild failed.', 'wc-product-engine'),
+                'confirmRebuild' => __('Rebuild the catalog index now?', 'wc-product-engine'),
+            ],
+        ]);
     }
 
     public function registerRestRoutes(): void

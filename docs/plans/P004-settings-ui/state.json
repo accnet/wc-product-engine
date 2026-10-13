@@ -1,0 +1,263 @@
+{
+  "id": "P004",
+  "title": "Plugin Settings UI redesign",
+  "status": "done",
+  "content_hash": "04010af4e6ed3068f739e210343301f1a857df24678af16ad5e040b7764aec39",
+  "tasks": [
+    {
+      "id": "P004.1",
+      "title": "Settings registry and REST hardening (reject authority writes, per-field errors, effective flags)",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Admin/SettingsRegistry.php",
+        "src/Admin/Rest/AdminApiController.php",
+        "tests/integration/SettingsApiTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "4b0652cfe41f4f1d4a2d78c498bc2638b3bbe832c7613be007f01fe214e119f2",
+          "output_sha256": "19bf3033c2a1ab2fdd9b936181d5a535d6f88b665a557add1f26b3944fa9f557",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859090772-2c3032e3.log",
+          "time": "2026-10-13T02:38:10.772Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "4b0652cfe41f4f1d4a2d78c498bc2638b3bbe832c7613be007f01fe214e119f2",
+          "output_sha256": "3c6045f45a170df5feb50fceaee6410fd4201986d5a74064a211fec939a843b4",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859091457-136cf27f.log",
+          "time": "2026-10-13T02:38:11.457Z"
+        }
+      ],
+      "started_at": "2026-10-13T02:38:05.443Z"
+    },
+    {
+      "id": "P004.2",
+      "title": "Tabbed Settings page, scoped styles and interactive client (dirty state, discard, confirm dialog, aria-live)",
+      "depends_on": [
+        "P004.1"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "docs/08-operations.md"
+      ],
+      "files": [
+        "src/Admin/SettingsPage.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "assets/admin/settings.css",
+        "assets/admin/settings.js"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "73506a6ede3c9993eed074a0a6cf4074585dea088c38af14b965843339425849",
+          "output_sha256": "19bf3033c2a1ab2fdd9b936181d5a535d6f88b665a557add1f26b3944fa9f557",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859499748-e9f7d1b4.log",
+          "time": "2026-10-13T02:44:59.748Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "73506a6ede3c9993eed074a0a6cf4074585dea088c38af14b965843339425849",
+          "output_sha256": "3c6045f45a170df5feb50fceaee6410fd4201986d5a74064a211fec939a843b4",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859500455-c94493d9.log",
+          "time": "2026-10-13T02:45:00.455Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "73506a6ede3c9993eed074a0a6cf4074585dea088c38af14b965843339425849",
+          "output_sha256": "c03c3902c91a95b989e38ef4cce1a54897e118cdfa28753d7ad436bb8655d1be",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859500531-7895ebf8.log",
+          "time": "2026-10-13T02:45:00.531Z"
+        }
+      ],
+      "started_at": "2026-10-13T02:38:17.340Z"
+    },
+    {
+      "id": "P004.3",
+      "title": "Regression run, before/after evidence and notes",
+      "depends_on": [
+        "P004.2"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/06-implementation-plan.md"
+      ],
+      "files": [
+        "tests/integration/SettingsApiTest.php",
+        "docs/NOTES.md",
+        "docs/plans/P004-settings-ui/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/T02Test.php"
+        ],
+        [
+          "wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "19bf3033c2a1ab2fdd9b936181d5a535d6f88b665a557add1f26b3944fa9f557",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859515403-820c5025.log",
+          "time": "2026-10-13T02:45:15.403Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 1,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "00854296eb3d628ee76be70369c8fd16189ad29593760eafa096f341da93e0d5",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859517240-bc02602b.log",
+          "time": "2026-10-13T02:45:17.240Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "3c6045f45a170df5feb50fceaee6410fd4201986d5a74064a211fec939a843b4",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859517857-f768855f.log",
+          "time": "2026-10-13T02:45:17.857Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "c03c3902c91a95b989e38ef4cce1a54897e118cdfa28753d7ad436bb8655d1be",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859517934-4cdbd026.log",
+          "time": "2026-10-13T02:45:17.934Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 1,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "356c650b2964a27cf0a77e34cbb458402cd35f50dae4224ec90fe813972ea936",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859545056-afc07b75.log",
+          "time": "2026-10-13T02:45:45.057Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "eval-file",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "7052e8d670241ab9c61eb8205457e69e78c59af8",
+          "content_digest": "92a23635937a1ce00d4f9c424f48225925173cedabb62be97f1f78b598a53a88",
+          "output_sha256": "dc7e50fd01f4ce138cc9410b41cd94ffcd607d7195f2cb5144ee5811ed35e0aa",
+          "output_path": "docs/plans/P004-settings-ui/command-1791859606454-91d9f5cd.log",
+          "time": "2026-10-13T02:46:46.455Z"
+        }
+      ],
+      "started_at": "2026-10-13T02:45:04.087Z"
+    }
+  ],
+  "approved_hash": "04010af4e6ed3068f739e210343301f1a857df24678af16ad5e040b7764aec39",
+  "report_hash": "605d502578f862c174d2a48131361489c22f85fcbccb44e736ae8382e9ba259e"
+}

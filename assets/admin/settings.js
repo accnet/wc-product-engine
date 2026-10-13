@@ -1,99 +1,282 @@
 /**
- * WC Product Engine — Settings Page JavaScript.
+ * WC Product Engine — Settings screen client.
+ *
+ * - Features tab: dirty tracking, discard, per-field errors, aria-live announcements,
+ *   unsaved-changes guard. Only changed flags are sent. Authority is never sent.
+ * - Maintenance tab: catalog index rebuild behind a native <dialog> confirmation.
+ *
+ * All server-provided text is inserted with .text(), never as HTML.
  */
 (function ($) {
     'use strict';
 
-    if (typeof window.wpeAdminConfig === 'undefined') {
+    var $app = $('#wpe-settings-app');
+    if (!$app.length || typeof window.wpeAdminConfig === 'undefined') {
         return;
     }
 
     var config = window.wpeAdminConfig;
+    var i18n = config.i18n || {};
+    var $live = $('#wpe-live');
+    var $notice = $('#wpe-notice');
 
-    $(document).ready(function () {
-        var form = $('#wpe-settings-form');
-        var notice = $('#wpe-settings-notice');
-        var saveBtn = $('#wpe-save-settings-btn');
-        var spinner = $('#wpe-save-spinner');
-        var rebuildBtn = $('#wpe-rebuild-gen-btn');
-        var rebuildStatus = $('#wpe-rebuild-status');
+    function t(key, fallback) {
+        return i18n[key] || fallback;
+    }
 
-        function showNotice(msg, type) {
-            notice.removeClass('notice-success notice-error notice-warning')
-                  .addClass('notice-' + type)
-                  .html('<p>' + msg + '</p>')
-                  .show();
-            $('html, body').animate({ scrollTop: notice.offset().top - 40 }, 200);
+    function format(template, n) {
+        return String(template).replace('%d', String(n));
+    }
+
+    function announce(message) {
+        // Clear first so repeated identical messages are still announced.
+        $live.text('');
+        window.setTimeout(function () { $live.text(message); }, 30);
+    }
+
+    function showNotice(message, type) {
+        $notice
+            .removeClass('is-success is-warning is-error')
+            .addClass('is-' + type)
+            .text(message)
+            .prop('hidden', false);
+        announce(message);
+    }
+
+    function hideNotice() {
+        $notice.prop('hidden', true).text('');
+    }
+
+    function request(path, method, body) {
+        var opts = {
+            url: config.restUrl + path,
+            method: method,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+            }
+        };
+        if (body !== undefined) {
+            opts.contentType = 'application/json';
+            opts.data = JSON.stringify(body);
+        }
+        return $.ajax(opts);
+    }
+
+    function responseMessage(xhr, fallback) {
+        return (xhr && xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : fallback;
+    }
+
+    // ------------------------------------------------------------------
+    // Features tab
+    // ------------------------------------------------------------------
+    function initFeatures() {
+        var $panel = $('#wpe-settings-form').closest('[data-initial]');
+        var $form = $('#wpe-settings-form');
+        var $savebar = $('#wpe-savebar');
+        var $saveText = $('#wpe-savebar-text');
+        var $saveBtn = $('#wpe-save-settings-btn');
+        var $discardBtn = $('#wpe-discard-btn');
+        var saved = {};
+
+        try {
+            saved = JSON.parse($panel.attr('data-initial') || '{}');
+        } catch (e) {
+            saved = {};
         }
 
-        // Form Submit
-        form.on('submit', function (e) {
-            e.preventDefault();
-            saveBtn.prop('disabled', true);
-            spinner.addClass('is-active');
+        function $inputs() {
+            return $form.find('input[data-flag]');
+        }
 
-            var payload = {
-                cohort_mode: $('#cohort_mode').val(),
-                query_enabled: $('input[name="query_enabled"]').is(':checked'),
-                media_enabled: $('input[name="media_enabled"]').is(':checked'),
-                resolver_enabled: $('input[name="resolver_enabled"]').is(':checked'),
-                native_writes_enabled: $('input[name="native_writes_enabled"]').is(':checked')
-            };
-
-            $.ajax({
-                url: config.restUrl + 'settings',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(payload),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', config.nonce);
-                },
-                success: function (res) {
-                    saveBtn.prop('disabled', false);
-                    spinner.removeClass('is-active');
-                    showNotice(res.message || 'Settings saved successfully.', 'success');
-                },
-                error: function (xhr) {
-                    saveBtn.prop('disabled', false);
-                    spinner.removeClass('is-active');
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Error saving settings.';
-                    showNotice(msg, 'error');
+        function changedKeys() {
+            var keys = [];
+            $inputs().each(function () {
+                var key = $(this).data('flag');
+                if ($(this).is(':checked') !== !!saved[key]) {
+                    keys.push(key);
                 }
             });
+            return keys;
+        }
+
+        function clearErrors() {
+            $form.find('[data-error-for]').prop('hidden', true).text('');
+            $inputs().removeAttr('aria-invalid');
+        }
+
+        function refresh() {
+            var n = changedKeys().length;
+            var wasHidden = $savebar.prop('hidden');
+            $savebar.prop('hidden', n === 0);
+            if (n > 0) {
+                $saveText.text(format(n === 1 ? t('unsavedOne', '%d unsaved change') : t('unsavedMany', '%d unsaved changes'), n));
+                if (wasHidden) {
+                    announce($saveText.text());
+                }
+            }
+        }
+
+        function showFieldErrors(errors) {
+            var first = null;
+            var unmatched = [];
+            $.each(errors || {}, function (key, message) {
+                var $err = $form.find('[data-error-for="' + key + '"]');
+                var $input = $form.find('input[data-flag="' + key + '"]');
+                if ($err.length && $input.length) {
+                    $err.text(message).prop('hidden', false);
+                    $input.attr('aria-invalid', 'true');
+                    if (!first) { first = $input; }
+                } else {
+                    unmatched.push(message);
+                }
+            });
+            if (first) { first.trigger('focus'); }
+            return unmatched;
+        }
+
+        function applyServerState(res) {
+            if (res && res.flags) {
+                $.each(saved, function (key) {
+                    if (Object.prototype.hasOwnProperty.call(res.flags, key)) {
+                        saved[key] = !!res.flags[key];
+                    }
+                });
+            }
+            // Show "on but inactive" when stored on yet not effective at runtime.
+            $form.find('[data-flag-row]').each(function () {
+                var key = $(this).data('flag-row');
+                var inactive = !!(res && res.flags && res.effective && res.flags[key] && res.effective[key] === false);
+                $(this).find('[data-inactive-badge]').prop('hidden', !inactive);
+            });
+        }
+
+        $form.on('change', 'input[data-flag]', function () {
+            $(this).removeAttr('aria-invalid');
+            $form.find('[data-error-for="' + $(this).data('flag') + '"]').prop('hidden', true).text('');
+            refresh();
         });
 
-        // Rebuild Index Generation
-        rebuildBtn.on('click', function (e) {
+        $form.on('submit', function (e) {
             e.preventDefault();
-            if (!confirm('Are you sure you want to rebuild the entire Catalog Index Generation?')) {
+            var keys = changedKeys();
+            if (keys.length === 0) {
                 return;
             }
 
-            rebuildBtn.prop('disabled', true);
-            rebuildStatus.html('<span class="spinner is-active" style="float:none;"></span> Rebuilding catalog generation...');
+            var payload = {};
+            $.each(keys, function (_, key) {
+                payload[key] = $form.find('input[data-flag="' + key + '"]').is(':checked');
+            });
 
-            $.ajax({
-                url: config.restUrl + 'rebuild-index',
-                method: 'POST',
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', config.nonce);
-                },
-                success: function (res) {
-                    rebuildBtn.prop('disabled', false);
-                    if (res.status === 'success') {
-                        $('#wpe-current-gen').text('#' + res.generation);
-                        rebuildStatus.html('<span style="color:#008a20; font-weight:bold;">✓ ' + res.message + '</span>');
-                    } else {
-                        rebuildStatus.html('<span style="color:#d63638;">✕ ' + (res.message || 'Unknown error') + '</span>');
+            hideNotice();
+            clearErrors();
+            $saveBtn.prop('disabled', true).text(t('saving', 'Saving…'));
+
+            request('settings', 'POST', payload)
+                .done(function (res) {
+                    applyServerState(res);
+                    refresh();
+                    showNotice(res.message || t('saved', 'Settings saved.'), 'success');
+                })
+                .fail(function (xhr) {
+                    var data = xhr.responseJSON || {};
+                    var unmatched = showFieldErrors(data.errors);
+                    var message = responseMessage(xhr, t('saveFailed', 'Settings could not be saved.'));
+                    if (unmatched.length) {
+                        message += ' ' + unmatched.join(' ');
                     }
-                },
-                error: function (xhr) {
-                    rebuildBtn.prop('disabled', false);
-                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Rebuild failed.';
-                    rebuildStatus.html('<span style="color:#d63638;">✕ Error: ' + msg + '</span>');
+                    showNotice(message, 'error');
+                })
+                .always(function () {
+                    $saveBtn.prop('disabled', false).text(t('saveLabel', 'Save changes'));
+                });
+        });
+
+        $discardBtn.on('click', function () {
+            $inputs().each(function () {
+                $(this).prop('checked', !!saved[$(this).data('flag')]);
+            });
+            clearErrors();
+            hideNotice();
+            refresh();
+            announce(t('discarded', 'Changes discarded.'));
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+            if (changedKeys().length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        refresh();
+    }
+
+    // ------------------------------------------------------------------
+    // Maintenance tab
+    // ------------------------------------------------------------------
+    function initMaintenance() {
+        var $btn = $('#wpe-rebuild-gen-btn');
+        var $status = $('#wpe-rebuild-status');
+        var dialog = document.getElementById('wpe-confirm-dialog');
+
+        function setStatus(kind, message) {
+            $status
+                .removeClass('is-success is-error is-busy')
+                .addClass('is-' + kind)
+                .text(message)
+                .prop('hidden', false);
+            announce(message);
+        }
+
+        function run() {
+            $btn.prop('disabled', true).attr('aria-busy', 'true');
+            setStatus('busy', t('rebuilding', 'Rebuilding catalog index…'));
+
+            request('rebuild-index', 'POST')
+                .done(function (res) {
+                    if (res && res.status === 'success') {
+                        $('#wpe-current-gen').text('#' + res.generation);
+                        setStatus('success', res.message || t('rebuilt', 'Catalog index rebuilt.'));
+                    } else {
+                        setStatus('error', (res && res.message) || t('rebuildFailed', 'Rebuild failed.'));
+                    }
+                })
+                .fail(function (xhr) {
+                    setStatus('error', responseMessage(xhr, t('rebuildFailed', 'Rebuild failed.')));
+                })
+                .always(function () {
+                    $btn.prop('disabled', false).removeAttr('aria-busy');
+                });
+        }
+
+        $btn.on('click', function (e) {
+            e.preventDefault();
+            if (dialog && typeof dialog.showModal === 'function') {
+                // Native modal: focus trap, Esc to close and focus restore come for free.
+                dialog.returnValue = '';
+                dialog.showModal();
+                $('#wpe-confirm-cancel').trigger('focus');
+            } else if (window.confirm(t('confirmRebuild', 'Rebuild the catalog index now?'))) {
+                run();
+            }
+        });
+
+        if (dialog) {
+            dialog.addEventListener('close', function () {
+                if (dialog.returnValue === 'confirm') {
+                    run();
                 }
             });
-        });
-    });
+        }
+    }
+
+    if ($('#wpe-settings-form').length) {
+        initFeatures();
+    }
+    if ($('#wpe-rebuild-gen-btn').length) {
+        initMaintenance();
+    }
 
 })(jQuery);

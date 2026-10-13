@@ -7,6 +7,7 @@ namespace WPE\Admin\Rest;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
+use WPE\Admin\SettingsRegistry;
 use WPE\Bootstrap\PluginBootstrap;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter;
@@ -132,44 +133,83 @@ class AdminApiController
     {
         $bootstrap = PluginBootstrap::instance();
         return new WP_REST_Response([
-            'status' => 'success',
-            'flags'  => $bootstrap->getFlags(),
+            'status'    => 'success',
+            'flags'     => $bootstrap->getFlags(),
+            'effective' => $this->effectiveFlags($bootstrap),
+            'dependencies_satisfied' => $bootstrap->areDependenciesSatisfied(),
         ], 200);
     }
 
+    /**
+     * Save editable feature flags.
+     *
+     * The payload is validated as a whole: if any key is rejected nothing is
+     * written. Authority state (`cohort_mode`) is read-only here by design; it
+     * changes only through the governed rollout commands (docs/02-domain.md §4-5).
+     */
     public function saveSettings(WP_REST_Request $request): WP_REST_Response
     {
         $bootstrap = PluginBootstrap::instance();
         $params = $request->get_json_params();
 
-        if (empty($params)) {
-            $params = $request->get_params();
+        if (!is_array($params) || $params === []) {
+            // Form-encoded fallback. Body only: query args (e.g. _wpnonce) are not settings.
+            $params = $request->get_body_params();
+        }
+        if (!is_array($params)) {
+            $params = [];
         }
 
-        $flags = $bootstrap->getFlags();
+        $result = SettingsRegistry::validate($params);
 
-        if (isset($params['cohort_mode'])) {
-            $mode = sanitize_text_field($params['cohort_mode']);
-            if (in_array($mode, ['legacy', 'cohort_canary', 'full_native'], true)) {
-                $flags['cohort_mode'] = $mode;
+        if ($result['errors'] !== []) {
+            // `code` stays inside the registered error vocabulary (docs/04 §1.9); `reason` carries the detail.
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'code'    => 'invalid_request',
+                'reason'  => $result['code'],
+                'message' => $result['code'] === 'authority_read_only'
+                    ? __('Authority mode cannot be changed from Settings. Use Operations or WP-CLI.', 'wc-product-engine')
+                    : __('Some settings are invalid. Nothing was saved.', 'wc-product-engine'),
+                'errors'  => $result['errors'],
+            ], 400);
+        }
+
+        // Merge onto the stored option so unrelated keys (e.g. cohort_mode) are preserved untouched.
+        // An empty payload is a true no-op: nothing is written.
+        if ($result['values'] !== []) {
+            $flags = $bootstrap->getFlags();
+            foreach ($result['values'] as $key => $value) {
+                $flags[$key] = $value;
             }
-        }
 
-        $boolFlags = ['query_enabled', 'media_enabled', 'resolver_enabled', 'native_writes_enabled'];
-        foreach ($boolFlags as $bf) {
-            if (isset($params[$bf])) {
-                $flags[$bf] = (bool)$params[$bf];
-            }
+            update_option(PluginBootstrap::OPTION_FLAGS, $flags);
+            $bootstrap->loadFlags();
         }
-
-        update_option(PluginBootstrap::OPTION_FLAGS, $flags);
-        $bootstrap->loadFlags();
 
         return new WP_REST_Response([
-            'status'  => 'success',
-            'message' => 'Settings saved successfully.',
-            'flags'   => $flags,
+            'status'    => 'success',
+            'message'   => $result['values'] === []
+                ? __('No changes to save.', 'wc-product-engine')
+                : __('Settings saved.', 'wc-product-engine'),
+            'flags'     => $bootstrap->getFlags(),
+            'effective' => $this->effectiveFlags($bootstrap),
+            'dependencies_satisfied' => $bootstrap->areDependenciesSatisfied(),
         ], 200);
+    }
+
+    /**
+     * What the runtime will actually honour, as opposed to what is stored.
+     *
+     * @return array<string,bool>
+     */
+    private function effectiveFlags(PluginBootstrap $bootstrap): array
+    {
+        $effective = [];
+        foreach (SettingsRegistry::flagKeys() as $key) {
+            $effective[$key] = $bootstrap->isFlagEnabled($key);
+        }
+        return $effective;
     }
 
     public function rebuildIndex(WP_REST_Request $request): WP_REST_Response
