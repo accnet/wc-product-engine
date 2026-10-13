@@ -123,7 +123,7 @@ final class PricingService
      *
      * @return array<int,array{pointer:string,reason:string}>
      */
-    private static function pricingRuleErrors(?string $regular, ?string $sale, ?string $from, ?string $to, string $base, string $saleKey, string $fromKey, string $toKey): array
+    public static function pricingRuleErrors(?string $regular, ?string $sale, ?string $from, ?string $to, string $base, string $saleKey, string $fromKey, string $toKey): array
     {
         $errors = [];
         if ($sale !== null && $regular === null) {

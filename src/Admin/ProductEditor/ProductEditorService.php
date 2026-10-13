@@ -57,6 +57,7 @@ class ProductEditorService
     private AttachmentBridge $attachmentBridge;
     private ?ProductMediaLibrary $library = null;
     private ?PricingService $pricing = null;
+    private ?ProductInfoService $info = null;
 
     private string $tableProducts;
     private string $tableVariants;
@@ -308,8 +309,10 @@ class ProductEditorService
             }
         }
 
+        $infoBlock = $this->info()->read($product, $parentInv ?: null);
+
         return [
-            'product' => [
+            'product' => $infoBlock + [
                 'id'            => (int)$product['id'],
                 'title'         => $product['title'],
                 'slug'          => $product['slug'],
@@ -601,6 +604,24 @@ class ProductEditorService
         // Validate the pricing part (common price, per-variation mode, prices) before anything is written.
         $pricingPlan = $this->pricing()->planSave($productId, $currentProduct, $payload);
 
+        // Validate attribute names and the Product information block the same way.
+        if (isset($payload['descriptive_attributes']) || isset($payload['variation_options'])) {
+            ProductInfoService::validateAttributes(
+                isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes']) ? $payload['descriptive_attributes'] : null,
+                isset($payload['variation_options']) && is_array($payload['variation_options']) ? $payload['variation_options'] : null
+            );
+        }
+        $infoPlan = null;
+        if (isset($payload['product']) && is_array($payload['product'])) {
+            $infoPlan = $this->info()->plan(
+                $productId,
+                $currentProduct,
+                $payload['product'],
+                (string)$currentProduct['type'],
+                isset($payload['variations']) && is_array($payload['variations']) ? $payload['variations'] : null
+            );
+        }
+
         $now = gmdate('Y-m-d H:i:s.u');
 
         $this->wpdb->query("START TRANSACTION");
@@ -609,25 +630,36 @@ class ProductEditorService
             // 1. Update product metadata & parent inventory
             $newVersion = (int)$currentProduct['version'] + 1;
             $pUpdates = ['updated_at' => $now, 'version' => $newVersion];
-            if (isset($payload['product'])) {
+            if (isset($payload['product']) && is_array($payload['product'])) {
                 $pData = $payload['product'];
-                if (isset($pData['sku'])) {
-                    $pUpdates['sku'] = trim($pData['sku']) ?: null;
-                }
                 if (isset($pData['status'])) {
                     $pUpdates['status'] = $pData['status'];
                 }
-                if (isset($pData['parent_stock'])) {
-                    $ps = $pData['parent_stock'];
-                    $this->wpdb->replace($this->tableInventory, [
-                        'owner_id'     => $productId,
-                        'manage_stock' => !empty($ps['manage_stock']) ? 1 : 0,
-                        'quantity'     => !empty($ps['manage_stock']) && isset($ps['stock_quantity']) ? (float)$ps['stock_quantity'] : null,
-                        'stock_status' => $ps['stock_status'] ?? 'instock',
-                        'backorders'   => $ps['backorders'] ?? 'no',
-                        'version'      => 1,
-                        'updated_at'   => $now,
-                    ]);
+            }
+            if ($infoPlan !== null) {
+                $pUpdates = array_merge($pUpdates, $infoPlan['columns']);
+                if ($infoPlan['inventory'] !== null) {
+                    $inv = $infoPlan['inventory'];
+                    $invVersion = $this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT version FROM {$this->tableInventory} WHERE owner_id = %d",
+                        $productId
+                    ));
+                    $invRow = [
+                        'manage_stock'     => $inv['manage_stock'],
+                        'quantity'         => $inv['quantity'],
+                        'stock_status'     => $inv['stock_status'],
+                        'backorders'       => $inv['backorders'],
+                        'low_stock_amount' => $inv['low_stock_amount'],
+                        'updated_at'       => $now,
+                    ];
+                    if ($invVersion === null) {
+                        $this->wpdb->insert($this->tableInventory, $invRow + ['owner_id' => $productId, 'version' => 1]);
+                    } else {
+                        $this->wpdb->update($this->tableInventory, $invRow + ['version' => (int)$invVersion + 1], ['owner_id' => $productId]);
+                    }
+                }
+                if ($infoPlan['sku']['changed']) {
+                    $this->info()->applySkuRegistry($productId, $infoPlan['sku']['value']);
                 }
             }
             if ($pricingPlan['common_provided']) {
@@ -640,21 +672,32 @@ class ProductEditorService
             }
             $this->wpdb->update($this->tableProducts, $pUpdates, ['id' => $productId]);
 
-            // Shift positions of existing options up by 10000 to prevent unique key conflict during re-sequencing
-            $this->wpdb->query($this->wpdb->prepare(
-                "UPDATE {$this->tableOptions} SET position = position + 10000 WHERE product_id = %d",
-                $productId
-            ));
+            // Options are re-sequenced only when the request carries option lists. A group that is not part of the
+            // request keeps its relative order and is renumbered after the groups that are, so saving only the
+            // product information never moves option positions (the shift below is undone for every group).
+            $syncDescriptive = isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes']);
+            $syncVariationOptions = isset($payload['variation_options']) && is_array($payload['variation_options']);
+            if ($syncDescriptive || $syncVariationOptions) {
+                // Shift positions of existing options up by 10000 to prevent unique key conflict during re-sequencing
+                $this->wpdb->query($this->wpdb->prepare(
+                    "UPDATE {$this->tableOptions} SET position = position + 10000 WHERE product_id = %d",
+                    $productId
+                ));
 
-            $optPosition = 0;
-            // 2. Sync Descriptive Attributes (used_for_variation = 0)
-            if (isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes'])) {
-                $this->syncOptionGroup($productId, $payload['descriptive_attributes'], 0, $optPosition);
-            }
+                $optPosition = 0;
+                // 2. Sync Descriptive Attributes (used_for_variation = 0)
+                if ($syncDescriptive) {
+                    $this->syncOptionGroup($productId, $payload['descriptive_attributes'], 0, $optPosition);
+                } else {
+                    $this->renumberOptionGroup($productId, 0, $optPosition);
+                }
 
-            // 3. Sync Variation Options (used_for_variation = 1)
-            if (isset($payload['variation_options']) && is_array($payload['variation_options'])) {
-                $this->syncOptionGroup($productId, $payload['variation_options'], 1, $optPosition);
+                // 3. Sync Variation Options (used_for_variation = 1)
+                if ($syncVariationOptions) {
+                    $this->syncOptionGroup($productId, $payload['variation_options'], 1, $optPosition);
+                } else {
+                    $this->renumberOptionGroup($productId, 1, $optPosition);
+                }
             }
 
             // 4. Sync Variations Matrix
@@ -709,6 +752,21 @@ class ProductEditorService
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
             throw $e;
+        }
+    }
+
+    /**
+     * Give the options of one group consecutive positions starting at $pos, keeping their current order.
+     */
+    private function renumberOptionGroup(int $productId, int $usedForVariation, int &$pos): void
+    {
+        $ids = $this->wpdb->get_col($this->wpdb->prepare(
+            "SELECT id FROM {$this->tableOptions} WHERE product_id = %d AND used_for_variation = %d ORDER BY position ASC, id ASC",
+            $productId,
+            $usedForVariation
+        ));
+        foreach ($ids as $id) {
+            $this->wpdb->update($this->tableOptions, ['position' => $pos++], ['id' => (int)$id]);
         }
     }
 
@@ -1109,6 +1167,11 @@ class ProductEditorService
             'affected'       => $affected,
             'unchanged'      => $unchanged,
         ];
+    }
+
+    private function info(): ProductInfoService
+    {
+        return $this->info ??= new ProductInfoService($this->wpdb);
     }
 
     private function pricing(): PricingService
