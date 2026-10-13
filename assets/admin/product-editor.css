@@ -1,4 +1,31 @@
-/* WC Product Engine — Modern Variable Product & Attribute Editor Styles */
+/* WC Product Engine — Shopify Polaris Style Variable Product & Attribute Editor */
+
+:root {
+    --wpe-p-color-bg: #f1f2f4;
+    --wpe-p-color-surface: #ffffff;
+    --wpe-p-color-surface-subdued: #fafbfb;
+    --wpe-p-color-surface-hover: #f7f7f8;
+    --wpe-p-color-border: #dcdfe3;
+    --wpe-p-color-border-subdued: #ebebeb;
+    --wpe-p-color-border-hover: #c9cccf;
+    --wpe-p-color-text: #202223;
+    --wpe-p-color-text-subdued: #6d7175;
+    --wpe-p-color-interactive: #005bd3;
+    --wpe-p-color-interactive-hover: #004299;
+    --wpe-p-color-primary: #303030;
+    --wpe-p-color-primary-hover: #1a1a1a;
+    --wpe-p-color-brand: #008060;
+    --wpe-p-color-brand-hover: #006e52;
+    --wpe-p-color-critical: #d72c0d;
+    --wpe-p-color-critical-subdued: #fed3d1;
+    --wpe-p-color-success-subdued: #e3f1df;
+    --wpe-p-border-radius-sm: 6px;
+    --wpe-p-border-radius-base: 8px;
+    --wpe-p-border-radius-card: 12px;
+    --wpe-p-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    --wpe-p-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    --wpe-p-shadow-floating: 0 10px 28px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
 
 /* 1. WooCommerce Product Data Tab Integration */
 #woocommerce-product-data.wpe-is-variable .product_data_tabs li.attribute_options,
@@ -21,14 +48,15 @@
     font-size: 16px;
 }
 
-/* 2. Main Editor Wrapper */
+/* 2. Main Editor Wrapper — Shopify Canvas */
 .wpe-editor-wrap {
-    padding: 16px 20px 24px;
-    background: #ffffff;
-    color: #1e293b;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    padding: 24px 28px 40px;
+    background: var(--wpe-p-color-bg);
+    color: var(--wpe-p-color-text);
+    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
 .wpe-editor-loading {
@@ -37,8 +65,121 @@
     justify-content: center;
     padding: 60px 20px;
     font-size: 14px;
-    color: #64748b;
-    gap: 10px;
+    color: var(--wpe-p-color-text-subdued);
+    gap: 12px;
+}
+
+/* Global Button Polish (Shopify Polaris style) */
+.wpe-editor-wrap .button,
+.wpe-fullscreen-container .button,
+.wpe-drawer-container .button,
+.wpe-modal-dialog .button {
+    border-radius: var(--wpe-p-border-radius-base) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 6px 14px !important;
+    height: 36px !important;
+    line-height: 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease-in-out !important;
+    border: 1px solid var(--wpe-p-color-border-hover) !important;
+    background: #ffffff !important;
+    color: var(--wpe-p-color-text) !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
+    text-shadow: none !important;
+}
+
+.wpe-editor-wrap .button:hover,
+.wpe-fullscreen-container .button:hover,
+.wpe-drawer-container .button:hover,
+.wpe-modal-dialog .button:hover {
+    background: var(--wpe-p-color-surface-hover) !important;
+    border-color: var(--wpe-p-color-border-hover) !important;
+    color: var(--wpe-p-color-text) !important;
+}
+
+.wpe-editor-wrap .button:disabled,
+.wpe-fullscreen-container .button:disabled,
+.wpe-drawer-container .button:disabled,
+.wpe-modal-dialog .button:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+/* Primary Button (Shopify Dark / Polaris Black) */
+.wpe-editor-wrap .button.button-primary,
+.wpe-fullscreen-container .button.button-primary,
+.wpe-drawer-container .button.button-primary,
+.wpe-modal-dialog .button.button-primary,
+.wpe-btn-apply-generator,
+.wpe-btn-save-drawer,
+.wpe-btn-apply-bulk-edit {
+    background: var(--wpe-p-color-primary) !important;
+    border-color: var(--wpe-p-color-primary) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.wpe-editor-wrap .button.button-primary:hover,
+.wpe-fullscreen-container .button.button-primary:hover,
+.wpe-drawer-container .button.button-primary:hover,
+.wpe-modal-dialog .button.button-primary:hover,
+.wpe-btn-apply-generator:hover,
+.wpe-btn-save-drawer:hover,
+.wpe-btn-apply-bulk-edit:hover {
+    background: var(--wpe-p-color-primary-hover) !important;
+    border-color: var(--wpe-p-color-primary-hover) !important;
+    color: #ffffff !important;
+}
+
+/* Brand Button (Shopify Green) */
+.wpe-btn-save-api {
+    background: var(--wpe-p-color-brand) !important;
+    border-color: var(--wpe-p-color-brand) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.wpe-btn-save-api:hover:not(:disabled) {
+    background: var(--wpe-p-color-brand-hover) !important;
+    border-color: var(--wpe-p-color-brand-hover) !important;
+    color: #ffffff !important;
+}
+
+.wpe-editor-wrap .button-small,
+.wpe-fullscreen-container .button-small {
+    height: 28px !important;
+    padding: 2px 10px !important;
+    font-size: 12px !important;
+}
+
+.wpe-btn-delete-option,
+.wpe-desc-attr-delete,
+.wpe-btn-delete-variant {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--wpe-p-color-text-subdued) !important;
+    cursor: pointer !important;
+    padding: 4px 6px !important;
+    border-radius: var(--wpe-p-border-radius-sm) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+
+.wpe-btn-delete-option:hover,
+.wpe-desc-attr-delete:hover,
+.wpe-btn-delete-variant:hover {
+    color: var(--wpe-p-color-critical) !important;
+    background: var(--wpe-p-color-critical-subdued) !important;
 }
 
 /* 3. Top Action & Status Bar */
@@ -46,9 +187,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
+    padding-bottom: 20px;
     margin-bottom: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-top-title-area {
@@ -58,33 +199,32 @@
 }
 
 .wpe-top-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     margin: 0;
-    color: #0f172a;
-    letter-spacing: -0.01em;
+    color: var(--wpe-p-color-text);
+    letter-spacing: -0.02em;
 }
 
 .wpe-dirty-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
+    gap: 6px;
+    padding: 3px 10px;
     border-radius: 9999px;
     font-size: 12px;
     font-weight: 600;
 }
 
 .wpe-dirty-badge.clean {
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
+    background: var(--wpe-p-color-success-subdued);
+    color: var(--wpe-p-color-brand);
 }
 
 .wpe-dirty-badge.dirty {
-    background: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fde68a;
+    background: #fff8e5;
+    color: #8c5b00;
+    border: 1px solid #fed382;
 }
 
 .wpe-top-actions {
@@ -93,73 +233,64 @@
     gap: 10px;
 }
 
-.wpe-top-actions .button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
-    padding: 4px 12px;
-    height: 32px;
-}
-
-/* 4. Common Section Layout */
+/* 4. Common Shopify Polaris Card Layout */
 .wpe-section {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background: var(--wpe-p-color-surface);
+    border-radius: var(--wpe-p-border-radius-card);
     margin-bottom: 20px;
+    box-shadow: var(--wpe-p-shadow-card);
+    transition: box-shadow 0.2s ease;
     overflow: hidden;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-    transition: border-color 0.2s;
+    border: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-section:hover {
-    border-color: #cbd5e1;
+    box-shadow: var(--wpe-p-shadow-card);
 }
 
 .wpe-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 18px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 20px;
+    background: var(--wpe-p-color-surface);
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-section-title-wrap {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .wpe-section-title {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
-    color: #0f172a;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-section-count {
-    background: #e2e8f0;
-    color: #475569;
-    font-size: 11px;
+    background: #f1f2f4;
+    color: var(--wpe-p-color-text-subdued);
+    font-size: 12px;
     padding: 2px 8px;
     border-radius: 9999px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .wpe-section-desc {
-    padding: 10px 18px 0;
-    font-size: 12px;
-    color: #64748b;
+    padding: 12px 20px 0;
+    font-size: 13px;
+    color: var(--wpe-p-color-text-subdued);
     margin: 0;
 }
 
 .wpe-section-body {
-    padding: 16px 18px;
+    padding: 20px;
 }
 
-/* 5. Section A: Descriptive Attributes */
+/* 5. Section A: Descriptive Attributes (Polaris style) */
 .wpe-desc-attr-list {
     display: flex;
     flex-direction: column;
@@ -167,28 +298,29 @@
 }
 
 .wpe-desc-attr-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    background: var(--wpe-p-color-surface-subdued);
+    border: 1px solid var(--wpe-p-color-border-subdued);
+    border-radius: var(--wpe-p-border-radius-base);
     padding: 14px 16px;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: all 0.15s ease;
 }
 
 .wpe-desc-attr-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    border-color: var(--wpe-p-color-border);
+    background: #ffffff;
 }
 
 .wpe-desc-attr-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .wpe-desc-attr-name {
     font-weight: 600;
     font-size: 13px;
+    color: var(--wpe-p-color-text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -196,9 +328,9 @@
 
 .wpe-taxonomy-tag {
     font-size: 11px;
-    background: #eff6ff;
-    color: #2563eb;
-    border: 1px solid #bfdbfe;
+    background: #f0f7ff;
+    color: var(--wpe-p-color-interactive);
+    border: 1px solid #b4dbff;
     padding: 1px 7px;
     border-radius: 4px;
     font-weight: 500;
@@ -209,10 +341,10 @@
     align-items: center;
     gap: 14px;
     font-size: 12px;
-    color: #475569;
+    color: var(--wpe-p-color-text-subdued);
 }
 
-/* Chips / Tags Component */
+/* Shopify Polaris Tag Input Component */
 .wpe-chips-container {
     display: flex;
     flex-wrap: wrap;
@@ -220,48 +352,52 @@
     gap: 6px;
     padding: 6px 10px;
     background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
     min-height: 40px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.15s ease;
 }
 
 .wpe-chips-container:focus-within {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
 }
 
 .wpe-chip {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 9999px;
-    padding: 3px 10px;
+    background: #e4e5e7;
+    border: none;
+    border-radius: var(--wpe-p-border-radius-sm);
+    padding: 3px 8px;
     font-size: 12px;
     font-weight: 500;
-    color: #334155;
-    line-height: 1.3;
+    color: var(--wpe-p-color-text);
+    line-height: 1.4;
+    transition: background 0.15s ease;
+}
+
+.wpe-chip:hover {
+    background: #d6d8db;
 }
 
 .wpe-chip-remove {
     cursor: pointer;
-    font-size: 14px;
-    color: #94a3b8;
+    font-size: 15px;
+    color: #6d7175;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    transition: background 0.15s, color 0.15s;
+    transition: color 0.15s;
     line-height: 1;
 }
 
 .wpe-chip-remove:hover {
-    color: #ef4444;
-    background: #fee2e2;
+    color: var(--wpe-p-color-critical);
 }
 
 .wpe-chip-input {
@@ -269,15 +405,15 @@
     background: transparent !important;
     box-shadow: none !important;
     outline: none !important;
-    padding: 3px 6px !important;
+    padding: 4px 6px !important;
     margin: 0 !important;
-    font-size: 12px !important;
-    min-width: 160px;
+    font-size: 13px !important;
+    min-width: 150px;
     flex-grow: 1;
-    color: #1e293b;
+    color: var(--wpe-p-color-text);
 }
 
-/* 6. Section B: Variation Options Cards */
+/* 6. Section B: Variation Options (Shopify Polaris Option Cards) */
 .wpe-options-list {
     display: flex;
     flex-direction: column;
@@ -285,39 +421,42 @@
 }
 
 .wpe-option-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    background: var(--wpe-p-color-surface-subdued);
+    border: 1px solid var(--wpe-p-color-border-subdued);
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 14px 18px;
+    transition: all 0.15s ease;
 }
 
 .wpe-option-card:hover {
-    border-color: #cbd5e1;
+    border-color: var(--wpe-p-color-border);
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .wpe-option-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .wpe-option-name-input {
     font-weight: 600;
     font-size: 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 5px 10px;
-    width: 220px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 6px 12px;
+    width: 200px;
     background: #ffffff;
-    color: #0f172a;
+    color: var(--wpe-p-color-text);
+    transition: all 0.15s ease;
 }
 
 .wpe-option-name-input:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-option-card-actions {
@@ -327,38 +466,41 @@
 }
 
 .wpe-bulk-paste-box {
-    margin-top: 12px;
+    margin-top: 10px;
     display: none;
     padding: 12px 14px;
     background: #ffffff;
-    border: 1px dashed #cbd5e1;
-    border-radius: 6px;
+    border: 1px dashed var(--wpe-p-color-border-hover);
+    border-radius: var(--wpe-p-border-radius-base);
 }
 
 .wpe-bulk-paste-box textarea {
     width: 100%;
-    font-size: 12px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    padding: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-sm);
+    padding: 8px 10px;
     resize: vertical;
+    box-shadow: none;
 }
 
-/* 7. Section C: Variations Matrix Table */
+.wpe-bulk-paste-box textarea:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
+}
+
+/* 7. Section C: Variations Matrix Table (Shopify Flat Rows) */
 .wpe-matrix-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 14px 20px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
     flex-wrap: wrap;
-    position: sticky;
-    top: 32px;
-    z-index: 10;
 }
 
 .wpe-toolbar-left {
@@ -369,26 +511,36 @@
 }
 
 .wpe-search-input {
-    min-width: 220px;
-    padding: 5px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 12px;
+    min-width: 240px;
+    padding: 7px 12px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 13px;
     background: #ffffff;
+    color: var(--wpe-p-color-text);
+    transition: all 0.15s ease;
 }
 
 .wpe-search-input:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-filter-select {
-    padding: 5px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 7px 12px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 13px;
     background: #ffffff;
-    color: #334155;
+    color: var(--wpe-p-color-text);
+    transition: all 0.15s ease;
+}
+
+.wpe-filter-select:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-toolbar-right {
@@ -397,18 +549,18 @@
     gap: 8px;
 }
 
-/* Selection Action Bar */
+/* Contextual Selection Action Bar */
 .wpe-selection-bar {
     display: none;
     align-items: center;
     justify-content: space-between;
-    background: #eff6ff;
-    border-left: 1px solid #bfdbfe;
-    border-right: 1px solid #bfdbfe;
-    border-bottom: 1px solid #bfdbfe;
-    padding: 10px 16px;
-    font-size: 12px;
-    color: #1e40af;
+    background: #f0f7ff;
+    border-bottom: 1px solid #b4dbff;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--wpe-p-color-interactive);
+    animation: wpeFadeIn 0.15s ease-out;
 }
 
 .wpe-selection-bar.active {
@@ -424,9 +576,6 @@
 /* Table Container & Table */
 .wpe-table-container {
     overflow-x: auto;
-    border-left: 1px solid #e2e8f0;
-    border-right: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
     background: #ffffff;
 }
 
@@ -434,57 +583,59 @@
     width: 100%;
     border-collapse: collapse;
     background: #ffffff;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .wpe-table th {
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 10px 12px;
+    background: var(--wpe-p-color-surface-subdued);
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    padding: 12px 14px;
     font-weight: 600;
     text-align: left;
-    color: #475569;
-    letter-spacing: 0.02em;
+    color: var(--wpe-p-color-text-subdued);
+    letter-spacing: 0;
+    font-size: 12px;
 }
 
 .wpe-table td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f2f4;
     vertical-align: middle;
+    transition: background 0.1s ease;
 }
 
 .wpe-table tr:hover td {
-    background: #f8fafc;
+    background: var(--wpe-p-color-surface-hover);
 }
 
 .wpe-table tr.selected td {
-    background: #f0f7ff;
+    background: #f4f8fe;
 }
 
 /* Group header row */
 .wpe-table tr.wpe-group-row td {
-    background: #f1f5f9;
-    font-weight: 700;
-    color: #0f172a;
-    padding: 8px 12px;
-    border-top: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
+    background: #f6f6f7;
+    font-weight: 600;
+    color: var(--wpe-p-color-text);
+    padding: 10px 14px;
+    border-top: 1px solid var(--wpe-p-color-border-subdued);
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
-/* Media thumbnail slot */
+/* Media Thumbnail Slot (Shopify 42x42 square) */
 .wpe-media-slot {
     width: 42px;
     height: 42px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 6px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    background: #f8fafc;
+    background: var(--wpe-p-color-surface-subdued);
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s, background 0.2s;
+    transition: all 0.15s ease;
 }
 
 .wpe-media-slot img {
@@ -494,7 +645,7 @@
 }
 
 .wpe-media-slot:hover {
-    border-color: #2271b1;
+    border-color: var(--wpe-p-color-interactive);
     background: #f0f7ff;
 }
 
@@ -502,7 +653,7 @@
     position: absolute;
     top: 2px;
     right: 2px;
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(32, 34, 35, 0.85);
     color: #ffffff;
     width: 16px;
     height: 16px;
@@ -518,70 +669,76 @@
     display: flex;
 }
 
-/* Combination Badge */
+/* Combination Badge (Polaris tags) */
 .wpe-combo-badge {
     display: inline-block;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 2px 8px;
+    background: #f1f2f4;
+    border: none;
+    border-radius: var(--wpe-p-border-radius-sm);
+    padding: 3px 8px;
     margin: 2px 4px 2px 0;
-    font-size: 11px;
-    color: #334155;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--wpe-p-color-text);
 }
 
-/* Inline Editable Inputs */
+/* Inline Editable Ghost Inputs (Shopify style) */
 .wpe-editable-input {
     width: 100%;
     border: 1px solid transparent !important;
     background: transparent !important;
     box-shadow: none !important;
-    padding: 4px 6px !important;
-    font-size: 12px !important;
-    border-radius: 4px !important;
-    color: #0f172a !important;
-    transition: border-color 0.15s, background 0.15s;
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+    border-radius: var(--wpe-p-border-radius-sm) !important;
+    color: var(--wpe-p-color-text) !important;
+    transition: all 0.15s ease;
 }
 
-.wpe-editable-input:focus,
 .wpe-editable-input:hover {
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--wpe-p-color-border) !important;
     background: #ffffff !important;
 }
 
 .wpe-editable-input:focus {
-    border-color: #2271b1 !important;
-    box-shadow: 0 0 0 1px #2271b1 !important;
+    border-color: var(--wpe-p-color-interactive) !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
+    outline: none !important;
 }
 
 .wpe-editable-input[readonly] {
-    background: #f8fafc !important;
-    color: #94a3b8 !important;
+    background: #f6f6f7 !important;
+    color: var(--wpe-p-color-text-subdued) !important;
     cursor: not-allowed;
+    border: 1px solid transparent !important;
 }
 
-/* Stock Status Pills */
+/* Stock Status Badges */
 .wpe-stock-pill {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 2px 8px;
     border-radius: 9999px;
     font-size: 11px;
     font-weight: 600;
+    line-height: 1.4;
 }
 
 .wpe-stock-pill.instock {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--wpe-p-color-success-subdued);
+    color: var(--wpe-p-color-brand);
 }
 
 .wpe-stock-pill.outofstock {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: var(--wpe-p-color-critical-subdued);
+    color: var(--wpe-p-color-critical);
 }
 
 .wpe-stock-pill.parent-stock {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: #e4e5e7;
+    color: #5c5f62;
 }
 
 /* Pagination Bar */
@@ -589,13 +746,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    font-size: 12px;
-    color: #475569;
+    padding: 12px 20px;
+    background: #ffffff;
+    border-top: 1px solid var(--wpe-p-color-border-subdued);
+    font-size: 13px;
+    color: var(--wpe-p-color-text-subdued);
 }
 
 .wpe-pagination-controls {
@@ -604,14 +759,14 @@
     gap: 6px;
 }
 
-/* 8. Slide-over Detail Drawer */
+/* 8. Slide-over Detail Drawer (Shopify Sheet style) */
 .wpe-drawer-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(32, 34, 35, 0.45);
     backdrop-filter: blur(2px);
     z-index: 100050;
     display: flex;
@@ -619,14 +774,14 @@
 }
 
 .wpe-drawer-container {
-    width: 620px;
-    max-width: 92vw;
-    background: #ffffff;
+    width: 640px;
+    max-width: 94vw;
+    background: var(--wpe-p-color-bg);
     height: 100%;
-    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    animation: wpeSlideIn 0.25s ease-out;
+    animation: wpeSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes wpeSlideIn {
@@ -638,40 +793,38 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 22px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    background: #ffffff;
 }
 
 .wpe-drawer-title {
     font-size: 16px;
     font-weight: 700;
     margin: 0;
-    color: #0f172a;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-drawer-body {
-    padding: 22px;
+    padding: 20px 24px;
     overflow-y: auto;
     flex-grow: 1;
 }
 
 .wpe-drawer-section {
-    margin-bottom: 22px;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 18px;
-}
-
-.wpe-drawer-section:last-child {
-    border-bottom: none;
+    background: #ffffff;
+    border-radius: var(--wpe-p-border-radius-card);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--wpe-p-shadow-card);
+    border: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-drawer-section-title {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
     margin: 0 0 14px 0;
-    color: #0f172a;
-    letter-spacing: -0.01em;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-form-row {
@@ -690,33 +843,37 @@
 .wpe-form-group label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--wpe-p-color-text-subdued);
 }
 
 .wpe-form-group input,
 .wpe-form-group select,
 .wpe-form-group textarea {
-    font-size: 12px;
-    padding: 6px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    color: #0f172a;
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-base);
+    color: var(--wpe-p-color-text);
+    background: #ffffff;
+    box-shadow: none;
+    transition: all 0.15s ease;
 }
 
 .wpe-form-group input:focus,
 .wpe-form-group select:focus,
 .wpe-form-group textarea:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 1px #2271b1;
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-drawer-footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    padding: 14px 22px;
-    border-top: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: 16px 24px;
+    border-top: 1px solid var(--wpe-p-color-border-subdued);
+    background: #ffffff;
 }
 
 /* 9. Fullscreen Modal Overlay */
@@ -726,7 +883,7 @@
     left: 160px;
     right: 0;
     bottom: 0;
-    background: #f8fafc;
+    background: var(--wpe-p-color-bg);
     z-index: 99990;
     display: flex;
     flex-direction: column;
@@ -742,19 +899,19 @@
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    background: #ffffff;
+    background: var(--wpe-p-color-bg);
     display: flex;
     flex-direction: column;
 }
 
-/* 10. Modals (Selective Generator, Bulk Edit, Conflict) */
+/* 10. Modals (Selective Generator, Bulk Edit, Conflict) — Polaris Modal */
 .wpe-modal-backdrop {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(32, 34, 35, 0.5);
     backdrop-filter: blur(2px);
     z-index: 100100;
     display: flex;
@@ -764,23 +921,23 @@
 
 .wpe-modal-dialog {
     background: #ffffff;
-    border-radius: 10px;
+    border-radius: 14px;
     width: 660px;
     max-width: 92vw;
     max-height: 86vh;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--wpe-p-shadow-floating);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: wpePopIn 0.2s ease-out;
+    animation: wpePopIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .wpe-modal-dialog-lg {
-    width: 840px;
+    width: 860px;
 }
 
 @keyframes wpePopIn {
-    from { opacity: 0; transform: scale(0.97); }
+    from { opacity: 0; transform: scale(0.96); }
     to { opacity: 1; transform: scale(1); }
 }
 
@@ -788,32 +945,32 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 18px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-modal-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     margin: 0;
-    color: #0f172a;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-modal-body {
-    padding: 20px;
+    padding: 24px;
     overflow-y: auto;
     font-size: 13px;
-    color: #334155;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    padding: 14px 20px;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+    padding: 16px 24px;
+    background: var(--wpe-p-color-surface-subdued);
+    border-top: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 /* Diff before / after preview table */
@@ -822,66 +979,147 @@
     border-collapse: collapse;
     font-size: 12px;
     margin-top: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    border-radius: var(--wpe-p-border-radius-base);
     overflow: hidden;
+    border: 1px solid var(--wpe-p-color-border);
 }
 
 .wpe-diff-table th,
 .wpe-diff-table td {
     padding: 8px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-diff-table th {
-    background: #f8fafc;
+    background: var(--wpe-p-color-surface-subdued);
     font-weight: 600;
-    color: #475569;
+    color: var(--wpe-p-color-text-subdued);
 }
 
 .wpe-diff-before {
-    background: #fee2e2;
-    color: #b91c1c;
-    padding: 1px 4px;
-    border-radius: 3px;
+    background: var(--wpe-p-color-critical-subdued);
+    color: var(--wpe-p-color-critical);
+    padding: 2px 6px;
+    border-radius: 4px;
     text-decoration: line-through;
 }
 
 .wpe-diff-after {
-    background: #dcfce7;
-    color: #15803d;
-    padding: 1px 4px;
-    border-radius: 3px;
+    background: var(--wpe-p-color-success-subdued);
+    color: var(--wpe-p-color-brand);
+    padding: 2px 6px;
+    border-radius: 4px;
     font-weight: 600;
 }
 
-/* Toast Notifications */
+/* 11. Toast Notifications */
 .wpe-toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
     padding: 10px 18px;
-    background: #0f172a;
+    background: #202223;
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: var(--wpe-p-border-radius-base);
     font-size: 13px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--wpe-p-shadow-floating);
     z-index: 100200;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     animation: wpeFadeIn 0.2s ease-in-out;
 }
 
 .wpe-toast.success {
-    background: #065f46;
+    background: #00503c;
 }
 
 .wpe-toast.error {
-    background: #991b1b;
+    background: #8e1f0b;
 }
 
 @keyframes wpeFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* 12. Shopify Sticky Contextual Save Bar */
+.wpe-sticky-savebar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    z-index: 99999;
+    min-width: 440px;
+    max-width: 90vw;
+    animation: wpeSaveBarSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes wpeSaveBarSlideUp {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.wpe-sticky-savebar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.wpe-sticky-savebar-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.wpe-sticky-savebar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wpe-sticky-btn-discard {
+    background: transparent !important;
+    border: none !important;
+    color: #e3e3e3 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    transition: background 0.15s !important;
+}
+
+.wpe-sticky-btn-discard:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+.wpe-sticky-btn-save {
+    background: var(--wpe-p-color-brand) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 7px 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background 0.15s !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+.wpe-sticky-btn-save:hover {
+    background: var(--wpe-p-color-brand-hover) !important;
 }

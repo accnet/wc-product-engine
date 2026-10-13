@@ -184,11 +184,25 @@
 
                 <!-- SECTION C: Variations Matrix -->
                 ${renderSectionC()}
+
+                <!-- Shopify Sticky Contextual Save Bar -->
+                ${wpeVariantStore.isDirty ? `
+                    <div class="wpe-sticky-savebar">
+                        <div class="wpe-sticky-savebar-left">
+                            <span class="wpe-sticky-savebar-dot"></span>
+                            <span>Unsaved variant changes</span>
+                        </div>
+                        <div class="wpe-sticky-savebar-actions">
+                            <button type="button" class="wpe-sticky-btn-discard">Discard</button>
+                            <button type="button" class="wpe-sticky-btn-save">Save Changes</button>
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         `;
 
         $container.html(html);
-        bindEditorEvents($container);
+        bindEditorEvents($container, containerId);
     }
 
     /**
@@ -982,7 +996,11 @@
     /**
      * Bind all DOM events
      */
-    function bindEditorEvents($container) {
+    function bindEditorEvents($container, containerId) {
+        if (!containerId) {
+            containerId = '#' + ($container.attr('id') || 'wpe-product-editor-inline-app');
+        }
+
         // Fullscreen toggle
         $container.find('.wpe-btn-open-fullscreen').off('click').on('click', function () {
             $('#wpe-fullscreen-modal-overlay').fadeIn(150);
@@ -1633,6 +1651,29 @@
             $('#wpe-bulk-modal').remove();
             showToast(`Applied changes to ${selectedIds.length} variants!`, 'success');
             wpeVariantStore.markDirty();
+        });
+
+        // Shopify Sticky Contextual Save Bar actions
+        $(document).on('click', '.wpe-sticky-btn-save', function () {
+            $('.wpe-btn-save-api:not(:disabled)').first().trigger('click');
+        });
+
+        $(document).on('click', '.wpe-sticky-btn-discard', function () {
+            if (confirm('Discard all unsaved changes and reload from server?')) {
+                api.fetchData().done(function (res) {
+                    if (res.success && res.data) {
+                        const data = res.data;
+                        wpeVariantStore.version = data.product ? data.product.version : 1;
+                        wpeVariantStore.product = data.product || {};
+                        wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
+                        wpeVariantStore.variationOptions = data.variation_options || [];
+                        wpeVariantStore.variations = data.variations || [];
+                        wpeVariantStore.isDirty = false;
+                        wpeVariantStore.notify();
+                        showToast('Changes discarded', 'info');
+                    }
+                });
+            }
         });
 
         // Dirty guard on leave
