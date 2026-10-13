@@ -4,7 +4,7 @@ Status: in_progress
 
 - [x] P010.1 — Contract and docs amendment for common price, pricing mode, type derivation and save result (done)
 - [x] P010.2 — Shared effective-price resolver adopted by resolver, cart, projector and meta bridge (done)
-- [ ] P010.3 — Common price, pricing mode, materialization, reference price and common-price removal preview (todo)
+- [x] P010.3 — Common price, pricing mode, materialization, reference price and common-price removal preview (done)
 - [ ] P010.4 — Product information block data: parent SKU, sale schedule, stock config, weight, dimensions, descriptive attributes, validation (todo)
 - [ ] P010.5 — Type derivation and previewed Simple/Variable transitions around ProductLifecycle (todo)
 - [ ] P010.6 — Variants rules: selective generator, stable variation IDs, inventory modes, bulk scope and owner grouping, media (todo)

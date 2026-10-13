@@ -228,8 +228,72 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "55322daeff215ccd0065f12c822effb0e06e91e2",
+          "content_digest": "066902bebe2ccd53da91db3431435353f1972c741078d00c1c4ef72310bf9af4",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791893442537-13ac2b0c.log",
+          "time": "2026-10-13T12:10:42.537Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/PricingModeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "55322daeff215ccd0065f12c822effb0e06e91e2",
+          "content_digest": "066902bebe2ccd53da91db3431435353f1972c741078d00c1c4ef72310bf9af4",
+          "output_sha256": "5c56d975f50ecf48145d7eaa265045957ef45b482cf32a12fae19bd72aa267f7",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791893473687-f043ef61.log",
+          "time": "2026-10-13T12:11:13.687Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "55322daeff215ccd0065f12c822effb0e06e91e2",
+          "content_digest": "066902bebe2ccd53da91db3431435353f1972c741078d00c1c4ef72310bf9af4",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791893492235-9f4a3b32.log",
+          "time": "2026-10-13T12:11:32.235Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "55322daeff215ccd0065f12c822effb0e06e91e2",
+          "content_digest": "066902bebe2ccd53da91db3431435353f1972c741078d00c1c4ef72310bf9af4",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791893492336-395b6ed6.log",
+          "time": "2026-10-13T12:11:32.336Z"
+        }
+      ],
+      "started_at": "2026-10-13T12:06:01.465Z"
     },
     {
       "id": "P010.4",

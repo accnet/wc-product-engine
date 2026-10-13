@@ -14,6 +14,7 @@ use WPE\Application\Migration\LegacyMirror;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Application\Media\ProductMediaLibrary;
 use WPE\Application\Media\UploadRejectedException;
+use WPE\Application\Variant\EffectivePriceResolver;
 use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Compatibility\WordPress\PostIdAllocator;
@@ -55,6 +56,7 @@ class ProductEditorService
     private AssetService $assetService;
     private AttachmentBridge $attachmentBridge;
     private ?ProductMediaLibrary $library = null;
+    private ?PricingService $pricing = null;
 
     private string $tableProducts;
     private string $tableVariants;
@@ -234,6 +236,8 @@ class ProductEditorService
                 }
             }
 
+            $priceInfo = EffectivePriceResolver::resolve($rv);
+
             $variations[] = [
                 'id'              => $varId,
                 'sku'             => $rv['sku'] ?? '',
@@ -258,6 +262,17 @@ class ProductEditorService
                 'image_url'       => $varImg ? ($varImg['source_url'] ?? null) : null,
                 'image_asset_id'  => $varImg ? (string)(int)$varImg['asset_id'] : null,
                 'attachment_id'   => !empty($varImg['attachment_id']) ? (int)$varImg['attachment_id'] : null,
+                'sale_from'       => !empty($rv['sale_from']) ? substr((string)$rv['sale_from'], 0, 19) : null,
+                'sale_to'         => !empty($rv['sale_to']) ? substr((string)$rv['sale_to'], 0, 19) : null,
+                'pricing_mode'    => $priceInfo['mode'],
+                'effective_price' => [
+                    'regular'      => $priceInfo['regular'],
+                    'sale'         => $priceInfo['sale'],
+                    'active_price' => $priceInfo['active_price'],
+                    'sale_active'  => $priceInfo['sale_active'],
+                    'source'       => $priceInfo['source'],
+                    'state'        => $priceInfo['state'],
+                ],
                 'weight'          => $rv['weight'] ?? '',
                 'length'          => $rv['length'] ?? '',
                 'width'           => $rv['width'] ?? '',
@@ -310,6 +325,9 @@ class ProductEditorService
                     'backorders'     => $parentInv['backorders'] ?? 'no',
                 ],
             ],
+            // Shared price of the product (or null) and the read-only reference price (docs/04 §8).
+            'common_price'           => PricingService::readCommonPrice($product['extra_props'] ?? null),
+            'reference_price'        => $this->pricing()->referencePrice($productId),
             'descriptive_attributes' => $descriptiveAttributes,
             'variation_options'      => $variationOptions,
             'variations'             => $variations,
@@ -580,6 +598,9 @@ class ProductEditorService
             }
         }
 
+        // Validate the pricing part (common price, per-variation mode, prices) before anything is written.
+        $pricingPlan = $this->pricing()->planSave($productId, $currentProduct, $payload);
+
         $now = gmdate('Y-m-d H:i:s.u');
 
         $this->wpdb->query("START TRANSACTION");
@@ -609,6 +630,14 @@ class ProductEditorService
                     ]);
                 }
             }
+            if ($pricingPlan['common_provided']) {
+                // Only the common_price key changes; every other extra prop of the product is preserved.
+                $currentExtra = json_decode((string)($currentProduct['extra_props'] ?? ''), true) ?: [];
+                $pUpdates['extra_props'] = json_encode(
+                    PricingService::withCommonPrice($currentExtra, $pricingPlan['common']),
+                    JSON_UNESCAPED_UNICODE
+                );
+            }
             $this->wpdb->update($this->tableProducts, $pUpdates, ['id' => $productId]);
 
             // Shift positions of existing options up by 10000 to prevent unique key conflict during re-sequencing
@@ -630,7 +659,12 @@ class ProductEditorService
 
             // 4. Sync Variations Matrix
             if (isset($payload['variations']) && is_array($payload['variations'])) {
-                $this->syncVariations($productId, $payload['variations']);
+                $this->syncVariations($productId, $payload['variations'], $pricingPlan['rows']);
+            }
+
+            // A changed common price without a variations list still has to reach the shared variations.
+            if ($pricingPlan['materialize_existing']) {
+                $this->pricing()->materialize($productId, $pricingPlan['common'], $now);
             }
 
             // 5. Commit transaction
@@ -765,7 +799,7 @@ class ProductEditorService
         }
     }
 
-    private function syncVariations(int $productId, array $variations): void
+    private function syncVariations(int $productId, array $variations, array $pricingRows = []): void
     {
         $existing = $this->wpdb->get_results($this->wpdb->prepare(
             "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
@@ -789,8 +823,17 @@ class ProductEditorService
             }
 
             $sku = trim((string)($varData['sku'] ?? '')) ?: null;
-            $regularPrice = isset($varData['regular_price']) && is_numeric($varData['regular_price']) ? sprintf('%.2f', (float)$varData['regular_price']) : null;
-            $salePrice = isset($varData['sale_price']) && is_numeric($varData['sale_price']) ? sprintf('%.2f', (float)$varData['sale_price']) : null;
+            // Price columns and pricing mode come from the validated plan (shared rows carry the common price).
+            $priceRow = $pricingRows[$varIndex] ?? null;
+            if ($priceRow === null) {
+                throw new \RuntimeException('Pricing plan is missing for variation index ' . $varIndex);
+            }
+            $priceColumns = $priceRow['columns'];
+            $priorExtra = $isNew ? [] : (json_decode((string)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT extra_props FROM {$this->tableVariants} WHERE id = %d",
+                $varId
+            )), true) ?: []);
+            $variantExtra = json_encode(PricingService::withPricingMode($priorExtra, $priceRow['mode']), JSON_UNESCAPED_UNICODE);
             $status = $varData['status'] ?? 'publish';
             $manageStock = !empty($varData['manage_stock']) ? 1 : 0;
             $stockOwnerId = $manageStock ? $varId : $productId;
@@ -800,8 +843,11 @@ class ProductEditorService
                     'id'               => $varId,
                     'product_id'       => $productId,
                     'sku'              => $sku,
-                    'regular_price'    => $regularPrice,
-                    'sale_price'       => $salePrice,
+                    'regular_price'    => $priceColumns['regular_price'],
+                    'sale_price'       => $priceColumns['sale_price'],
+                    'sale_from'        => $priceColumns['sale_from'],
+                    'sale_to'          => $priceColumns['sale_to'],
+                    'extra_props'      => $variantExtra,
                     'status'           => $status,
                     'position'         => $pos++,
                     'stock_owner_id'   => $stockOwnerId,
@@ -817,8 +863,11 @@ class ProductEditorService
             } else {
                 $this->wpdb->update($this->tableVariants, [
                     'sku'              => $sku,
-                    'regular_price'    => $regularPrice,
-                    'sale_price'       => $salePrice,
+                    'regular_price'    => $priceColumns['regular_price'],
+                    'sale_price'       => $priceColumns['sale_price'],
+                    'sale_from'        => $priceColumns['sale_from'],
+                    'sale_to'          => $priceColumns['sale_to'],
+                    'extra_props'      => $variantExtra,
                     'status'           => $status,
                     'position'         => $pos++,
                     'stock_owner_id'   => $stockOwnerId,
@@ -1060,6 +1109,11 @@ class ProductEditorService
             'affected'       => $affected,
             'unchanged'      => $unchanged,
         ];
+    }
+
+    private function pricing(): PricingService
+    {
+        return $this->pricing ??= new PricingService($this->wpdb, $this->optionsRepo);
     }
 
     private function library(): ProductMediaLibrary
