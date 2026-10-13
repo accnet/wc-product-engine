@@ -1,7 +1,7 @@
 {
   "id": "P010",
   "title": "Two-block product management UI",
-  "status": "approved",
+  "status": "in_progress",
   "content_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571",
   "tasks": [
     {
@@ -34,8 +34,36 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "2572d86712c38b010925bf5cd43f6f990c78da7e",
+          "content_digest": "c1cec7eae532fee8a3195bb81d26eee9ed42a609902ced23d48842201a9c6227",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791892787132-76bacc9a.log",
+          "time": "2026-10-13T11:59:47.133Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "2572d86712c38b010925bf5cd43f6f990c78da7e",
+          "content_digest": "c1cec7eae532fee8a3195bb81d26eee9ed42a609902ced23d48842201a9c6227",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791892787220-391ee44d.log",
+          "time": "2026-10-13T11:59:47.220Z"
+        }
+      ],
+      "started_at": "2026-10-13T11:59:42.202Z"
     },
     {
       "id": "P010.2",

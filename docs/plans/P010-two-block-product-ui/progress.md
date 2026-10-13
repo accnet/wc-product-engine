@@ -1,8 +1,8 @@
 # P010 — Two-block product management UI
 
-Status: approved
+Status: in_progress
 
-- [ ] P010.1 — Contract and docs amendment for common price, pricing mode, type derivation and save result (todo)
+- [x] P010.1 — Contract and docs amendment for common price, pricing mode, type derivation and save result (done)
 - [ ] P010.2 — Shared effective-price resolver adopted by resolver, cart, projector and meta bridge (todo)
 - [ ] P010.3 — Common price, pricing mode, materialization, reference price and common-price removal preview (todo)
 - [ ] P010.4 — Product information block data: parent SKU, sale schedule, stock config, weight, dimensions, descriptive attributes, validation (todo)

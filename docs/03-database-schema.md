@@ -10,6 +10,7 @@
 - Mọi aggregate mutation tăng `products.version`; variant mutation tăng `variants.version` và parent version; inventory có version riêng và phát event cho parent. Writes cùng aggregate khóa theo thứ tự parent → stock owner → variant → media refs, giảm deadlock.
 - DB quyền tối thiểu WordPress; không một transaction dài bao trùm cả import/backfill. DDL không được coi là rollback cùng transaction dữ liệu.
 - Trường JSON `extra_props` là extension rõ schema, không dùng thay các field cần filter/sort. Mọi WC prop version đã pin phải có mapping hoặc lý do loại trừ trong `wc-props-mapping.json`.
+- Khóa `extra_props` được tài liệu hóa cho editor hai block (không thêm cột, không phải field filter/sort của catalog): `products.extra_props.common_price` là object `{regular, sale, from, to}` (regular/sale là chuỗi 6 chữ số thập phân hoặc null, from/to là timestamp UTC hoặc null); `variants.extra_props.pricing_mode` nhận `shared` hoặc `own`, thiếu nghĩa là `own`. Giá hiệu lực của variation `shared` được ghi vào cột giá của variation bởi một writer duy nhất trong cùng transaction với thay đổi giá chung hoặc đổi chế độ, nên mọi reader và adapter WooCommerce tiếp tục đọc cột variation mà không cần biết giá chung. Cột giá của variable parent vẫn thuộc aggregate catalog. Giá tham chiếu được tính khi đọc từ variation đầu tiên theo `(position, id)` và không bao giờ được lưu. Code cũ bỏ qua hai khóa này nên chuyển editor mode qua lại không cần migration.
 
 ## 2. Bảng nguồn chuẩn
 
