@@ -739,8 +739,108 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897647266-6488693f.log",
+          "time": "2026-10-13T13:20:47.267Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorSaveTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "a2e1d1a66bfd92eafb0f1046583961de33005ca4cb40838f5375c359a28e056f",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897694247-7ec58ff2.log",
+          "time": "2026-10-13T13:21:34.247Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/LegacyWriterGuardTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "1b209a0feaaa26c608b1658d6437792c19bdf930a67be00e41ceaa3e3d58ea21",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897716504-10e0534b.log",
+          "time": "2026-10-13T13:21:56.504Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "15f5ef5eec02256fefeefa9afdcb304dfb744165b18552c03621a1ad067b4185",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897741380-2078648b.log",
+          "time": "2026-10-13T13:22:21.381Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "a2c4ad7bc553966edd2182b96f39d0912a4b5697d8eaef53e38a0d2c89671084",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897752835-588b4306.log",
+          "time": "2026-10-13T13:22:32.835Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "18798c2a6c4ea24703af9e5e965a16de0397ad86",
+          "content_digest": "fdb4f0d7bf8c41e28dd7fd218329544f57e9942d5e37068acc426b0fb6d83fe2",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791897756497-d8e7ac7f.log",
+          "time": "2026-10-13T13:22:36.497Z"
+        }
+      ],
+      "started_at": "2026-10-13T13:02:07.164Z"
     },
     {
       "id": "P010.8",

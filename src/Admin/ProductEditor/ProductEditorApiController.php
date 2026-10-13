@@ -98,6 +98,39 @@ class ProductEditorApiController
                 ],
             ],
         ]);
+
+        register_rest_route($namespace, '/product/(?P<id>\d+)/variants/preview-stock-policy', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'previewStockPolicy'],
+            'permission_callback' => [$this, 'checkProductEditPermission'],
+            'args'                => [
+                'id' => [
+                    'validate_callback' => fn($val) => is_numeric($val) && (int)$val > 0,
+                ],
+            ],
+        ]);
+
+        register_rest_route($namespace, '/product/(?P<id>\d+)/variants/preview-type-transition', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'previewTypeTransition'],
+            'permission_callback' => [$this, 'checkProductEditPermission'],
+            'args'                => [
+                'id' => [
+                    'validate_callback' => fn($val) => is_numeric($val) && (int)$val > 0,
+                ],
+            ],
+        ]);
+
+        register_rest_route($namespace, '/product/(?P<id>\d+)/variants/apply-bulk-edit', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'applyBulkEdit'],
+            'permission_callback' => [$this, 'checkProductEditPermission'],
+            'args'                => [
+                'id' => [
+                    'validate_callback' => fn($val) => is_numeric($val) && (int)$val > 0,
+                ],
+            ],
+        ]);
     }
 
     public function checkProductEditPermission(WP_REST_Request $request): bool
@@ -140,9 +173,13 @@ class ProductEditorApiController
         try {
             $result = $this->service->saveProductVariants($productId, $payload, $actorId);
             return new WP_REST_Response([
-                'success' => true,
-                'result'  => $result,
+                'success'    => true,
+                'result'     => $result,
+                'required'   => $result['required'] ?? null,
+                'projection' => $result['projection'] ?? null,
             ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
         } catch (UploadRejectedException $e) {
             return $this->mediaRuleResponse($e);
         } catch (ConcurrencyConflictException $e) {
@@ -174,11 +211,14 @@ class ProductEditorApiController
         $options   = $params['variation_options'] ?? [];
 
         try {
-            $result = $this->service->previewCombinations($productId, $options);
+            $selected = isset($params['selected']) && is_array($params['selected']) ? $params['selected'] : null;
+            $result = $this->service->previewCombinations($productId, $options, $selected);
             return new WP_REST_Response([
                 'success' => true,
                 'result'  => $result,
             ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
@@ -195,11 +235,17 @@ class ProductEditorApiController
         $actions      = (array)($params['actions'] ?? []);
 
         try {
-            $result = $this->service->previewBulkEdit($productId, $variationIds, $actions);
+            if (isset($params['scope']) && is_array($params['scope'])) {
+                $result = $this->service->previewBulk($productId, $params['scope'], $actions);
+            } else {
+                $result = $this->service->previewBulkEdit($productId, $variationIds, $actions);
+            }
             return new WP_REST_Response([
                 'success' => true,
                 'result'  => $result,
             ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
         } catch (UploadRejectedException $e) {
             return $this->mediaRuleResponse($e);
         } catch (Throwable $e) {
@@ -253,5 +299,96 @@ class ProductEditorApiController
             'message' => $e->getMessage(),
             'details' => $details !== [] ? $details : [['pointer' => '', 'reason' => $e->reason()]],
         ], $e->httpStatus());
+    }
+    public function previewStockPolicy(WP_REST_Request $request): WP_REST_Response
+    {
+        $productId = (int) $request->get_param('id');
+        $params    = $request->get_json_params() ?: [];
+
+        try {
+            $result = $this->service->previewStockPolicy($productId, $params);
+            return new WP_REST_Response([
+                'success' => true,
+                'result'  => $result,
+            ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
+        } catch (Throwable $e) {
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function previewTypeTransition(WP_REST_Request $request): WP_REST_Response
+    {
+        $productId  = (int) $request->get_param('id');
+        $params     = $request->get_json_params() ?: [];
+        $targetType = (string)($params['target_type'] ?? 'simple');
+
+        try {
+            $result = $this->service->previewTypeTransition($productId, $targetType);
+            return new WP_REST_Response([
+                'success' => true,
+                'result'  => $result,
+            ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
+        } catch (Throwable $e) {
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function applyBulkEdit(WP_REST_Request $request): WP_REST_Response
+    {
+        $productId = (int) $request->get_param('id');
+        $params    = $request->get_json_params() ?: [];
+        $ids       = array_map('intval', (array)($params['ids'] ?? []));
+        $token     = (string)($params['token'] ?? '');
+        $actions   = (array)($params['actions'] ?? []);
+        $actorId   = (int) get_current_user_id();
+
+        try {
+            $result = $this->service->applyBulkEdit($productId, $ids, $token, $actions, $actorId);
+            return new WP_REST_Response([
+                'success' => true,
+                'result'  => $result,
+            ], 200);
+        } catch (EditorValidationException $e) {
+            return $this->validationErrorResponse($e);
+        } catch (UploadRejectedException $e) {
+            return $this->mediaRuleResponse($e);
+        } catch (ConcurrencyConflictException $e) {
+            return new WP_REST_Response([
+                'success'     => false,
+                'code'        => 'concurrency_conflict',
+                'message'     => $e->getMessage(),
+                'server_data' => $e->getServerData(),
+            ], 409);
+        } catch (Throwable $e) {
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    private function validationErrorResponse(EditorValidationException $e): WP_REST_Response
+    {
+        $resp = [
+            'success' => false,
+            'code'    => 'validation_failed',
+            'reason'  => $e->reason(),
+            'message' => $e->getMessage(),
+            'details' => $e->details(),
+        ];
+        if ($e->context() !== []) {
+            $resp['context'] = $e->context();
+        }
+        return new WP_REST_Response($resp, 422);
     }
 }

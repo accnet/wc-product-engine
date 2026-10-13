@@ -32,6 +32,60 @@ class ProductEditorBridge
 {
     public const BOX_ID = 'wpe_variants_manager';
 
+    /** Editor mode constants (recovery switch). */
+    public const MODE_BLOCKS  = 'blocks';
+    public const MODE_METABOX = 'metabox';
+    public const MODE_LEGACY  = 'legacy';
+
+    /** Owned legacy keys that WooCommerce must not save when native blocks authority is active. */
+    public const LEGACY_OWNED_POST_KEYS = [
+        '_regular_price',
+        '_sale_price',
+        '_sale_price_dates_from',
+        '_sale_price_dates_to',
+        '_sku',
+        '_manage_stock',
+        '_stock',
+        '_stock_status',
+        '_backorders',
+        '_low_stock_amount',
+        '_weight',
+        '_length',
+        '_width',
+        '_height',
+        '_tax_status',
+        '_tax_class',
+        '_sold_individually',
+        '_virtual',
+        '_downloadable',
+        '_thumbnail_id',
+        'product_image_gallery',
+        'attribute_names',
+        'attribute_values',
+        'attribute_visibility',
+        'attribute_variation',
+        'attribute_position',
+        'variable_post_id',
+        'variable_sku',
+        'variable_regular_price',
+        'variable_sale_price',
+        'variable_price',
+        'variable_manage_stock',
+        'variable_stock',
+        'variable_stock_status',
+        'variable_backorders',
+        'variable_weight',
+        'variable_length',
+        'variable_width',
+        'variable_height',
+        'variable_enabled',
+        'variable_is_virtual',
+        'variable_is_downloadable',
+        'variable_tax_class',
+        'variable_description',
+        'upload_image_id',
+    ];
+
     /** Native image boxes that the product image library replaces. */
     public const NATIVE_IMAGE_BOXES = ['postimagediv', 'woocommerce-product-images'];
 
@@ -72,6 +126,7 @@ class ProductEditorBridge
         add_filter('postbox_classes_product_' . self::BOX_ID, [$this, 'filterBoxClasses']);
         add_action('admin_footer', [$this, 'renderOverlays']);
         add_action('admin_notices', [$this, 'renderSaveNotices']);
+        add_action('woocommerce_process_product_meta', [$this, 'guardLegacyProductKeys'], 1, 2);
         add_action('woocommerce_process_product_meta', [$this, 'processProductMetaSave'], 20, 2);
         add_action('admin_enqueue_scripts', [$this, 'enqueueProductEditorAssets']);
 
@@ -113,6 +168,59 @@ class ProductEditorBridge
             $classes[] = 'wpe-box-hidden';
         }
         return $classes;
+    }
+
+    /**
+     * Recovery switch: determine the active editor mode ('blocks', 'metabox', or 'legacy').
+     */
+    public static function getEditorMode(): string
+    {
+        $opt = get_option('wpe_editor_mode', self::MODE_BLOCKS);
+        $mode = in_array($opt, [self::MODE_BLOCKS, self::MODE_METABOX, self::MODE_LEGACY], true)
+            ? (string)$opt
+            : self::MODE_BLOCKS;
+
+        return (string)apply_filters('wpe_editor_mode', $mode);
+    }
+
+    /**
+     * Single writer guard: on a product update for a supported type (Simple or Variable), remove all owned legacy
+     * post keys at priority 1 of woocommerce_process_product_meta so WooCommerce at priority 10 cannot write them.
+     *
+     * @return bool True when legacy keys were guarded/stripped.
+     */
+    public function guardLegacyProductKeys(int $productId, $post = null): bool
+    {
+        if ($productId <= 0 || get_post_type($productId) !== 'product') {
+            return false;
+        }
+
+        $type = '';
+        if (isset($_POST['product-type'])) {
+            $type = sanitize_key((string)wp_unslash($_POST['product-type']));
+        }
+        if ($type === '' && function_exists('wc_get_product')) {
+            $product = wc_get_product($productId);
+            $type = $product ? (string)$product->get_type() : 'simple';
+        }
+        if (!in_array($type, ['simple', 'variable'], true)) {
+            return false;
+        }
+
+        $hasPayload = !empty($_POST['wpe_variants_payload']);
+        $mode = self::getEditorMode();
+        if (!$hasPayload && $mode === self::MODE_LEGACY) {
+            return false;
+        }
+
+        foreach (self::LEGACY_OWNED_POST_KEYS as $key) {
+            unset($_POST[$key], $_REQUEST[$key]);
+        }
+
+        remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Images', 'save'], 20);
+        remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Data', 'save_variations'], 10);
+
+        return true;
     }
 
     /**

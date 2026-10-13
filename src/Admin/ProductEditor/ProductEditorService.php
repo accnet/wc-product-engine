@@ -60,6 +60,7 @@ class ProductEditorService
     private ?PricingService $pricing = null;
     private ?ProductInfoService $info = null;
     private ?VariantRulesService $rules = null;
+    private ?ProductTypeTransition $transition = null;
 
     private string $tableProducts;
     private string $tableVariants;
@@ -130,11 +131,19 @@ class ProductEditorService
             }
             // Initialize basic product representation in wpe_products if newly created via WP Admin
             $now = gmdate('Y-m-d H:i:s.u');
+            $initType = 'simple';
+            $terms = wp_get_object_terms($productId, 'product_type');
+            if (!is_wp_error($terms) && !empty($terms)) {
+                $termSlugs = wp_list_pluck($terms, 'slug');
+                if (in_array('variable', $termSlugs, true)) {
+                    $initType = 'variable';
+                }
+            }
             $this->wpdb->insert($this->tableProducts, [
                 'id'                 => $productId,
                 'title'              => $post->post_title ?: 'Untitled Product',
                 'slug'               => $post->post_name ?: 'product-' . $productId,
-                'type'               => 'variable',
+                'type'               => $initType,
                 'status'             => $post->post_status ?: 'draft',
                 'catalog_visibility' => 'visible',
                 'version'            => 1,
@@ -252,6 +261,7 @@ class ProductEditorService
                 'manage_stock'    => !empty($rv['var_manage_stock']),
                 'inventory_mode'  => VariantRulesService::inventoryMode(!empty($rv['var_manage_stock']), $productManagesStock),
                 'stock_quantity'  => $rv['var_quantity'] !== null ? (float)$rv['var_quantity'] : null,
+                'version'         => (int)($rv['version'] ?? 1),
                 'stock_status'    => $rv['var_stock_status'] ?? 'instock',
                 'backorders'      => $rv['var_backorders'] ?? 'no',
                 'combination_hex' => $rv['combination_hex'],
@@ -322,6 +332,7 @@ class ProductEditorService
                 'title'         => $product['title'],
                 'slug'          => $product['slug'],
                 'type'          => $product['type'],
+                'derived_type'  => ProductTypeTransition::deriveType($variationOptions),
                 'status'        => $product['status'],
                 'sku'           => $product['sku'] ?? '',
                 'version'       => (int)($product['version'] ?? 1),
@@ -334,6 +345,8 @@ class ProductEditorService
                 ],
             ],
             // Shared price of the product (or null) and the read-only reference price (docs/04 §8).
+            'type'                   => $product['type'],
+            'derived_type'           => ProductTypeTransition::deriveType($variationOptions),
             'common_price'           => PricingService::readCommonPrice($product['extra_props'] ?? null),
             'reference_price'        => $this->pricing()->referencePrice($productId),
             'descriptive_attributes' => $descriptiveAttributes,
@@ -821,10 +834,32 @@ class ProductEditorService
         ), ARRAY_A);
 
         if (!$currentProduct) {
+            $post = get_post($productId);
+            if ($post && $post->post_type === 'product') {
+                $this->getProductEditorData($productId);
+                $currentProduct = $this->wpdb->get_row($this->wpdb->prepare(
+                    "SELECT * FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
+                    $productId
+                ), ARRAY_A);
+            }
+        }
+
+        if (!$currentProduct) {
             throw new InvalidArgumentException("Product not found: {$productId}");
         }
 
-        // Concurrency conflict check
+        // 1. Idempotency via operation_key
+        $opKey = isset($payload['operation_key']) && is_string($payload['operation_key']) && trim($payload['operation_key']) !== ''
+            ? trim($payload['operation_key'])
+            : null;
+        if ($opKey !== null) {
+            $cached = get_transient("wpe_save_op_{$productId}_{$opKey}");
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        // 2. Concurrency conflict checks (product version and variation versions)
         if (isset($payload['expected_version'])) {
             $expVer = (int)$payload['expected_version'];
             $currentVer = (int)$currentProduct['version'];
@@ -837,7 +872,41 @@ class ProductEditorService
             }
         }
 
-        // Validate attribute names and the Product information block first.
+        if (isset($payload['variations']) && is_array($payload['variations'])) {
+            $rawVarVersions = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT id, version FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
+                $productId
+            ), ARRAY_A) ?: [];
+            $varVersionMap = [];
+            foreach ($rawVarVersions as $rvv) {
+                $varVersionMap[(int)$rvv['id']] = (int)$rvv['version'];
+            }
+            foreach ($payload['variations'] as $vIndex => $varData) {
+                $vId = !empty($varData['id']) ? (int)$varData['id'] : 0;
+                if ($vId > 0 && isset($varVersionMap[$vId])) {
+                    $expVarVer = isset($varData['expected_version']) ? (int)$varData['expected_version'] : (isset($varData['version']) ? (int)$varData['version'] : null);
+                    $curVarVer = $varVersionMap[$vId];
+                    if ($expVarVer !== null && $expVarVer !== $curVarVer) {
+                        $latest = $this->getProductEditorData($productId);
+                        throw new ConcurrencyConflictException(
+                            "Variation {$vId} on server has been modified by another process (Version {$curVarVer} vs {$expVarVer}).",
+                            $latest
+                        );
+                    }
+                }
+            }
+        }
+
+        // 3. Type transition planning
+        $transitionPlan = $this->transition()->plan($productId, $currentProduct, $payload);
+        if ($transitionPlan['changed'] && $transitionPlan['to'] === 'variable' && $transitionPlan['common_price_patch'] !== null) {
+            if (!array_key_exists('common_price', $payload)) {
+                $payload['common_price'] = $transitionPlan['common_price_patch'];
+            }
+        }
+        $effectiveType = $transitionPlan['changed'] ? $transitionPlan['to'] : (string)$currentProduct['type'];
+
+        // 4. Validate attribute names and product info plan
         if (isset($payload['descriptive_attributes']) || isset($payload['variation_options'])) {
             ProductInfoService::validateAttributes(
                 isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes']) ? $payload['descriptive_attributes'] : null,
@@ -850,14 +919,16 @@ class ProductEditorService
                 $productId,
                 $currentProduct,
                 $payload['product'],
-                (string)$currentProduct['type'],
+                $effectiveType,
                 isset($payload['variations']) && is_array($payload['variations']) ? $payload['variations'] : null
             );
         }
 
-        // Structure: which saved variation each submitted row is (by id, else by combination), duplicate or
-        // unknown combinations, and values or options that a remaining variation still uses.
-        $structure = $this->rules()->planStructure($productId, $payload);
+        // 5. Structure plan (resolves saved IDs, rejects duplicates and in-use removal)
+        $tombstonedByTransition = ($transitionPlan['changed'] && $transitionPlan['to'] === 'simple')
+            ? $transitionPlan['tombstone_ids']
+            : [];
+        $structure = $this->rules()->planStructure($productId, $payload, $tombstonedByTransition);
         if (isset($payload['variations']) && is_array($payload['variations'])) {
             foreach ($structure['variation_ids'] as $index => $matchedId) {
                 if ($matchedId > 0 && is_array($payload['variations'][$index])) {
@@ -866,12 +937,12 @@ class ProductEditorService
             }
         }
 
-        // Validate the pricing part (common price, per-variation mode, prices) before anything is written.
+        // 6. Pricing plan
         $pricingPlan = $this->pricing()->planSave($productId, $currentProduct, $payload);
 
-        // Stock mode of every variation, against the product stock as it will be after this save.
+        // 7. Inventory plan
         $inventoryPlan = [];
-        if (isset($payload['variations']) && is_array($payload['variations'])) {
+        if (isset($payload['variations']) && is_array($payload['variations']) && $effectiveType === 'variable') {
             if ($infoPlan !== null && $infoPlan['inventory'] !== null) {
                 $productManagesStock = !empty($infoPlan['inventory']['manage_stock']);
             } else {
@@ -888,9 +959,17 @@ class ProductEditorService
         $this->wpdb->query("START TRANSACTION");
 
         try {
+            $transitionReport = null;
+            if ($transitionPlan['changed']) {
+                $transitionReport = $this->transition()->apply($productId, $transitionPlan, $now);
+            }
+
             // 1. Update product metadata & parent inventory
             $newVersion = (int)$currentProduct['version'] + 1;
             $pUpdates = ['updated_at' => $now, 'version' => $newVersion];
+            if ($transitionPlan['changed']) {
+                $pUpdates['type'] = $transitionPlan['to'];
+            }
             if (isset($payload['product']) && is_array($payload['product'])) {
                 $pData = $payload['product'];
                 if (isset($pData['status'])) {
@@ -924,7 +1003,6 @@ class ProductEditorService
                 }
             }
             if ($pricingPlan['common_provided']) {
-                // Only the common_price key changes; every other extra prop of the product is preserved.
                 $currentExtra = json_decode((string)($currentProduct['extra_props'] ?? ''), true) ?: [];
                 $pUpdates['extra_props'] = json_encode(
                     PricingService::withCommonPrice($currentExtra, $pricingPlan['common']),
@@ -933,27 +1011,22 @@ class ProductEditorService
             }
             $this->wpdb->update($this->tableProducts, $pUpdates, ['id' => $productId]);
 
-            // Options are re-sequenced only when the request carries option lists. A group that is not part of the
-            // request keeps its relative order and is renumbered after the groups that are, so saving only the
-            // product information never moves option positions (the shift below is undone for every group).
+            // Options are re-sequenced only when the request carries option lists.
             $syncDescriptive = isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes']);
             $syncVariationOptions = isset($payload['variation_options']) && is_array($payload['variation_options']);
             if ($syncDescriptive || $syncVariationOptions) {
-                // Shift positions of existing options up by 10000 to prevent unique key conflict during re-sequencing
                 $this->wpdb->query($this->wpdb->prepare(
                     "UPDATE {$this->tableOptions} SET position = position + 10000 WHERE product_id = %d",
                     $productId
                 ));
 
                 $optPosition = 0;
-                // 2. Sync Descriptive Attributes (used_for_variation = 0)
                 if ($syncDescriptive) {
                     $this->syncOptionGroup($productId, $payload['descriptive_attributes'], 0, $optPosition);
                 } else {
                     $this->renumberOptionGroup($productId, 0, $optPosition);
                 }
 
-                // 3. Sync Variation Options (used_for_variation = 1)
                 if ($syncVariationOptions) {
                     $this->syncOptionGroup($productId, $payload['variation_options'], 1, $optPosition);
                 } else {
@@ -961,23 +1034,25 @@ class ProductEditorService
                 }
             }
 
-            // 4. Sync Variations Matrix
-            if (isset($payload['variations']) && is_array($payload['variations'])) {
+            // Sync Variations Matrix
+            if ($effectiveType === 'variable' && isset($payload['variations']) && is_array($payload['variations'])) {
                 $this->syncVariations($productId, $payload['variations'], $pricingPlan['rows'], $inventoryPlan);
             }
 
-            // A changed common price without a variations list still has to reach the shared variations.
-            if ($pricingPlan['materialize_existing']) {
+            // Materialize common price
+            if ($effectiveType === 'variable' && $pricingPlan['materialize_existing']) {
                 $this->pricing()->materialize($productId, $pricingPlan['common'], $now);
             }
 
-            // 5. Commit transaction
+            // Commit transaction
             $this->wpdb->query("COMMIT");
 
-            // 6. Project canonical state to WooCommerce CPT and legacy tables.
-            // The outcome is reported to the caller instead of being swallowed: the native save has
-            // already committed, but a rejected projection (for example a stale-epoch fence) means the
-            // WooCommerce shells are not updated and the operator must know.
+            // Complete transition after commit
+            if ($transitionPlan['changed']) {
+                $this->transition()->complete($productId, $transitionPlan);
+            }
+
+            // Project canonical state to WooCommerce CPT and legacy tables
             $projection = ['legacy_mirror' => 'unknown', 'catalog_index' => 'unknown'];
             try {
                 $state = $this->wpdb->get_row($this->wpdb->prepare(
@@ -985,16 +1060,13 @@ class ProductEditorService
                     $productId
                 ), ARRAY_A);
                 $rev = $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1;
-                // Carry the authority epoch the mirror reads: the object state epoch when a row exists, otherwise the
-                // global authority epoch (the value its epoch fence compares against), never a literal or another counter.
-                $workerEpoch = \WPE\Application\Migration\LegacyMirror::getInstance()->getAggregateEpoch($productId);
+                $workerEpoch = LegacyMirror::getInstance()->getAggregateEpoch($productId);
                 $mirror = LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
                 $projection['legacy_mirror'] = (string)($mirror['status'] ?? 'unknown');
             } catch (\Throwable $mE) {
                 $projection['legacy_mirror'] = 'error';
             }
 
-            // 7. Update catalog projector index
             try {
                 (new CatalogProjector($this->wpdb))->buildNewGeneration();
                 $projection['catalog_index'] = 'ok';
@@ -1002,23 +1074,44 @@ class ProductEditorService
                 $projection['catalog_index'] = 'error';
             }
 
-            return [
+            $savedData = $this->getProductEditorData($productId);
+            $varVersions = [];
+            foreach ($savedData['variations'] as $sv) {
+                $varVersions[(int)$sv['id']] = (int)($sv['version'] ?? 1);
+            }
+
+            $required = [
+                'new_version'        => $newVersion,
+                'type'               => $savedData['product']['type'],
+                'variation_versions' => $varVersions,
+                'data'               => $savedData,
+            ];
+
+            $returnResult = [
                 'success'     => true,
                 'status'      => 'success',
                 'message'     => 'Product attributes and variants saved successfully.',
                 'new_version' => $newVersion,
+                'required'    => $required,
                 'projection'  => $projection,
-                'data'        => $this->getProductEditorData($productId),
+                'data'        => $savedData,
             ];
+
+            if ($transitionReport !== null) {
+                $returnResult['transition'] = $transitionReport;
+            }
+
+            if ($opKey !== null) {
+                set_transient("wpe_save_op_{$productId}_{$opKey}", $returnResult, 3600);
+            }
+
+            return $returnResult;
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
             throw $e;
         }
     }
 
-    /**
-     * Give the options of one group consecutive positions starting at $pos, keeping their current order.
-     */
     private function renumberOptionGroup(int $productId, int $usedForVariation, int &$pos): void
     {
         $ids = $this->wpdb->get_col($this->wpdb->prepare(
@@ -1474,6 +1567,16 @@ class ProductEditorService
     private function rules(): VariantRulesService
     {
         return $this->rules ??= new VariantRulesService($this->wpdb);
+    }
+
+    private function transition(): ProductTypeTransition
+    {
+        return $this->transition ??= new ProductTypeTransition($this->wpdb, $this->optionsRepo);
+    }
+
+    public function previewTypeTransition(int $productId, string $target): array
+    {
+        return $this->transition()->preview($productId, $target);
     }
 
     private function info(): ProductInfoService

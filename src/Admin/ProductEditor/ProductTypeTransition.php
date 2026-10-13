@@ -339,6 +339,7 @@ final class ProductTypeTransition
     public function complete(int $productId, array $plan): void
     {
         if (!empty($plan['changed'])) {
+            wp_set_object_terms($productId, (string)$plan['to'], 'product_type');
             $this->lifecycle()->completeTypeChange($productId, (string)$plan['from'], (string)$plan['to']);
         }
     }

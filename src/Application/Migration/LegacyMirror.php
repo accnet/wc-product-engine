@@ -132,7 +132,7 @@ class LegacyMirror
         ), ARRAY_A);
 
         $variants = $this->wpdb->get_results($this->wpdb->prepare(
-            "SELECT * FROM {$this->tableVariants} WHERE product_id = %d ORDER BY id ASC",
+            "SELECT * FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY id ASC",
             $aggregateId
         ), ARRAY_A);
 
@@ -269,7 +269,7 @@ class LegacyMirror
             }
 
             // Project product_type taxonomy relationship (variable vs simple)
-            $targetType = !empty($variants) ? 'variable' : 'simple';
+            $targetType = !empty($product['type']) ? $product['type'] : (!empty($variants) ? 'variable' : 'simple');
             $termRow = $this->wpdb->get_row($this->wpdb->prepare(
                 "SELECT tt.term_taxonomy_id FROM {$this->wpdb->terms} t
                  JOIN {$this->wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
@@ -292,6 +292,9 @@ class LegacyMirror
                     'term_taxonomy_id' => (int)$termRow['term_taxonomy_id'],
                     'term_order'       => 0,
                 ]);
+                if (function_exists('clean_object_term_cache')) {
+                    clean_object_term_cache($aggregateId, 'product_type');
+                }
             }
 
             // Calculate variable product price ranges
