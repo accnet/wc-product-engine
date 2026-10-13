@@ -1,6 +1,6 @@
 # P010 — Two-block product management UI
 
-Status: in_progress
+Status: done
 
 - [x] P010.1 — Contract and docs amendment for common price, pricing mode, type derivation and save result (done)
 - [x] P010.2 — Shared effective-price resolver adopted by resolver, cart, projector and meta bridge (done)
@@ -12,4 +12,4 @@ Status: in_progress
 - [x] P010.8 — Bridge: two meta boxes, legacy panel replacement, editor mode switch, assets enqueue (done)
 - [x] P010.9 — Product information block UI with reference price, transition dialogs and common-price removal dialog (done)
 - [x] P010.10 — Variants block UI: option cards, selective generator, table, bulk preview, drawer, shared-draft full screen modal (done)
-- [ ] P010.11 — Regression, recovery switch verification, docs and notes closeout (todo)
+- [x] P010.11 — Regression, recovery switch verification, docs and notes closeout (done)

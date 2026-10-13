@@ -149,11 +149,20 @@ class ProductEditorE2ETest
         $simpleProduct = wc_get_product($simpleId);
         assert($simpleProduct->get_type() === 'simple', 'Product type must be simple');
 
-        // The box renders hidden for a non-variable product, and CSS enforces it.
+        // The box renders hidden for an unsupported product type (e.g. grouped) in MODE_BLOCKS,
+        // and in MODE_METABOX (recovery mode) for simple products as well.
+        $groupedId = $this->createProduct('grouped');
         global $post, $thepostid;
+        $post = get_post($groupedId);
+        $thepostid = $groupedId;
+        assert(in_array('wpe-box-hidden', $this->bridge->filterBoxClasses(['postbox']), true), 'The box must render hidden for an unsupported product type');
+
+        update_option('wpe_editor_mode', \WPE\Admin\ProductEditor\ProductEditorBridge::MODE_METABOX);
         $post = get_post($simpleId);
         $thepostid = $simpleId;
-        assert(in_array('wpe-box-hidden', $this->bridge->filterBoxClasses(['postbox']), true), 'The box must render hidden for a non-variable product');
+        assert(in_array('wpe-box-hidden', $this->bridge->filterBoxClasses(['postbox']), true), 'In MODE_METABOX, the box must render hidden for a simple product');
+        delete_option('wpe_editor_mode');
+
         $cssContent = file_get_contents(dirname(__DIR__, 2) . '/assets/admin/product-editor.css');
         assert(strpos($cssContent, '#wpe_variants_manager.wpe-box-hidden') !== false, 'CSS must hide the box for non-variable products');
 
@@ -464,12 +473,14 @@ class ProductEditorE2ETest
         $res = $this->service->saveProductVariants($productId, $payload);
 
         // Now unlink (remove) image from variation
+        $freshData = $this->service->getProductEditorData($productId);
+        $variant = $freshData['variations'][0];
         $variant['attachment_id']  = null;
         $variant['image_asset_id'] = null;
         $variant['image_url']      = null;
         $payloadUnlink = [
             'expected_version'  => $res['new_version'],
-            'variation_options' => $data['variation_options'],
+            'variation_options' => $freshData['variation_options'],
             'variations'        => [$variant],
         ];
         $this->service->saveProductVariants($productId, $payloadUnlink);

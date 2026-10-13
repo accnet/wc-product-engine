@@ -1,7 +1,7 @@
 {
   "id": "P010",
   "title": "Two-block product management UI",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571",
   "tasks": [
     {
@@ -1162,9 +1162,99 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "7a7cee38ba86dd6689a13b90c586e4809958ba0d30815040c16421c072fe7b05",
+          "output_sha256": "04efc86e66ab1b98294479d53c24ecb97c137d5ea5dc5dd9999e7b7cf8dad4b6",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902686193-d40d8f78.log",
+          "time": "2026-10-13T14:44:46.194Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "fcb231b9ac32a4f1fc9f1e70e53e8a0c3f1c1e3c9d1e891e6cadcf5963fa0aa3",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902701258-56618b9e.log",
+          "time": "2026-10-13T14:45:01.258Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "fcb231b9ac32a4f1fc9f1e70e53e8a0c3f1c1e3c9d1e891e6cadcf5963fa0aa3",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902762073-de12f3a2.log",
+          "time": "2026-10-13T14:46:02.074Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorContractTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "fcb231b9ac32a4f1fc9f1e70e53e8a0c3f1c1e3c9d1e891e6cadcf5963fa0aa3",
+          "output_sha256": "8353251672654119585caffdb4328da4527ca925f1ab7fe461d8f99067d37950",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902774137-42684ae4.log",
+          "time": "2026-10-13T14:46:14.137Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/TwoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "fcb231b9ac32a4f1fc9f1e70e53e8a0c3f1c1e3c9d1e891e6cadcf5963fa0aa3",
+          "output_sha256": "b973185cb10d9195cc5b302d264c42eb98eecfd94f9edadd762b98b1463f2a1f",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902822455-7e671c95.log",
+          "time": "2026-10-13T14:47:02.456Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "bb921f9a73dc014f3c2e686658f1d0a12dcab245",
+          "content_digest": "fcb231b9ac32a4f1fc9f1e70e53e8a0c3f1c1e3c9d1e891e6cadcf5963fa0aa3",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791902832074-2deee5d7.log",
+          "time": "2026-10-13T14:47:12.075Z"
+        }
+      ],
+      "started_at": "2026-10-13T14:40:51.301Z"
     }
   ],
-  "approved_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571"
+  "approved_hash": "cdb546c287698fb5ac141af642244fa7d3c588675b0f8883a1af5deac2dc3571",
+  "report_hash": "614902d820abe6027b10c7275614624b1b2b3446b9395604d9801f185309834a"
 }
