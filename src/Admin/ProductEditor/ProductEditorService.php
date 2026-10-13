@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use wpdb;
 use WPE\Infrastructure\Database\ProductRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
+use WPE\Infrastructure\Database\DuplicateCombinationException;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Application\Migration\LegacyMirror;
 use WPE\Application\Catalog\CatalogProjector;
@@ -58,6 +59,7 @@ class ProductEditorService
     private ?ProductMediaLibrary $library = null;
     private ?PricingService $pricing = null;
     private ?ProductInfoService $info = null;
+    private ?VariantRulesService $rules = null;
 
     private string $tableProducts;
     private string $tableVariants;
@@ -206,6 +208,7 @@ class ProductEditorService
             $productId
         ), ARRAY_A);
 
+        $productManagesStock = !empty($parentInv['manage_stock']);
         $variations = [];
         foreach ($rawVariants as $rv) {
             $varId = (int)$rv['id'];
@@ -247,8 +250,10 @@ class ProductEditorService
                 'status'          => $rv['status'] ?? 'publish',
                 'position'        => (int)($rv['position'] ?? 0),
                 'manage_stock'    => !empty($rv['var_manage_stock']),
+                'inventory_mode'  => VariantRulesService::inventoryMode(!empty($rv['var_manage_stock']), $productManagesStock),
                 'stock_quantity'  => $rv['var_quantity'] !== null ? (float)$rv['var_quantity'] : null,
                 'stock_status'    => $rv['var_stock_status'] ?? 'instock',
+                'backorders'      => $rv['var_backorders'] ?? 'no',
                 'combination_hex' => $rv['combination_hex'],
                 'attributes'      => $attributesMap,
                 'combination'     => $attributesMap,
@@ -341,38 +346,41 @@ class ProductEditorService
     }
 
     /**
-     * Preview all candidate combinations generated from options.
+     * Preview the combinations the options can form, which of them exist and which a selection would create.
+     *
+     * Creating every combination is not required: pass `$selected` (a list of combination maps) to preview exactly
+     * what a partial generation would do. Existing variations keep their IDs and data whether or not they are in
+     * the selection, and variations that no longer fit the options are counted, never removed.
+     *
+     * @param array<int,array<string,string>>|null $selected
+     * @throws EditorValidationException when the options form more than VariantRulesService::MAX_COMBINATIONS.
      */
-    public function previewCombinations(int $productId, array $variationOptions): array
+    public function previewCombinations(int $productId, array $variationOptions, ?array $selected = null): array
     {
-        if (empty($variationOptions)) {
-            return [
-                'existing_combinations' => [],
-                'new_combinations'      => [],
-                'total_potential'       => 0,
-            ];
-        }
-
-        // Build list of arrays for Cartesian product
         $dimensions = [];
-        $optionNames = [];
         foreach ($variationOptions as $opt) {
-            $name = trim((string)$opt['name']);
+            $name = trim((string)($opt['name'] ?? ''));
             $vals = [];
+            $seen = [];
             foreach ((array)($opt['values'] ?? []) as $v) {
                 $label = is_array($v) ? trim((string)($v['label'] ?? '')) : trim((string)$v);
-                if ($label !== '') {
+                if ($label !== '' && !isset($seen[VariantRulesService::norm($label)])) {
+                    $seen[VariantRulesService::norm($label)] = true;
                     $vals[] = $label;
                 }
             }
-
-            if (!empty($name) && !empty($vals)) {
-                $dimensions[$name] = array_values($vals);
-                $optionNames[] = $name;
+            if ($name !== '' && $vals !== []) {
+                $dimensions[$name] = $vals;
             }
         }
 
-        if (empty($dimensions)) {
+        $existing = $this->getProductEditorData($productId)['variations'];
+        $existingByKey = [];
+        foreach ($existing as $exVar) {
+            $existingByKey[VariantRulesService::comboKey($exVar['attributes'] ?? $exVar['combination'] ?? [])] = $exVar;
+        }
+
+        if ($dimensions === []) {
             return [
                 'combinations'          => [],
                 'existing_combinations' => [],
@@ -383,7 +391,22 @@ class ProductEditorService
                 'new_count'             => 0,
                 'total_existing'        => 0,
                 'existing_count'        => 0,
+                'kept_existing_count'   => count($existing),
+                'selection'             => null,
             ];
+        }
+
+        $total = 1;
+        foreach ($dimensions as $values) {
+            $total *= count($values);
+            if ($total > VariantRulesService::MAX_COMBINATIONS) {
+                throw new EditorValidationException(
+                    'too_many_combinations',
+                    'The options form too many combinations to list. Select specific combinations instead.',
+                    [['pointer' => '/variation_options', 'reason' => 'too_many_combinations']],
+                    ['limit' => VariantRulesService::MAX_COMBINATIONS]
+                );
+            }
         }
 
         $combinations = [[]];
@@ -397,48 +420,33 @@ class ProductEditorService
             $combinations = $tmp;
         }
 
-        // Fetch existing variations for this product
-        $existing = $this->getProductEditorData($productId)['variations'];
-        $existingSet = [];
-        foreach ($existing as $exVar) {
-            $comboAttrs = $exVar['attributes'] ?? $exVar['combination'] ?? [];
-            ksort($comboAttrs);
-            $key = json_encode($comboAttrs, JSON_UNESCAPED_UNICODE);
-            $existingSet[$key] = $exVar;
-        }
-
         $existingCombinations = [];
         $newCombinations = [];
-
+        $matchedKeys = [];
         foreach ($combinations as $comb) {
-            ksort($comb);
-            $key = json_encode($comb, JSON_UNESCAPED_UNICODE);
-
-            if (isset($existingSet[$key])) {
-                $item = [
+            $key = VariantRulesService::comboKey($comb);
+            if (isset($existingByKey[$key])) {
+                $matchedKeys[$key] = true;
+                $existingCombinations[] = [
                     'attributes'  => $comb,
                     'combination' => $comb,
-                    'variant_id'  => $existingSet[$key]['id'],
-                    'sku'         => $existingSet[$key]['sku'],
+                    'variant_id'  => $existingByKey[$key]['id'],
+                    'sku'         => $existingByKey[$key]['sku'],
                     'exists'      => true,
                 ];
-                $existingCombinations[] = $item;
             } else {
-                $item = [
+                $newCombinations[] = [
                     'attributes'  => $comb,
                     'combination' => $comb,
                     'variant_id'  => null,
                     'sku'         => null,
                     'exists'      => false,
                 ];
-                $newCombinations[] = $item;
             }
         }
 
-        $allCombinations = array_merge($existingCombinations, $newCombinations);
-
-        return [
-            'combinations'          => $allCombinations,
+        $result = [
+            'combinations'          => array_merge($existingCombinations, $newCombinations),
             'existing_combinations' => $existingCombinations,
             'new_combinations'      => $newCombinations,
             'total_potential'       => count($combinations),
@@ -447,7 +455,47 @@ class ProductEditorService
             'new_count'             => count($newCombinations),
             'total_existing'        => count($existingCombinations),
             'existing_count'        => count($existingCombinations),
+            // Saved variations that the options do not describe (kept as they are).
+            'kept_existing_count'   => count($existing) - count($matchedKeys),
+            'selection'             => null,
         ];
+
+        if ($selected !== null) {
+            $validKeys = [];
+            foreach ($combinations as $comb) {
+                $validKeys[VariantRulesService::comboKey($comb)] = $comb;
+            }
+            $willCreate = [];
+            $alreadyExist = [];
+            $invalid = [];
+            $picked = [];
+            foreach ($selected as $i => $combo) {
+                $combo = is_array($combo) ? $combo : [];
+                $key = VariantRulesService::comboKey($combo);
+                if (isset($picked[$key])) {
+                    $invalid[] = ['index' => $i, 'combination' => $combo, 'reason' => 'duplicate_selection'];
+                    continue;
+                }
+                $picked[$key] = true;
+                if (!isset($validKeys[$key])) {
+                    $invalid[] = ['index' => $i, 'combination' => $combo, 'reason' => 'unknown_value'];
+                } elseif (isset($existingByKey[$key])) {
+                    $alreadyExist[] = ['combination' => $validKeys[$key], 'variant_id' => $existingByKey[$key]['id']];
+                } else {
+                    $willCreate[] = ['combination' => $validKeys[$key]];
+                }
+            }
+            $result['selection'] = [
+                'requested'      => count($selected),
+                'will_create'    => $willCreate,
+                'already_exist'  => $alreadyExist,
+                'invalid'        => $invalid,
+                'create_count'   => count($willCreate),
+                'expected_total' => count($existing) + count($willCreate),
+            ];
+        }
+
+        return $result;
     }
 
     /**
@@ -525,6 +573,17 @@ class ProductEditorService
                     'value' => (float)$actions['adjust_price_pct'],
                 ]);
             }
+            // A shared-price row that gets its own price becomes an own-price row (never silently both).
+            $pricesTouched = (isset($actions['regular_price']) && $actions['regular_price'] !== '')
+                || (isset($actions['sale_price']) && $actions['sale_price'] !== '')
+                || (isset($actions['adjust_price_pct']) && is_numeric($actions['adjust_price_pct']));
+            if ($pricesTouched && ($current['pricing_mode'] ?? 'own') === 'shared') {
+                $projected['pricing_mode'] = 'own';
+            }
+            if (isset($actions['inventory_mode']) && in_array($actions['inventory_mode'], [VariantRulesService::MODE_OWN, VariantRulesService::MODE_SHARED, VariantRulesService::MODE_UNTRACKED], true)) {
+                $projected['manage_stock'] = $actions['inventory_mode'] === VariantRulesService::MODE_OWN;
+                $projected['inventory_mode'] = $actions['inventory_mode'];
+            }
             if (isset($actions['status'])) {
                 $projected['status'] = $actions['status'];
             }
@@ -547,7 +606,7 @@ class ProductEditorService
             }
 
             $changes = [];
-            foreach (['regular_price', 'sale_price', 'status', 'manage_stock', 'stock_quantity', 'stock_status', 'image_url', 'image_asset_id'] as $field) {
+            foreach (['regular_price', 'sale_price', 'pricing_mode', 'status', 'manage_stock', 'stock_quantity', 'stock_status', 'image_url', 'image_asset_id'] as $field) {
                 $before = $current[$field] ?? null;
                 $after = $projected[$field] ?? null;
                 if (in_array($field, ['regular_price', 'sale_price'], true)) {
@@ -572,6 +631,183 @@ class ProductEditorService
             'affected_count' => count($diffs),
             'diffs'          => $diffs,
         ];
+    }
+
+    /**
+     * Preview what changing the product-level stock policy does to the variations that inherit it.
+     *
+     * Turning product stock management off makes shared variations untracked; turning it on makes untracked
+     * variations share it. Variations that manage their own stock are never affected.
+     *
+     * @param array $productStock {manage_stock?, stock_quantity?}
+     */
+    public function previewStockPolicy(int $productId, array $productStock): array
+    {
+        $data = $this->getProductEditorData($productId);
+        $current = $data['product']['parent_stock'];
+        $manage = array_key_exists('manage_stock', $productStock) ? !empty($productStock['manage_stock']) : (bool)$current['manage_stock'];
+        $quantity = array_key_exists('stock_quantity', $productStock) && is_numeric($productStock['stock_quantity'])
+            ? (float)$productStock['stock_quantity']
+            : $current['stock_quantity'];
+
+        $affected = [];
+        $own = 0;
+        foreach ($data['variations'] as $row) {
+            if ($row['inventory_mode'] === VariantRulesService::MODE_OWN) {
+                $own++;
+                continue;
+            }
+            $to = VariantRulesService::inventoryMode(false, $manage);
+            if ($to !== $row['inventory_mode']) {
+                $affected[] = [
+                    'variant_id' => (int)$row['id'],
+                    'label'      => implode(' / ', array_map('strval', $row['combination'])),
+                    'from'       => $row['inventory_mode'],
+                    'to'         => $to,
+                ];
+            }
+        }
+
+        $effect = 'none';
+        if ($affected !== []) {
+            $effect = $manage ? 'untracked_become_shared' : 'shared_become_untracked';
+        }
+
+        return [
+            'current'                  => ['manage_stock' => (bool)$current['manage_stock'], 'stock_quantity' => $current['stock_quantity']],
+            'proposed'                 => ['manage_stock' => $manage, 'stock_quantity' => $manage ? $quantity : null],
+            'effect'                   => $effect,
+            'affected_variations'      => $affected,
+            'own_stock_unchanged_count' => $own,
+            'requires_confirmation'    => $affected !== [],
+        ];
+    }
+
+    /**
+     * Preview a bulk edit for a scope: the ids of the current page, or a filter resolved here over the full saved set.
+     *
+     * The result carries the resolved id list, its count and a token; apply uses that id list and token, so the scope
+     * cannot grow between preview and apply. Variations that share one stock owner are grouped and the owner is
+     * written once.
+     */
+    public function previewBulk(int $productId, array $scope, array $actions): array
+    {
+        $data = $this->getProductEditorData($productId);
+        $resolved = $this->rules()->resolveScope($productId, (int)$data['product']['version'], $scope, $data['variations']);
+        $preview = $this->previewBulkEdit($productId, $resolved['ids'], $actions);
+
+        $rows = array_values(array_filter($data['variations'], static fn(array $r): bool => in_array((int)$r['id'], $resolved['ids'], true)));
+        $groups = VariantRulesService::stockOwnerGroups($rows, $productId);
+        $stockWrites = [];
+        $skipped = [];
+        if (isset($actions['stock_quantity']) && is_numeric($actions['stock_quantity'])) {
+            foreach ($groups as $group) {
+                $before = $group['owner_kind'] === 'product'
+                    ? $data['product']['parent_stock']['stock_quantity']
+                    : ($this->variationById($data, $group['owner_id'])['stock_quantity'] ?? null);
+                $stockWrites[] = $group + ['quantity_before' => $before, 'quantity_after' => (float)$actions['stock_quantity']];
+            }
+            foreach ($rows as $row) {
+                if ($row['inventory_mode'] === VariantRulesService::MODE_UNTRACKED) {
+                    $skipped[] = ['variant_id' => (int)$row['id'], 'reason' => 'untracked_stock'];
+                }
+            }
+        }
+
+        return $preview + [
+            'scope'        => $resolved,
+            'stock_groups' => $groups,
+            'stock_writes' => $stockWrites,
+            'skipped'      => $skipped,
+        ];
+    }
+
+    /**
+     * Apply a previewed bulk edit through the one save path.
+     *
+     * The ids and the token must be the ones previewBulk issued for the current product version. The edit is merged
+     * into the saved rows and saved with saveProductVariants, so pricing, stock and image rules are the same as for
+     * any other save and the shared stock owner is written once.
+     *
+     * @param int[] $ids
+     */
+    public function applyBulkEdit(int $productId, array $ids, string $token, array $actions, int $actorId = 0): array
+    {
+        $data = $this->getProductEditorData($productId);
+        $version = (int)$data['product']['version'];
+        $this->rules()->assertScopeToken($productId, $version, $ids, $token);
+        // The ids must still be saved variations of this product.
+        $resolved = $this->rules()->resolveScope($productId, $version, ['type' => 'ids', 'ids' => $ids], $data['variations']);
+
+        $preview = $this->previewBulkEdit($productId, $resolved['ids'], $actions);
+        $afterById = [];
+        foreach ($preview['diffs'] as $diff) {
+            $afterById[(int)$diff['variant_id']] = $diff['after'];
+        }
+
+        $scoped = array_flip($resolved['ids']);
+        $rows = [];
+        foreach ($data['variations'] as $row) {
+            $vid = (int)$row['id'];
+            $src = isset($scoped[$vid]) ? ($afterById[$vid] ?? $row) : $row;
+            $emptyToNull = static fn($v) => ($v === '' || $v === null) ? null : $v;
+            $out = [
+                'id'             => $vid,
+                'sku'            => $row['sku'],
+                'combination'    => $row['combination'],
+                'regular_price'  => $emptyToNull($src['regular_price'] ?? null),
+                'sale_price'     => $emptyToNull($src['sale_price'] ?? null),
+                'sale_from'      => $row['sale_from'],
+                'sale_to'        => $row['sale_to'],
+                'pricing_mode'   => $src['pricing_mode'] ?? $row['pricing_mode'],
+                'status'         => $src['status'] ?? $row['status'],
+                'stock_status'   => $src['stock_status'] ?? $row['stock_status'],
+                'backorders'     => $row['backorders'],
+                'weight'         => $emptyToNull($row['weight']),
+                'length'         => $emptyToNull($row['length']),
+                'width'          => $emptyToNull($row['width']),
+                'height'         => $emptyToNull($row['height']),
+                'description'    => $row['description'],
+                'image_asset_id' => $src['image_asset_id'] ?? $row['image_asset_id'],
+            ];
+            $mode = isset($scoped[$vid]) && isset($src['inventory_mode']) ? $src['inventory_mode'] : $row['inventory_mode'];
+            $out['inventory_mode'] = $mode;
+            if ($mode === VariantRulesService::MODE_OWN) {
+                $out['stock_quantity'] = $src['stock_quantity'] ?? $row['stock_quantity'];
+            }
+            $rows[] = $out;
+        }
+
+        $payload = ['expected_version' => $version, 'variations' => $rows];
+
+        // A shared stock owner (the product) is written once, whatever the number of variations that inherit it.
+        $groups = VariantRulesService::stockOwnerGroups(
+            array_values(array_filter($data['variations'], static fn(array $r): bool => isset($scoped[(int)$r['id']]))),
+            $productId
+        );
+        $writesProduct = false;
+        foreach ($groups as $group) {
+            $writesProduct = $writesProduct || $group['owner_kind'] === 'product';
+        }
+        if ($writesProduct && isset($actions['stock_quantity']) && is_numeric($actions['stock_quantity'])) {
+            $payload['product'] = ['stock' => ['manage_stock' => true, 'stock_quantity' => (float)$actions['stock_quantity']]];
+        }
+
+        $result = $this->saveProductVariants($productId, $payload, $actorId);
+        $result['bulk'] = ['ids' => $resolved['ids'], 'count' => $resolved['count'], 'stock_groups' => $groups];
+
+        return $result;
+    }
+
+    private function variationById(array $data, int $id): array
+    {
+        foreach ($data['variations'] as $row) {
+            if ((int)$row['id'] === $id) {
+                return $row;
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -601,10 +837,7 @@ class ProductEditorService
             }
         }
 
-        // Validate the pricing part (common price, per-variation mode, prices) before anything is written.
-        $pricingPlan = $this->pricing()->planSave($productId, $currentProduct, $payload);
-
-        // Validate attribute names and the Product information block the same way.
+        // Validate attribute names and the Product information block first.
         if (isset($payload['descriptive_attributes']) || isset($payload['variation_options'])) {
             ProductInfoService::validateAttributes(
                 isset($payload['descriptive_attributes']) && is_array($payload['descriptive_attributes']) ? $payload['descriptive_attributes'] : null,
@@ -620,6 +853,34 @@ class ProductEditorService
                 (string)$currentProduct['type'],
                 isset($payload['variations']) && is_array($payload['variations']) ? $payload['variations'] : null
             );
+        }
+
+        // Structure: which saved variation each submitted row is (by id, else by combination), duplicate or
+        // unknown combinations, and values or options that a remaining variation still uses.
+        $structure = $this->rules()->planStructure($productId, $payload);
+        if (isset($payload['variations']) && is_array($payload['variations'])) {
+            foreach ($structure['variation_ids'] as $index => $matchedId) {
+                if ($matchedId > 0 && is_array($payload['variations'][$index])) {
+                    $payload['variations'][$index]['id'] = $matchedId;
+                }
+            }
+        }
+
+        // Validate the pricing part (common price, per-variation mode, prices) before anything is written.
+        $pricingPlan = $this->pricing()->planSave($productId, $currentProduct, $payload);
+
+        // Stock mode of every variation, against the product stock as it will be after this save.
+        $inventoryPlan = [];
+        if (isset($payload['variations']) && is_array($payload['variations'])) {
+            if ($infoPlan !== null && $infoPlan['inventory'] !== null) {
+                $productManagesStock = !empty($infoPlan['inventory']['manage_stock']);
+            } else {
+                $productManagesStock = (bool)$this->wpdb->get_var($this->wpdb->prepare(
+                    "SELECT manage_stock FROM {$this->tableInventory} WHERE owner_id = %d",
+                    $productId
+                ));
+            }
+            $inventoryPlan = $this->rules()->planInventory($payload['variations'], $structure['variation_ids'], $productManagesStock);
         }
 
         $now = gmdate('Y-m-d H:i:s.u');
@@ -702,7 +963,7 @@ class ProductEditorService
 
             // 4. Sync Variations Matrix
             if (isset($payload['variations']) && is_array($payload['variations'])) {
-                $this->syncVariations($productId, $payload['variations'], $pricingPlan['rows']);
+                $this->syncVariations($productId, $payload['variations'], $pricingPlan['rows'], $inventoryPlan);
             }
 
             // A changed common price without a variations list still has to reach the shared variations.
@@ -810,24 +1071,38 @@ class ProductEditorService
                 $touchedIds[] = $optId;
             }
 
-            // Sync option values
+            // Sync option values. A value keeps its ID: it is matched by the submitted id first (so a renamed label is
+            // the same value), then by label. Variations reference the value ID, so a rename never touches them.
             $rawVals = $opt['values'] ?? [];
             $existingVals = $this->optionsRepo->getOptionValues($optId);
+            $valById = [];
             $valByName = [];
             foreach ($existingVals as $ev) {
+                $valById[(int)$ev['id']] = $ev;
                 $valByName[strtolower(trim($ev['label']))] = $ev;
             }
 
             $vPos = 0;
             $touchedValIds = [];
+            $valueIdByLabel = [];
             foreach ($rawVals as $v) {
                 $vLabel = is_array($v) ? trim((string)($v['label'] ?? '')) : trim((string)$v);
                 if ($vLabel === '') continue;
                 $lower = strtolower($vLabel);
 
-                if (isset($valByName[$lower])) {
+                $valId = 0;
+                if (is_array($v) && !empty($v['id']) && isset($valById[(int)$v['id']])) {
+                    $valId = (int)$v['id'];
+                } elseif (isset($valByName[$lower]) && !in_array((int)$valByName[$lower]['id'], $touchedValIds, true)) {
                     $valId = (int)$valByName[$lower]['id'];
-                    $this->optionsRepo->updateOptionValue($valId, ['position' => $vPos++]);
+                }
+
+                if ($valId > 0) {
+                    $valueUpdate = ['position' => $vPos++];
+                    if (trim((string)$valById[$valId]['label']) !== $vLabel) {
+                        $valueUpdate['label'] = $vLabel;
+                    }
+                    $this->optionsRepo->updateOptionValue($valId, $valueUpdate);
                     $touchedValIds[] = $valId;
                 } else {
                     $createdVal = $this->optionsRepo->createOptionValue($optId, [
@@ -835,14 +1110,28 @@ class ProductEditorService
                         'value_key' => sanitize_title($vLabel),
                         'position'  => $vPos++,
                     ]);
-                    $touchedValIds[] = (int)$createdVal['id'];
+                    $valId = (int)$createdVal['id'];
+                    $touchedValIds[] = $valId;
                 }
+                $valueIdByLabel[$lower] = $valId;
             }
 
-            // Delete removed values for this option
+            // Default value: by id (must be a value of this option) or by label; null or empty clears it.
+            if (array_key_exists('default_value_id', $opt) || array_key_exists('default_value', $opt)) {
+                $defaultId = null;
+                if (array_key_exists('default_value_id', $opt) && $opt['default_value_id'] !== null && $opt['default_value_id'] !== '') {
+                    $defaultId = (int)$opt['default_value_id'];
+                } elseif (!empty($opt['default_value']) && is_string($opt['default_value'])) {
+                    $defaultId = $valueIdByLabel[strtolower(trim($opt['default_value']))] ?? null;
+                }
+                $this->optionsRepo->updateOption($optId, ['default_value_id' => $defaultId]);
+            }
+
+            // Delete removed values for this option (a value a live variation uses was rejected by the plan)
             foreach ($existingVals as $ev) {
                 $oldValId = (int)$ev['id'];
                 if (!in_array($oldValId, $touchedValIds, true)) {
+                    $this->wpdb->update($this->tableOptions, ['default_value_id' => null], ['id' => $optId, 'default_value_id' => $oldValId]);
                     $this->wpdb->delete($this->tableOptionValues, ['id' => $oldValId]);
                     $this->wpdb->delete($this->tableVariantValues, ['value_id' => $oldValId]);
                 }
@@ -857,7 +1146,7 @@ class ProductEditorService
         }
     }
 
-    private function syncVariations(int $productId, array $variations, array $pricingRows = []): void
+    private function syncVariations(int $productId, array $variations, array $pricingRows = [], array $inventoryRows = []): void
     {
         $existing = $this->wpdb->get_results($this->wpdb->prepare(
             "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
@@ -893,7 +1182,11 @@ class ProductEditorService
             )), true) ?: []);
             $variantExtra = json_encode(PricingService::withPricingMode($priorExtra, $priceRow['mode']), JSON_UNESCAPED_UNICODE);
             $status = $varData['status'] ?? 'publish';
-            $manageStock = !empty($varData['manage_stock']) ? 1 : 0;
+            $invRow = $inventoryRows[$varIndex] ?? null;
+            if ($invRow === null) {
+                throw new \RuntimeException('Inventory plan is missing for variation index ' . $varIndex);
+            }
+            $manageStock = $invRow['manage_stock'];
             $stockOwnerId = $manageStock ? $varId : $productId;
 
             if ($isNew) {
@@ -920,6 +1213,7 @@ class ProductEditorService
                 ]);
             } else {
                 $this->wpdb->update($this->tableVariants, [
+                    'version'          => (int)$this->wpdb->get_var($this->wpdb->prepare("SELECT version FROM {$this->tableVariants} WHERE id = %d", $varId)) + 1,
                     'sku'              => $sku,
                     'regular_price'    => $priceColumns['regular_price'],
                     'sale_price'       => $priceColumns['sale_price'],
@@ -953,24 +1247,32 @@ class ProductEditorService
             if (!empty($combo) && is_array($combo)) {
                 try {
                     $this->optionsRepo->assignVariantCombination($productId, $varId, $combo);
-                } catch (\Throwable $cE) {
-                    // Ignore or log combination assignment error
+                } catch (DuplicateCombinationException $dE) {
+                    throw new EditorValidationException(
+                        'duplicate_combination',
+                        'Another variation already has this combination.',
+                        [['pointer' => "/variations/{$varIndex}/combination", 'reason' => 'duplicate_combination']]
+                    );
                 }
             }
 
-            // Sync inventory
-            $stockQty = $manageStock && isset($varData['stock_quantity']) && is_numeric($varData['stock_quantity']) ? (float)$varData['stock_quantity'] : null;
-            $stockStatus = $varData['stock_status'] ?? 'instock';
-
-            $this->wpdb->replace($this->tableInventory, [
-                'owner_id'     => $varId,
-                'manage_stock' => $manageStock,
-                'quantity'     => $stockQty,
-                'stock_status' => $stockStatus,
-                'backorders'   => $varData['backorders'] ?? 'no',
-                'version'      => 1,
-                'updated_at'   => $now,
-            ]);
+            // Sync inventory (planned and validated before the transaction; the row keeps its version history)
+            $invValues = [
+                'manage_stock'  => $manageStock,
+                'quantity'      => $invRow['quantity'],
+                'stock_status'  => $invRow['stock_status'],
+                'backorders'    => $invRow['backorders'],
+                'updated_at'    => $now,
+            ];
+            $invVersion = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT version FROM {$this->tableInventory} WHERE owner_id = %d",
+                $varId
+            ));
+            if ($invVersion === null) {
+                $this->wpdb->insert($this->tableInventory, $invValues + ['owner_id' => $varId, 'version' => 1]);
+            } else {
+                $this->wpdb->update($this->tableInventory, $invValues + ['version' => (int)$invVersion + 1], ['owner_id' => $varId]);
+            }
 
             // Sync variant image: assigned by asset id from the product library (docs/04 §7).
             if (array_key_exists('image_asset_id', $varData) || array_key_exists('image_url', $varData)) {
@@ -1167,6 +1469,11 @@ class ProductEditorService
             'affected'       => $affected,
             'unchanged'      => $unchanged,
         ];
+    }
+
+    private function rules(): VariantRulesService
+    {
+        return $this->rules ??= new VariantRulesService($this->wpdb);
     }
 
     private function info(): ProductInfoService

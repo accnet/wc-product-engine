@@ -541,8 +541,134 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "71327504a9879be5c179971a26f1a66c5d3333abea7dc69c6381bedea0dcc26a",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896092186-3adc33ae.log",
+          "time": "2026-10-13T12:54:52.187Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/VariantsRulesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "71327504a9879be5c179971a26f1a66c5d3333abea7dc69c6381bedea0dcc26a",
+          "output_sha256": "9489742e90208668e3e1bda1b1bc22bf76f89919c4aee3467c5a24244c510659",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896147969-b26a12f8.log",
+          "time": "2026-10-13T12:55:47.970Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "71327504a9879be5c179971a26f1a66c5d3333abea7dc69c6381bedea0dcc26a",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896158576-5e8f55bc.log",
+          "time": "2026-10-13T12:55:58.576Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "71327504a9879be5c179971a26f1a66c5d3333abea7dc69c6381bedea0dcc26a",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896158674-ed4d437b.log",
+          "time": "2026-10-13T12:55:58.675Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "c1d5af382727bf10d7f9e467e7089d5e0100d8837827ca208fade5770e84f2a5",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896272907-267f70de.log",
+          "time": "2026-10-13T12:57:52.907Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/VariantsRulesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "c1d5af382727bf10d7f9e467e7089d5e0100d8837827ca208fade5770e84f2a5",
+          "output_sha256": "9489742e90208668e3e1bda1b1bc22bf76f89919c4aee3467c5a24244c510659",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896328862-3f5fcbd1.log",
+          "time": "2026-10-13T12:58:48.863Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "c1d5af382727bf10d7f9e467e7089d5e0100d8837827ca208fade5770e84f2a5",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896339516-b0658bb1.log",
+          "time": "2026-10-13T12:58:59.517Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "05f3cdf8c7bfbf1ece1c8443a5e1ee3e91592813",
+          "content_digest": "c1d5af382727bf10d7f9e467e7089d5e0100d8837827ca208fade5770e84f2a5",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791896339601-77429638.log",
+          "time": "2026-10-13T12:58:59.602Z"
+        }
+      ],
+      "started_at": "2026-10-13T12:49:45.280Z"
     },
     {
       "id": "P010.7",
