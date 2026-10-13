@@ -22,10 +22,21 @@ use Throwable;
  * - A failed save is never silent: the error and the submitted draft are kept per user and product, the
  *   next load shows an admin notice and the editor restores the draft as unsaved changes.
  * - Fullscreen modal and drawer are printed in the admin footer, outside the postbox.
+ * - On Simple and Variable products the native Product image and Product gallery boxes are hidden and the
+ *   product image library is the single writer of the featured image and the gallery: the posted
+ *   `_thumbnail_id` and `product_image_gallery` keys are removed before WordPress and WooCommerce read them,
+ *   and WooCommerce's gallery save callback is not run for that request. The legacy mirror projects the
+ *   library into the post meta. Other product types keep the native boxes.
  */
 class ProductEditorBridge
 {
     public const BOX_ID = 'wpe_variants_manager';
+
+    /** Native image boxes that the product image library replaces. */
+    public const NATIVE_IMAGE_BOXES = ['postimagediv', 'woocommerce-product-images'];
+
+    /** Product types whose images are managed by the library. */
+    private const MEDIA_LIBRARY_TYPES = ['simple', 'variable'];
 
     /** Seconds a failure notice / kept draft survives. */
     private const FAILURE_TTL = 3600;
@@ -63,6 +74,81 @@ class ProductEditorBridge
         add_action('admin_notices', [$this, 'renderSaveNotices']);
         add_action('woocommerce_process_product_meta', [$this, 'processProductMetaSave'], 20, 2);
         add_action('admin_enqueue_scripts', [$this, 'enqueueProductEditorAssets']);
+
+        // The product image library replaces the native image boxes (hidden, not removed, so the editor can
+        // restore them) and is the only writer of the featured image and gallery on supported products.
+        foreach (self::NATIVE_IMAGE_BOXES as $boxId) {
+            add_filter('postbox_classes_product_' . $boxId, [$this, 'filterNativeImageBoxClasses']);
+        }
+        add_action('admin_init', [$this, 'guardNativeImageKeys'], 1);
+    }
+
+    /**
+     * Whether the image library manages the images of this product type.
+     */
+    public static function supportsMediaLibrary(string $productType): bool
+    {
+        /**
+         * Lets an operator bring the native image boxes back (for example while the library UI is unavailable).
+         *
+         * @param bool $enabled Whether the library replaces the native image boxes.
+         */
+        if (!apply_filters('wpe_media_library_replaces_native_boxes', true)) {
+            return false;
+        }
+        return in_array($productType, self::MEDIA_LIBRARY_TYPES, true);
+    }
+
+    /**
+     * Hide a native image box on first paint when the library replaces it for this product.
+     *
+     * @param array<int,string> $classes
+     * @return array<int,string>
+     */
+    public function filterNativeImageBoxClasses(array $classes): array
+    {
+        if (self::supportsMediaLibrary($this->currentProductType())) {
+            // `hidden` is the WordPress admin utility class (display: none); the second class lets scripts find them.
+            $classes[] = 'hidden';
+            $classes[] = 'wpe-box-hidden';
+        }
+        return $classes;
+    }
+
+    /**
+     * Single writer guard (docs/04 §7): on a product update for a supported type, drop the posted featured
+     * image and gallery keys and skip WooCommerce's gallery save, so the legacy path cannot write them.
+     * Without removing that callback the missing gallery key would be read as an empty gallery.
+     *
+     * Reads and changes the superglobals of the current request; it runs on `admin_init`, before post.php
+     * passes the request to edit_post().
+     *
+     * @return bool true when the keys were guarded for this request
+     */
+    public function guardNativeImageKeys(): bool
+    {
+        if (($_POST['action'] ?? '') !== 'editpost' || ($_POST['post_type'] ?? '') !== 'product') {
+            return false;
+        }
+        $productId = (int)($_POST['post_ID'] ?? 0);
+        if ($productId <= 0 || get_post_type($productId) !== 'product') {
+            return false;
+        }
+
+        $type = isset($_POST['product-type']) ? sanitize_key((string)wp_unslash($_POST['product-type'])) : '';
+        if ($type === '' && function_exists('wc_get_product')) {
+            $product = wc_get_product($productId);
+            $type = $product ? (string)$product->get_type() : 'simple';
+        }
+        if (!self::supportsMediaLibrary($type !== '' ? $type : 'simple')) {
+            return false;
+        }
+
+        foreach (['_thumbnail_id', 'product_image_gallery'] as $key) {
+            unset($_POST[$key], $_REQUEST[$key]);
+        }
+        remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Images', 'save'], 20);
+        return true;
     }
 
     /**

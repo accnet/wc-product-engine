@@ -34,6 +34,7 @@ class ProductEditorBridgeTest
             $this->testNoProductDataTab();
             $this->testMetaBoxRegistration();
             $this->testBoxVisibilityClass();
+            $this->testNativeImageBoxesFollowProductType();
             $this->testMetaBoxAndOverlayRendering();
             $this->testProcessProductMetaSave();
             $this->testEmptyPayloadLeavesVariantsUntouched();
@@ -175,6 +176,25 @@ class ProductEditorBridgeTest
         $this->setCurrentPost($simpleId);
         $classes = $this->bridge->filterBoxClasses(['postbox']);
         assert(in_array('wpe-box-hidden', $classes, true), 'A non-variable product must render the box hidden');
+
+        echo " OK\n";
+    }
+
+    public function testNativeImageBoxesFollowProductType(): void
+    {
+        echo " - testNativeImageBoxesFollowProductType...";
+
+        foreach (ProductEditorBridge::NATIVE_IMAGE_BOXES as $boxId) {
+            assert(has_filter('postbox_classes_product_' . $boxId, [$this->bridge, 'filterNativeImageBoxClasses']) !== false, "{$boxId} class filter must be hooked");
+        }
+        assert(has_action('admin_init', [$this->bridge, 'guardNativeImageKeys']) !== false, 'The image key guard must be hooked');
+
+        foreach (['variable' => true, 'simple' => true, 'grouped' => false] as $type => $hidden) {
+            $id = $this->createTestProduct($type);
+            $this->setCurrentPost($id);
+            $classes = $this->bridge->filterNativeImageBoxClasses(['postbox']);
+            assert(in_array('wpe-box-hidden', $classes, true) === $hidden, "{$type}: native image boxes hidden state must be " . var_export($hidden, true));
+        }
 
         echo " OK\n";
     }
