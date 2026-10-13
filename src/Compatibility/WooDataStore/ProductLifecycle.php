@@ -170,6 +170,33 @@ class ProductLifecycle
      */
     public function transitionType(int $productId, string $targetType, array $options = []): array
     {
+        $this->wpdb->query("START TRANSACTION");
+        try {
+            $report = $this->applyTypeChange($productId, $targetType, $options);
+            $this->wpdb->query("COMMIT");
+        } catch (\Throwable $e) {
+            $this->wpdb->query("ROLLBACK");
+            throw $e;
+        }
+
+        if (!empty($report['changed'])) {
+            $this->completeTypeChange($productId, (string)$report['from'], $targetType);
+        }
+
+        return $report;
+    }
+
+    /**
+     * Writes a Simple/Variable type change WITHOUT opening or closing a transaction.
+     *
+     * The caller owns the transaction (the product editor flips the type inside its save transaction) and must
+     * call completeTypeChange() after the commit. Options: regular_price and sale_price (variable to simple) and
+     * bump_version (default true; pass false when the caller writes the product version itself).
+     *
+     * @return array Transition report
+     */
+    public function applyTypeChange(int $productId, string $targetType, array $options = []): array
+    {
         $current = $this->prodRepo->getById($productId, true);
         if (!$current) {
             throw new \InvalidArgumentException("Product not found: {$productId}");
@@ -188,87 +215,99 @@ class ProductLifecycle
         $now = gmdate('Y-m-d H:i:s');
         $tombstonedVariations = [];
 
-        $this->wpdb->query("START TRANSACTION");
-        try {
-            if ($currentType === 'variable' && $targetType === 'simple') {
-                // Variable -> Simple
-                // AC-T15-03: Soft-delete child variations into tombstones, preserving historical records
-                $variants = $this->wpdb->get_results($this->wpdb->prepare(
-                    "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
-                    $productId
-                ), ARRAY_A);
+        if ($currentType === 'variable' && $targetType === 'simple') {
+            // Variable -> Simple
+            // AC-T15-03: Soft-delete child variations into tombstones, preserving historical records
+            $variants = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
+                $productId
+            ), ARRAY_A);
 
-                foreach ($variants as $v) {
-                    $vid = (int)$v['id'];
-                    $tombstonedVariations[] = $vid;
-                    $this->wpdb->update(
-                        $this->tableVariants,
-                        [
-                            'status'                 => 'trash',
-                            'deleted_at'             => $now,
-                            'active_combination_key' => null,
-                            'updated_at'             => $now,
-                        ],
-                        ['id' => $vid]
-                    );
+            foreach ($variants as $v) {
+                $vid = (int)$v['id'];
+                $tombstonedVariations[] = $vid;
+                $this->wpdb->update(
+                    $this->tableVariants,
+                    [
+                        'status'                 => 'trash',
+                        'deleted_at'             => $now,
+                        'active_combination_key' => null,
+                        'updated_at'             => $now,
+                    ],
+                    ['id' => $vid]
+                );
 
-                    // Update object state tombstone for variation
-                    $this->wpdb->update(
-                        $this->tableObjectState,
-                        ['tombstone' => 1, 'updated_at' => $now],
-                        ['object_id' => $vid]
-                    );
-                }
-
-                // Update product type to simple
-                $productUpdate = [
-                    'type'       => 'simple',
-                    'updated_at' => $now,
-                    'version'    => (int)$current['version'] + 1,
-                ];
-                if (isset($options['regular_price'])) {
-                    $productUpdate['regular_price'] = $options['regular_price'];
-                }
-                if (isset($options['sale_price'])) {
-                    $productUpdate['sale_price'] = $options['sale_price'];
-                }
-
-                $this->wpdb->update($this->tableProducts, $productUpdate, ['id' => $productId]);
-
-            } elseif ($currentType === 'simple' && $targetType === 'variable') {
-                // Simple -> Variable
-                $productUpdate = [
-                    'type'       => 'variable',
-                    'updated_at' => $now,
-                    'version'    => (int)$current['version'] + 1,
-                ];
-
-                $this->wpdb->update($this->tableProducts, $productUpdate, ['id' => $productId]);
-            } else {
-                throw new \InvalidArgumentException("Unsupported transition: {$currentType} -> {$targetType}");
+                // Update object state tombstone for variation
+                $this->wpdb->update(
+                    $this->tableObjectState,
+                    ['tombstone' => 1, 'updated_at' => $now],
+                    ['object_id' => $vid]
+                );
             }
 
-            // Record outbox event
-            $this->outboxWorker->publishEvent(
-                $productId,
-                (int)$current['version'] + 1,
-                1,
-                'product.type_changed',
-                [
-                    'product_id' => $productId,
-                    'from_type'  => $currentType,
-                    'to_type'    => $targetType,
-                    'version'    => (int)$current['version'] + 1,
-                ]
-            );
+            // Update product type to simple
+            $productUpdate = [
+                'type'       => 'simple',
+                'updated_at' => $now,
+                'version'    => (int)$current['version'] + 1,
+            ];
+            if (isset($options['regular_price'])) {
+                $productUpdate['regular_price'] = $options['regular_price'];
+            }
+            if (isset($options['sale_price'])) {
+                $productUpdate['sale_price'] = $options['sale_price'];
+            }
 
-            $this->wpdb->query("COMMIT");
-        } catch (\Throwable $e) {
-            $this->wpdb->query("ROLLBACK");
-            throw $e;
+            if (($options['bump_version'] ?? true) === false) {
+                unset($productUpdate['version']);
+            }
+            $this->wpdb->update($this->tableProducts, $productUpdate, ['id' => $productId]);
+
+        } elseif ($currentType === 'simple' && $targetType === 'variable') {
+            // Simple -> Variable
+            $productUpdate = [
+                'type'       => 'variable',
+                'updated_at' => $now,
+                'version'    => (int)$current['version'] + 1,
+            ];
+
+            if (($options['bump_version'] ?? true) === false) {
+                unset($productUpdate['version']);
+            }
+            $this->wpdb->update($this->tableProducts, $productUpdate, ['id' => $productId]);
+        } else {
+            throw new \InvalidArgumentException("Unsupported transition: {$currentType} -> {$targetType}");
         }
 
-        // Post-commit: Invalidate cache and project shell
+        // Record outbox event
+        $this->outboxWorker->publishEvent(
+            $productId,
+            (int)$current['version'] + 1,
+            1,
+            'product.type_changed',
+            [
+                'product_id' => $productId,
+                'from_type'  => $currentType,
+                'to_type'    => $targetType,
+                'version'    => (int)$current['version'] + 1,
+            ]
+        );
+
+
+        return [
+            'success'               => true,
+            'from'                  => $currentType,
+            'to'                    => $targetType,
+            'changed'               => true,
+            'tombstoned_variations' => $tombstonedVariations,
+        ];
+    }
+
+    /**
+     * Post-commit part of a type change: cache invalidation, shell projection and lifecycle hooks.
+     */
+    public function completeTypeChange(int $productId, string $currentType, string $targetType): void
+    {
         $this->invalidateProductCache($productId, $currentType);
 
         self::wrapProjection(function () use ($productId, $targetType) {
@@ -283,14 +322,6 @@ class ProductLifecycle
         $this->dispatchLifecycleHook('woocommerce_product_type_changed', $productId, $product, [$currentType, $targetType]);
         remove_filter('woocommerce_delete_variations_on_product_type_change', '__return_false', 999);
         $this->dispatchLifecycleHook('woocommerce_update_product', $productId, $product);
-
-        return [
-            'success'               => true,
-            'from'                  => $currentType,
-            'to'                    => $targetType,
-            'changed'               => true,
-            'tombstoned_variations' => $tombstonedVariations,
-        ];
     }
 
     /**

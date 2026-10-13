@@ -446,8 +446,54 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "dbfc455dc77fbb0e53459dd4b56e74d890f5b093",
+          "content_digest": "caeb1b563fbbf64f5b247920af551b7980e4cf93a5b5ab5099180b5760b2103f",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791895220546-6d1a3b13.log",
+          "time": "2026-10-13T12:40:20.547Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductTypeTransitionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "dbfc455dc77fbb0e53459dd4b56e74d890f5b093",
+          "content_digest": "caeb1b563fbbf64f5b247920af551b7980e4cf93a5b5ab5099180b5760b2103f",
+          "output_sha256": "14bf5a8b842bc7a5126d3a03e0910a719e82448e544c9fcbea4d75ef54b68aa5",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791895226639-102bf2d2.log",
+          "time": "2026-10-13T12:40:26.640Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "dbfc455dc77fbb0e53459dd4b56e74d890f5b093",
+          "content_digest": "caeb1b563fbbf64f5b247920af551b7980e4cf93a5b5ab5099180b5760b2103f",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791895226725-c81731f3.log",
+          "time": "2026-10-13T12:40:26.725Z"
+        }
+      ],
+      "started_at": "2026-10-13T12:31:32.911Z"
     },
     {
       "id": "P010.6",

@@ -480,6 +480,14 @@ final class PricingService
         return $map;
     }
 
+    /**
+     * Label of one variation such as "Black / M" (used by previews outside this class).
+     */
+    public function labelFor(int $productId, int $variantId): string
+    {
+        return $this->variationLabel($variantId, $this->optionMap($productId));
+    }
+
     /** Label such as "Black / M", options in their saved order; "Any" for a wildcard value. */
     private function variationLabel(int $variantId, array $optionMap): string
     {
