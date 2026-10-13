@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Không có câu hỏi mở. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Có 1 câu hỏi mở (OD-12, mục 4), không chặn task nào đã authorize. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -25,3 +25,15 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-11 | 22 AC requirements_only | answered | P002.2, P002.3 | Thêm anchor có điều kiện thật |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47.
+
+## 4. Câu hỏi đang mở
+
+### OD-12 — Epoch của worker khi Variants Manager lưu biến thể (P005.4)
+
+- Status: open. Doc section: 02 (epoch/authority). Commit: chưa có (P005 chưa commit khi ghi entry).
+- Context: site1.localhost đang ở chế độ legacy_restored với global epoch 2. `ProductEditorService::saveProductVariants` gọi `LegacyMirror::mirrorAggregate` với worker epoch 1 cho sản phẩm chưa có dòng `wpe_object_state`. Kết quả: mirror trả `rejected_stale_epoch` và các variation shell trong `wp_posts` giữ `auto-draft`, parent 0, nên `WC_Product_Variable::get_children()` rỗng dù trình soạn thảo đọc đủ biến thể từ bảng native.
+- Evidence: chạy `/tmp/dbg4.php` (scratch, không nằm trong repo) in ra `rejected_stale_epoch worker_epoch 1 current_epoch 2`. `tests/integration/ProductEditorServiceTest.php::testLegacyMirrorProjection` thất bại trên site này với "Post parent must be product ID"; test không bị sửa và không nằm trong DoD của P005.
+- Default đã thử: chỉ báo cáo, không đổi ngữ nghĩa epoch. Trước P005 kết quả mirror bị nuốt im lặng; từ P005 `saveProductVariants` trả về `projection {legacy_mirror, catalog_index}`, notice cảnh báo hiện sau Update và REST save hiện toast cảnh báo.
+- Blocker/impact: dữ liệu biến thể vẫn lưu đúng ở native và editor đọc lại đúng (đã kiểm chứng bằng trình duyệt thật); nhưng các reader legacy dựa trên post shell của WooCommerce không thấy biến thể cho tới khi mirror được chấp nhận. Mỗi lần lưu còn chạy `CatalogProjector::buildNewGeneration()` đầy đủ (chi phí hiệu năng, ngoài phạm vi).
+- Proposed resolution: quyết định worker epoch đúng (epoch hiện hành của site hoặc epoch gắn với object state) và hành vi mode cho lưu từ editor, sau đó thêm test hồi quy; cần chủ sở hữu contract 02 xác nhận trước khi sửa vì chạm vào epoch/authority.
+- Answer: chưa có. Affected: P005 (chỉ báo cáo), ProductEditorService, LegacyMirror.

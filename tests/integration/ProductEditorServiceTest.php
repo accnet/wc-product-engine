@@ -2,6 +2,13 @@
 
 require_once dirname(__DIR__, 2) . '/wc-product-engine.php';
 
+// These tests rely on assert(). WP-CLI on some hosts runs with zend.assertions=-1, which compiles every
+// assert() out and makes the file pass without checking anything. Fail fast instead of passing vacuously.
+if ((int) ini_get('zend.assertions') !== 1 || !filter_var(ini_get('assert.exception'), FILTER_VALIDATE_BOOLEAN)) {
+    echo "FAILED: assertions are disabled. Run: php -d zend.assertions=1 -d assert.exception=1 /usr/local/bin/wp eval-file <this file>\n";
+    exit(1);
+}
+
 use WPE\Admin\ProductEditor\ProductEditorService;
 use WPE\Admin\ProductEditor\ConcurrencyConflictException;
 use WPE\Compatibility\Gallery\UrlValidator;

@@ -222,7 +222,10 @@ class ProductEditorService
                 $valId = (int)$vItem['value_id'];
                 $optRow = $this->optionsRepo->getOptionById($optId);
                 $valRow = $valId > 0 ? $this->optionsRepo->getOptionValueById($valId) : null;
-                if ($optRow) {
+                // Only options used for variation form part of a combination. Descriptive attributes
+                // are stored as wildcard entries in the vector and must not leak into the editor model,
+                // otherwise existing combinations can never be matched against generator output.
+                if ($optRow && !empty($optRow['used_for_variation'])) {
                     $attributesMap[$optRow['name']] = $valRow ? $valRow['label'] : '*';
                 }
             }
@@ -305,6 +308,8 @@ class ProductEditorService
             'descriptive_attributes' => $descriptiveAttributes,
             'variation_options'      => $variationOptions,
             'variations'             => $variations,
+            // `taxonomies` is the key consumed by the editor JS; `global_taxonomies` is kept as an alias.
+            'taxonomies'             => $globalTaxonomies,
             'global_taxonomies'      => $globalTaxonomies,
         ];
     }
@@ -420,6 +425,44 @@ class ProductEditorService
     }
 
     /**
+     * Project a price after a bulk action. Mirrors the client-side apply step in product-editor.js.
+     *
+     * @param mixed $current Current stored price ('' when unset).
+     * @param mixed $action  Either {type, value} or a plain number meaning "set fixed price".
+     * @return float|string  New price rounded to 2 decimals, or '' when the result is not positive.
+     */
+    private function projectPrice($current, $action)
+    {
+        if (!is_array($action)) {
+            $action = ['type' => 'fixed', 'value' => $action];
+        }
+        $type = (string)($action['type'] ?? 'fixed');
+        $value = is_numeric($action['value'] ?? null) ? (float)$action['value'] : 0.0;
+        $old = is_numeric($current) ? (float)$current : 0.0;
+
+        switch ($type) {
+            case 'increase_fixed':
+                $new = $old + $value;
+                break;
+            case 'decrease_fixed':
+                $new = max(0.0, $old - $value);
+                break;
+            case 'increase_percent':
+                $new = $old * (1 + $value / 100);
+                break;
+            case 'decrease_percent':
+                $new = max(0.0, $old * (1 - $value / 100));
+                break;
+            case 'fixed':
+            default:
+                $new = $value;
+                break;
+        }
+
+        return $new > 0 ? round($new, 2) : '';
+    }
+
+    /**
      * Preview bulk edit modifications across selected variation IDs before applying.
      */
     public function previewBulkEdit(int $productId, array $variationIds, array $actions): array
@@ -440,16 +483,16 @@ class ProductEditorService
             $current = $varMap[$vid];
             $projected = $current;
 
-            if (isset($actions['regular_price']) && is_numeric($actions['regular_price'])) {
-                $projected['regular_price'] = sprintf('%.2f', (float)$actions['regular_price']);
-            }
-            if (isset($actions['sale_price'])) {
-                $projected['sale_price'] = $actions['sale_price'] !== '' ? sprintf('%.2f', (float)$actions['sale_price']) : '';
+            foreach (['regular_price', 'sale_price'] as $priceField) {
+                if (isset($actions[$priceField]) && $actions[$priceField] !== '') {
+                    $projected[$priceField] = $this->projectPrice($current[$priceField] ?? '', $actions[$priceField]);
+                }
             }
             if (isset($actions['adjust_price_pct']) && is_numeric($actions['adjust_price_pct'])) {
-                $pct = (float)$actions['adjust_price_pct'];
-                $reg = (float)($current['regular_price'] ?: 0);
-                $projected['regular_price'] = sprintf('%.2f', max(0, $reg * (1 + $pct / 100)));
+                $projected['regular_price'] = $this->projectPrice($current['regular_price'] ?? '', [
+                    'type'  => 'increase_percent',
+                    'value' => (float)$actions['adjust_price_pct'],
+                ]);
             }
             if (isset($actions['status'])) {
                 $projected['status'] = $actions['status'];
@@ -457,7 +500,9 @@ class ProductEditorService
             if (isset($actions['manage_stock'])) {
                 $projected['manage_stock'] = !empty($actions['manage_stock']);
             }
-            if (isset($actions['stock_quantity'])) {
+            // Same guard as the client apply step and the parent-stock rule: a quantity is only
+            // meaningful for a variation that manages its own stock.
+            if (isset($actions['stock_quantity']) && !empty($projected['manage_stock'])) {
                 $projected['stock_quantity'] = is_numeric($actions['stock_quantity']) ? (float)$actions['stock_quantity'] : null;
             }
             if (isset($actions['stock_status'])) {
@@ -467,10 +512,23 @@ class ProductEditorService
                 $projected['image_url'] = $actions['image_url'];
             }
 
+            $changes = [];
+            foreach (['regular_price', 'sale_price', 'status', 'manage_stock', 'stock_quantity', 'stock_status', 'image_url'] as $field) {
+                $before = $current[$field] ?? null;
+                $after = $projected[$field] ?? null;
+                if (in_array($field, ['regular_price', 'sale_price'], true)) {
+                    $before = ($before === '' || $before === null) ? '' : (float)$before;
+                }
+                if ($before !== $after) {
+                    $changes[$field] = ['before' => $before, 'after' => $after];
+                }
+            }
+
             $diffs[] = [
                 'variant_id' => $vid,
                 'sku'        => $current['sku'],
                 'attributes' => $current['attributes'],
+                'changes'    => $changes,
                 'before'     => $current,
                 'after'      => $projected,
             ];
@@ -565,7 +623,11 @@ class ProductEditorService
             // 5. Commit transaction
             $this->wpdb->query("COMMIT");
 
-            // 6. Project canonical state to WooCommerce CPT and legacy tables
+            // 6. Project canonical state to WooCommerce CPT and legacy tables.
+            // The outcome is reported to the caller instead of being swallowed: the native save has
+            // already committed, but a rejected projection (for example a stale-epoch fence) means the
+            // WooCommerce shells are not updated and the operator must know.
+            $projection = ['legacy_mirror' => 'unknown', 'catalog_index' => 'unknown'];
             try {
                 $state = $this->wpdb->get_row($this->wpdb->prepare(
                     "SELECT native_revision, native_applied, epoch FROM {$this->tableObjectState} WHERE object_id = %d",
@@ -573,16 +635,18 @@ class ProductEditorService
                 ), ARRAY_A);
                 $rev = $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1;
                 $workerEpoch = $state ? (int)$state['epoch'] : 1;
-                LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+                $mirror = LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+                $projection['legacy_mirror'] = (string)($mirror['status'] ?? 'unknown');
             } catch (\Throwable $mE) {
-                // Non-fatal legacy mirror catch
+                $projection['legacy_mirror'] = 'error';
             }
 
             // 7. Update catalog projector index
             try {
                 (new CatalogProjector($this->wpdb))->buildNewGeneration();
+                $projection['catalog_index'] = 'ok';
             } catch (\Throwable $cE) {
-                // Non-fatal catalog projection catch
+                $projection['catalog_index'] = 'error';
             }
 
             return [
@@ -590,6 +654,7 @@ class ProductEditorService
                 'status'      => 'success',
                 'message'     => 'Product attributes and variants saved successfully.',
                 'new_version' => $newVersion,
+                'projection'  => $projection,
                 'data'        => $this->getProductEditorData($productId),
             ];
         } catch (\Throwable $e) {

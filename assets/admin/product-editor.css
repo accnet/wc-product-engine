@@ -35,17 +35,81 @@
     display: none !important;
 }
 
-#woocommerce-product-data:not(.wpe-is-variable) .product_data_tabs li.wpe_variants_tab {
+/* Standalone meta box: hidden unless the product type is variable (server renders the initial class,
+   product-editor.js keeps it in sync with the product type selector). */
+#wpe_variants_manager.wpe-box-hidden {
     display: none !important;
 }
 
-#woocommerce-product-data .product_data_tabs li.wpe_variants_tab a::before {
-    content: "\f533";
-    font-family: dashicons;
-    display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
+/* Meta box chrome: the box keeps WordPress' own title bar (collapse / hide / drag); the editor fills the body. */
+#wpe_variants_manager .inside {
+    margin: 0;
+    padding: 0;
+}
+
+#wpe_variants_manager .postbox-header {
+    align-items: center;
+}
+
+.wpe-box-header-extras {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-right: 8px;
+}
+
+.wpe-box-status {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--wpe-p-color-bg-subdued, #f1f2f4);
+    color: var(--wpe-p-color-text-subdued, #616a75);
+}
+
+.wpe-box-status:empty {
+    display: none;
+}
+
+.wpe-box-status.dirty {
+    background: #ffea8a;
+    color: #5e4200;
+}
+
+.wpe-box-status.clean {
+    background: var(--wpe-p-color-success-subdued);
+    color: #0c5132;
+}
+
+.wpe-box-status.error {
+    background: var(--wpe-p-color-critical-subdued);
+    color: #8e1f0b;
+}
+
+#wpe-box-fullscreen .dashicons {
     font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+}
+
+/* Layers (fullscreen editor, drawer, dialogs): visible focus for keyboard users. */
+.wpe-modal-backdrop:focus,
+#wpe-fullscreen-modal-overlay:focus,
+#wpe-variation-drawer-overlay:focus {
+    outline: none;
+}
+
+#wpe-fullscreen-modal-overlay button:focus-visible,
+#wpe-variation-drawer-overlay button:focus-visible,
+.wpe-modal-backdrop button:focus-visible,
+.wpe-modal-backdrop input:focus-visible,
+.wpe-modal-backdrop select:focus-visible,
+#wpe-box-fullscreen:focus-visible {
+    outline: 2px solid #005bd3;
+    outline-offset: 2px;
 }
 
 /* 2. Main Editor Wrapper — Shopify Canvas */
@@ -1036,6 +1100,10 @@
 
 .wpe-toast.error {
     background: #8e1f0b;
+}
+
+.wpe-toast.warning {
+    background: #8a6116;
 }
 
 @keyframes wpeFadeIn {

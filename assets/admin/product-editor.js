@@ -11,6 +11,7 @@
 
     const config = window.wpeEditorConfig;
     const productId = parseInt(config.productId, 10);
+    let submitting = false;
 
     /**
      * Unified Reactive Draft Store
@@ -20,6 +21,8 @@
         version: 1,
         isDirty: false,
         isLoading: true,
+        isLoaded: false,
+        isRequested: false,
         product: {
             sku: '',
             status: 'publish',
@@ -55,7 +58,16 @@
             this.notify();
         },
 
+        /**
+         * The hidden field travels with the WordPress Update/Publish submit. It is only filled while the
+         * draft is dirty and the product is variable, so an unchanged Update never rewrites variants and a
+         * non-variable product never posts variant data.
+         */
         syncHiddenPayload() {
+            if (!this.isDirty || !isVariableType()) {
+                $('#wpe_variants_payload').val('');
+                return;
+            }
             const payload = {
                 expected_version: this.version,
                 product: this.product,
@@ -110,12 +122,132 @@
         }
     };
 
+    function isVariableType() {
+        const $type = $('#product-type');
+        return $type.length ? $type.val() === 'variable' : config.productType === 'variable';
+    }
+
+    /**
+     * Layer manager: one place for every modal-like surface (fullscreen editor, drawer, dialogs).
+     * Moves focus in on open, traps Tab, closes the top layer on Escape and returns focus to the trigger.
+     */
+    const layers = {
+        stack: [],
+        focusable: 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
+
+        visibleFocusables($el) {
+            return $el.find(this.focusable).filter(':visible').toArray();
+        },
+
+        open($el, opts) {
+            if (!$el.length) return;
+            opts = opts || {};
+            this.stack = this.stack.filter(l => l.$el[0] !== $el[0]);
+            this.stack.push({ $el: $el, trigger: document.activeElement, onClose: opts.onClose || null });
+
+            if ($el.hasClass('wpe-modal-backdrop')) {
+                const title = $.trim($el.find('.wpe-modal-title').first().text());
+                $el.attr({ role: 'dialog', 'aria-modal': 'true' });
+                if (title && !$el.attr('aria-label')) $el.attr('aria-label', title);
+            }
+
+            setTimeout(() => {
+                const target = this.visibleFocusables($el)[0];
+                if (target) {
+                    target.focus();
+                } else {
+                    $el.attr('tabindex', '-1')[0].focus();
+                }
+            }, 40);
+        },
+
+        hide($el) {
+            if ($el.hasClass('wpe-modal-backdrop')) {
+                $el.remove();
+            } else {
+                $el.fadeOut(150);
+            }
+        },
+
+        close($el) {
+            const i = this.stack.findIndex(l => l.$el[0] === $el[0]);
+            if (i < 0) {
+                this.hide($el);
+                return;
+            }
+            const layer = this.stack.splice(i, 1)[0];
+            if (layer.onClose) {
+                layer.onClose();
+            } else {
+                this.hide(layer.$el);
+            }
+            if (layer.trigger && document.contains(layer.trigger) && typeof layer.trigger.focus === 'function') {
+                layer.trigger.focus();
+            }
+        },
+
+        top() {
+            // Forget layers that were removed or hidden by other code paths.
+            this.stack = this.stack.filter(l => document.contains(l.$el[0]) && l.$el.is(':visible'));
+            return this.stack.length ? this.stack[this.stack.length - 1] : null;
+        },
+
+        /** Re-renders replace the DOM under the user; put focus back inside the top layer. */
+        keepFocus() {
+            const top = this.top();
+            if (top && !top.$el[0].contains(document.activeElement)) {
+                const target = this.visibleFocusables(top.$el)[0];
+                if (target) target.focus();
+            }
+        },
+
+        onKeydown(e) {
+            const top = this.top();
+            if (!top) return;
+            if (e.key === 'Escape') {
+                // Do not steal Escape from the WordPress media frame opened above a layer.
+                if ($(e.target).closest('.media-modal').length) return;
+                e.preventDefault();
+                e.stopPropagation();
+                this.close(top.$el);
+                return;
+            }
+            if (e.key === 'Tab') {
+                const items = this.visibleFocusables(top.$el);
+                if (!items.length) {
+                    e.preventDefault();
+                    return;
+                }
+                const first = items[0];
+                const last = items[items.length - 1];
+                const active = document.activeElement;
+                if (!top.$el[0].contains(active)) {
+                    e.preventDefault();
+                    first.focus();
+                } else if (e.shiftKey && active === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && active === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+    };
+
+    function openModalHtml(modalHtml) {
+        const $modal = $(modalHtml);
+        $('body').append($modal);
+        layers.open($modal);
+        return $modal;
+    }
+
     /**
      * Toast notifications
      */
     function showToast(message, type = 'success') {
         $('.wpe-toast').remove();
-        const $toast = $(`<div class="wpe-toast ${type}"><span class="dashicons dashicons-${type === 'success' ? 'yes' : 'warning'}"></span><span>${escapeHtml(message)}</span></div>`);
+        const $toast = $(`<div class="wpe-toast ${type}" role="status"><span class="dashicons dashicons-${type === 'success' ? 'yes' : 'warning'}"></span><span>${escapeHtml(message)}</span></div>`);
         $('body').append($toast);
         setTimeout(() => $toast.fadeOut(300, function () { $(this).remove(); }), 3500);
     }
@@ -154,7 +286,7 @@
                 <!-- Top Status Bar -->
                 <div class="wpe-top-bar">
                     <div class="wpe-top-title-area">
-                        <h3 class="wpe-top-title">${isModal ? 'Variants Manager (Fullscreen)' : 'Variants Manager'}</h3>
+                        ${isModal ? '<h3 class="wpe-top-title wpe-modal-title">Variants Manager (Fullscreen)</h3>' : ''}
                         <span class="wpe-dirty-badge ${wpeVariantStore.isDirty ? 'dirty' : 'clean'}">
                             <span class="dashicons dashicons-${wpeVariantStore.isDirty ? 'warning' : 'yes'}"></span>
                             ${wpeVariantStore.isDirty ? 'Unsaved changes' : 'In Sync'}
@@ -203,6 +335,7 @@
 
         $container.html(html);
         bindEditorEvents($container, containerId);
+        layers.keepFocus();
     }
 
     /**
@@ -253,7 +386,7 @@
         // Global taxonomies dropdown options
         let taxonomyOptions = '<option value="">-- Custom Product Attribute --</option>';
         wpeVariantStore.taxonomies.forEach(t => {
-            taxonomyOptions += `<option value="${escapeHtml(t.slug)}">${escapeHtml(t.name)}</option>`;
+            taxonomyOptions += `<option value="${escapeHtml(t.name)}">${escapeHtml(t.label || t.name)}</option>`;
         });
 
         return `
@@ -696,6 +829,7 @@
 
         $('#wpe-variation-drawer-app').html(html);
         $('#wpe-variation-drawer-overlay').fadeIn(150);
+        layers.open($('#wpe-variation-drawer-overlay'));
     }
 
     /**
@@ -728,7 +862,7 @@
                 </div>
             </div>
         `;
-        $('body').append(modalHtml);
+        openModalHtml(modalHtml);
 
         api.previewGenerator(wpeVariantStore.variationOptions)
             .done(function (res) {
@@ -852,7 +986,7 @@
                 </div>
             </div>
         `;
-        $('body').append(modalHtml);
+        openModalHtml(modalHtml);
         renderBulkFieldControls('regular_price');
     }
 
@@ -934,7 +1068,7 @@
                 </div>
             </div>
         `;
-        $('body').append(modalHtml);
+        openModalHtml(modalHtml);
 
         function updateValues() {
             const optName = $('#wpe-media-group-opt').val();
@@ -984,12 +1118,29 @@
                         count++;
                     }
                 });
-                $('#wpe-media-group-modal').remove();
+                layers.close($('#wpe-media-group-modal'));
                 showToast(`Image assigned to ${count} variants with ${optName}: ${val}!`, 'success');
                 wpeVariantStore.markDirty();
             });
 
             mediaFrame.open();
+        });
+    }
+
+    /**
+     * Open the fullscreen editor. It renders from the same store as the inline editor, so filters,
+     * selection and edits are shared; closing it never saves or discards anything.
+     */
+    function openFullscreen() {
+        const $overlay = $('#wpe-fullscreen-modal-overlay');
+        if (!$overlay.length || $overlay.is(':visible')) return;
+        $overlay.fadeIn(150);
+        renderEditor('#wpe-product-editor-modal-app');
+        layers.open($overlay, {
+            onClose: function () {
+                $overlay.fadeOut(150);
+                renderEditor('#wpe-product-editor-inline-app');
+            }
         });
     }
 
@@ -1002,14 +1153,10 @@
         }
 
         // Fullscreen toggle
-        $container.find('.wpe-btn-open-fullscreen').off('click').on('click', function () {
-            $('#wpe-fullscreen-modal-overlay').fadeIn(150);
-            renderEditor('#wpe-product-editor-modal-app');
-        });
+        $container.find('.wpe-btn-open-fullscreen').off('click').on('click', openFullscreen);
 
         $('#wpe-fullscreen-modal-overlay').find('.wpe-btn-close-fullscreen').off('click').on('click', function () {
-            $('#wpe-fullscreen-modal-overlay').fadeOut(150);
-            renderEditor('#wpe-product-editor-inline-app');
+            layers.close($('#wpe-fullscreen-modal-overlay'));
         });
 
         // Save via REST API
@@ -1030,8 +1177,14 @@
                     if (res.success) {
                         wpeVariantStore.version = res.result.new_version || (wpeVariantStore.version + 1);
                         wpeVariantStore.isDirty = false;
-                        showToast(config.i18n.saveSuccess, 'success');
                         wpeVariantStore.notify();
+                        const proj = (res.result && res.result.projection) || null;
+                        const okMirror = ['mirrored', 'skipped_obsolete_revision'];
+                        if (proj && (okMirror.indexOf(proj.legacy_mirror) === -1 || proj.catalog_index !== 'ok')) {
+                            showToast(`${config.i18n.projectionWarning} (mirror: ${proj.legacy_mirror}, index: ${proj.catalog_index})`, 'warning');
+                        } else {
+                            showToast(config.i18n.saveSuccess, 'success');
+                        }
                     }
                 })
                 .fail(function (xhr) {
@@ -1055,8 +1208,8 @@
             let taxObj = null;
 
             if (taxSlug) {
-                taxObj = wpeVariantStore.taxonomies.find(t => t.slug === taxSlug);
-                attrName = taxObj ? taxObj.name : taxSlug;
+                taxObj = wpeVariantStore.taxonomies.find(t => t.name === taxSlug);
+                attrName = taxObj ? (taxObj.label || taxObj.name) : taxSlug;
             } else {
                 attrName = prompt('Enter descriptive attribute name (e.g. Material, Brand, Fit):');
                 if (!attrName || !attrName.trim()) return;
@@ -1448,7 +1601,7 @@
         // Drawer close
         $(document).on('click', '.wpe-btn-close-drawer, #wpe-variation-drawer-overlay', function (e) {
             if (e.target === this) {
-                $('#wpe-variation-drawer-overlay').fadeOut(150);
+                layers.close($('#wpe-variation-drawer-overlay'));
             }
         });
 
@@ -1485,13 +1638,14 @@
             v.inventory.quantity = v.stock_quantity;
             v.inventory.backorders = $('#wpe-drawer-backorders').val();
 
-            $('#wpe-variation-drawer-overlay').fadeOut(150);
+            layers.close($('#wpe-variation-drawer-overlay'));
             wpeVariantStore.markDirty();
         });
 
         // Modal close
         $(document).on('click', '.wpe-btn-close-modal', function () {
-            $('.wpe-modal-backdrop').remove();
+            const $own = $(this).closest('.wpe-modal-backdrop');
+            layers.close($own.length ? $own : $('.wpe-modal-backdrop').last());
         });
 
         // Generator Select/Unselect all
@@ -1547,7 +1701,7 @@
                 addedCount++;
             });
 
-            $('#wpe-generator-modal').remove();
+            layers.close($('#wpe-generator-modal'));
             if (addedCount > 0) {
                 showToast(`Added ${addedCount} new variants to the matrix!`, 'success');
                 wpeVariantStore.markDirty();
@@ -1648,7 +1802,7 @@
                 }
             });
 
-            $('#wpe-bulk-modal').remove();
+            layers.close($('#wpe-bulk-modal'));
             showToast(`Applied changes to ${selectedIds.length} variants!`, 'success');
             wpeVariantStore.markDirty();
         });
@@ -1662,12 +1816,7 @@
             if (confirm('Discard all unsaved changes and reload from server?')) {
                 api.fetchData().done(function (res) {
                     if (res.success && res.data) {
-                        const data = res.data;
-                        wpeVariantStore.version = data.product ? data.product.version : 1;
-                        wpeVariantStore.product = data.product || {};
-                        wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
-                        wpeVariantStore.variationOptions = data.variation_options || [];
-                        wpeVariantStore.variations = data.variations || [];
+                        applyServerData(res.data);
                         wpeVariantStore.isDirty = false;
                         wpeVariantStore.notify();
                         showToast('Changes discarded', 'info');
@@ -1676,14 +1825,169 @@
             }
         });
 
-        // Dirty guard on leave
+        // Dirty guard on leave. A normal Update/Publish submit is not a "leave": the draft travels with the form.
         window.addEventListener('beforeunload', function (e) {
-            if (wpeVariantStore.isDirty) {
+            if (wpeVariantStore.isDirty && !submitting) {
                 e.preventDefault();
                 e.returnValue = config.i18n.unsavedWarning;
                 return config.i18n.unsavedWarning;
             }
         });
+
+        // Keyboard handling for the topmost layer (Escape, focus trap). Capture phase so it runs before WP handlers.
+        document.addEventListener('keydown', function (e) {
+            layers.onKeydown(e);
+        }, true);
+
+        // Header badge and Fullscreen button are injected into the meta box title bar.
+        $(document).on('click', '#wpe-box-fullscreen', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (wpeVariantStore.isLoaded) openFullscreen();
+        });
+        $(document).on('click', '.wpe-btn-retry-load', function () {
+            wpeVariantStore.isRequested = false;
+            loadData();
+        });
+
+        // Update/Publish submit guard.
+        const postForm = document.getElementById('post');
+        if (postForm) {
+            postForm.addEventListener('submit', function (e) {
+                wpeVariantStore.syncHiddenPayload();
+                if (wpeVariantStore.isDirty && !isVariableType()) {
+                    if (!window.confirm(config.i18n.typeChangeWarning)) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        return;
+                    }
+                }
+                submitting = true;
+                // If another handler cancels the submit, the guard must re-arm.
+                setTimeout(function () { submitting = false; }, 4000);
+            }, true);
+        }
+    }
+
+    /**
+     * Box header: unsaved/in-sync badge and Fullscreen button live in the WordPress meta box title bar,
+     * so they remain visible when the box is collapsed.
+     */
+    function ensureBoxHeader() {
+        const $header = $('#' + config.boxId + ' .postbox-header');
+        if (!$header.length) return null;
+        let $extras = $header.find('.wpe-box-header-extras');
+        if (!$extras.length) {
+            $extras = $(
+                '<div class="wpe-box-header-extras">' +
+                '<span id="wpe-box-status" class="wpe-box-status" role="status" aria-live="polite"></span>' +
+                '<button type="button" id="wpe-box-fullscreen" class="button button-small" disabled>' +
+                '<span class="dashicons dashicons-editor-expand" aria-hidden="true"></span> Fullscreen</button>' +
+                '</div>'
+            );
+            const $actions = $header.find('.handle-actions');
+            if ($actions.length) {
+                $actions.before($extras);
+            } else {
+                $header.append($extras);
+            }
+        }
+        return $extras;
+    }
+
+    function updateBoxHeader() {
+        if (!ensureBoxHeader()) return;
+        const $status = $('#wpe-box-status');
+        let label = '';
+        let cls = 'idle';
+        if (!isVariableType()) {
+            label = '';
+        } else if (wpeVariantStore.loadFailed) {
+            label = 'Load failed';
+            cls = 'error';
+        } else if (!wpeVariantStore.isRequested) {
+            label = '';
+        } else if (wpeVariantStore.isLoading) {
+            label = 'Loading...';
+        } else if (wpeVariantStore.isDirty) {
+            label = 'Unsaved changes';
+            cls = 'dirty';
+        } else {
+            label = 'In sync';
+            cls = 'clean';
+        }
+        $status.text(label).attr('class', 'wpe-box-status ' + cls);
+        $('#wpe-box-fullscreen').prop('disabled', !wpeVariantStore.isLoaded);
+    }
+
+    /**
+     * Apply a server payload (or a restored draft) to the store.
+     */
+    function applyServerData(data) {
+        wpeVariantStore.version = data.product ? data.product.version : 1;
+        wpeVariantStore.product = data.product || {};
+        wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
+        wpeVariantStore.variationOptions = data.variation_options || [];
+        wpeVariantStore.variations = data.variations || [];
+        wpeVariantStore.taxonomies = data.taxonomies || data.global_taxonomies || [];
+    }
+
+    function applyRestoredDraft(draft) {
+        if (!draft || typeof draft !== 'object') return false;
+        if (draft.product) wpeVariantStore.product = draft.product;
+        if (Array.isArray(draft.descriptive_attributes)) wpeVariantStore.descriptiveAttributes = draft.descriptive_attributes;
+        if (Array.isArray(draft.variation_options)) wpeVariantStore.variationOptions = draft.variation_options;
+        if (Array.isArray(draft.variations)) wpeVariantStore.variations = draft.variations;
+        // Keep the draft's own version: if the server moved on meanwhile, the next save reports the conflict again.
+        if (draft.expected_version) wpeVariantStore.version = draft.expected_version;
+        wpeVariantStore.isDirty = true;
+        return true;
+    }
+
+    /**
+     * Lazy, idempotent data load. Only variable products (or a restored failed-save draft) fetch anything.
+     */
+    function loadData() {
+        if (wpeVariantStore.isRequested) return;
+        wpeVariantStore.isRequested = true;
+        wpeVariantStore.isLoading = true;
+        wpeVariantStore.loadFailed = false;
+        renderEditor('#wpe-product-editor-inline-app');
+        updateBoxHeader();
+
+        api.fetchData()
+            .done(function (res) {
+                if (res.success && res.data) {
+                    applyServerData(res.data);
+                    let restored = false;
+                    if (config.restoredDraft) {
+                        restored = applyRestoredDraft(config.restoredDraft);
+                        config.restoredDraft = null;
+                    }
+                    wpeVariantStore.isLoading = false;
+                    wpeVariantStore.isLoaded = true;
+                    wpeVariantStore.notify();
+                    if (restored) showToast(config.i18n.draftRestored, 'error');
+                } else {
+                    failLoad('Unexpected response');
+                }
+            })
+            .fail(function (err) {
+                failLoad(err.statusText || 'Request failed');
+            });
+    }
+
+    function failLoad(reason) {
+        wpeVariantStore.isRequested = false;
+        wpeVariantStore.isLoading = false;
+        wpeVariantStore.loadFailed = true;
+        $('#wpe-product-editor-inline-app').html(`
+            <div class="notice notice-error inline" style="margin:12px;">
+                <p>Unable to load variants data: ${escapeHtml(reason)}
+                <button type="button" class="button wpe-btn-retry-load" style="margin-left:8px;">Retry</button></p>
+            </div>
+        `);
+        updateBoxHeader();
     }
 
     /**
@@ -1692,14 +1996,17 @@
     function setupProductTypeToggle() {
         const $productTypeSelect = $('#product-type');
         const $metabox = $('#woocommerce-product-data');
+        const $box = $('#' + config.boxId);
 
         function updateType() {
-            const currentType = $productTypeSelect.val();
-            if (currentType === 'variable') {
-                $metabox.addClass('wpe-is-variable');
-            } else {
-                $metabox.removeClass('wpe-is-variable');
+            const isVariable = isVariableType();
+            $metabox.toggleClass('wpe-is-variable', isVariable);
+            $box.toggleClass('wpe-box-hidden', !isVariable);
+            if (isVariable) {
+                loadData();
             }
+            wpeVariantStore.syncHiddenPayload();
+            updateBoxHeader();
         }
 
         $productTypeSelect.on('change', updateType);
@@ -1710,39 +2017,23 @@
      * Initialization
      */
     $(document).ready(function () {
-        setupProductTypeToggle();
-        bindGlobalEvents();
-
         // Subscribe store to rerender active views
         wpeVariantStore.subscribe(() => {
             renderEditor('#wpe-product-editor-inline-app');
             if ($('#wpe-fullscreen-modal-overlay').is(':visible')) {
                 renderEditor('#wpe-product-editor-modal-app');
             }
+            updateBoxHeader();
         });
 
-        // Load data from REST API
-        api.fetchData()
-            .done(function (res) {
-                if (res.success && res.data) {
-                    const data = res.data;
-                    wpeVariantStore.version = data.product ? data.product.version : 1;
-                    wpeVariantStore.product = data.product || {};
-                    wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
-                    wpeVariantStore.variationOptions = data.variation_options || [];
-                    wpeVariantStore.variations = data.variations || [];
-                    wpeVariantStore.taxonomies = data.taxonomies || [];
-                    wpeVariantStore.isLoading = false;
-                    wpeVariantStore.notify();
-                }
-            })
-            .fail(function (err) {
-                $('#wpe-product-editor-inline-app').html(`
-                    <div class="notice notice-error inline" style="margin:20px;">
-                        <p>Unable to load variants data: ${escapeHtml(err.statusText)}</p>
-                    </div>
-                `);
-            });
+        bindGlobalEvents();
+        ensureBoxHeader();
+
+        if (config.restoredDraft) {
+            // A failed save left a draft: load it even if the type selector currently says otherwise.
+            loadData();
+        }
+        setupProductTypeToggle();
     });
 
 })(jQuery);

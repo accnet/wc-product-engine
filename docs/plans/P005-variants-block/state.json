@@ -1,0 +1,545 @@
+{
+  "id": "P005",
+  "title": "Variants Manager as a standalone meta box",
+  "status": "done",
+  "content_hash": "77b2cb0c20c51d7ab7068287c50626176e43b94c0ef5d16015c6e58204bd6d26",
+  "tasks": [
+    {
+      "id": "P005.1",
+      "title": "Service contract fixes, projection outcome and non-vacuous editor tests",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorService.php",
+        "tests/integration/ProductEditorServiceTest.php",
+        "tests/integration/ProductEditorE2ETest.php",
+        "tests/integration/ProductEditorBridgeTest.php",
+        "tests/integration/ProductEditorContractTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorContractTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "1da62c18e58afcfc1037c2ce61fe7bb80bacfcdede45f9b31faf251dcdf75acf",
+          "output_sha256": "5c30fe027e889e266a1644f1a760304a1b78a4a376136ff8786433490d6f80f0",
+          "output_path": "docs/plans/P005-variants-block/command-1791868053094-d815b90c.log",
+          "time": "2026-10-13T05:07:33.094Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorContractTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "1da62c18e58afcfc1037c2ce61fe7bb80bacfcdede45f9b31faf251dcdf75acf",
+          "output_sha256": "8353251672654119585caffdb4328da4527ca925f1ab7fe461d8f99067d37950",
+          "output_path": "docs/plans/P005-variants-block/command-1791868059132-7355e675.log",
+          "time": "2026-10-13T05:07:39.133Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "1da62c18e58afcfc1037c2ce61fe7bb80bacfcdede45f9b31faf251dcdf75acf",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P005-variants-block/command-1791868100157-f75142bd.log",
+          "time": "2026-10-13T05:08:20.157Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "1da62c18e58afcfc1037c2ce61fe7bb80bacfcdede45f9b31faf251dcdf75acf",
+          "output_sha256": "2de80e7022e08196640bb757a16a7b3fc31fd9d48b11f76dd438f19889ab1045",
+          "output_path": "docs/plans/P005-variants-block/command-1791868100244-eda251b2.log",
+          "time": "2026-10-13T05:08:20.244Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:06:28.313Z"
+    },
+    {
+      "id": "P005.2",
+      "title": "Bridge: meta box, tab removal, footer overlays, failure notice and draft keeping",
+      "depends_on": [
+        "P005.1"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "tests/integration/ProductEditorBridgeTest.php",
+        "tests/integration/ProductEditorE2ETest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorBridgeTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "c34ed3b06c721c7ff03fc76c9e3b7f8e20677399740fa9cd10c75bed03c1ea4c",
+          "output_sha256": "5c30fe027e889e266a1644f1a760304a1b78a4a376136ff8786433490d6f80f0",
+          "output_path": "docs/plans/P005-variants-block/command-1791868285449-bdcd1cea.log",
+          "time": "2026-10-13T05:11:25.449Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "c34ed3b06c721c7ff03fc76c9e3b7f8e20677399740fa9cd10c75bed03c1ea4c",
+          "output_sha256": "a75dd4812152940c42271e852210d7c209424cc69bce9c4cb93bcccddcb13a88",
+          "output_path": "docs/plans/P005-variants-block/command-1791868293480-f84a879c.log",
+          "time": "2026-10-13T05:11:33.481Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "c34ed3b06c721c7ff03fc76c9e3b7f8e20677399740fa9cd10c75bed03c1ea4c",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P005-variants-block/command-1791868336224-c8116cd0.log",
+          "time": "2026-10-13T05:12:16.224Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "c34ed3b06c721c7ff03fc76c9e3b7f8e20677399740fa9cd10c75bed03c1ea4c",
+          "output_sha256": "2de80e7022e08196640bb757a16a7b3fc31fd9d48b11f76dd438f19889ab1045",
+          "output_path": "docs/plans/P005-variants-block/command-1791868336329-b47bd519.log",
+          "time": "2026-10-13T05:12:16.330Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:08:24.671Z"
+    },
+    {
+      "id": "P005.3",
+      "title": "Editor assets: box visibility, header badge, lazy load, payload rules, layer manager, draft restore",
+      "depends_on": [
+        "P005.2"
+      ],
+      "read_first": [
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/admin/product-editor.js"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "616c00c5399003a5d2fcf250e9f024e276ffe988d97746221a74778d5f79a269",
+          "output_sha256": "5c30fe027e889e266a1644f1a760304a1b78a4a376136ff8786433490d6f80f0",
+          "output_path": "docs/plans/P005-variants-block/command-1791868496933-9c94b780.log",
+          "time": "2026-10-13T05:14:56.934Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "616c00c5399003a5d2fcf250e9f024e276ffe988d97746221a74778d5f79a269",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P005-variants-block/command-1791868497007-8d80ffb5.log",
+          "time": "2026-10-13T05:14:57.008Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "616c00c5399003a5d2fcf250e9f024e276ffe988d97746221a74778d5f79a269",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P005-variants-block/command-1791868538789-874a1d5e.log",
+          "time": "2026-10-13T05:15:38.789Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "616c00c5399003a5d2fcf250e9f024e276ffe988d97746221a74778d5f79a269",
+          "output_sha256": "2de80e7022e08196640bb757a16a7b3fc31fd9d48b11f76dd438f19889ab1045",
+          "output_path": "docs/plans/P005-variants-block/command-1791868538877-2897efa9.log",
+          "time": "2026-10-13T05:15:38.878Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:12:35.563Z"
+    },
+    {
+      "id": "P005.4",
+      "title": "Live browser verification, regression run and notes",
+      "depends_on": [
+        "P005.3"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/06-implementation-plan.md"
+      ],
+      "files": [
+        "tests/e2e/VariantsBlockLive.mjs",
+        "docs/NOTES.md",
+        "docs/QUESTIONS.md",
+        "docs/plans/P005-variants-block/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorBridgeTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorContractTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "dfd40865b5a2bb625e3aea32ac18f12f3865caf68fc3487f242cff95e21bfee1",
+          "output_sha256": "5c30fe027e889e266a1644f1a760304a1b78a4a376136ff8786433490d6f80f0",
+          "output_path": "docs/plans/P005-variants-block/command-1791868874056-e53667ed.log",
+          "time": "2026-10-13T05:21:14.056Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "dfd40865b5a2bb625e3aea32ac18f12f3865caf68fc3487f242cff95e21bfee1",
+          "output_sha256": "ccc7386f3d37f6f20da56618697eceac9d5dfeff38c66ebc4d8493abd8545c13",
+          "output_path": "docs/plans/P005-variants-block/command-1791868907851-5cf5fcf8.log",
+          "time": "2026-10-13T05:21:47.852Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "dfd40865b5a2bb625e3aea32ac18f12f3865caf68fc3487f242cff95e21bfee1",
+          "output_sha256": "a75dd4812152940c42271e852210d7c209424cc69bce9c4cb93bcccddcb13a88",
+          "output_path": "docs/plans/P005-variants-block/command-1791868920468-b8a445ed.log",
+          "time": "2026-10-13T05:22:00.469Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorContractTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "dfd40865b5a2bb625e3aea32ac18f12f3865caf68fc3487f242cff95e21bfee1",
+          "output_sha256": "8353251672654119585caffdb4328da4527ca925f1ab7fe461d8f99067d37950",
+          "output_path": "docs/plans/P005-variants-block/command-1791868926650-d8659808.log",
+          "time": "2026-10-13T05:22:06.651Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "dfd40865b5a2bb625e3aea32ac18f12f3865caf68fc3487f242cff95e21bfee1",
+          "output_sha256": "2de80e7022e08196640bb757a16a7b3fc31fd9d48b11f76dd438f19889ab1045",
+          "output_path": "docs/plans/P005-variants-block/command-1791868926744-ddead75d.log",
+          "time": "2026-10-13T05:22:06.745Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "35cb76a07cc51527fef9b4d86a205e2f9636b0e40f7fa1bd3fbbf5e97bdef7fc",
+          "output_sha256": "5c30fe027e889e266a1644f1a760304a1b78a4a376136ff8786433490d6f80f0",
+          "output_path": "docs/plans/P005-variants-block/command-1791869107506-2bf4141e.log",
+          "time": "2026-10-13T05:25:07.507Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "35cb76a07cc51527fef9b4d86a205e2f9636b0e40f7fa1bd3fbbf5e97bdef7fc",
+          "output_sha256": "398fb500830a9779090f75acb14be2251d9d467c6babbe9dbae0d5062113411d",
+          "output_path": "docs/plans/P005-variants-block/command-1791869142677-bbc2526b.log",
+          "time": "2026-10-13T05:25:42.678Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "35cb76a07cc51527fef9b4d86a205e2f9636b0e40f7fa1bd3fbbf5e97bdef7fc",
+          "output_sha256": "a75dd4812152940c42271e852210d7c209424cc69bce9c4cb93bcccddcb13a88",
+          "output_path": "docs/plans/P005-variants-block/command-1791869150848-d57cd3ff.log",
+          "time": "2026-10-13T05:25:50.849Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorContractTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "35cb76a07cc51527fef9b4d86a205e2f9636b0e40f7fa1bd3fbbf5e97bdef7fc",
+          "output_sha256": "8353251672654119585caffdb4328da4527ca925f1ab7fe461d8f99067d37950",
+          "output_path": "docs/plans/P005-variants-block/command-1791869157510-03e62cfb.log",
+          "time": "2026-10-13T05:25:57.511Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "28113afdb5377d3874e356170dc7ce41da2000fe",
+          "content_digest": "35cb76a07cc51527fef9b4d86a205e2f9636b0e40f7fa1bd3fbbf5e97bdef7fc",
+          "output_sha256": "2de80e7022e08196640bb757a16a7b3fc31fd9d48b11f76dd438f19889ab1045",
+          "output_path": "docs/plans/P005-variants-block/command-1791869157649-57853b21.log",
+          "time": "2026-10-13T05:25:57.649Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:20:44.122Z"
+    }
+  ],
+  "approved_hash": "77b2cb0c20c51d7ab7068287c50626176e43b94c0ef5d16015c6e58204bd6d26",
+  "report_hash": "aae1b44c0dae54b9942a4907d7fe99d9d12aacb45a1cc56cdf1b91d8951d7107"
+}

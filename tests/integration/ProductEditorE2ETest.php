@@ -2,6 +2,13 @@
 
 require_once dirname(__DIR__, 2) . '/wc-product-engine.php';
 
+// These tests rely on assert(). WP-CLI on some hosts runs with zend.assertions=-1, which compiles every
+// assert() out and makes the file pass without checking anything. Fail fast instead of passing vacuously.
+if ((int) ini_get('zend.assertions') !== 1 || !filter_var(ini_get('assert.exception'), FILTER_VALIDATE_BOOLEAN)) {
+    echo "FAILED: assertions are disabled. Run: php -d zend.assertions=1 -d assert.exception=1 /usr/local/bin/wp eval-file <this file>\n";
+    exit(1);
+}
+
 use WPE\Admin\ProductEditor\ProductEditorService;
 use WPE\Admin\ProductEditor\ProductEditorBridge;
 use WPE\Admin\ProductEditor\ProductEditorApiController;
@@ -95,6 +102,7 @@ class ProductEditorE2ETest
         }
 
         wp_set_object_terms($postId, $type, 'product_type');
+        wp_cache_flush(); // WooCommerce caches the product type on first lookup, which wp_insert_post triggers.
         $this->cleanProductIds[] = $postId;
         return $postId;
     }
@@ -103,15 +111,27 @@ class ProductEditorE2ETest
     {
         echo " - AC1: Variable Product Tab Integration...";
 
+        // The Variants Manager is its own meta box now: no tab may be added to Product data.
         $tabs = [
             'general'    => ['label' => 'General', 'target' => 'general_product_data', 'class' => ['hide_if_grouped']],
             'attribute'  => ['label' => 'Attributes', 'target' => 'product_attributes', 'class' => ['attribute_options']],
             'variations' => ['label' => 'Variations', 'target' => 'variable_product_options', 'class' => ['variations_options', 'show_if_variable']],
         ];
+        $filteredTabs = apply_filters('woocommerce_product_data_tabs', $tabs);
+        assert(!isset($filteredTabs['wpe_variants_manager']), 'No Variants Manager tab may be added to Product data');
 
-        $filteredTabs = $this->bridge->filterProductDataTabs($tabs);
-        assert(isset($filteredTabs['wpe_variants_manager']), 'wpe_variants_manager tab must exist');
-        assert(in_array('show_if_variable', $filteredTabs['wpe_variants_manager']['class']), 'Tab must be show_if_variable');
+        // The box is registered on the product screen and shown for a variable product.
+        global $wp_meta_boxes, $post, $thepostid;
+        $backupBoxes = $wp_meta_boxes;
+        $wp_meta_boxes = [];
+        $this->bridge->registerMetaBox('product');
+        assert(isset($wp_meta_boxes['product']['normal']['default'][\WPE\Admin\ProductEditor\ProductEditorBridge::BOX_ID]), 'Variants Manager meta box must be registered on the product screen');
+        $wp_meta_boxes = $backupBoxes;
+
+        $variableId = $this->createProduct('variable');
+        $post = get_post($variableId);
+        $thepostid = $variableId;
+        assert(!in_array('wpe-box-hidden', $this->bridge->filterBoxClasses(['postbox']), true), 'The box must be visible for a variable product');
 
         // Check CSS rule exists for hiding default tabs on variable products
         $cssContent = file_get_contents(dirname(__DIR__, 2) . '/assets/admin/product-editor.css');
@@ -129,9 +149,20 @@ class ProductEditorE2ETest
         $simpleProduct = wc_get_product($simpleId);
         assert($simpleProduct->get_type() === 'simple', 'Product type must be simple');
 
-        // Verify CSS ensures non-variable products hide wpe_variants_tab
+        // The box renders hidden for a non-variable product, and CSS enforces it.
+        global $post, $thepostid;
+        $post = get_post($simpleId);
+        $thepostid = $simpleId;
+        assert(in_array('wpe-box-hidden', $this->bridge->filterBoxClasses(['postbox']), true), 'The box must render hidden for a non-variable product');
         $cssContent = file_get_contents(dirname(__DIR__, 2) . '/assets/admin/product-editor.css');
-        assert(strpos($cssContent, '#woocommerce-product-data:not(.wpe-is-variable) .product_data_tabs li.wpe_variants_tab') !== false, 'CSS must hide wpe tab for non-variable');
+        assert(strpos($cssContent, '#wpe_variants_manager.wpe-box-hidden') !== false, 'CSS must hide the box for non-variable products');
+
+        // A normal Update of a simple product carries no payload and must not create variant data.
+        global $wpdb;
+        $_POST['wpe_variants_payload'] = '';
+        $this->bridge->processProductMetaSave($simpleId);
+        unset($_POST['wpe_variants_payload']);
+        assert((int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}wpe_products WHERE id = %d", $simpleId)) === 0, 'A simple product must not get native variant data');
 
         echo " OK\n";
     }
