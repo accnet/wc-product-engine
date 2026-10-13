@@ -163,6 +163,18 @@ class UploadItemRepository
         ]);
     }
 
+    /**
+     * Attach an error to an intent without changing its state. Used when the object is stored but the database
+     * write failed: the intent must stay stored so a retry registers the asset without uploading again.
+     */
+    public function noteError(int $id, string $reason, string $message): void
+    {
+        $this->update($id, [
+            'error_reason'  => mb_substr($reason, 0, 64),
+            'error_message' => wp_strip_all_tags($message),
+        ]);
+    }
+
     public function markCleaned(int $id): void
     {
         $this->update($id, ['state' => self::STATE_CLEANED]);

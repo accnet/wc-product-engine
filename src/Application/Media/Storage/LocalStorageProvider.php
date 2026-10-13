@@ -51,7 +51,8 @@ final class LocalStorageProvider implements StorageProviderInterface
 
     public function objectKey(string $relativePath): string
     {
-        return self::FOLDER . '/' . ltrim($relativePath, '/');
+        $relativePath = ltrim($relativePath, '/');
+        return str_starts_with($relativePath, self::FOLDER . '/') ? $relativePath : self::FOLDER . '/' . $relativePath;
     }
 
     public function put(string $localPath, string $objectKey, string $mime): void
