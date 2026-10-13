@@ -956,8 +956,48 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "967233a0e1962e5f31ee1316e7230c6845646ed1",
+          "content_digest": "e7023da8bdaae4164604754201d0a0fbfb2ea246e570b8a51db963099523cfe5",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791900294014-5c9810d1.log",
+          "time": "2026-10-13T14:04:54.014Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductInfoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "967233a0e1962e5f31ee1316e7230c6845646ed1",
+          "content_digest": "e7023da8bdaae4164604754201d0a0fbfb2ea246e570b8a51db963099523cfe5",
+          "output_sha256": "e4d22da0699c6311d586ae1479b6614bc5e3a8c90c5e6aaa160a6d26e636e17e",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791900327214-85978d63.log",
+          "time": "2026-10-13T14:05:27.215Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "967233a0e1962e5f31ee1316e7230c6845646ed1",
+          "content_digest": "e7023da8bdaae4164604754201d0a0fbfb2ea246e570b8a51db963099523cfe5",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P010-two-block-product-ui/command-1791900332648-fc6b18b7.log",
+          "time": "2026-10-13T14:05:32.648Z"
+        }
+      ],
+      "started_at": "2026-10-13T13:32:04.464Z"
     },
     {
       "id": "P010.10",

@@ -27,7 +27,7 @@
     --wpe-p-shadow-floating: 0 10px 28px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
-/* 1. WooCommerce Product Data Tab Integration */
+/* 1. WooCommerce Product Data Tab Integration (Legacy and Recovery Mode) */
 #woocommerce-product-data.wpe-is-variable .product_data_tabs li.attribute_options,
 #woocommerce-product-data.wpe-is-variable .product_data_tabs li.attribute_tab,
 #woocommerce-product-data.wpe-is-variable .product_data_tabs li.variations_options,
@@ -35,19 +35,41 @@
     display: none !important;
 }
 
-/* Standalone meta box: hidden unless the product type is variable (server renders the initial class,
-   product-editor.js keeps it in sync with the product type selector). */
-#wpe_variants_manager.wpe-box-hidden {
+/* Hide legacy panels and controls in MODE_BLOCKS for supported products */
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .type_box,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.general_options,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.general_tab,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.inventory_options,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.inventory_tab,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.shipping_options,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.shipping_tab,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.attribute_options,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.attribute_tab,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.variations_options,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data .product_data_tabs li.variations_tab,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #general_product_data,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #inventory_product_data,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #shipping_product_data,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #product_attributes,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_product_options {
     display: none !important;
 }
 
-/* Meta box chrome: the box keeps WordPress' own title bar (collapse / hide / drag); the editor fills the body. */
-#wpe_variants_manager .inside {
+/* Standalone meta boxes: hidden when unsupported or inactive */
+#wpe_variants_manager.wpe-box-hidden,
+#wpe_product_info.wpe-box-hidden {
+    display: none !important;
+}
+
+/* Meta box chrome */
+#wpe_variants_manager .inside,
+#wpe_product_info .inside {
     margin: 0;
     padding: 0;
 }
 
-#wpe_variants_manager .postbox-header {
+#wpe_variants_manager .postbox-header,
+#wpe_product_info .postbox-header {
     align-items: center;
 }
 
@@ -1190,4 +1212,297 @@
 
 .wpe-sticky-btn-save:hover {
     background: var(--wpe-p-color-brand-hover) !important;
+}
+
+/* ==========================================================================
+   Product Information Block & Two-Block Extensions (P010)
+   ========================================================================== */
+
+.wpe-info-wrap {
+    padding: 16px 20px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.wpe-info-section {
+    background: #fff;
+    border: 1px solid var(--wpe-p-color-border-subdued);
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 16px 20px;
+}
+
+.wpe-info-section-title {
+    margin: 0 0 14px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wpe-p-color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wpe-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.wpe-form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.wpe-form-row {
+    margin-bottom: 12px;
+}
+
+.wpe-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.wpe-form-row label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--wpe-p-color-text);
+}
+
+.wpe-field-desc {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--wpe-p-color-text-subdued);
+}
+
+.wpe-input,
+.wpe-select {
+    width: 100%;
+    max-width: 100%;
+    height: 32px;
+    padding: 4px 8px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
+}
+
+.wpe-input:focus,
+.wpe-select:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
+}
+
+/* Reference Price Card */
+.wpe-ref-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 16px;
+}
+
+.wpe-ref-card.unpriced {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.wpe-ref-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.wpe-ref-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.wpe-ref-badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.wpe-ref-source {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.wpe-ref-amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.wpe-ref-sale {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e11d48;
+    margin-left: 6px;
+}
+
+.wpe-ref-help {
+    font-size: 12px;
+    color: #64748b;
+    margin: 4px 0 12px 0;
+}
+
+.wpe-ref-unpriced-warning {
+    color: #d97706;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Common Price Card */
+.wpe-common-price-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 16px;
+}
+
+.wpe-common-price-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.wpe-common-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* Empty variants state */
+.wpe-empty-variants-card {
+    text-align: center;
+    padding: 40px 20px;
+    background: #fff;
+    border-radius: var(--wpe-p-border-radius-base);
+}
+
+.wpe-empty-icon {
+    font-size: 36px;
+    height: 48px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+
+.wpe-empty-icon .dashicons {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+}
+
+.wpe-empty-variants-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.wpe-empty-variants-card p {
+    margin: 0 auto 18px auto;
+    max-width: 440px;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Modal styles for transitions and common price removal */
+.wpe-modal-dialog-md {
+    max-width: 580px;
+}
+
+.wpe-dialog-warning-banner {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #92400e;
+}
+
+.wpe-dialog-resolution-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.wpe-dialog-resolution-options label {
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wpe-modal-nav {
+    display: flex;
+    border-bottom: 1px solid var(--wpe-p-color-border);
+    background: #f8fafc;
+    padding: 0 16px;
+    gap: 8px;
+}
+
+.wpe-tab-btn {
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.wpe-tab-btn.active {
+    color: var(--wpe-p-color-interactive);
+    border-bottom-color: var(--wpe-p-color-interactive);
+}
+
+.wpe-badge-type {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #334155;
 }
