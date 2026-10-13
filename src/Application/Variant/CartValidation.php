@@ -197,7 +197,7 @@ class CartValidation
 
         // 1. Query Variation
         $variantRow = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT id, product_id, sku, regular_price, sale_price, stock_owner_id, status, extra_props
+            "SELECT id, product_id, sku, regular_price, sale_price, sale_from, sale_to, stock_owner_id, status, extra_props
              FROM {$this->tableVariants} WHERE id = %d",
             $variationId
         ), ARRAY_A);
@@ -228,9 +228,11 @@ class CartValidation
             ];
         }
 
-        // 4. Canonical Price Check (R111: Server never trusts client price; null price is unpurchasable)
-        $canonicalPrice = $variantRow['sale_price'] ?? $variantRow['regular_price'] ?? null;
-        if ($canonicalPrice === null || $canonicalPrice === '') {
+        // 4. Canonical Price Check (R111: Server never trusts client price; null price is unpurchasable).
+        // The shared resolver applies the sale window and sale <= regular rule, so a scheduled sale is
+        // never charged early and a free (0) variation stays purchasable.
+        $effectivePrice = EffectivePriceResolver::resolve($variantRow);
+        if ($effectivePrice['state'] !== EffectivePriceResolver::STATE_PRICED) {
             return [
                 'valid' => false,
                 'code' => 'missing_price',

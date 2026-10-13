@@ -466,42 +466,17 @@ class VariantResolver
     {
         $variantId = (int)$variant['id'];
 
-        // 1. Price Calculation & Missing vs Free Price differentiation (AC-T25-01)
-        $regPrice  = $variant['regular_price'];
-        $salePrice = $variant['sale_price'];
-        $saleFrom  = $variant['sale_from'];
-        $saleTo    = $variant['sale_to'];
+        // 1. Price Calculation & Missing vs Free Price differentiation (AC-T25-01).
+        // The shared EffectivePriceResolver owns the rule (null != 0, sale window in UTC, sale <= regular).
+        $resolvedPrice = EffectivePriceResolver::resolve($variant);
 
         $priceStr = null;
         $displayPriceStr = null;
-        $isMissingPrice = false;
+        $isMissingPrice = $resolvedPrice['state'] !== EffectivePriceResolver::STATE_PRICED;
 
-        if ($regPrice === null && $salePrice === null) {
-            $isMissingPrice = true;
-        } else {
-            $effectivePrice = $regPrice;
-
-            // Check scheduled sale
-            if ($salePrice !== null) {
-                $now = current_time('mysql');
-                $isSaleActive = true;
-                if ($saleFrom !== null && $now < $saleFrom) {
-                    $isSaleActive = false;
-                }
-                if ($saleTo !== null && $now > $saleTo) {
-                    $isSaleActive = false;
-                }
-                if ($isSaleActive) {
-                    $effectivePrice = $salePrice;
-                }
-            }
-
-            if ($effectivePrice !== null) {
-                $priceStr = number_format((float)$effectivePrice, 6, '.', '');
-                $displayPriceStr = number_format((float)$effectivePrice, 2, '.', '');
-            } else {
-                $isMissingPrice = true;
-            }
+        if (!$isMissingPrice) {
+            $priceStr = $resolvedPrice['active_price'];
+            $displayPriceStr = number_format((float)$priceStr, 2, '.', '');
         }
 
         // 2. Stock and Inventory Calculation with Inherited Stock (R101, AC-T25-01)

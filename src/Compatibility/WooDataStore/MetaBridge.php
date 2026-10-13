@@ -466,10 +466,9 @@ class MetaBridge
         // Scalar columns
         switch ($prop) {
             case 'price':
-                if ($row['sale_price'] !== null && $row['sale_price'] !== '') {
-                    return sprintf('%.6f', (float)$row['sale_price']);
-                }
-                return $row['regular_price'] !== null ? sprintf('%.6f', (float)$row['regular_price']) : '';
+                // Shared rule: a scheduled sale is not exposed to WooCommerce before its window opens.
+                $priceInfo = \WPE\Application\Variant\EffectivePriceResolver::resolve($row);
+                return $priceInfo['active_price'] ?? '';
             case 'regular_price':
             case 'sale_price':
                 return $row[$prop] !== null ? sprintf('%.6f', (float)$row[$prop]) : '';

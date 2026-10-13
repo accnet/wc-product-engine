@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace WPE\Application\Catalog;
 
+use WPE\Application\Variant\EffectivePriceResolver;
 use WPE\Infrastructure\Database\ProductRepository;
 
 /**
@@ -216,46 +217,11 @@ class CatalogProjector
                 $inStock = $stockStatus === 'instock' ? 1 : 0;
             }
 
-            // Price & Sale Schedule (R65)
-            $regPrice = $prod['regular_price'] !== null && $prod['regular_price'] !== '' ? (float)$prod['regular_price'] : null;
-            $salePrice = $prod['sale_price'] !== null && $prod['sale_price'] !== '' ? (float)$prod['sale_price'] : null;
-
-            $saleFrom = $extra['date_on_sale_from'] ?? null;
-            $saleTo = $extra['date_on_sale_to'] ?? null;
-
-            $nowTs = strtotime($now);
-            $fromTs = $saleFrom ? strtotime((string)$saleFrom) : null;
-            $toTs = $saleTo ? strtotime((string)$saleTo) : null;
-
-            $saleActive = false;
-            if ($salePrice !== null && $regPrice !== null && $salePrice < $regPrice) {
-                if ($fromTs && $toTs) {
-                    $saleActive = ($nowTs >= $fromTs && $nowTs <= $toTs);
-                } elseif ($fromTs) {
-                    $saleActive = ($nowTs >= $fromTs);
-                } elseif ($toTs) {
-                    $saleActive = ($nowTs <= $toTs);
-                } else {
-                    $saleActive = true;
-                }
-            }
-
-            // Compute next price change
-            if ($salePrice !== null && $regPrice !== null && $salePrice < $regPrice) {
-                if ($fromTs && $nowTs < $fromTs) {
-                    $nextPriceChange = gmdate('Y-m-d H:i:s.u', $fromTs);
-                } elseif ($toTs && $nowTs < $toTs && $saleActive) {
-                    $nextPriceChange = gmdate('Y-m-d H:i:s.u', $toTs);
-                }
-            }
-
-            if ($saleActive) {
-                $onSale = 1;
-                $effectivePrice = $salePrice;
-            } else {
-                $onSale = 0;
-                $effectivePrice = $regPrice;
-            }
+            // Price & Sale Schedule (R65) via the shared effective-price rule.
+            $priceInfo = EffectivePriceResolver::resolve(array_merge($prod, ['extra_props' => $extra]), null, $now);
+            $nextPriceChange = $priceInfo['next_change'];
+            $onSale = $priceInfo['on_sale'] ? 1 : 0;
+            $effectivePrice = $priceInfo['active_price'] !== null ? (float)$priceInfo['active_price'] : null;
 
             $minPrice = $effectivePrice;
             $maxPrice = $effectivePrice;
@@ -292,53 +258,18 @@ class CatalogProjector
                         $anyInStock = true;
                     }
 
-                    $vReg = $v['regular_price'] !== null && $v['regular_price'] !== '' ? (float)$v['regular_price'] : null;
-                    $vSale = $v['sale_price'] !== null && $v['sale_price'] !== '' ? (float)$v['sale_price'] : null;
+                    $vPrice = EffectivePriceResolver::resolve($v, null, $now);
 
-                    $vExtra = json_decode($v['extra_props'] ?? '{}', true) ?: [];
-                    $vFrom = $vExtra['date_on_sale_from'] ?? null;
-                    $vTo = $vExtra['date_on_sale_to'] ?? null;
-
-                    $nowTs = strtotime($now);
-                    $fromTs = $vFrom ? strtotime((string)$vFrom) : null;
-                    $toTs = $vTo ? strtotime((string)$vTo) : null;
-
-                    $vSaleActive = false;
-                    if ($vSale !== null && $vReg !== null && $vSale < $vReg) {
-                        if ($fromTs && $toTs) {
-                            $vSaleActive = ($nowTs >= $fromTs && $nowTs <= $toTs);
-                        } elseif ($fromTs) {
-                            $vSaleActive = ($nowTs >= $fromTs);
-                        } elseif ($toTs) {
-                            $vSaleActive = ($nowTs <= $toTs);
-                        } else {
-                            $vSaleActive = true;
-                        }
+                    if ($vPrice['next_change'] !== null && ($minNextChange === null || $vPrice['next_change'] < $minNextChange)) {
+                        $minNextChange = $vPrice['next_change'];
                     }
 
-                    if ($vSale !== null && $vReg !== null && $vSale < $vReg) {
-                        if ($fromTs && $nowTs < $fromTs) {
-                            $tsStr = gmdate('Y-m-d H:i:s.u', $fromTs);
-                            if ($minNextChange === null || $tsStr < $minNextChange) {
-                                $minNextChange = $tsStr;
-                            }
-                        } elseif ($toTs && $nowTs < $toTs && $vSaleActive) {
-                            $tsStr = gmdate('Y-m-d H:i:s.u', $toTs);
-                            if ($minNextChange === null || $tsStr < $minNextChange) {
-                                $minNextChange = $tsStr;
-                            }
-                        }
-                    }
-
-                    if ($vSaleActive) {
+                    if ($vPrice['on_sale']) {
                         $anyOnSale = true;
-                        $eff = $vSale;
-                    } else {
-                        $eff = $vReg;
                     }
 
-                    if ($eff !== null) {
-                        $variantPrices[] = $eff;
+                    if ($vPrice['active_price'] !== null) {
+                        $variantPrices[] = (float)$vPrice['active_price'];
                     }
                 }
 
