@@ -48,12 +48,54 @@ class ShopifyBatchImporterTest
         // Create temporary small Shopify CSV fixture
         $this->testCsvPath = sys_get_temp_dir() . '/test_shopify_batch_' . uniqid() . '.csv';
 
-        $csvContent = implode("\n", [
-            'Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Option2 Name,Option2 Value,Option3 Name,Option3 Value,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Variant Barcode,Image Src,Image Position,Image Alt Text,Gift Card,SEO Title,SEO Description,Google Shopping / Google Product Category,Google Shopping / Gender,Google Shopping / Age Group,Google Shopping / MPN,Google Shopping / AdWords Grouping,Google Shopping / AdWords Labels,Google Shopping / Condition,Google Shopping / Custom Product,Google Shopping / Custom Label 0,Google Shopping / Custom Label 1,Google Shopping / Custom Label 2,Google Shopping / Custom Label 3,Google Shopping / Custom Label 4,Variant Image,Variant Weight Unit,Variant Tax Code,Cost per item,Status',
-            'batch-test-p1,Batch Test Product 1,<p>Description 1</p>,Vendor A,Apparel,tag1,true,Size,Small,Color,Red,,,TEST-P1-SM-RED,200,shopify,15,deny,manual,29.99,39.99,true,true,,,https://cdn.example.com/p1.jpg,1,P1 Alt,false,,,,,,,,,,,,,,,https://cdn.example.com/p1-red.jpg,g,,20.00,active',
-            'batch-test-p1,,,,,,,,Size,Medium,Color,Red,,,TEST-P1-MD-RED,200,shopify,20,deny,manual,29.99,39.99,true,true,,,https://cdn.example.com/p1-extra.jpg,2,P1 Gallery,false,,,,,,,,,,,,,,,https://cdn.example.com/p1-red.jpg,g,,20.00,active',
-            'batch-test-p2,Batch Test Product 2,<p>Description 2</p>,Vendor B,Footwear,tag2,true,Title,Default Title,,,,TEST-P2-SMP,500,shopify,5,deny,manual,49.99,,true,true,,,https://cdn.example.com/p2.jpg,1,P2 Alt,false,,,,,,,,,,,,,,,,g,,30.00,active',
-        ]);
+        // Rows are built by header name so every value lands in its column (a hand-written comma list
+        // shifted the second product's grams into the SKU column and made it collide with a real SKU).
+        $headers = explode(',', 'Handle,Title,Body (HTML),Vendor,Type,Tags,Published,Option1 Name,Option1 Value,Option2 Name,Option2 Value,Option3 Name,Option3 Value,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Variant Barcode,Image Src,Image Position,Image Alt Text,Gift Card,SEO Title,SEO Description,Google Shopping / Google Product Category,Google Shopping / Gender,Google Shopping / Age Group,Google Shopping / MPN,Google Shopping / AdWords Grouping,Google Shopping / AdWords Labels,Google Shopping / Condition,Google Shopping / Custom Product,Google Shopping / Custom Label 0,Google Shopping / Custom Label 1,Google Shopping / Custom Label 2,Google Shopping / Custom Label 3,Google Shopping / Custom Label 4,Variant Image,Variant Weight Unit,Variant Tax Code,Cost per item,Status');
+        $rows = [
+            [
+                'Handle' => 'batch-test-p1', 'Title' => 'Batch Test Product 1', 'Body (HTML)' => '<p>Description 1</p>', 'Vendor' => 'Vendor A',
+                'Type' => 'Apparel', 'Tags' => 'tag1', 'Published' => 'true',
+                'Option1 Name' => 'Size', 'Option1 Value' => 'Small', 'Option2 Name' => 'Color', 'Option2 Value' => 'Red',
+                'Variant SKU' => 'TEST-P1-SM-RED', 'Variant Grams' => '200', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '15',
+                'Variant Inventory Policy' => 'deny', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '29.99', 'Variant Compare At Price' => '39.99',
+                'Variant Requires Shipping' => 'true', 'Variant Taxable' => 'true', 'Image Src' => 'https://cdn.example.com/p1.jpg', 'Image Position' => '1',
+                'Image Alt Text' => 'P1 Alt', 'Gift Card' => 'false', 'Variant Image' => 'https://cdn.example.com/p1-red.jpg', 'Variant Weight Unit' => 'g',
+                'Cost per item' => '20.00', 'Status' => 'active',
+            ],
+            [
+                'Handle' => 'batch-test-p1',
+                'Option1 Name' => 'Size', 'Option1 Value' => 'Medium', 'Option2 Name' => 'Color', 'Option2 Value' => 'Red',
+                'Variant SKU' => 'TEST-P1-MD-RED', 'Variant Grams' => '200', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '20',
+                'Variant Inventory Policy' => 'deny', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '29.99', 'Variant Compare At Price' => '39.99',
+                'Variant Requires Shipping' => 'true', 'Variant Taxable' => 'true', 'Image Src' => 'https://cdn.example.com/p1-extra.jpg', 'Image Position' => '2',
+                'Image Alt Text' => 'P1 Gallery', 'Gift Card' => 'false', 'Variant Image' => 'https://cdn.example.com/p1-red.jpg', 'Variant Weight Unit' => 'g',
+                'Cost per item' => '20.00', 'Status' => 'active',
+            ],
+            [
+                'Handle' => 'batch-test-p2', 'Title' => 'Batch Test Product 2', 'Body (HTML)' => '<p>Description 2</p>', 'Vendor' => 'Vendor B',
+                'Type' => 'Footwear', 'Tags' => 'tag2', 'Published' => 'true',
+                'Option1 Name' => 'Title', 'Option1 Value' => 'Default Title',
+                'Variant SKU' => 'TEST-P2-SMP', 'Variant Grams' => '500', 'Variant Inventory Tracker' => 'shopify', 'Variant Inventory Qty' => '5',
+                'Variant Inventory Policy' => 'deny', 'Variant Fulfillment Service' => 'manual', 'Variant Price' => '49.99',
+                'Variant Requires Shipping' => 'true', 'Variant Taxable' => 'true', 'Image Src' => 'https://cdn.example.com/p2.jpg', 'Image Position' => '1',
+                'Image Alt Text' => 'P2 Alt', 'Gift Card' => 'false', 'Variant Weight Unit' => 'g',
+                'Cost per item' => '30.00', 'Status' => 'active',
+            ],
+        ];
+        $lines = [implode(',', $headers)];
+        foreach ($rows as $row) {
+            $unknown = array_diff(array_keys($row), $headers);
+            if ($unknown) {
+                throw new RuntimeException('Fixture uses unknown column(s): ' . implode(', ', $unknown));
+            }
+            $cells = [];
+            foreach ($headers as $h) {
+                $v = (string)($row[$h] ?? '');
+                $cells[] = preg_match('/[",\n]/', $v) ? '"' . str_replace('"', '""', $v) . '"' : $v;
+            }
+            $lines[] = implode(',', $cells);
+        }
+        $csvContent = implode("\n", $lines);
 
         file_put_contents($this->testCsvPath, $csvContent);
     }

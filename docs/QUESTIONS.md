@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Có 2 câu hỏi mở (OD-13 và OD-14, mục 4), không chặn task nào đã authorize. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Có 1 câu hỏi mở (OD-14, mục 4), không chặn task nào đã authorize. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -24,20 +24,11 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-10 | F15 acquireBatch | answered | P002.1 | Sửa code, có test hồi quy |
 | OD-11 | 22 AC requirements_only | answered | P002.2, P002.3 | Thêm anchor có điều kiện thật |
 | OD-12 | Worker epoch khi lưu biến thể từ editor | answered | 02 (epoch/authority) | Dùng epoch hệ thống hiện hành (OutboxWorker::getCurrentEpoch) thay vì hằng 1 khi sản phẩm chưa có object state; không đổi LegacyMirror/fence (P006.1) |
+| OD-13 | ShopifyBatchImporterTest thất bại trên baseline | answered | 04 (import) | Nguyên nhân là fixture của test lệch cột so với header (grams 500 bị đọc thành SKU và trùng SKU thật), không phải lỗi importer; sửa fixture theo tên header, giữ nguyên assertion (P008.1) |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47.
 
 ## 4. Câu hỏi đang mở
-
-### OD-13 — ShopifyBatchImporterTest thất bại trên baseline (P007.1)
-
-- Status: open. Doc section: 04 (import). Commit: d580a3e (đã thất bại trước P006).
-- Context: `tests/integration/ShopifyBatchImporterTest.php::testProcessBatchAndCheckpoint` báo "Batch 2 expected 2 products processed total, got 1". Test mong `products_processed` tích lũy qua các batch (batch_size 1, hai sản phẩm); importer trả về 1 sau batch 2.
-- Evidence: chạy với `php -d zend.assertions=1 -d assert.exception=1 /usr/local/bin/wp eval-file` có và không có thay đổi P006 (stash) cho cùng kết quả, exit 1.
-- Default đã thử: không sửa test hay importer; loại khỏi mọi DoD.
-- Blocker/impact: chưa rõ lỗi nằm ở bộ đếm (cumulative hay theo batch), ở cách gộp dòng theo handle ở biên batch, hay ở fixture; nếu là lỗi gộp biên batch thì có thể bỏ sót sản phẩm cuối. Không chặn P005/P006.
-- Proposed resolution: một plan riêng điều tra batch 2 (sản phẩm thứ hai có được ghi không, bộ đếm lưu ở checkpoint ra sao) rồi sửa code hoặc fixture kèm test hồi quy.
-- Answer: chưa có. Affected: ShopifyBatchImporter, ShopifyImportPage, assets/admin/shopify-import.js.
 
 ### OD-14 — Hai khóa epoch lệch nhau trên site (P007.1)
 

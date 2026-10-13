@@ -1,0 +1,95 @@
+{
+  "id": "P008",
+  "title": "Fix misaligned Shopify batch test fixture (OD-13)",
+  "status": "done",
+  "content_hash": "a149fb1cae8cc009693b7e0c75a2ca390383d70b5aa6421df7387f833db9d0e4",
+  "tasks": [
+    {
+      "id": "P008.1",
+      "title": "Build the Shopify batch test fixture by header name and record the OD-13 resolution",
+      "depends_on": [],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "docs/PROGRESS.md"
+      ],
+      "files": [
+        "tests/integration/ShopifyBatchImporterTest.php",
+        "docs/NOTES.md",
+        "docs/QUESTIONS.md",
+        "docs/plans/P008-shopify-batch-fixture/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "4f126ec51db014ea979d5968be2e88af67a63091",
+          "content_digest": "1605aa48f032fe89b316803ef2b6e988a203c356ee1df1f5ca7a12272cd0e97c",
+          "output_sha256": "6d7165d16b2c5226e1a03b806a58587dfc37c4783541d8de319a34fa249704c7",
+          "output_path": "docs/plans/P008-shopify-batch-fixture/command-1791870560485-adc5d966.log",
+          "time": "2026-10-13T05:49:20.486Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4f126ec51db014ea979d5968be2e88af67a63091",
+          "content_digest": "1605aa48f032fe89b316803ef2b6e988a203c356ee1df1f5ca7a12272cd0e97c",
+          "output_sha256": "01275881c7728ce2c374581e30ba038fb668a2a48b50bee667a0085b7f9fa6ad",
+          "output_path": "docs/plans/P008-shopify-batch-fixture/command-1791870571680-6e074c2c.log",
+          "time": "2026-10-13T05:49:31.680Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "4f126ec51db014ea979d5968be2e88af67a63091",
+          "content_digest": "1605aa48f032fe89b316803ef2b6e988a203c356ee1df1f5ca7a12272cd0e97c",
+          "output_sha256": "6f047ad28827b272a2deb689916691e3b45ec53df4a8acc8a6c7bb919d8c1221",
+          "output_path": "docs/plans/P008-shopify-batch-fixture/command-1791870571769-7514465a.log",
+          "time": "2026-10-13T05:49:31.770Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:48:40.447Z"
+    }
+  ],
+  "approved_hash": "a149fb1cae8cc009693b7e0c75a2ca390383d70b5aa6421df7387f833db9d0e4",
+  "report_hash": "f1f0db50fea14b46d76c241f61bdd3486aff28e010a338f3274ecd4ab3610d30"
+}
