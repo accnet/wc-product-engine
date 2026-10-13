@@ -195,8 +195,54 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "13cb83398d9165e2c35e198f586e6c73838b3ace",
+          "content_digest": "c9b37110314a83fbd004c0f0cbb34de4f5cfa707d1a99c92832706006e7b3b03",
+          "output_sha256": "6b276aea2b84d233fae63d0286b5e3376ff1d599022c352f97671282e2c18ead",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874132698-6641c631.log",
+          "time": "2026-10-13T06:48:52.699Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/StorageResolverTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "13cb83398d9165e2c35e198f586e6c73838b3ace",
+          "content_digest": "c9b37110314a83fbd004c0f0cbb34de4f5cfa707d1a99c92832706006e7b3b03",
+          "output_sha256": "b8eeb069f3a807b9bdc2d6421550c290451a89fd9ca87c8d7a4e10eb11655123",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874133298-fc79e793.log",
+          "time": "2026-10-13T06:48:53.299Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "13cb83398d9165e2c35e198f586e6c73838b3ace",
+          "content_digest": "c9b37110314a83fbd004c0f0cbb34de4f5cfa707d1a99c92832706006e7b3b03",
+          "output_sha256": "89fca0d74c5b47e170bafd63e08eaa3a11abd4fecf35872dcb30cb89faf378f2",
+          "output_path": "docs/plans/P011-product-media-library/command-1791874133384-434e7dd6.log",
+          "time": "2026-10-13T06:48:53.385Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:48:04.476Z"
     },
     {
       "id": "P011.4",
