@@ -1,0 +1,533 @@
+{
+  "id": "P011",
+  "title": "Per-product media library and variant image picker",
+  "status": "draft",
+  "content_hash": "0805a5eeffba8af3c815a04d00c18c3fb513ad2b4ecae4ee374ec6b92f200153",
+  "tasks": [
+    {
+      "id": "P011.1",
+      "title": "Contract amendment: managed files, new tables, upload and library routes",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/10-integrations.md",
+        "docs/audits/P011-pre-implementation-audit.md"
+      ],
+      "files": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/10-integrations.md",
+        "contracts/database/schema.sql",
+        "contracts/database/schema-contract.json",
+        "contracts/api/endpoints.json",
+        "contracts/openapi/wpe-v1.json",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.2",
+      "title": "Schema for managed files and upload items, repository methods",
+      "depends_on": [
+        "P011.1"
+      ],
+      "read_first": [
+        "docs/03-database-schema.md"
+      ],
+      "files": [
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Infrastructure/Database/MediaRepository.php",
+        "src/Infrastructure/Database/UploadItemRepository.php",
+        "tests/integration/MediaSchemaTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaSchemaTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.3",
+      "title": "Storage provider layer: resolver, storage plugin adapter, local provider, no silent fallback",
+      "depends_on": [
+        "P011.2"
+      ],
+      "read_first": [
+        "docs/10-integrations.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Application/Media/Storage/StorageProviderInterface.php",
+        "src/Application/Media/Storage/StoragePluginProvider.php",
+        "src/Application/Media/Storage/LocalStorageProvider.php",
+        "src/Application/Media/Storage/StorageResolver.php",
+        "tests/integration/StorageResolverTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/StorageResolverTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.4",
+      "title": "Managed upload service: validation, upload, verification, idempotent registration, upload intents",
+      "depends_on": [
+        "P011.3"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Application/Media/ManagedUploadService.php",
+        "src/Compatibility/Gallery/AssetService.php",
+        "src/Compatibility/Gallery/AttachmentBridge.php",
+        "tests/integration/ManagedUploadTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ManagedUploadTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/StorageResolverTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.5",
+      "title": "Product library service: list, link, reorder, featured, alt, impact preview, safe unlink, membership",
+      "depends_on": [
+        "P011.4"
+      ],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Application/Media/ProductMediaLibrary.php",
+        "src/Infrastructure/Database/MediaRepository.php",
+        "tests/integration/ProductMediaLibraryTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductMediaLibraryTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.6",
+      "title": "REST routes: upload, URL add, library read and patch, unlink preview, session claim",
+      "depends_on": [
+        "P011.5"
+      ],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "contracts/api/endpoints.json"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductMediaApiController.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/ProductMediaRestTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductMediaRestTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.7",
+      "title": "Variant image assignment by asset id, membership enforcement, group and selection preview, editor save integration",
+      "depends_on": [
+        "P011.6"
+      ],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "docs/02-domain.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorService.php",
+        "src/Admin/ProductEditor/ProductEditorApiController.php",
+        "tests/integration/VariantImagePickerRulesTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/VariantImagePickerRulesTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.8",
+      "title": "Native image box replacement and single writer guard for thumbnail and gallery keys",
+      "depends_on": [
+        "P011.7"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "tests/integration/MediaLegacyWriterGuardTest.php",
+        "tests/integration/ProductEditorBridgeTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaLegacyWriterGuardTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorBridgeTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.9",
+      "title": "Product library block UI: grid, upload states and retry, URL add, featured, order, alt, impact dialog, draft",
+      "depends_on": [
+        "P011.8"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "docs/plans/P010-two-block-product-ui/plan.md"
+      ],
+      "files": [
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css",
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "tests/e2e/ProductMediaLive.mjs"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductMediaLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.10",
+      "title": "Variant picker drawer: product images only, selection mark, one, selected rows or option group, count preview, add image",
+      "depends_on": [
+        "P011.9"
+      ],
+      "read_first": [
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css",
+        "tests/e2e/VariantImagePickerLive.mjs"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantImagePickerLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductMediaLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.11",
+      "title": "Orphan cleanup job, explicit file delete, provider switch regression, CLI report, closeout docs",
+      "depends_on": [
+        "P011.10"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/08-operations.md"
+      ],
+      "files": [
+        "src/Application/Media/OrphanCleanup.php",
+        "src/Cli/Commands.php",
+        "tests/integration/MediaRecoveryTest.php",
+        "docs/NOTES.md",
+        "docs/QUESTIONS.md",
+        "docs/plans/P011-product-media-library/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaRecoveryTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P011.12",
+      "title": "Gated live storage round trip: real upload, verify, delete test object",
+      "depends_on": [
+        "P011.11"
+      ],
+      "read_first": [
+        "docs/QUESTIONS.md",
+        "docs/10-integrations.md"
+      ],
+      "files": [
+        "tests/integration/StorageLiveRoundTripTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/StorageLiveRoundTripTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": null
+}

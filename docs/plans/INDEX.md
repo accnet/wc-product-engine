@@ -10,3 +10,4 @@
 - P008 — Fix misaligned Shopify batch test fixture (OD-13) (done)
 - P009 — Mirror worker epoch follows the authority epoch the mirror reads (OD-14) (done)
 - P010 — Two-block product management UI (draft)
+- P011 — Per-product media library and variant image picker (draft)
