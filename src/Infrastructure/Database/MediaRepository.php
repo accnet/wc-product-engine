@@ -23,6 +23,7 @@ class MediaRepository
     private string $tableMeta;
     private string $tableDownloads;
     private string $tableProductLinks;
+    private string $tableAssetStorage;
 
     public function __construct(?\wpdb $wpdb = null, ?MetaIdAllocator $metaIdAllocator = null)
     {
@@ -37,6 +38,7 @@ class MediaRepository
         $this->tableMeta         = $prefix . 'wpe_meta';
         $this->tableDownloads    = $prefix . 'wpe_downloads';
         $this->tableProductLinks = $prefix . 'wpe_product_links';
+        $this->tableAssetStorage = $prefix . 'wpe_asset_storage';
     }
 
     /* -------------------------------------------------------------------------- */
@@ -539,6 +541,135 @@ class MediaRepository
 
         $sql = "SELECT target_id, kind, position FROM {$this->tableProductLinks} WHERE product_id = %d ORDER BY kind ASC, position ASC";
         return $this->wpdb->get_results($this->wpdb->prepare($sql, $productId), ARRAY_A);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Managed file storage (docs/03 `asset_storage`)                              */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * Mark an asset as a managed file with its stored provider, bucket and object key.
+     * An asset with no row here is an external URL. Idempotent for the same asset and object.
+     *
+     * @param array{storage_provider:string,bucket?:string,object_key:string,file_name?:string,size_bytes:int,content_hash:string,etag?:?string,created_by?:?int} $data content_hash is a sha256 hex digest
+     */
+    public function createAssetStorage(int $assetId, array $data): array
+    {
+        $this->assertAssetExists($assetId);
+
+        $provider = (string)($data['storage_provider'] ?? '');
+        $key      = (string)($data['object_key'] ?? '');
+        if ($provider === '' || $key === '') {
+            throw new InvalidArgumentException('Managed asset needs a storage provider and an object key.');
+        }
+        $bucket = (string)($data['bucket'] ?? '');
+        $hash   = (string)($data['content_hash'] ?? '');
+        if (!preg_match('/^[a-f0-9]{64}$/i', $hash)) {
+            throw new InvalidArgumentException('content_hash must be a sha256 hex digest.');
+        }
+
+        $existing = $this->getAssetStorage($assetId);
+        if ($existing !== null) {
+            if ($existing['storage_provider'] === $provider && $existing['bucket'] === $bucket && $existing['object_key'] === $key) {
+                return $existing;
+            }
+            throw new RuntimeException("Asset {$assetId} is already bound to another stored object.");
+        }
+
+        $now     = gmdate('Y-m-d H:i:s.u');
+        $keyHash = hash('sha256', $provider . "\0" . $bucket . "\0" . $key);
+        $createdBy = isset($data['created_by']) && $data['created_by'] !== null ? (int)$data['created_by'] : 'NULL';
+
+        $res = $this->wpdb->query($this->wpdb->prepare(
+            "INSERT INTO {$this->tableAssetStorage}
+                (asset_id, storage_provider, bucket, object_key, object_key_hash, file_name, size_bytes, content_hash, etag, state, created_by, created_at, updated_at)
+             VALUES (%d, %s, %s, %s, UNHEX(%s), %s, %d, UNHEX(%s), %s, 'active', {$createdBy}, %s, %s)",
+            $assetId,
+            $provider,
+            $bucket,
+            $key,
+            $keyHash,
+            mb_substr((string)($data['file_name'] ?? ''), 0, 255),
+            (int)($data['size_bytes'] ?? 0),
+            strtolower($hash),
+            isset($data['etag']) ? (string)$data['etag'] : null,
+            $now,
+            $now
+        ));
+        if ($res === false) {
+            throw new RuntimeException('Failed to record managed storage: ' . $this->wpdb->last_error);
+        }
+
+        return $this->getAssetStorage($assetId);
+    }
+
+    public function getAssetStorage(int $assetId): ?array
+    {
+        $row = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT {$this->storageColumns()} FROM {$this->tableAssetStorage} WHERE asset_id = %d LIMIT 1",
+            $assetId
+        ), ARRAY_A);
+        return $row ?: null;
+    }
+
+    /**
+     * Storage rows for many assets keyed by asset id; assets without a row are external.
+     *
+     * @param int[] $assetIds
+     * @return array<int,array>
+     */
+    public function getAssetStorageMap(array $assetIds): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $assetIds), static fn ($v) => $v > 0)));
+        if ($ids === []) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT {$this->storageColumns()} FROM {$this->tableAssetStorage} WHERE asset_id IN ({$placeholders})",
+            ...$ids
+        ), ARRAY_A) ?: [];
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int)$row['asset_id']] = $row;
+        }
+        return $map;
+    }
+
+    public function findAssetStorageByObject(string $provider, string $bucket, string $objectKey): ?array
+    {
+        $row = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT {$this->storageColumns()} FROM {$this->tableAssetStorage}
+              WHERE storage_provider = %s AND bucket = %s AND object_key_hash = UNHEX(%s) LIMIT 1",
+            $provider,
+            $bucket,
+            hash('sha256', $provider . "\0" . $bucket . "\0" . $objectKey)
+        ), ARRAY_A);
+        return $row ?: null;
+    }
+
+    public function markAssetStorageDeleted(int $assetId): bool
+    {
+        $now = gmdate('Y-m-d H:i:s.u');
+        $res = $this->wpdb->query($this->wpdb->prepare(
+            "UPDATE {$this->tableAssetStorage} SET state = 'deleted', deleted_at = %s, updated_at = %s WHERE asset_id = %d AND state = 'active'",
+            $now,
+            $now,
+            $assetId
+        ));
+        return $res !== false && $res > 0;
+    }
+
+    public function deleteAssetStorage(int $assetId): bool
+    {
+        return $this->wpdb->delete($this->tableAssetStorage, ['asset_id' => $assetId], ['%d']) !== false;
+    }
+
+    private function storageColumns(): string
+    {
+        return 'asset_id, storage_provider, bucket, object_key, HEX(object_key_hash) AS object_key_hash, file_name, size_bytes, '
+            . 'HEX(content_hash) AS content_hash, etag, state, created_by, created_at, updated_at, deleted_at';
     }
 
     /**

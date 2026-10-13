@@ -3,7 +3,7 @@
 Status: in_progress
 
 - [x] P011.1 — Contract amendment: managed files, new tables, upload and library routes (done)
-- [ ] P011.2 — Schema for managed files and upload items, repository methods (todo)
+- [x] P011.2 — Schema for managed files and upload items, repository methods (done)
 - [ ] P011.3 — Storage provider layer: resolver, storage plugin adapter, local provider, no silent fallback (todo)
 - [ ] P011.4 — Managed upload service: validation, upload, verification, idempotent registration, upload intents (todo)
 - [ ] P011.5 — Product library service: list, link, reorder, featured, alt, impact preview, safe unlink, membership (todo)

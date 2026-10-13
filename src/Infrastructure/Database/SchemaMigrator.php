@@ -132,7 +132,7 @@ class SchemaMigrator
     }
 
     /**
-     * Verify that all 25 tables exist in database.
+     * Verify that every table declared in the schema contract exists in the database.
      */
     public function verifySchema(): array
     {

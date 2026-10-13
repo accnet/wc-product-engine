@@ -60,7 +60,26 @@ class T05Test
     }
 
     /**
-     * R14: Migration is idempotent and creates all 25 tables.
+     * Number of tables declared by contracts/database/schema-contract.json; schema.sql must declare the same set.
+     */
+    private function contractTableCount(): int
+    {
+        $contract = json_decode((string) file_get_contents($this->root() . '/contracts/database/schema-contract.json'), true);
+        $names = array_map(static fn ($t) => $t['name'], $contract['tables'] ?? []);
+        $sqlNames = array_map(
+            static fn ($t) => preg_replace('/^.*?wpe_/', '', $t),
+            array_keys($this->migrator->parseSchemaSql())
+        );
+        sort($names);
+        sort($sqlNames);
+        if ($names !== $sqlNames) {
+            throw new RuntimeException('schema.sql and schema-contract.json declare different table sets');
+        }
+        return count($names);
+    }
+
+    /**
+     * R14: Migration is idempotent and creates every table declared in the schema contract.
      */
     private function testMigrationIdempotent(): bool
     {
@@ -73,10 +92,11 @@ class T05Test
             return false;
         }
 
-        // Verify all 25 tables exist
+        // Verify every table of the contract exists; the expected count comes from the contract, not a literal.
+        $expectedCount = $this->contractTableCount();
         $verify = $this->migrator->verifySchema();
-        if (!$verify['valid'] || $verify['existing_tables_count'] !== 25) {
-            echo "  [FAIL] Expected 25 tables, found {$verify['existing_tables_count']}. Missing: " . implode(', ', $verify['missing_tables']) . "\n";
+        if (!$verify['valid'] || $verify['existing_tables_count'] !== $expectedCount || $verify['expected_tables_count'] !== $expectedCount) {
+            echo "  [FAIL] Expected {$expectedCount} tables, found {$verify['existing_tables_count']}. Missing: " . implode(', ', $verify['missing_tables']) . "\n";
             return false;
         }
         echo "  [OK] First migration successfully created {$verify['existing_tables_count']} tables.\n";
@@ -149,7 +169,7 @@ class T05Test
         }
 
         $verify = $this->migrator->verifySchema();
-        if (!$verify['valid'] || $verify['existing_tables_count'] !== 25) {
+        if (!$verify['valid'] || $verify['existing_tables_count'] !== $this->contractTableCount()) {
             echo "  [FAIL] Schema incomplete after resume.\n";
             return false;
         }
@@ -161,7 +181,7 @@ class T05Test
             return false;
         }
 
-        echo "  [OK] Migration successfully resumed from checkpoint and finished all 25 tables.\n";
+        echo "  [OK] Migration successfully resumed from checkpoint and finished all contract tables.\n";
         return true;
     }
 
