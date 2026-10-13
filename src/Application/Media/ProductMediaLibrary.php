@@ -142,7 +142,7 @@ final class ProductMediaLibrary
         $details = [];
         foreach (array_values($assetIds) as $i => $assetId) {
             if (!isset($allowed[(int) $assetId])) {
-                $details[] = ['pointer' => $pointer === '/asset_id' ? $pointer : sprintf('%s/%d', $pointer, $i), 'reason' => 'asset_not_in_product', 'asset_id' => (string) (int) $assetId];
+                $details[] = ['pointer' => $pointer === '/asset_id' || count($assetIds) === 1 ? $pointer : sprintf('%s/%d', $pointer, $i), 'reason' => 'asset_not_in_product', 'asset_id' => (string) (int) $assetId];
             }
         }
         if ($details !== []) {

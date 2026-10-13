@@ -443,9 +443,18 @@ class ProductEditorE2ETest
             'post_status'    => 'inherit'
         ], $testFilePath);
 
-        // Assign attachment to variation
-        $variant['attachment_id'] = $attachmentId;
-        $variant['image_url']     = wp_get_attachment_url($attachmentId);
+        // A variation image comes from the product library: register the image and add it to the library first.
+        $mediaRepo = new \WPE\Infrastructure\Database\MediaRepository($this->wpdb);
+        $asset     = $mediaRepo->createAsset([
+            'source_url' => 'https://cdn.example.test/e2e-' . uniqid() . '.jpg',
+            'mime'       => 'image/jpeg',
+        ]);
+        $mediaRepo->setFeaturedImage($productId, (int)$asset['id']);
+
+        // Assign the library image to the variation
+        $variant['attachment_id']  = $attachmentId;
+        $variant['image_asset_id'] = (string)$asset['id'];
+        $variant['image_url']      = $asset['source_url'];
 
         $payload = [
             'expected_version'  => $data['product']['version'],
@@ -455,8 +464,9 @@ class ProductEditorE2ETest
         $res = $this->service->saveProductVariants($productId, $payload);
 
         // Now unlink (remove) image from variation
-        $variant['attachment_id'] = null;
-        $variant['image_url']     = null;
+        $variant['attachment_id']  = null;
+        $variant['image_asset_id'] = null;
+        $variant['image_url']      = null;
         $payloadUnlink = [
             'expected_version'  => $res['new_version'],
             'variation_options' => $data['variation_options'],
@@ -467,6 +477,9 @@ class ProductEditorE2ETest
         // Verify media post STILL exists in WordPress media library (unlinked, NOT deleted!)
         $attachmentPost = get_post($attachmentId);
         assert($attachmentPost !== null, 'Media post must NOT be deleted from library when unlinked');
+
+        $this->wpdb->delete($this->wpdb->prefix . 'wpe_product_media', ['product_id' => $productId]);
+        $mediaRepo->deleteAsset((int)$asset['id'], true);
 
         // Cleanup test attachment
         wp_delete_attachment($attachmentId, true);

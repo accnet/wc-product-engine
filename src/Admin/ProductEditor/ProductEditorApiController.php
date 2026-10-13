@@ -9,6 +9,7 @@ use WP_REST_Response;
 use WP_Error;
 use Throwable;
 use InvalidArgumentException;
+use WPE\Application\Media\UploadRejectedException;
 
 /**
  * ProductEditorApiController
@@ -18,6 +19,7 @@ use InvalidArgumentException;
  * - POST /wpe/v1/admin/product/{id}/variants
  * - POST /wpe/v1/admin/product/{id}/variants/preview-generator
  * - POST /wpe/v1/admin/product/{id}/variants/preview-bulk-edit
+ * - POST /wpe/v1/admin/product/{id}/variants/preview-image-assignment
  */
 class ProductEditorApiController
 {
@@ -85,6 +87,17 @@ class ProductEditorApiController
                 ],
             ],
         ]);
+
+        register_rest_route($namespace, '/product/(?P<id>\d+)/variants/preview-image-assignment', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'previewImageAssignment'],
+            'permission_callback' => [$this, 'checkProductEditPermission'],
+            'args'                => [
+                'id' => [
+                    'validate_callback' => fn($val) => is_numeric($val) && (int)$val > 0,
+                ],
+            ],
+        ]);
     }
 
     public function checkProductEditPermission(WP_REST_Request $request): bool
@@ -130,6 +143,8 @@ class ProductEditorApiController
                 'success' => true,
                 'result'  => $result,
             ], 200);
+        } catch (UploadRejectedException $e) {
+            return $this->mediaRuleResponse($e);
         } catch (ConcurrencyConflictException $e) {
             return new WP_REST_Response([
                 'success'     => false,
@@ -185,11 +200,58 @@ class ProductEditorApiController
                 'success' => true,
                 'result'  => $result,
             ], 200);
+        } catch (UploadRejectedException $e) {
+            return $this->mediaRuleResponse($e);
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function previewImageAssignment(WP_REST_Request $request): WP_REST_Response
+    {
+        $productId = (int) $request->get_param('id');
+        $params    = $request->get_json_params() ?: [];
+        $rawAsset  = $params['asset_id'] ?? null;
+
+        try {
+            if (!is_string($rawAsset) || !preg_match('/^[1-9][0-9]*$/', $rawAsset)) {
+                throw new UploadRejectedException('invalid_request', 'asset_id is required.', 400, false, [['pointer' => '/asset_id', 'reason' => 'required']]);
+            }
+            $target = [];
+            if (isset($params['option']) && is_array($params['option'])) {
+                $target['option'] = $params['option'];
+            } else {
+                $target['variant_ids'] = $params['variant_ids'] ?? null;
+            }
+            return new WP_REST_Response([
+                'success' => true,
+                'result'  => $this->service->previewImageAssignment($productId, (int) $rawAsset, $target),
+            ], 200);
+        } catch (UploadRejectedException $e) {
+            return $this->mediaRuleResponse($e);
+        } catch (Throwable $e) {
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /** A media rule refused the request: answer with its status, a stable code and the places involved. */
+    private function mediaRuleResponse(UploadRejectedException $e): WP_REST_Response
+    {
+        $details = [];
+        foreach ($e->details() as $d) {
+            $details[] = ['pointer' => (string) ($d['pointer'] ?? ''), 'reason' => (string) ($d['reason'] ?? $e->reason())];
+        }
+        return new WP_REST_Response([
+            'success' => false,
+            'code'    => $e->reason(),
+            'message' => $e->getMessage(),
+            'details' => $details !== [] ? $details : [['pointer' => '', 'reason' => $e->reason()]],
+        ], $e->httpStatus());
     }
 }

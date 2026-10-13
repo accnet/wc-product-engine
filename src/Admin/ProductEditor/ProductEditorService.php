@@ -12,6 +12,8 @@ use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Application\Migration\LegacyMirror;
 use WPE\Application\Catalog\CatalogProjector;
+use WPE\Application\Media\ProductMediaLibrary;
+use WPE\Application\Media\UploadRejectedException;
 use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Compatibility\WordPress\PostIdAllocator;
@@ -52,6 +54,7 @@ class ProductEditorService
     private MediaRepository $mediaRepo;
     private AssetService $assetService;
     private AttachmentBridge $attachmentBridge;
+    private ?ProductMediaLibrary $library = null;
 
     private string $tableProducts;
     private string $tableVariants;
@@ -207,10 +210,11 @@ class ProductEditorService
 
             // Fetch variant image
             $varImg = $this->wpdb->get_row($this->wpdb->prepare(
-                "SELECT a.source_url, a.attachment_id
+                "SELECT a.id AS asset_id, a.source_url, a.attachment_id
                  FROM {$this->tableVariantMedia} vm
                  JOIN {$this->tableAssets} a ON vm.asset_id = a.id
                  WHERE vm.variant_id = %d
+                 ORDER BY vm.is_primary DESC, vm.position ASC, vm.asset_id ASC
                  LIMIT 1",
                 $varId
             ), ARRAY_A);
@@ -252,6 +256,7 @@ class ProductEditorService
                     'stock_owner_id' => !empty($rv['stock_owner_id']) ? (int)$rv['stock_owner_id'] : $productId,
                 ],
                 'image_url'       => $varImg ? ($varImg['source_url'] ?? null) : null,
+                'image_asset_id'  => $varImg ? (string)(int)$varImg['asset_id'] : null,
                 'attachment_id'   => !empty($varImg['attachment_id']) ? (int)$varImg['attachment_id'] : null,
                 'weight'          => $rv['weight'] ?? '',
                 'length'          => $rv['length'] ?? '',
@@ -473,6 +478,11 @@ class ProductEditorService
             $varMap[$v['id']] = $v;
         }
 
+        if (isset($actions['image_asset_id'])) {
+            // Same rule as the save: a variation image comes from this product's library.
+            $this->library()->assertInLibrary($productId, [(int)$actions['image_asset_id']], [], '/actions/image_asset_id');
+        }
+
         $diffs = [];
         foreach ($variationIds as $vid) {
             $vid = (int)$vid;
@@ -511,9 +521,12 @@ class ProductEditorService
             if (isset($actions['image_url'])) {
                 $projected['image_url'] = $actions['image_url'];
             }
+            if (isset($actions['image_asset_id'])) {
+                $projected['image_asset_id'] = (string)(int)$actions['image_asset_id'];
+            }
 
             $changes = [];
-            foreach (['regular_price', 'sale_price', 'status', 'manage_stock', 'stock_quantity', 'stock_status', 'image_url'] as $field) {
+            foreach (['regular_price', 'sale_price', 'status', 'manage_stock', 'stock_quantity', 'stock_status', 'image_url', 'image_asset_id'] as $field) {
                 $before = $current[$field] ?? null;
                 $after = $projected[$field] ?? null;
                 if (in_array($field, ['regular_price', 'sale_price'], true)) {
@@ -763,8 +776,9 @@ class ProductEditorService
 
         $pos = 0;
         $now = gmdate('Y-m-d H:i:s.u');
+        $libraryIds = null;
 
-        foreach ($variations as $varData) {
+        foreach ($variations as $varIndex => $varData) {
             $varId = !empty($varData['id']) ? (int)$varData['id'] : 0;
             $isNew = false;
 
@@ -851,11 +865,10 @@ class ProductEditorService
                 'updated_at'   => $now,
             ]);
 
-            // Sync variant image
-            if (!empty($varData['image_url'])) {
-                $this->attachVariantImage($varId, $varData['image_url']);
-            } elseif (array_key_exists('image_url', $varData) && empty($varData['image_url'])) {
-                $this->wpdb->delete($this->tableVariantMedia, ['variant_id' => $varId]);
+            // Sync variant image: assigned by asset id from the product library (docs/04 §7).
+            if (array_key_exists('image_asset_id', $varData) || array_key_exists('image_url', $varData)) {
+                $libraryIds ??= $this->library()->libraryAssetIds($productId);
+                $this->syncVariantImage($varId, (int)$varIndex, $varData, $libraryIds);
             }
 
             $touchedIds[] = $varId;
@@ -879,22 +892,178 @@ class ProductEditorService
         }
     }
 
-    private function attachVariantImage(int $variantId, string $url): void
+    /**
+     * Set or clear the primary image of a variation.
+     *
+     * The target is `image_asset_id` (preferred) or, for older clients, `image_url`. An unchanged image is always
+     * accepted (legacy images outside the library stay editable). A new image must be in the product library, so
+     * a browser cannot attach an arbitrary asset or URL; registering new images is the media route's job.
+     *
+     * @param int[] $libraryIds
+     * @throws UploadRejectedException
+     */
+    private function syncVariantImage(int $variantId, int $index, array $varData, array $libraryIds): void
     {
-        $clean = esc_url_raw(trim($url));
-        if ($clean === '') return;
+        $currentRows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT vm.asset_id, vm.position, vm.is_primary, vm.alt_override, a.source_url
+               FROM {$this->tableVariantMedia} vm
+               JOIN {$this->tableAssets} a ON a.id = vm.asset_id
+              WHERE vm.variant_id = %d
+              ORDER BY vm.is_primary DESC, vm.position ASC, vm.asset_id ASC",
+            $variantId
+        ), ARRAY_A) ?: [];
+        $currentId = $currentRows !== [] ? (int)$currentRows[0]['asset_id'] : 0;
 
-        if (str_starts_with($clean, 'http://')) {
-            $clean = 'https://' . substr($clean, 7);
+        $pointer = "/variations/{$index}/image_asset_id";
+        if (array_key_exists('image_asset_id', $varData)) {
+            $raw = $varData['image_asset_id'];
+            if ($raw === null || $raw === '') {
+                $target = 0;
+            } elseif ((is_string($raw) || is_int($raw)) && preg_match('/^[1-9][0-9]*$/', (string)$raw)) {
+                $target = (int)$raw;
+            } else {
+                throw new UploadRejectedException('invalid_request', 'The variation image id is invalid.', 400, false, [['pointer' => $pointer, 'reason' => 'invalid']]);
+            }
+        } else {
+            $url = trim((string)($varData['image_url'] ?? ''));
+            $pointer = "/variations/{$index}/image_url";
+            if ($url === '') {
+                $target = 0;
+            } else {
+                $clean = esc_url_raw($url);
+                if (str_starts_with($clean, 'http://')) {
+                    $clean = 'https://' . substr($clean, 7);
+                }
+                $target = -1;
+                if ($currentId > 0 && ((string)$currentRows[0]['source_url'] === $url || (string)$currentRows[0]['source_url'] === $clean)) {
+                    $target = $currentId;
+                } else {
+                    $found = $clean !== '' ? $this->assetService->getAssetByUrl($clean) : null;
+                    if ($found) {
+                        $target = (int)$found['id'];
+                    }
+                }
+                if ($target === -1) {
+                    throw new UploadRejectedException('asset_not_in_product', 'Add the image to the product first, then choose it for the variation.', 422, false, [['pointer' => $pointer, 'reason' => 'asset_not_in_product']]);
+                }
+            }
+        }
+
+        if ($target === $currentId) {
+            return;
+        }
+        if ($target === 0) {
+            $this->wpdb->delete($this->tableVariantMedia, ['variant_id' => $variantId]);
+            return;
+        }
+
+        $this->library()->assertInLibrary(0 + (int)$this->wpdb->get_var($this->wpdb->prepare("SELECT product_id FROM {$this->tableVariants} WHERE id = %d", $variantId)), [$target], [], $pointer);
+
+        // The chosen image becomes primary at position 0; other images of the variation keep their order.
+        $this->wpdb->delete($this->tableVariantMedia, ['variant_id' => $variantId]);
+        $this->wpdb->insert($this->tableVariantMedia, ['variant_id' => $variantId, 'asset_id' => $target, 'position' => 0, 'is_primary' => 1]);
+        $pos = 1;
+        foreach ($currentRows as $row) {
+            if ((int)$row['asset_id'] === $target) {
+                continue;
+            }
+            $this->wpdb->insert($this->tableVariantMedia, [
+                'variant_id'   => $variantId,
+                'asset_id'     => (int)$row['asset_id'],
+                'position'     => $pos++,
+                'is_primary'   => 0,
+                'alt_override' => $row['alt_override'],
+            ]);
         }
 
         try {
-            $asset = $this->assetService->registerAsset($clean);
-            $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
-            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-            update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+            $asset = $this->mediaRepo->getAssetById($target);
+            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId($target);
+            if ($asset && $attachmentId > 0) {
+                update_post_meta($attachmentId, '_wc_attachment_source', (string)$asset['source_url']);
+            }
         } catch (\Throwable $e) {
-            // Non-fatal asset registration catch
+            // The attachment shell is a compatibility projection; the canonical link is already written.
         }
+    }
+
+    /**
+     * Preview giving one library image to a variation, the selected rows or every variation of an option value.
+     * Reads only; the browser applies the result through the normal save so it follows the draft flow.
+     *
+     * @param array{variant_ids?:array<int|string>,option?:array{name?:string,value?:string}} $target
+     * @return array<string,mixed>
+     * @throws UploadRejectedException
+     */
+    public function previewImageAssignment(int $productId, int $assetId, array $target): array
+    {
+        $this->library()->assertInLibrary($productId, [$assetId], [], '/asset_id');
+
+        $variations = $this->getProductEditorData($productId)['variations'];
+        $byId = [];
+        foreach ($variations as $v) {
+            $byId[(int)$v['id']] = $v;
+        }
+
+        $scope = 'selection';
+        if (isset($target['option'])) {
+            $scope  = 'group';
+            $name   = trim((string)($target['option']['name'] ?? ''));
+            $value  = trim((string)($target['option']['value'] ?? ''));
+            if ($name === '' || $value === '') {
+                throw new UploadRejectedException('invalid_request', 'An option name and value are required.', 400, false, [['pointer' => '/option', 'reason' => 'required']]);
+            }
+            $selected = [];
+            foreach ($variations as $v) {
+                if (($v['attributes'][$name] ?? null) === $value) {
+                    $selected[] = (int)$v['id'];
+                }
+            }
+        } else {
+            $ids = $target['variant_ids'] ?? null;
+            if (!is_array($ids) || $ids === []) {
+                throw new UploadRejectedException('invalid_request', 'Choose at least one variation.', 400, false, [['pointer' => '/variant_ids', 'reason' => 'required']]);
+            }
+            $selected = [];
+            foreach (array_values($ids) as $i => $id) {
+                $id = (int)$id;
+                if (!isset($byId[$id])) {
+                    throw new UploadRejectedException('validation_failed', 'The variation does not belong to this product.', 422, false, [['pointer' => "/variant_ids/{$i}", 'reason' => 'wrong_product']]);
+                }
+                $selected[] = $id;
+            }
+            $selected = array_values(array_unique($selected));
+            $scope    = count($selected) === 1 ? 'variant' : 'selection';
+        }
+
+        $affected  = [];
+        $unchanged = [];
+        foreach ($selected as $id) {
+            $v = $byId[$id];
+            if ((string)($v['image_asset_id'] ?? '') === (string)$assetId) {
+                $unchanged[] = (string)$id;
+                continue;
+            }
+            $affected[] = [
+                'variant_id'       => (string)$id,
+                'sku'              => (string)($v['sku'] ?? ''),
+                'attributes'       => $v['attributes'],
+                'current_asset_id' => $v['image_asset_id'] ?? null,
+            ];
+        }
+
+        return [
+            'asset_id'       => (string)$assetId,
+            'scope'          => $scope,
+            'selected_count' => count($selected),
+            'affected_count' => count($affected),
+            'affected'       => $affected,
+            'unchanged'      => $unchanged,
+        ];
+    }
+
+    private function library(): ProductMediaLibrary
+    {
+        return $this->library ??= new ProductMediaLibrary($this->mediaRepo, null, $this->wpdb);
     }
 }
