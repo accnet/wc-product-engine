@@ -12,6 +12,7 @@
     const config = window.wpeEditorConfig;
     const productId = parseInt(config.productId, 10);
     let submitting = false;
+    let generatorNewCombos = [];
 
     /**
      * Unified Reactive Draft Store
@@ -284,8 +285,18 @@
 
     function openModalHtml(modalHtml) {
         const $modal = $(modalHtml);
+        const modalId = $modal.attr('id');
+        if (modalId) {
+            $('#' + modalId).remove();
+        }
         $('body').append($modal);
-        layers.open($modal);
+        layers.open($modal, {
+            onClose: function () {
+                $modal.fadeOut(150, function () {
+                    $modal.remove();
+                });
+            }
+        });
         return $modal;
     }
 
@@ -488,6 +499,78 @@
         });
     }
 
+    function openSimpleToVariableModal() {
+        const prod = wpeVariantStore.product || {};
+        const regPrice = prod.regular_price ? formatNumberForInput(prod.regular_price) : '';
+        const salePrice = prod.sale_price ? formatNumberForInput(prod.sale_price) : '';
+
+        const modalHtml = `
+            <div id="wpe-simple-to-variable-modal" class="wpe-modal-backdrop" role="dialog" aria-modal="true" aria-label="Chuyển sang sản phẩm có biến thể">
+                <div class="wpe-modal-dialog wpe-modal-dialog-md">
+                    <div class="wpe-modal-header">
+                        <h3 class="wpe-modal-title">Chuyển sang sản phẩm có biến thể / Switch to Variable Product</h3>
+                        <button type="button" class="wpe-modal-close wpe-btn-cancel-modal" aria-label="Đóng">&times;</button>
+                    </div>
+                    <div class="wpe-modal-body">
+                        <div class="wpe-dialog-warning-banner" style="background:#eff6ff; border-left-color:#3b82f6; color:#1e40af;">
+                            Sản phẩm sẽ được cấu hình thành <strong>Sản phẩm có biến thể (Variable)</strong> khi tạo các tổ hợp biến thể.
+                        </div>
+                        <div id="wpe-simple-to-variable-preview" style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:13px;">
+                            ${regPrice ? `<div><strong>Giá bán chung:</strong> Giá hiện tại ($${escapeHtml(regPrice)}${salePrice ? ' / Sale $' + escapeHtml(salePrice) : ''}) sẽ được đề xuất làm giá chung cho các biến thể.</div>` : '<div>Chưa có giá bán trực tiếp. Biến thể có thể dùng giá riêng hoặc thiết lập giá chung sau.</div>'}
+                            <div style="margin-top:6px;"><strong>SKU và Tồn kho:</strong> Mã SKU sản phẩm cha và kho sản phẩm tiếp tục được lưu giữ.</div>
+                        </div>
+                        <div class="wpe-form-row" style="margin-top:14px;">
+                            <label for="wpe-first-option-name"><strong>Tên tùy chọn biến thể đầu tiên:</strong></label>
+                            <input type="text" id="wpe-first-option-name" class="wpe-input" value="Size" placeholder="e.g. Size, Color, Style" />
+                        </div>
+                    </div>
+                    <div class="wpe-modal-footer">
+                        <button type="button" class="button wpe-btn-cancel-modal">Hủy</button>
+                        <button type="button" class="button button-primary wpe-btn-confirm-to-variable">Xác nhận tạo tùy chọn</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const $modal = openModalHtml(modalHtml);
+
+        $modal.find('.wpe-btn-cancel-modal').on('click', function () {
+            layers.close($modal);
+        });
+
+        $modal.find('.wpe-btn-confirm-to-variable').on('click', function () {
+            const optName = $modal.find('#wpe-first-option-name').val().trim() || 'Size';
+            wpeVariantStore.variationOptions.push({
+                name: optName,
+                position: 0,
+                values: []
+            });
+            wpeVariantStore.derivedType = 'variable';
+            wpeVariantStore.product.type = 'variable';
+            if (wpeVariantStore.product.regular_price && !wpeVariantStore.commonPrice) {
+                const regStr = String(wpeVariantStore.product.regular_price);
+                const saleStr = wpeVariantStore.product.sale_price ? String(wpeVariantStore.product.sale_price) : '';
+                wpeVariantStore.commonPrice = {
+                    regular_price: regStr,
+                    sale_price: saleStr,
+                    sale_from: wpeVariantStore.product.sale_from || null,
+                    sale_to: wpeVariantStore.product.sale_to || null,
+                    regular: regStr,
+                    sale: saleStr,
+                    from: wpeVariantStore.product.sale_from || null,
+                    to: wpeVariantStore.product.sale_to || null
+                };
+                wpeVariantStore.product.regular_price = null;
+                wpeVariantStore.product.sale_price = null;
+                wpeVariantStore.product.sale_from = null;
+                wpeVariantStore.product.sale_to = null;
+            }
+            layers.close($modal);
+            wpeVariantStore.markDirty();
+            showToast(`Đã thêm tùy chọn "${optName}"!`, 'success');
+        });
+    }
+
     function openVariableToSimpleModal() {
         const vars = wpeVariantStore.variations;
         const modalHtml = `
@@ -675,6 +758,10 @@
 
     function renderCommonPriceCard() {
         const cp = wpeVariantStore.commonPrice || {};
+        const cpReg = cp.regular_price !== undefined && cp.regular_price !== null ? cp.regular_price : (cp.regular || '');
+        const cpSale = cp.sale_price !== undefined && cp.sale_price !== null ? cp.sale_price : (cp.sale || '');
+        const cpFrom = cp.sale_from !== undefined && cp.sale_from !== null ? cp.sale_from : (cp.from || '');
+        const cpTo = cp.sale_to !== undefined && cp.sale_to !== null ? cp.sale_to : (cp.to || '');
         return `
             <div class="wpe-common-price-card">
                 <div class="wpe-common-price-header">
@@ -689,21 +776,21 @@
                 <div class="wpe-form-grid-2">
                     <div class="wpe-form-row">
                         <label>Giá thường chung ($)</label>
-                        <input type="text" class="wpe-input wpe-common-regular-price" value="${escapeHtml(formatNumberForInput(cp.regular_price))}" placeholder="0.00" />
+                        <input type="text" class="wpe-input wpe-common-regular-price" value="${escapeHtml(formatNumberForInput(cpReg))}" placeholder="0.00" />
                     </div>
                     <div class="wpe-form-row">
                         <label>Giá sale chung ($)</label>
-                        <input type="text" class="wpe-input wpe-common-sale-price" value="${escapeHtml(formatNumberForInput(cp.sale_price))}" placeholder="0.00" />
+                        <input type="text" class="wpe-input wpe-common-sale-price" value="${escapeHtml(formatNumberForInput(cpSale))}" placeholder="0.00" />
                     </div>
                 </div>
                 <div class="wpe-form-grid-2" style="margin-top:8px;">
                     <div class="wpe-form-row">
                         <label>Lịch sale từ ngày</label>
-                        <input type="date" class="wpe-input wpe-common-sale-from" value="${escapeHtml(formatDateForInput(cp.sale_from))}" />
+                        <input type="date" class="wpe-input wpe-common-sale-from" value="${escapeHtml(formatDateForInput(cpFrom))}" />
                     </div>
                     <div class="wpe-form-row">
                         <label>Lịch sale đến ngày</label>
-                        <input type="date" class="wpe-input wpe-common-sale-to" value="${escapeHtml(formatDateForInput(cp.sale_to))}" />
+                        <input type="date" class="wpe-input wpe-common-sale-to" value="${escapeHtml(formatDateForInput(cpTo))}" />
                     </div>
                 </div>
                 <div class="wpe-field-desc" style="margin-top:8px;">
@@ -913,34 +1000,48 @@
 
         $container.find('.wpe-common-regular-price').off('change').on('change', function () {
             if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
-            wpeVariantStore.commonPrice.regular_price = $(this).val().trim();
+            const val = $(this).val().trim();
+            wpeVariantStore.commonPrice.regular_price = val;
+            wpeVariantStore.commonPrice.regular = val;
             wpeVariantStore.markDirty();
         });
         $container.find('.wpe-common-sale-price').off('change').on('change', function () {
             if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
-            wpeVariantStore.commonPrice.sale_price = $(this).val().trim();
+            const val = $(this).val().trim();
+            wpeVariantStore.commonPrice.sale_price = val;
+            wpeVariantStore.commonPrice.sale = val;
             wpeVariantStore.markDirty();
         });
         $container.find('.wpe-common-sale-from').off('change').on('change', function () {
             if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
             const val = $(this).val();
-            wpeVariantStore.commonPrice.sale_from = val ? val + ' 00:00:00' : null;
+            const from = val ? val + ' 00:00:00' : null;
+            wpeVariantStore.commonPrice.sale_from = from;
+            wpeVariantStore.commonPrice.from = from;
             wpeVariantStore.markDirty();
         });
         $container.find('.wpe-common-sale-to').off('change').on('change', function () {
             if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
             const val = $(this).val();
-            wpeVariantStore.commonPrice.sale_to = val ? val + ' 23:59:59' : null;
+            const to = val ? val + ' 23:59:59' : null;
+            wpeVariantStore.commonPrice.sale_to = to;
+            wpeVariantStore.commonPrice.to = to;
             wpeVariantStore.markDirty();
         });
 
         $container.find('.wpe-btn-set-common-price').off('click').on('click', function () {
             const ref = getEffectiveReferencePrice();
+            const rReg = ref.regular_price || '';
+            const rSale = ref.sale_price || '';
             wpeVariantStore.commonPrice = {
-                regular_price: ref.regular_price || '',
-                sale_price: ref.sale_price || '',
+                regular_price: rReg,
+                sale_price: rSale,
                 sale_from: ref.sale_from || null,
-                sale_to: ref.sale_to || null
+                sale_to: ref.sale_to || null,
+                regular: rReg,
+                sale: rSale,
+                from: ref.sale_from || null,
+                to: ref.sale_to || null
             };
             wpeVariantStore.markDirty();
         });
@@ -1097,26 +1198,7 @@
 
     function bindVariantsEvents($container, containerId) {
         $container.find('.wpe-btn-add-first-option').off('click').on('click', function () {
-            wpeVariantStore.variationOptions.push({
-                name: 'Size',
-                position: 0,
-                values: []
-            });
-            wpeVariantStore.derivedType = 'variable';
-            wpeVariantStore.product.type = 'variable';
-            if (wpeVariantStore.product.regular_price && !wpeVariantStore.commonPrice) {
-                wpeVariantStore.commonPrice = {
-                    regular_price: String(wpeVariantStore.product.regular_price),
-                    sale_price: wpeVariantStore.product.sale_price ? String(wpeVariantStore.product.sale_price) : '',
-                    sale_from: wpeVariantStore.product.sale_from || null,
-                    sale_to: wpeVariantStore.product.sale_to || null
-                };
-                wpeVariantStore.product.regular_price = null;
-                wpeVariantStore.product.sale_price = null;
-                wpeVariantStore.product.sale_from = null;
-                wpeVariantStore.product.sale_to = null;
-            }
-            wpeVariantStore.markDirty();
+            openSimpleToVariableModal();
         });
 
         bindEditorEvents($container, containerId);
@@ -1605,11 +1687,13 @@
             }
 
             const isSelected = wpeVariantStore.selection.has(v.id);
-            const isParentStock = !v.manage_stock;
             const cp = wpeVariantStore.commonPrice;
             const isShared = v.pricing_mode === 'shared';
-            const regVal = isShared && cp ? (cp.regular_price || '') : (v.regular_price || '');
-            const saleVal = isShared && cp ? (cp.sale_price || '') : (v.sale_price || '');
+            const cpReg = cp ? (cp.regular_price !== undefined && cp.regular_price !== null ? cp.regular_price : (cp.regular || '')) : '';
+            const cpSale = cp ? (cp.sale_price !== undefined && cp.sale_price !== null ? cp.sale_price : (cp.sale || '')) : '';
+            const regVal = isShared && cp ? cpReg : (v.regular_price || '');
+            const saleVal = isShared && cp ? cpSale : (v.sale_price || '');
+            const isParentStock = !v.manage_stock;
 
             // Badges
             const comboBadges = Object.entries(attrs).map(([opt, val]) => `
@@ -1888,6 +1972,7 @@
                     </div>
                 `;
 
+                generatorNewCombos = newCombos;
                 $('#wpe-generator-body').html(bodyHtml);
                 $('#wpe-generator-modal .wpe-btn-apply-generator').data('new-combos', newCombos).prop('disabled', newCombos.length === 0);
             })
@@ -2094,7 +2179,8 @@
         layers.open($overlay, {
             onClose: function () {
                 $overlay.fadeOut(150);
-                renderEditor('#wpe-product-editor-inline-app');
+                if ($('#wpe-product-editor-inline-app').length) renderVariantsApp('#wpe-product-editor-inline-app');
+                if ($('#wpe-product-info-app').length) renderProductInfoApp('#wpe-product-info-app');
             }
         });
     }
@@ -2668,14 +2754,14 @@
 
         // Apply Generator selected combinations
         $(document).on('click', '.wpe-btn-apply-generator', function () {
-            const newCombos = $(this).data('new-combos') || [];
+            const newCombos = generatorNewCombos.length ? generatorNewCombos : ($(this).data('new-combos') || []);
             const defPrice = $('#wpe-gen-def-price').val();
             const defSkuPrefix = $('#wpe-gen-def-sku').val().trim();
             const defStock = $('#wpe-gen-def-stock').val();
 
             let addedCount = 0;
             $('#wpe-generator-body .wpe-gen-check:checked').each(function () {
-                const idx = $(this).data('idx');
+                const idx = parseInt($(this).attr('data-idx'), 10);
                 const nc = newCombos[idx];
                 if (!nc) return;
 
@@ -2686,11 +2772,20 @@
                 const maxId = wpeVariantStore.variations.reduce((max, v) => Math.max(max, v.id || 0), 0);
                 const newVarId = maxId + 1;
 
+                const isSharedPrice = wpeVariantStore.commonPrice !== null;
+                const regPrice = isSharedPrice ? (wpeVariantStore.commonPrice.regular_price || '') : (defPrice || '');
+                const salePrice = isSharedPrice ? (wpeVariantStore.commonPrice.sale_price || '') : '';
+                const saleFrom = isSharedPrice ? (wpeVariantStore.commonPrice.sale_from || null) : null;
+                const saleTo = isSharedPrice ? (wpeVariantStore.commonPrice.sale_to || null) : null;
+
                 wpeVariantStore.variations.push({
                     id: newVarId,
                     sku: sku,
-                    regular_price: defPrice || '',
-                    sale_price: '',
+                    pricing_mode: isSharedPrice ? 'shared' : 'own',
+                    regular_price: regPrice,
+                    sale_price: salePrice,
+                    sale_from: saleFrom,
+                    sale_to: saleTo,
                     status: 'publish',
                     position: wpeVariantStore.variations.length,
                     manage_stock: defStock !== '',
@@ -2954,9 +3049,25 @@
         wpeVariantStore.product.parent_stock = stockObj;
 
         wpeVariantStore.type = data.type || (data.product && data.product.type) || 'simple';
-        wpeVariantStore.derivedType = data.derived_type || (data.variation_options && data.variation_options.length > 0 ? 'variable' : 'simple');
-        wpeVariantStore.commonPrice = data.common_price !== undefined ? data.common_price : null;
-        wpeVariantStore.referencePrice = data.reference_price || null;
+        if (data.common_price && typeof data.common_price === 'object') {
+            const cp = data.common_price;
+            const reg = cp.regular_price !== undefined && cp.regular_price !== null ? cp.regular_price : (cp.regular !== undefined ? cp.regular : null);
+            const sale = cp.sale_price !== undefined && cp.sale_price !== null ? cp.sale_price : (cp.sale !== undefined ? cp.sale : null);
+            const from = cp.sale_from !== undefined && cp.sale_from !== null ? cp.sale_from : (cp.from !== undefined ? cp.from : null);
+            const to = cp.sale_to !== undefined && cp.sale_to !== null ? cp.sale_to : (cp.to !== undefined ? cp.to : null);
+            wpeVariantStore.commonPrice = {
+                regular_price: reg,
+                sale_price: sale,
+                sale_from: from,
+                sale_to: to,
+                regular: reg,
+                sale: sale,
+                from: from,
+                to: to
+            };
+        } else {
+            wpeVariantStore.commonPrice = null;
+        }
         wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
         wpeVariantStore.variationOptions = data.variation_options || [];
         wpeVariantStore.variations = data.variations || [];
