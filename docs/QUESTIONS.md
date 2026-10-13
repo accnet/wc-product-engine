@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Có 1 câu hỏi mở (OD-14, mục 4), không chặn task nào đã authorize. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Không có câu hỏi mở. Các câu hỏi OD-12, OD-13 và OD-14 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -25,17 +25,6 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-11 | 22 AC requirements_only | answered | P002.2, P002.3 | Thêm anchor có điều kiện thật |
 | OD-12 | Worker epoch khi lưu biến thể từ editor | answered | 02 (epoch/authority) | Dùng epoch hệ thống hiện hành (OutboxWorker::getCurrentEpoch) thay vì hằng 1 khi sản phẩm chưa có object state; không đổi LegacyMirror/fence (P006.1) |
 | OD-13 | ShopifyBatchImporterTest thất bại trên baseline | answered | 04 (import) | Nguyên nhân là fixture của test lệch cột so với header (grams 500 bị đọc thành SKU và trùng SKU thật), không phải lỗi importer; sửa fixture theo tên header, giữ nguyên assertion (P008.1) |
+| OD-14 | Hai khóa epoch lệch nhau (authority_epoch 2, current_epoch 9) | answered | 02 §authority | authority_epoch là nguồn chuẩn theo contract; current_epoch là bộ đếm outbox độc lập (người ghi duy nhất không có caller trong src). Caller của mirror lấy worker epoch từ LegacyMirror::getAggregateEpoch (state epoch, nếu không có thì global authority epoch) thay cho current_epoch; không đổi giá trị hay ngữ nghĩa của hai khóa (P009.1) |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47.
-
-## 4. Câu hỏi đang mở
-
-### OD-14 — Hai khóa epoch lệch nhau trên site (P007.1)
-
-- Status: open. Doc section: 02 (epoch/authority). Commit: n/a.
-- Context: `wpe_control.authority_epoch` là 2 (LegacyMirror dùng làm fence khi không có object state), còn `wpe_control.current_epoch` là 9 và toàn bộ 22025 dòng `wpe_object_state` mang epoch 9 (OutboxWorker, ProductRepository, InventoryBridge, MetaBridge dùng). Site đang ở chế độ legacy_restored.
-- Evidence: truy vấn `wpe_control` và `wpe_object_state` ngày 2026-10-13; P006.1 chọn current_epoch làm worker epoch dự phòng, nên không còn bị fence từ chối.
-- Default đã thử: không đổi giá trị hay ngữ nghĩa của hai khóa.
-- Blocker/impact: không chặn; nhưng fence cho sản phẩm không có state vẫn so với khóa thấp hơn, nên một worker mang epoch trong khoảng 2..8 vẫn được chấp nhận cho sản phẩm mới.
-- Proposed resolution: chủ sở hữu contract 02 xác nhận khóa nào là nguồn sự thật sau flip và rollback, rồi thống nhất hoặc đồng bộ hai khóa.
-- Answer: chưa có. Affected: LegacyMirror, OutboxWorker, rollout/rollback runners.

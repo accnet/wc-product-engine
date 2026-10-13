@@ -3,9 +3,10 @@
 /**
  * P006.1 — Mirror worker epoch fallback.
  *
- * A product with no wpe_object_state row must be mirrored with the current system epoch, not a literal 1.
- * Before the fix, a site whose global authority epoch is above 1 answered `rejected_stale_epoch` and the
- * WooCommerce variation shells stayed auto-draft with parent 0.
+ * A product with no wpe_object_state row must be mirrored with the authority epoch the mirror itself reads
+ * (docs/02: every command carries the epoch it read), not a literal 1 and not the unrelated outbox counter
+ * `current_epoch`. Before the fix, a site whose global authority epoch is above 1 answered
+ * `rejected_stale_epoch` and the WooCommerce variation shells stayed auto-draft with parent 0.
  */
 
 require_once dirname(__DIR__, 2) . '/wc-product-engine.php';
@@ -24,7 +25,7 @@ class MirrorWorkerEpochTest
 {
     private wpdb $wpdb;
     private array $productIds = [];
-    private ?int $restoreGlobalEpoch = null;
+    private ?array $savedEpochRow = null;
     private int $checks = 0;
 
     public function __construct()
@@ -58,16 +59,23 @@ class MirrorWorkerEpochTest
         }
     }
 
-    /** The regression only exists when the global epoch is above the old literal fallback of 1. */
+    /**
+     * The regression needs a global authority epoch above both the old literal 1 and the outbox counter
+     * `current_epoch`, so a fallback taken from either of them would be rejected. The original control row is
+     * saved and restored verbatim in cleanup().
+     */
     private function ensureGlobalEpochAboveOne(): void
     {
+        $control = $this->wpdb->prefix . 'wpe_control';
+        $this->savedEpochRow = $this->wpdb->get_row("SELECT * FROM {$control} WHERE `key` = 'authority_epoch'", ARRAY_A) ?: ['__absent' => true];
+
         $mirror = LegacyMirror::getInstance();
-        $global = $mirror->getGlobalEpoch();
-        if ($global < 2) {
-            $this->restoreGlobalEpoch = $global;
-            $mirror->setGlobalEpoch(2);
-        }
-        $this->check($mirror->getGlobalEpoch() >= 2, 'Test needs a global epoch above 1');
+        $outbox = (new OutboxWorker($this->wpdb))->getCurrentEpoch();
+        $target = max($mirror->getGlobalEpoch(), $outbox, 1) + 1;
+        $mirror->setGlobalEpoch($target);
+
+        $this->check($mirror->getGlobalEpoch() === $target, 'Test needs control of the global epoch');
+        $this->check($mirror->getGlobalEpoch() > $outbox && $mirror->getGlobalEpoch() > 1, 'Global epoch must exceed both the literal 1 and current_epoch');
     }
 
     private function createVariableProduct(): int
@@ -127,7 +135,6 @@ class MirrorWorkerEpochTest
     {
         echo ' - the epoch fence still rejects a stale worker...';
         $productId = $this->productIds[0];
-        $current = (new OutboxWorker($this->wpdb))->getCurrentEpoch();
         $state = $this->wpdb->get_row($this->wpdb->prepare(
             "SELECT epoch FROM {$this->wpdb->prefix}wpe_object_state WHERE object_id = %d",
             $productId
@@ -137,7 +144,6 @@ class MirrorWorkerEpochTest
 
         $res = LegacyMirror::getInstance()->mirrorAggregate($productId, 9999, $stateEpoch - 1);
         $this->check(($res['status'] ?? '') === 'rejected_stale_epoch', 'A worker below the fence epoch must still be rejected, got ' . ($res['status'] ?? 'null'));
-        $this->check($current >= 1, 'Current system epoch must be readable');
         echo " OK\n";
     }
 
@@ -153,7 +159,8 @@ class MirrorWorkerEpochTest
         ] as $file) {
             $src = file_get_contents($root . '/' . $file);
             $this->check(!preg_match('/\$workerEpoch\s*=\s*\$state\s*\?\s*\(int\)\s*\$state\[\'epoch\'\]\s*:\s*1\s*;/', $src), "$file still falls back to a literal worker epoch of 1");
-            $this->check(strpos($src, 'getCurrentEpoch()') !== false, "$file must take the fallback from getCurrentEpoch()");
+            $this->check(strpos($src, 'getAggregateEpoch(') !== false, "$file must take the worker epoch from LegacyMirror::getAggregateEpoch()");
+            $this->check(strpos($src, 'getCurrentEpoch()') === false, "$file must not take the worker epoch from the outbox counter");
         }
         echo " OK\n";
     }
@@ -177,9 +184,14 @@ class MirrorWorkerEpochTest
             wp_delete_post($id, true);
         }
         $this->productIds = [];
-        if ($this->restoreGlobalEpoch !== null) {
-            LegacyMirror::getInstance()->setGlobalEpoch($this->restoreGlobalEpoch);
-            $this->restoreGlobalEpoch = null;
+        if ($this->savedEpochRow !== null) {
+            $control = $pf . 'wpe_control';
+            if (isset($this->savedEpochRow['__absent'])) {
+                $this->wpdb->delete($control, ['key' => 'authority_epoch']);
+            } else {
+                $this->wpdb->replace($control, $this->savedEpochRow);
+            }
+            $this->savedEpochRow = null;
         }
     }
 }

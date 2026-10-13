@@ -1,0 +1,336 @@
+{
+  "id": "P009",
+  "title": "Mirror worker epoch follows the authority epoch the mirror reads (OD-14)",
+  "status": "done",
+  "content_hash": "003d7d2969689bd3b39b19058b8ee08d3eceaa93b280988a96ca4827b94b59a0",
+  "tasks": [
+    {
+      "id": "P009.1",
+      "title": "Mirror callers carry the authority epoch the mirror reads",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorService.php",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "src/Compatibility/Csv/Shopify/ShopifyImporter.php",
+        "tests/integration/MirrorWorkerEpochTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorContractTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "7df6286db70fec15a73289971232157050a412b1163023ed1a22bb6a81e91319",
+          "output_sha256": "5dbfa5376030912b2629d72b819ff49b51c145dd84265ba6698e5ce4d62ce5d7",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872708320-dcc7b61a.log",
+          "time": "2026-10-13T06:25:08.321Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "7df6286db70fec15a73289971232157050a412b1163023ed1a22bb6a81e91319",
+          "output_sha256": "a2c4ad7bc553966edd2182b96f39d0912a4b5697d8eaef53e38a0d2c89671084",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872714442-40986a99.log",
+          "time": "2026-10-13T06:25:14.442Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "7df6286db70fec15a73289971232157050a412b1163023ed1a22bb6a81e91319",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872726598-6515bbb9.log",
+          "time": "2026-10-13T06:25:26.599Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorContractTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "7df6286db70fec15a73289971232157050a412b1163023ed1a22bb6a81e91319",
+          "output_sha256": "8353251672654119585caffdb4328da4527ca925f1ab7fe461d8f99067d37950",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872732915-102b950e.log",
+          "time": "2026-10-13T06:25:32.916Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "7df6286db70fec15a73289971232157050a412b1163023ed1a22bb6a81e91319",
+          "output_sha256": "3527626994a8fcd6d706abe53f48ef1e8d963b4f207e40c9823572b0da2f829c",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872733006-655cbf70.log",
+          "time": "2026-10-13T06:25:33.007Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:24:30.991Z"
+    },
+    {
+      "id": "P009.2",
+      "title": "Shopify batch test teardown removes everything the import creates",
+      "depends_on": [
+        "P009.1"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md"
+      ],
+      "files": [
+        "tests/integration/ShopifyBatchImporterTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "1c6646b2c069abea3abf24e7e99bd0cb6dff841e5abe378ea2cd9c68c1f35a7f",
+          "output_sha256": "5dbfa5376030912b2629d72b819ff49b51c145dd84265ba6698e5ce4d62ce5d7",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872785569-373b6a21.log",
+          "time": "2026-10-13T06:26:25.570Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "1c6646b2c069abea3abf24e7e99bd0cb6dff841e5abe378ea2cd9c68c1f35a7f",
+          "output_sha256": "01275881c7728ce2c374581e30ba038fb668a2a48b50bee667a0085b7f9fa6ad",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872796185-16b57f68.log",
+          "time": "2026-10-13T06:26:36.186Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "1c6646b2c069abea3abf24e7e99bd0cb6dff841e5abe378ea2cd9c68c1f35a7f",
+          "output_sha256": "3527626994a8fcd6d706abe53f48ef1e8d963b4f207e40c9823572b0da2f829c",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872796270-a3f5a0a0.log",
+          "time": "2026-10-13T06:26:36.270Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:25:45.889Z"
+    },
+    {
+      "id": "P009.3",
+      "title": "QUESTIONS and NOTES update, live regression run",
+      "depends_on": [
+        "P009.2"
+      ],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/06-implementation-plan.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/QUESTIONS.md",
+        "docs/plans/P009-mirror-authority-epoch/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "3c5a09a5b42bf9aaae28eaaa09929dec210aa766222d80512639ff9c8fe34366",
+          "output_sha256": "5dbfa5376030912b2629d72b819ff49b51c145dd84265ba6698e5ce4d62ce5d7",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872806180-99edfc77.log",
+          "time": "2026-10-13T06:26:46.181Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "3c5a09a5b42bf9aaae28eaaa09929dec210aa766222d80512639ff9c8fe34366",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872846382-28e64c40.log",
+          "time": "2026-10-13T06:27:26.382Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "3c5a09a5b42bf9aaae28eaaa09929dec210aa766222d80512639ff9c8fe34366",
+          "output_sha256": "61d796d55834d700c7adce5607cfdb33fc339c4f00e86d9442be42e4be8fb695",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872877457-d9b7fe2d.log",
+          "time": "2026-10-13T06:27:57.457Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "5f34fe073b189fd8ebb48a99799063bd1eaa8beb",
+          "content_digest": "3c5a09a5b42bf9aaae28eaaa09929dec210aa766222d80512639ff9c8fe34366",
+          "output_sha256": "3527626994a8fcd6d706abe53f48ef1e8d963b4f207e40c9823572b0da2f829c",
+          "output_path": "docs/plans/P009-mirror-authority-epoch/command-1791872877551-6c675e8c.log",
+          "time": "2026-10-13T06:27:57.552Z"
+        }
+      ],
+      "started_at": "2026-10-13T06:26:36.363Z"
+    }
+  ],
+  "approved_hash": "003d7d2969689bd3b39b19058b8ee08d3eceaa93b280988a96ca4827b94b59a0",
+  "report_hash": "0347d0ed7402da75bd6bc35d7cdd2d71ba6aa22477a58d8ec38c3e8e269ac6a1"
+}

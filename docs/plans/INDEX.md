@@ -8,3 +8,4 @@
 - P006 — Mirror worker epoch fallback for products without object state (in_progress)
 - P007 — Close out P006: regression run and QUESTIONS/NOTES update (done)
 - P008 — Fix misaligned Shopify batch test fixture (OD-13) (done)
+- P009 — Mirror worker epoch follows the authority epoch the mirror reads (OD-14) (done)

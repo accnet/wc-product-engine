@@ -118,16 +118,29 @@ class ShopifyBatchImporterTest
         }
         $this->cleanJobIds = [];
 
-        // Clean test products
-        $p1 = $this->wpdb->get_var("SELECT id FROM {$prefix}wpe_products WHERE slug = 'batch-test-p1'");
-        if ($p1) {
-            $this->wpdb->delete("{$prefix}wpe_products", ['id' => $p1]);
-            $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $p1]);
-        }
-        $p2 = $this->wpdb->get_var("SELECT id FROM {$prefix}wpe_products WHERE slug = 'batch-test-p2'");
-        if ($p2) {
-            $this->wpdb->delete("{$prefix}wpe_products", ['id' => $p2]);
-            $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $p2]);
+        // Clean everything the import created for the two fixture products: native rows, state, terms,
+        // inventory, options, and the WordPress product / variation shells the legacy mirror writes.
+        foreach (['batch-test-p1', 'batch-test-p2'] as $slug) {
+            $productId = (int)$this->wpdb->get_var($this->wpdb->prepare("SELECT id FROM {$prefix}wpe_products WHERE slug = %s", $slug));
+            if (!$productId) {
+                continue;
+            }
+            $variantIds = array_map('intval', (array)$this->wpdb->get_col($this->wpdb->prepare("SELECT id FROM {$prefix}wpe_variants WHERE product_id = %d", $productId)));
+            $ownerIds = array_merge([$productId], $variantIds);
+            $in = implode(',', $ownerIds);
+
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_inventory WHERE owner_id IN ($in)");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_object_state WHERE object_id IN ($in)");
+            $this->wpdb->delete("{$prefix}wpe_product_terms", ['product_id' => $productId]);
+            $this->wpdb->delete("{$prefix}wpe_options", ['product_id' => $productId]);
+            $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $productId]);
+            $this->wpdb->delete("{$prefix}wpe_products", ['id' => $productId]);
+
+            foreach ($ownerIds as $postId) {
+                if (get_post($postId)) {
+                    wp_delete_post($postId, true);
+                }
+            }
         }
 
         \WPE\Compatibility\Gallery\UrlValidator::setDnsResolver(null);
