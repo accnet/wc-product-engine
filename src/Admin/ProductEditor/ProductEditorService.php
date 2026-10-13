@@ -634,7 +634,9 @@ class ProductEditorService
                     $productId
                 ), ARRAY_A);
                 $rev = $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1;
-                $workerEpoch = $state ? (int)$state['epoch'] : 1;
+                // Without an object state row the product is treated like a freshly written one: use the current
+                // system epoch (the value native writers store), not a literal 1 that the epoch fence rejects.
+                $workerEpoch = $state ? (int)$state['epoch'] : (new \WPE\Infrastructure\Database\OutboxWorker($this->wpdb))->getCurrentEpoch();
                 $mirror = LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
                 $projection['legacy_mirror'] = (string)($mirror['status'] ?? 'unknown');
             } catch (\Throwable $mE) {

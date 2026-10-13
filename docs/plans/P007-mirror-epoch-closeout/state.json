@@ -1,0 +1,166 @@
+{
+  "id": "P007",
+  "title": "Close out P006: regression run and QUESTIONS/NOTES update",
+  "status": "done",
+  "content_hash": "2dcfe79fc5f4a3a23ef47c1f3f07a4ec9795e8d07adee81f0e58c0f4193bbcb6",
+  "tasks": [
+    {
+      "id": "P007.1",
+      "title": "Regression run, QUESTIONS and NOTES update for the mirror worker epoch fix",
+      "depends_on": [],
+      "read_first": [
+        "docs/PROGRESS.md",
+        "docs/06-implementation-plan.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/QUESTIONS.md",
+        "docs/plans/P007-mirror-epoch-closeout/plan.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorE2ETest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "48384fbcbd681815b7231a5650f53c216ce6d43a1527aeedc5643a5d0686ef36",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870327750-3fe57b6f.log",
+          "time": "2026-10-13T05:45:27.751Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "b8e81dcdc6256c3d2e4619853028a1a928852c112abee1d0f23aa51f5a12f0c6",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870333906-7c92ed51.log",
+          "time": "2026-10-13T05:45:33.906Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "9cdfb51a06ca1a035935dc0121d0f8f33cda60f404348e52d12f0e9d70724d92",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870345246-303b4af6.log",
+          "time": "2026-10-13T05:45:45.246Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870384231-d1e7e3cd.log",
+          "time": "2026-10-13T05:46:24.231Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "61d796d55834d700c7adce5607cfdb33fc339c4f00e86d9442be42e4be8fb695",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870417420-c0fade0f.log",
+          "time": "2026-10-13T05:46:57.421Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "6394856b318c4f63c93c5aae5c0f7e16754be414",
+          "content_digest": "d8df7b7acf237b1cd476815cda39a28bec60accaf7c02d600721a976e4f36ec5",
+          "output_sha256": "6c3fcfc42af475f88bf06bece5481154a493a49f5ad009c2227e7342b3f3edf7",
+          "output_path": "docs/plans/P007-mirror-epoch-closeout/command-1791870417515-b6ea1493.log",
+          "time": "2026-10-13T05:46:57.515Z"
+        }
+      ],
+      "started_at": "2026-10-13T05:45:03.565Z"
+    }
+  ],
+  "approved_hash": "2dcfe79fc5f4a3a23ef47c1f3f07a4ec9795e8d07adee81f0e58c0f4193bbcb6",
+  "report_hash": "5261435edb56709d9fbcaca46b0f4b85acb28e55efbf978f32775ae0124755e2"
+}
