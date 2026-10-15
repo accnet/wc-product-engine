@@ -203,6 +203,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
         if ($product instanceof WC_Product_Variable) {
             $this->read_children($product);
+            $this->read_default_attributes($product);
         }
 
         $product->set_object_read(true);
@@ -310,6 +311,32 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             'all'     => $all,
             'visible' => $visible,
         ];
+    }
+
+    protected function read_default_attributes(&$product): void
+    {
+        $productId = $product->get_id();
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT o.name, o.`key`, o.taxonomy, ov.label, ov.value_key
+             FROM {$this->wpdb->prefix}wpe_options o
+             INNER JOIN {$this->wpdb->prefix}wpe_option_values ov
+                 ON ov.id = o.default_value_id AND ov.option_id = o.id
+             WHERE o.product_id = %d AND o.used_for_variation = 1 AND o.default_value_id IS NOT NULL
+             ORDER BY o.position ASC",
+            $productId
+        ), ARRAY_A);
+
+        $defaults = [];
+        if (is_array($rows)) {
+            foreach ($rows as $r) {
+                $attrKey = sanitize_title((string)($r['name'] ?: $r['key']));
+                $attrVal = (string)$r['label'];
+                if ($attrKey !== '' && $attrVal !== '') {
+                    $defaults[$attrKey] = $attrVal;
+                }
+            }
+        }
+        $product->set_default_attributes($defaults);
     }
 
     public function sync_price(&$product): void

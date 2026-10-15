@@ -1,30 +1,46 @@
-/* WC Product Engine — Shopify Polaris Style Variable Product & Attribute Editor */
+/* WC Product Engine — Modern Commerce SaaS & Refined WordPress Native Design System */
 
 :root {
-    --wpe-p-color-bg: #f1f2f4;
+    /* Surface & Background Tokens */
+    --wpe-p-color-bg: #f1f5f9;
     --wpe-p-color-surface: #ffffff;
-    --wpe-p-color-surface-subdued: #fafbfb;
-    --wpe-p-color-surface-hover: #f7f7f8;
-    --wpe-p-color-border: #dcdfe3;
-    --wpe-p-color-border-subdued: #ebebeb;
-    --wpe-p-color-border-hover: #c9cccf;
-    --wpe-p-color-text: #202223;
-    --wpe-p-color-text-subdued: #6d7175;
+    --wpe-p-color-surface-subdued: #f8fafc;
+    --wpe-p-color-surface-hover: #f1f5f9;
+    --wpe-p-color-border: #cbd5e1;
+    --wpe-p-color-border-subdued: #e2e8f0;
+    --wpe-p-color-border-hover: #94a3b8;
+
+    /* Typography & Semantic Color Tokens */
+    --wpe-p-color-text: #0f172a;
+    --wpe-p-color-text-subdued: #475569;
+    --wpe-p-color-text-muted: #64748b;
     --wpe-p-color-interactive: #005bd3;
     --wpe-p-color-interactive-hover: #004299;
-    --wpe-p-color-primary: #303030;
-    --wpe-p-color-primary-hover: #1a1a1a;
+    --wpe-p-color-primary: #1e293b;
+    --wpe-p-color-primary-hover: #0f172a;
     --wpe-p-color-brand: #008060;
     --wpe-p-color-brand-hover: #006e52;
-    --wpe-p-color-critical: #d72c0d;
-    --wpe-p-color-critical-subdued: #fed3d1;
-    --wpe-p-color-success-subdued: #e3f1df;
+    --wpe-p-color-critical: #dc2626;
+    --wpe-p-color-critical-subdued: #fee2e2;
+    --wpe-p-color-warning: #d97706;
+    --wpe-p-color-warning-subdued: #fef3c7;
+    --wpe-p-color-success-subdued: #dcfce7;
+
+    /* Spacing Scale (4px base) */
+    --wpe-space-1: 4px;
+    --wpe-space-2: 8px;
+    --wpe-space-3: 12px;
+    --wpe-space-4: 16px;
+    --wpe-space-5: 20px;
+    --wpe-space-6: 24px;
+
+    /* Radius & Elevation Tokens */
     --wpe-p-border-radius-sm: 6px;
     --wpe-p-border-radius-base: 8px;
-    --wpe-p-border-radius-card: 12px;
-    --wpe-p-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.06);
-    --wpe-p-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
-    --wpe-p-shadow-floating: 0 10px 28px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    --wpe-p-border-radius-card: 10px;
+    --wpe-p-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    --wpe-p-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    --wpe-p-shadow-floating: 0 12px 32px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
 /* 1. WooCommerce Product Data Tab Integration (Legacy and Recovery Mode) */
@@ -51,25 +67,33 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #general_pr
 body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #inventory_product_data,
 body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #shipping_product_data,
 body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #product_attributes,
-body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_product_options {
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_product_options,
+body.wpe-mode-blocks.wpe-supported-product #postimagediv,
+body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     display: none !important;
 }
 
-/* Standalone meta boxes: hidden when unsupported or inactive */
+/* Standalone meta boxes & replaced native image boxes: hidden when marked .wpe-box-hidden */
+.postbox.wpe-box-hidden,
 #wpe_variants_manager.wpe-box-hidden,
-#wpe_product_info.wpe-box-hidden {
+#wpe_product_info.wpe-box-hidden,
+#wpe_product_media.wpe-box-hidden,
+#postimagediv.wpe-box-hidden,
+#woocommerce-product-images.wpe-box-hidden {
     display: none !important;
 }
 
 /* Meta box chrome */
 #wpe_variants_manager .inside,
-#wpe_product_info .inside {
+#wpe_product_info .inside,
+#wpe_product_media .inside {
     margin: 0;
     padding: 0;
 }
 
 #wpe_variants_manager .postbox-header,
-#wpe_product_info .postbox-header {
+#wpe_product_info .postbox-header,
+#wpe_product_media .postbox-header {
     align-items: center;
 }
 
@@ -87,8 +111,8 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
     line-height: 1;
     padding: 4px 10px;
     border-radius: 999px;
-    background: var(--wpe-p-color-bg-subdued, #f1f2f4);
-    color: var(--wpe-p-color-text-subdued, #616a75);
+    background: var(--wpe-p-color-surface-subdued, #f8fafc);
+    color: var(--wpe-p-color-text-subdued, #475569);
 }
 
 .wpe-box-status:empty {
@@ -96,18 +120,18 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
 }
 
 .wpe-box-status.dirty {
-    background: #ffea8a;
-    color: #5e4200;
+    background: var(--wpe-p-color-warning-subdued);
+    color: #92400e;
 }
 
 .wpe-box-status.clean {
     background: var(--wpe-p-color-success-subdued);
-    color: #0c5132;
+    color: #166534;
 }
 
 .wpe-box-status.error {
     background: var(--wpe-p-color-critical-subdued);
-    color: #8e1f0b;
+    color: #991b1b;
 }
 
 #wpe-box-fullscreen .dashicons {
@@ -130,19 +154,24 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
 .wpe-modal-backdrop input:focus-visible,
 .wpe-modal-backdrop select:focus-visible,
 #wpe-box-fullscreen:focus-visible {
-    outline: 2px solid #005bd3;
+    outline: 2px solid var(--wpe-p-color-interactive);
     outline-offset: 2px;
 }
 
-/* 2. Main Editor Wrapper — Shopify Canvas */
+/* 2. Main Editor Wrapper — Refined Commerce Canvas */
 .wpe-editor-wrap {
-    padding: 20px 20px 28px;
+    padding: 16px;
     background: var(--wpe-p-color-bg);
     color: var(--wpe-p-color-text);
-    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+}
+
+.wpe-editor-wrap--media {
+    padding: 0;
+    background: #ffffff;
 }
 
 .wpe-editor-loading {
@@ -299,23 +328,23 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-top-title-area {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .wpe-top-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     margin: 0;
     color: var(--wpe-p-color-text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 
 .wpe-dirty-badge {
@@ -349,11 +378,22 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
 .wpe-section {
     background: var(--wpe-p-color-surface);
     border-radius: var(--wpe-p-border-radius-card);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     box-shadow: var(--wpe-p-shadow-card);
     transition: box-shadow 0.2s ease;
     overflow: hidden;
     border: 1px solid var(--wpe-p-color-border-subdued);
+}
+
+.wpe-section:last-child {
+    margin-bottom: 0;
+}
+
+.wpe-section--flat {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 .wpe-section:hover {
@@ -364,31 +404,39 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
+    padding: 14px 20px;
     background: var(--wpe-p-color-surface);
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .wpe-section-title-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .wpe-section-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     margin: 0;
     color: var(--wpe-p-color-text);
 }
 
 .wpe-section-count {
-    background: #f1f2f4;
+    background: #f1f5f9;
     color: var(--wpe-p-color-text-subdued);
-    font-size: 12px;
+    font-size: 11.5px;
     padding: 2px 8px;
     border-radius: 9999px;
     font-weight: 600;
+}
+
+.wpe-section-subtitle {
+    font-size: 12px;
+    color: var(--wpe-p-color-text-subdued);
 }
 
 .wpe-section-desc {
@@ -399,7 +447,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
 }
 
 .wpe-section-body {
-    padding: 20px;
+    padding: 18px 20px;
 }
 
 /* Shopify Polaris Tag Input Component */
@@ -425,25 +473,35 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-data #variable_p
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: #e4e5e7;
-    border: none;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     border-radius: var(--wpe-p-border-radius-sm);
     padding: 3px 8px;
     font-size: 12px;
     font-weight: 500;
     color: var(--wpe-p-color-text);
     line-height: 1.4;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .wpe-chip:hover {
-    background: #d6d8db;
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.wpe-chip-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(15, 23, 42, 0.22);
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 .wpe-chip-remove {
     cursor: pointer;
     font-size: 15px;
-    color: #6d7175;
+    color: #64748b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1865,6 +1923,15 @@ select.wpe-editable-input {
     margin-bottom: 12px;
 }
 
+.wpe-media-upload-zone--compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-width: 1px;
+}
+
 .wpe-media-upload-zone:hover,
 .wpe-media-upload-zone.is-dragover {
     border-color: var(--wpe-p-color-interactive);
@@ -1994,4 +2061,287 @@ select.wpe-editable-input {
 
 .wpe-picker-item.is-selected .wpe-picker-check {
     display: flex;
+}
+
+/* Drawer Prev / Next Variant Navigation */
+.wpe-drawer-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wpe-btn-drawer-nav {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+}
+
+/* 15. Product Information Block & Transition Modals */
+.wpe-info-wrap {
+    padding: 16px 20px;
+}
+
+.wpe-info-section {
+    background: var(--wpe-p-color-surface);
+    border: 1px solid var(--wpe-p-color-border-subdued);
+    border-radius: var(--wpe-p-border-radius-card);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--wpe-p-shadow-card);
+}
+
+.wpe-info-section:last-child {
+    margin-bottom: 0;
+}
+
+.wpe-info-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+}
+
+.wpe-info-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wpe-p-color-text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wpe-info-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.wpe-info-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.wpe-info-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 782px) {
+    .wpe-info-grid-2,
+    .wpe-info-grid-3,
+    .wpe-info-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wpe-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wpe-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--wpe-p-color-text-subdued);
+}
+
+.wpe-field input[type="text"],
+.wpe-field input[type="number"],
+.wpe-field input[type="date"],
+.wpe-field select {
+    width: 100%;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 6px 10px !important;
+    border: 1px solid var(--wpe-p-color-border) !important;
+    border-radius: var(--wpe-p-border-radius-base) !important;
+    font-size: 13px !important;
+    background: #ffffff !important;
+    color: var(--wpe-p-color-text) !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+}
+
+.wpe-field input:focus,
+.wpe-field select:focus {
+    border-color: var(--wpe-p-color-interactive) !important;
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
+    outline: none !important;
+}
+
+/* Reference Price Card (Variable Product) */
+.wpe-ref-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 14px 18px;
+    gap: 16px;
+}
+
+.wpe-ref-card.unpriced {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.wpe-ref-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--wpe-p-color-text);
+    line-height: 1.2;
+}
+
+.wpe-ref-source {
+    font-size: 12px;
+    color: var(--wpe-p-color-text-subdued);
+    margin-top: 3px;
+}
+
+.wpe-ref-unpriced-warning {
+    color: #b45309;
+    font-weight: 600;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Common Price Card */
+.wpe-common-price-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--wpe-p-border-radius-base);
+    padding: 16px 18px;
+    margin-top: 12px;
+}
+
+.wpe-common-price-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.wpe-common-price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+/* Empty Variants Card (Simple Product) */
+.wpe-empty-variants-card {
+    text-align: center;
+    padding: 28px 20px;
+    background: var(--wpe-p-color-surface);
+    border: 1px dashed var(--wpe-p-color-border-hover);
+    border-radius: var(--wpe-p-border-radius-card);
+}
+
+.wpe-empty-variants-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--wpe-p-color-text);
+    margin: 0 0 6px 0;
+}
+
+.wpe-empty-variants-desc {
+    font-size: 13px;
+    color: var(--wpe-p-color-text-subdued);
+    margin: 0 0 16px 0;
+}
+
+/* Fullscreen Navigation Tabs */
+.wpe-modal-nav {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    padding: 0 20px;
+    background: #ffffff;
+}
+
+.wpe-tab-btn {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--wpe-p-color-text-subdued) !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.wpe-tab-btn.active {
+    color: var(--wpe-p-color-interactive) !important;
+    border-bottom-color: var(--wpe-p-color-interactive) !important;
+}
+
+.wpe-badge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.wpe-pricing-mode-select {
+    width: auto !important;
+    min-width: 82px !important;
+}
+
+/* Transition & Removal Dialog Helpers */
+.wpe-dialog-warning-banner {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    color: #92400e;
+    font-size: 13px;
+}
+
+.wpe-dialog-resolution-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wpe-dialog-radio-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: 8px;
+    cursor: pointer;
+    background: #ffffff;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.wpe-dialog-radio-card:hover {
+    border-color: var(--wpe-p-color-interactive);
+    background: #f8fafc;
 }

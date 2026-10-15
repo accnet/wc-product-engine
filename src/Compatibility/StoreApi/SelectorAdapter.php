@@ -981,6 +981,44 @@ class SelectorAdapter
 
         $cleanHtml = preg_replace('/(<select\b[^>]*?)\s+class="[^"]*"/i', '$1', $html, 1) ?: $html;
 
+        $selectedValObj = null;
+        if ($selected !== false && $selected !== '' && $selected !== null) {
+            $selStr = (string)$selected;
+            foreach ($matchedOption['values'] ?? [] as $valItem) {
+                if (
+                    (string)($valItem['id'] ?? '') === $selStr
+                    || (string)($valItem['value_key'] ?? '') === $selStr
+                    || (string)($valItem['key'] ?? '') === $selStr
+                    || strcasecmp((string)($valItem['label'] ?? ''), $selStr) === 0
+                ) {
+                    $selectedValObj = $valItem;
+                    break;
+                }
+            }
+        }
+        if ($selectedValObj !== null && stripos($cleanHtml, 'selected') === false) {
+            $candidates = array_values(array_unique(array_filter([
+                (string)($selectedValObj['value_key'] ?? ''),
+                (string)($selectedValObj['key'] ?? ''),
+                (string)($selectedValObj['label'] ?? ''),
+                (string)($selectedValObj['id'] ?? ''),
+            ], static fn(string $s): bool => $s !== '')));
+            foreach ($candidates as $cand) {
+                $escapedCand = preg_quote(esc_attr($cand), '/');
+                $updatedHtml = preg_replace(
+                    '/(<option\b[^>]*\bvalue="' . $escapedCand . '"[^>]*)(>)/i',
+                    '$1 selected="selected"$2',
+                    $cleanHtml,
+                    1,
+                    $count
+                );
+                if ($count > 0 && is_string($updatedHtml)) {
+                    $cleanHtml = $updatedHtml;
+                    break;
+                }
+            }
+        }
+
         // When effective display type is dropdown, keep only the native <select> visible (no competing swatch group)
         if ($swatchType === 'dropdown') {
             $selectAttrs = sprintf(

@@ -229,6 +229,31 @@ class ProductEditorService
             }
             $helpText = (string)($optUi['help_text'] ?? '');
 
+            $rawDefValId = !empty($opt['default_value_id']) ? (int)$opt['default_value_id'] : null;
+            $defValLabel = null;
+            $mappedValues = array_map(function ($v) use ($rawDefValId, &$defValLabel) {
+                $vId = (int)$v['id'];
+                if ($rawDefValId !== null && $vId === $rawDefValId) {
+                    $defValLabel = (string)$v['label'];
+                }
+                $swatchData = !empty($v['swatch']) ? (json_decode((string)$v['swatch'], true) ?: []) : [];
+                if (!is_array($swatchData)) {
+                    $swatchData = [];
+                }
+                $color = isset($swatchData['color']) && is_string($swatchData['color']) && preg_match('/^#[0-9a-fA-F]{6}$/', $swatchData['color'])
+                    ? strtolower($swatchData['color'])
+                    : '';
+                return [
+                    'id'        => $vId,
+                    'label'     => $v['label'],
+                    'value_key' => $v['value_key'],
+                    'position'  => (int)$v['position'],
+                    'color'     => $color,
+                    'swatch'    => $swatchData,
+                ];
+            }, $opt['values'] ?? []);
+            $defValId = $defValLabel !== null ? $rawDefValId : null;
+
             $optItem = [
                 'id'                 => $optId,
                 'name'               => $opt['name'],
@@ -237,26 +262,11 @@ class ProductEditorService
                 'position'           => (int)$opt['position'],
                 'visible'            => !empty($opt['visible']),
                 'used_for_variation' => !empty($opt['used_for_variation']),
-                'default_value_id'   => $opt['default_value_id'] ? (int)$opt['default_value_id'] : null,
+                'default_value_id'   => $defValId,
+                'default_value'      => $defValLabel,
                 'display_type'       => $displayType,
                 'help_text'          => $helpText,
-                'values'             => array_map(function ($v) {
-                    $swatchData = !empty($v['swatch']) ? (json_decode((string)$v['swatch'], true) ?: []) : [];
-                    if (!is_array($swatchData)) {
-                        $swatchData = [];
-                    }
-                    $color = isset($swatchData['color']) && is_string($swatchData['color']) && preg_match('/^#[0-9a-fA-F]{6}$/', $swatchData['color'])
-                        ? strtolower($swatchData['color'])
-                        : '';
-                    return [
-                        'id'        => (int)$v['id'],
-                        'label'     => $v['label'],
-                        'value_key' => $v['value_key'],
-                        'position'  => (int)$v['position'],
-                        'color'     => $color,
-                        'swatch'    => $swatchData,
-                    ];
-                }, $opt['values'] ?? []),
+                'values'             => $mappedValues,
             ];
 
             if ($optItem['used_for_variation']) {
@@ -1177,6 +1187,10 @@ class ProductEditorService
                 $projection['catalog_index'] = 'ok';
             } catch (\Throwable $cE) {
                 $projection['catalog_index'] = 'error';
+            }
+
+            if (class_exists(\WPE\Compatibility\StoreApi\SelectorAdapter::class)) {
+                \WPE\Compatibility\StoreApi\SelectorAdapter::instance()->invalidateCache($productId);
             }
 
             $savedData = $this->getProductEditorData($productId);

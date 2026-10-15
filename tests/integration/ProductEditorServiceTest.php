@@ -489,8 +489,34 @@ class ProductEditorServiceTest
             'variations'        => $varsPayload,
         ]);
         assert($resDef['success'] === true, 'Saving default_value on option must succeed');
+        assert(($resDef['data']['variation_options'][0]['default_value'] ?? null) === $firstValLabel, 'getProductEditorData must return default_value label matching default_value_id');
+        assert(($resDef['data']['variation_options'][0]['default_value_id'] ?? null) === (int)$opts[0]['values'][0]['id'], 'getProductEditorData must return default_value_id');
         $defAttrs = get_post_meta($productId, '_default_attributes', true);
         assert(is_array($defAttrs) && ($defAttrs[$optSlug] ?? '') === $firstValLabel, '_default_attributes postmeta must be projected with default value');
+
+        $wcProd = new \WC_Product_Variable($productId);
+        (new \WPE\Compatibility\WooDataStore\ProductDataStore())->read($wcProd);
+        $wcDefAttrs = $wcProd->get_default_attributes();
+        assert(($wcDefAttrs[$optSlug] ?? '') === $firstValLabel, 'WC_Product_Variable::get_default_attributes must return default value from native storage');
+
+        // Verify clearing default_value resets default_value, default_value_id, and _default_attributes
+        $optsClear = $resDef['data']['variation_options'];
+        $optsClear[0]['default_value'] = null;
+        $optsClear[0]['default_value_id'] = null;
+        $varsClearPayload = array_map(static function (array $v): array {
+            unset($v['inventory_mode']);
+            return $v;
+        }, $resDef['data']['variations']);
+        $resClear = $this->service->saveProductVariants($productId, [
+            'expected_version'  => $resDef['data']['product']['version'],
+            'variation_options' => $optsClear,
+            'variations'        => $varsClearPayload,
+        ]);
+        assert($resClear['success'] === true, 'Clearing default_value on option must succeed');
+        assert(($resClear['data']['variation_options'][0]['default_value'] ?? null) === null, 'Cleared default_value must be null');
+        assert(($resClear['data']['variation_options'][0]['default_value_id'] ?? null) === null, 'Cleared default_value_id must be null');
+        $defAttrsAfterClear = get_post_meta($productId, '_default_attributes', true);
+        assert(is_array($defAttrsAfterClear) && empty($defAttrsAfterClear[$optSlug]), '_default_attributes postmeta must be cleared when default is removed');
 
         echo " OK\n";
     }

@@ -317,7 +317,7 @@ try {
     const moreCardText = moreCardVisible ? await moreCard.textContent() : '';
 
     check('With 12 images, inline grid caps at 9 .wpe-media-card items (2 rows total with more tile)', inlineCardCount === 9, String(inlineCardCount));
-    check('10th slot in 2-row inline grid renders .wpe-media-more-card with "+3" and "Xem thêm"', moreCardVisible && moreCardText.includes('+3') && moreCardText.includes('Xem thêm'), moreCardText);
+    check('10th slot in 2-row inline grid renders .wpe-media-more-card with "+3" and "View All"', moreCardVisible && moreCardText.includes('+3') && (moreCardText.includes('View All') || moreCardText.includes('Xem thêm')), moreCardText);
 
     await page.evaluate(() => {
         const el = document.getElementById('wpe_product_media');

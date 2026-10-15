@@ -99,9 +99,16 @@ const evalFile = (file, ...args) => {
 const created = [];
 let browser;
 const originalFlags = flagsInDb();
+let originalEditorMode = null;
+try {
+    originalEditorMode = wp('option', 'get', 'wpe_editor_mode');
+} catch (e) {
+    originalEditorMode = null;
+}
 let exitCode = 0;
 
 try {
+    wp('option', 'update', 'wpe_editor_mode', 'blocks');
     const variable = evalFile('fixture.php', 'variable');
     const simple = evalFile('fixture.php', 'simple');
     created.push(variable.id, simple.id);
@@ -405,6 +412,16 @@ try {
         }
     } catch (e) {
         console.warn('Cleanup error:', e.message);
+    }
+
+    try {
+        if (originalEditorMode === null) {
+            wp('option', 'delete', 'wpe_editor_mode');
+        } else {
+            wp('option', 'update', 'wpe_editor_mode', originalEditorMode);
+        }
+    } catch (e) {
+        // ignore
     }
 
     const flagsAfter = flagsInDb();

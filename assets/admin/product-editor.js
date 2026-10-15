@@ -100,10 +100,15 @@
         productId: productId,
         version: 1,
         isDirty: false,
+        mediaDirty: false,
         isLoading: true,
         isLoaded: false,
         isRequested: false,
+        mediaRequested: false,
+        mediaLoaded: false,
+        fullscreenTab: 'variants',
         type: config.productType || 'simple',
+        derivedType: config.productType || 'simple',
         product: {
             sku: '',
             status: 'publish',
@@ -121,6 +126,9 @@
             backorders: 'no',
             parent_inventory: { manage_stock: 0, quantity: null, stock_status: 'instock', backorders: 'no' }
         },
+        commonPrice: null,
+        referencePrice: null,
+        typeTransition: null,
         descriptiveAttributes: [],
         variationOptions: [],
         variations: [],
@@ -160,6 +168,12 @@
             this.notify();
         },
 
+        markMediaDirty() {
+            this.isDirty = true;
+            this.mediaDirty = true;
+            this.notify();
+        },
+
         /**
          * Non-destructive dirty update for inline table cell editing:
          * keeps the active table DOM and input focus intact while syncing badges,
@@ -173,14 +187,24 @@
             if (sourceContainerId === '#wpe-product-editor-modal-app' && $('#wpe-product-editor-inline-app').length) {
                 renderVariantsApp('#wpe-product-editor-inline-app');
             }
+            const $infoApp = $('#wpe-product-info-app');
+            if ($infoApp.length && wpeVariantStore.commonPrice === null) {
+                const $refCard = $infoApp.find('.wpe-ref-card');
+                if ($refCard.length) {
+                    $refCard.replaceWith(renderReferencePriceCard());
+                    bindProductInfoEvents($infoApp);
+                }
+            }
         },
 
         /**
-         * The hidden field travels with the WordPress Update/Publish submit. It is filled while the
-         * draft is dirty and the product type is supported (simple or variable).
+         * The hidden field travels with the WordPress Update/Publish submit.
          */
         syncHiddenPayload() {
-            if (!this.isDirty || !isSupportedProductType()) {
+            const shouldSync = config.editorMode === 'blocks'
+                ? (this.isDirty && isSupportedProductType())
+                : (this.isDirty && (isVariableType() || this.mediaDirty));
+            if (!shouldSync) {
                 $('#wpe_variants_payload').val('');
                 return;
             }
@@ -201,7 +225,8 @@
         if (prod.status === 'auto-draft') {
             delete prod.status;
         }
-        if (isVariableType()) {
+        const isVar = isVariableType();
+        if (isVar) {
             prod.regular_price = null;
             prod.sale_price = null;
             prod.sale_from = null;
@@ -217,6 +242,24 @@
         };
         prod.stock = stockObj;
         prod.parent_stock = stockObj;
+
+        const hasCommonPrice = isVar && wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
+        const cpReg = hasCommonPrice ? (wpeVariantStore.commonPrice.regular_price !== undefined ? wpeVariantStore.commonPrice.regular_price : wpeVariantStore.commonPrice.regular) : null;
+        const cpSale = hasCommonPrice ? (wpeVariantStore.commonPrice.sale_price !== undefined ? wpeVariantStore.commonPrice.sale_price : wpeVariantStore.commonPrice.sale) : null;
+        const cpFrom = hasCommonPrice ? (wpeVariantStore.commonPrice.sale_from || wpeVariantStore.commonPrice.from || null) : null;
+        const cpTo = hasCommonPrice ? (wpeVariantStore.commonPrice.sale_to || wpeVariantStore.commonPrice.to || null) : null;
+        const commonPricePayload = hasCommonPrice
+            ? {
+                regular_price: cpReg !== '' && cpReg !== null && cpReg !== undefined ? String(cpReg) : null,
+                sale_price: cpSale !== '' && cpSale !== null && cpSale !== undefined ? String(cpSale) : null,
+                sale_from: cpFrom,
+                sale_to: cpTo,
+                regular: cpReg !== '' && cpReg !== null && cpReg !== undefined ? String(cpReg) : null,
+                sale: cpSale !== '' && cpSale !== null && cpSale !== undefined ? String(cpSale) : null,
+                from: cpFrom,
+                to: cpTo
+            }
+            : null;
 
         const mediaLib = wpeVariantStore.mediaLibrary || {};
         const altTexts = [];
@@ -235,12 +278,12 @@
             }
         });
 
-        return {
+        const payload = {
             expected_version: wpeVariantStore.version,
             product: prod,
             descriptive_attributes: wpeVariantStore.descriptiveAttributes,
             variation_options: wpeVariantStore.variationOptions.map(opt => {
-                const copy = Object.assign({}, opt);
+                const copy = normalizeVariationOptionDefaults(opt);
                 copy.display_type = 'auto';
                 copy.help_text = '';
                 return copy;
@@ -248,6 +291,11 @@
             variations: wpeVariantStore.variations.map(v => {
                 const copy = Object.assign({}, v);
                 delete copy.inventory_mode;
+                if (hasCommonPrice) {
+                    copy.pricing_mode = copy.pricing_mode === 'shared' ? 'shared' : 'own';
+                } else {
+                    delete copy.pricing_mode;
+                }
                 if (copy.image_asset_id !== undefined && copy.image_asset_id !== null && copy.image_asset_id !== '') {
                     copy.image_asset_id = parseInt(copy.image_asset_id, 10);
                 }
@@ -264,6 +312,13 @@
                 alt_texts: altTexts
             }
         };
+        if (hasCommonPrice) {
+            payload.common_price = commonPricePayload;
+        }
+        if (wpeVariantStore.typeTransition) {
+            payload.type_transition = wpeVariantStore.typeTransition;
+        }
+        return payload;
     }
 
     /**
@@ -418,6 +473,12 @@
     }
 
     function isVariableType() {
+        if (!isSupportedProductType()) {
+            return false;
+        }
+        if (config.editorMode === 'blocks') {
+            return (wpeVariantStore.derivedType || wpeVariantStore.type || config.productType) === 'variable' || wpeVariantStore.variationOptions.length > 0;
+        }
         return getCurrentProductType() === 'variable';
     }
 
@@ -849,7 +910,7 @@
             .fail(function () {
                 // Keep in draft so unified Save Changes / Update persists it
                 asset.pending_link = true;
-                wpeVariantStore.markDirty();
+                wpeVariantStore.markMediaDirty();
                 if (onDone) onDone(asset);
             });
     }
@@ -967,11 +1028,11 @@
 
     /**
      * Render the Per-Product Media Library Section (P011.9)
-     * Inline view displays at most 2 rows (10 slots on desktop: 9 cards + 1 "+X Xem thêm" tile when > 10 images).
+     * Inline view displays at most 2 rows (10 slots on desktop: 9 cards + 1 "+X View All" tile when > 10 images).
      */
-    function renderProductMediaApp() {
+    function renderProductMediaApp(targetSelector) {
         ensureProductMediaBox();
-        const $container = $('#wpe-product-media-app');
+        const $container = $(targetSelector || '#wpe-product-media-app');
         if (!$container.length) return;
 
         if (!isSupportedProductType()) {
@@ -979,7 +1040,7 @@
             return;
         }
 
-        if (wpeVariantStore.isLoading) {
+        if (wpeVariantStore.isLoading && !wpeVariantStore.mediaLoaded) {
             $container.html(`
                 <div class="wpe-editor-loading">
                     <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
@@ -991,6 +1052,7 @@
 
         const orderedAssets = getOrderedProductAssets();
         const queue = wpeVariantStore.uploadQueue || [];
+        const viewAllLabel = (config.i18n && config.i18n.viewAllMedia) || 'View All';
 
         let cardsHtml = '';
         if (orderedAssets.length === 0) {
@@ -1006,7 +1068,7 @@
                 cardsHtml += buildMediaCardHtml(asset, idx, orderedAssets.length);
             });
         } else {
-            const visibleCount = INLINE_MEDIA_MAX_SLOTS - 1; // 9 cards + 1 "+X Xem thêm" card = 10 slots (2 rows)
+            const visibleCount = INLINE_MEDIA_MAX_SLOTS - 1; // 9 cards + 1 "+X View All" card = 10 slots (2 rows)
             const hiddenCount = orderedAssets.length - visibleCount;
             const tenthAsset = orderedAssets[visibleCount];
 
@@ -1015,41 +1077,42 @@
             });
 
             cardsHtml += `
-                <button type="button" class="wpe-media-more-card wpe-btn-open-full-media" title="Xem đầy đủ ${orderedAssets.length} ảnh của sản phẩm">
+                <button type="button" class="wpe-media-more-card wpe-btn-open-full-media" title="View all ${orderedAssets.length} product images">
                     ${tenthAsset && tenthAsset.url ? `<img class="wpe-media-more-card-bg" src="${escapeHtml(tenthAsset.url)}" alt="" loading="lazy" />` : ''}
                     <div class="wpe-media-more-card-content">
                         <span class="wpe-media-more-count">+${hiddenCount}</span>
-                        <span class="wpe-media-more-label">Xem thêm</span>
-                        <span class="wpe-media-more-sub">Xem đầy đủ ${orderedAssets.length} ảnh</span>
+                        <span class="wpe-media-more-label">${escapeHtml(viewAllLabel)}</span>
+                        <span class="wpe-media-more-sub">Show all ${orderedAssets.length} images</span>
                     </div>
                 </button>
             `;
         }
 
         const queueHtml = buildUploadQueueHtml(queue);
+        const isCompactDropzone = orderedAssets.length > 0;
 
         const html = `
-            <div class="wpe-editor-wrap" style="padding:14px 16px;">
-                <div class="wpe-section" style="margin-bottom:0;">
+            <div class="wpe-editor-wrap wpe-editor-wrap--media">
+                <div class="wpe-section wpe-section--flat">
                     <div class="wpe-section-header">
                         <div class="wpe-section-title-wrap">
                             <span class="dashicons dashicons-images-alt2" style="color:#008060;"></span>
                             <h4 class="wpe-section-title">Product Media Library</h4>
                             <span class="wpe-section-count">${orderedAssets.length}</span>
-                            <span style="font-size:11.5px; color:#64748b; margin-left:4px;">(Product-scoped &bull; Max 2 rows inline &bull; First image is Featured)</span>
+                            <span class="wpe-section-subtitle">(Product-scoped &bull; Max 2 rows inline &bull; First image is Featured)</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             ${orderedAssets.length > 0 ? `
                                 <button type="button" class="button wpe-btn-open-full-media">
-                                    <span class="dashicons dashicons-grid-view" style="margin-top:3px;"></span> Xem tất cả (${orderedAssets.length})
+                                    <span class="dashicons dashicons-grid-view"></span> ${escapeHtml(viewAllLabel)} (${orderedAssets.length})
                                 </button>
                             ` : ''}
                             <button type="button" class="button wpe-btn-trigger-media-upload">
-                                <span class="dashicons dashicons-upload" style="margin-top:3px;"></span> Upload Images
+                                <span class="dashicons dashicons-upload"></span> Upload Images
                             </button>
                             ${wpeVariantStore.isDirty ? `
                                 <button type="button" class="button button-primary wpe-btn-save-media-direct">
-                                    <span class="dashicons dashicons-saved" style="margin-top:3px;"></span> Save Media
+                                    <span class="dashicons dashicons-saved"></span> Save Media
                                 </button>
                             ` : ''}
                         </div>
@@ -1060,11 +1123,13 @@
                             ${cardsHtml}
                         </div>
 
-                        <div class="wpe-media-upload-zone wpe-media-dropzone" id="wpe-media-dropzone">
+                        <div class="wpe-media-upload-zone ${isCompactDropzone ? 'wpe-media-upload-zone--compact' : ''} wpe-media-dropzone" id="wpe-media-dropzone">
                             <input type="file" id="wpe-media-file-input" class="wpe-media-file-input" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
-                            <span class="dashicons dashicons-cloud-upload" style="font-size:24px; width:24px; height:24px; color:#2563eb;"></span>
-                            <div style="font-weight:600; font-size:13px; color:#1e293b; margin-top:4px;">Drop product images here or click to browse</div>
-                            <div style="font-size:11.5px; color:#64748b; margin-top:2px;">Supports JPG, PNG, WebP, GIF, AVIF &bull; Automatically stored in this product's isolated library</div>
+                            <span class="dashicons dashicons-cloud-upload" style="font-size:${isCompactDropzone ? '20px' : '24px'}; width:${isCompactDropzone ? '20px' : '24px'}; height:${isCompactDropzone ? '20px' : '24px'}; color:#2563eb;"></span>
+                            <div>
+                                <span style="font-weight:600; font-size:12.5px; color:#1e293b;">Drop product images here or click to browse</span>
+                                <span style="font-size:11.5px; color:#64748b; margin-left:6px;">(JPG, PNG, WebP, GIF, AVIF &bull; Product-isolated library)</span>
+                            </div>
                         </div>
 
                         <div class="wpe-media-url-bar">
@@ -1102,12 +1167,12 @@
                     <div class="wpe-modal-header">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span class="dashicons dashicons-images-alt2" style="color:#008060;"></span>
-                            <h4 class="wpe-modal-title">Product Media Library &mdash; Toàn bộ ảnh (<span id="wpe-full-media-count">${orderedAssets.length}</span>)</h4>
-                            <span style="font-size:12px; color:#64748b;">(Kéo thả để sắp xếp &bull; Ảnh đầu tiên là Featured)</span>
+                            <h4 class="wpe-modal-title">Product Media Library &mdash; All Images (<span id="wpe-full-media-count">${orderedAssets.length}</span>)</h4>
+                            <span style="font-size:12px; color:#64748b;">(Drag &amp; drop to reorder &bull; First image is Featured)</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <button type="button" class="button wpe-btn-trigger-media-upload">
-                                <span class="dashicons dashicons-upload" style="margin-top:3px;"></span> Upload Images
+                                <span class="dashicons dashicons-upload"></span> Upload Images
                             </button>
                             <button type="button" class="button-link wpe-btn-close-modal" style="font-size:20px; text-decoration:none;">&times;</button>
                         </div>
@@ -1151,10 +1216,10 @@
             <div class="wpe-media-grid wpe-media-grid--full">
                 ${allCardsHtml}
             </div>
-            <div class="wpe-media-upload-zone wpe-media-dropzone">
+            <div class="wpe-media-upload-zone wpe-media-upload-zone--compact wpe-media-dropzone">
                 <input type="file" class="wpe-media-file-input" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
-                <span class="dashicons dashicons-cloud-upload" style="font-size:22px; width:22px; height:22px; color:#2563eb;"></span>
-                <div style="font-weight:600; font-size:12.5px; color:#1e293b; margin-top:2px;">Drop product images here or click to upload more</div>
+                <span class="dashicons dashicons-cloud-upload" style="font-size:20px; width:20px; height:20px; color:#2563eb;"></span>
+                <div style="font-weight:600; font-size:12.5px; color:#1e293b;">Drop product images here or click to upload more</div>
             </div>
             <div class="wpe-media-url-bar">
                 <span class="dashicons dashicons-admin-links" style="color:#64748b;"></span>
@@ -1166,14 +1231,14 @@
 
         $modal.find('#wpe-product-media-full-footer').html(`
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <span style="font-size:12px; color:#64748b;">Hiển thị đầy đủ ${orderedAssets.length} ảnh của sản phẩm</span>
+                <span style="font-size:12px; color:#64748b;">Showing all ${orderedAssets.length} product images</span>
                 <div style="display:flex; gap:8px;">
                     ${wpeVariantStore.isDirty ? `
                         <button type="button" class="button button-primary wpe-btn-save-media-direct">
-                            <span class="dashicons dashicons-saved" style="margin-top:3px;"></span> Save Media
+                            <span class="dashicons dashicons-saved"></span> Save Media
                         </button>
                     ` : ''}
-                    <button type="button" class="button wpe-btn-close-modal">Đóng</button>
+                    <button type="button" class="button wpe-btn-close-modal">Close</button>
                 </div>
             </div>
         `);
@@ -1202,7 +1267,7 @@
             position: idx,
             alt_override: item.alt_override !== undefined ? item.alt_override : null
         }));
-        wpeVariantStore.markDirty();
+        wpeVariantStore.markMediaDirty();
     }
 
     function enqueueAndUploadFiles(fileList, onEachUploaded) {
@@ -1233,7 +1298,7 @@
             .done(function (res) {
                 wpeVariantStore.uploadQueue = wpeVariantStore.uploadQueue.filter(i => i.id !== qItem.id);
                 const draftAsset = upsertLocalLibraryAsset(Object.assign({}, res, { pending_link: true }), true);
-                wpeVariantStore.markDirty();
+                wpeVariantStore.markMediaDirty();
                 showToast(`Uploaded "${qItem.fileName}" to product draft! Click Save to finalize.`, 'success');
                 if (onUploaded && draftAsset) {
                     onUploaded(draftAsset);
@@ -1324,7 +1389,7 @@
                     $urlInput.val('');
                     $altInput.val('');
                     upsertLocalLibraryAsset(Object.assign({}, res, { pending_link: true }), true);
-                    wpeVariantStore.markDirty();
+                    wpeVariantStore.markMediaDirty();
                     showToast('Added external image to product draft! Click Save to finalize.', 'success');
                 })
                 .fail(function (xhr) {
@@ -1354,7 +1419,7 @@
             lib.gallery.forEach((g, i) => { g.position = i; });
             lib.featured_asset_id = targetId;
             lib.featured = (lib.assets || []).find(a => parseInt(a.asset_id || a.id, 10) === targetId) || null;
-            wpeVariantStore.markDirty();
+            wpeVariantStore.markMediaDirty();
         });
 
         // Demote Featured to Gallery (promotes first gallery item to Featured)
@@ -1424,6 +1489,7 @@
             }
             $('.wpe-media-alt-input[data-asset-id="' + aid + '"]').not(this).val(val);
             wpeVariantStore.isDirty = true;
+            wpeVariantStore.mediaDirty = true;
             wpeVariantStore.syncHiddenPayload();
             updateBoxHeader();
             updateDirtyChrome();
@@ -1455,6 +1521,7 @@
                             applyServerData(res.result.data);
                         }
                         wpeVariantStore.isDirty = false;
+                        wpeVariantStore.mediaDirty = false;
                         wpeVariantStore.notify();
                         showToast(config.i18n.saveSuccess || 'Saved successfully!', 'success');
                     } else {
@@ -1466,7 +1533,7 @@
                     showToast(err.message || 'Server error saving media.', 'error');
                 })
                 .always(function () {
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved" style="margin-top:3px;"></span> Save Media');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Save Media');
                 });
         });
     }
@@ -2024,7 +2091,914 @@
         });
     }
 
+    function getVariantLabel(v) {
+        const attrs = v.attributes || v.combination || {};
+        const vals = Object.values(attrs).filter(Boolean);
+        if (vals.length > 0) return vals.join(' / ');
+        if (v.sku) return v.sku;
+        return '#' + (v.id || '');
+    }
+
+    function formatDateForInput(val) {
+        if (!val) return '';
+        const m = String(val).match(/^(\d{4}-\d{2}-\d{2})/);
+        return m ? m[1] : '';
+    }
+
+    function emptyVal(v) {
+        return v === null || v === undefined || String(v).trim() === '';
+    }
+
+    function getEffectiveReferencePrice() {
+        const vars = wpeVariantStore.variations;
+        if (!vars || vars.length === 0) {
+            return {
+                state: 'none',
+                label: null,
+                source_variant_id: null,
+                regular_price: null,
+                sale_price: null,
+                sale_from: null,
+                sale_to: null,
+                active_price: null,
+                sale_active: false
+            };
+        }
+
+        // Must sort strictly by position ASC, id ASC over the entire set, ignoring UI filters/pagination
+        const sorted = [...vars].sort((a, b) => {
+            const posA = a.position !== undefined ? a.position : 0;
+            const posB = b.position !== undefined ? b.position : 0;
+            if (posA !== posB) return posA - posB;
+            return (a.id || 0) - (b.id || 0);
+        });
+
+        const first = sorted[0];
+        const label = getVariantLabel(first);
+
+        const hasReg = first.regular_price !== null && first.regular_price !== undefined && String(first.regular_price).trim() !== '';
+        const hasSale = first.sale_price !== null && first.sale_price !== undefined && String(first.sale_price).trim() !== '';
+
+        if (!hasReg && !hasSale) {
+            return {
+                state: 'unpriced',
+                label: label,
+                source_variant_id: first.id,
+                regular_price: null,
+                sale_price: null,
+                sale_from: null,
+                sale_to: null,
+                active_price: null,
+                sale_active: false
+            };
+        }
+
+        const reg = hasReg ? String(first.regular_price).trim() : null;
+        const sale = hasSale ? String(first.sale_price).trim() : null;
+
+        let saleActive = false;
+        let activePrice = reg;
+        if (sale !== null) {
+            const now = new Date();
+            const fromOk = !first.sale_from || new Date(first.sale_from) <= now;
+            const toOk = !first.sale_to || new Date(first.sale_to) >= now;
+            if (fromOk && toOk) {
+                saleActive = true;
+                activePrice = sale;
+            }
+        }
+
+        return {
+            state: 'priced',
+            label: label,
+            source_variant_id: first.id,
+            regular_price: reg,
+            sale_price: sale,
+            sale_from: first.sale_from || null,
+            sale_to: first.sale_to || null,
+            active_price: activePrice,
+            sale_active: saleActive
+        };
+    }
+
+    function openCommonPriceRemovalModal(sharedVariants) {
+        const cp = wpeVariantStore.commonPrice || {};
+        const count = sharedVariants.length;
+        const modalHtml = `
+            <div id="wpe-common-removal-modal" class="wpe-modal-backdrop" role="dialog" aria-modal="true" aria-label="Xác nhận xóa giá chung">
+                <div class="wpe-modal-dialog wpe-modal-dialog-md">
+                    <div class="wpe-modal-header">
+                        <h3 class="wpe-modal-title">Xác nhận xóa giá chung / Remove Common Price</h3>
+                        <button type="button" class="wpe-modal-close wpe-btn-cancel-modal" aria-label="Đóng">&times;</button>
+                    </div>
+                    <div class="wpe-modal-body">
+                        <div class="wpe-dialog-warning-banner">
+                            <strong>Lưu ý:</strong> Đang có <strong>${count}</strong> biến thể sử dụng mức giá chung này ($${escapeHtml(cp.regular_price || '0')}${cp.sale_price ? ' / $' + escapeHtml(cp.sale_price) : ''}).
+                            Vui lòng chọn phương án xử lý giá cho các biến thể bị ảnh hưởng trước khi xóa.
+                        </div>
+                        <div style="max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 14px;">
+                            <table class="wp-list-table widefat fixed striped">
+                                <thead>
+                                    <tr>
+                                        <th style="padding:6px 10px;">Biến thể</th>
+                                        <th style="padding:6px 10px;">SKU</th>
+                                        <th style="padding:6px 10px;">Giá đang dùng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sharedVariants.map(v => `
+                                        <tr>
+                                            <td style="padding:6px 10px;"><strong>${escapeHtml(getVariantLabel(v))}</strong></td>
+                                            <td style="padding:6px 10px;">${escapeHtml(v.sku || '—')}</td>
+                                            <td style="padding:6px 10px;">$${escapeHtml(cp.regular_price || '')}${cp.sale_price ? ' / $' + escapeHtml(cp.sale_price) : ''}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="wpe-dialog-resolution-options">
+                            <label>
+                                <input type="radio" name="wpe_common_removal_res" value="convert_own" checked />
+                                <span><strong>Chuyển thành giá riêng (Khuyên dùng):</strong> Giữ mức giá hiện tại làm giá riêng cho từng biến thể.</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="wpe_common_removal_res" value="leave_unpriced" />
+                                <span><strong>Để trống giá riêng:</strong> Các biến thể sẽ chuyển sang giá riêng nhưng chưa có giá bán (cần nhập thủ công sau).</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="wpe-modal-footer">
+                        <button type="button" class="button wpe-btn-cancel-modal">Hủy</button>
+                        <button type="button" class="button button-primary wpe-btn-confirm-common-removal">Xác nhận xóa</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const $modal = openModalHtml(modalHtml);
+
+        $modal.find('.wpe-btn-cancel-modal').on('click', function () {
+            layers.close($modal);
+        });
+
+        $modal.find('.wpe-btn-confirm-common-removal').on('click', function () {
+            const res = $modal.find('input[name="wpe_common_removal_res"]:checked').val();
+            sharedVariants.forEach(v => {
+                v.pricing_mode = 'own';
+                if (res === 'convert_own') {
+                    v.regular_price = cp.regular_price || '';
+                    v.sale_price = cp.sale_price || '';
+                    v.sale_from = cp.sale_from || null;
+                    v.sale_to = cp.sale_to || null;
+                } else {
+                    v.regular_price = '';
+                    v.sale_price = '';
+                    v.confirm_unpriced = true;
+                }
+            });
+            wpeVariantStore.commonPrice = null;
+            wpeVariantStore.markDirty();
+            layers.close($modal);
+            showToast('Đã xóa giá chung và cập nhật các biến thể', 'info');
+        });
+    }
+
+    function openSimpleToVariableModal() {
+        const prod = wpeVariantStore.product || {};
+        const regPrice = prod.regular_price ? formatNumberForInput(prod.regular_price) : '';
+        const salePrice = prod.sale_price ? formatNumberForInput(prod.sale_price) : '';
+
+        const modalHtml = `
+            <div id="wpe-simple-to-variable-modal" class="wpe-modal-backdrop" role="dialog" aria-modal="true" aria-label="Chuyển sang sản phẩm có biến thể">
+                <div class="wpe-modal-dialog wpe-modal-dialog-md">
+                    <div class="wpe-modal-header">
+                        <h3 class="wpe-modal-title">Chuyển sang sản phẩm có biến thể / Switch to Variable Product</h3>
+                        <button type="button" class="wpe-modal-close wpe-btn-cancel-modal" aria-label="Đóng">&times;</button>
+                    </div>
+                    <div class="wpe-modal-body">
+                        <div class="wpe-dialog-warning-banner" style="background:#eff6ff; border-left-color:#3b82f6; color:#1e40af;">
+                            Sản phẩm sẽ được cấu hình thành <strong>Sản phẩm có biến thể (Variable)</strong> khi tạo các tổ hợp biến thể.
+                        </div>
+                        <div id="wpe-simple-to-variable-preview" style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:13px;">
+                            ${regPrice ? `<div><strong>Giá bán chung:</strong> Giá hiện tại ($${escapeHtml(regPrice)}${salePrice ? ' / Sale $' + escapeHtml(salePrice) : ''}) sẽ được đề xuất làm giá chung cho các biến thể.</div>` : '<div>Chưa có giá bán trực tiếp. Biến thể có thể dùng giá riêng hoặc thiết lập giá chung sau.</div>'}
+                            <div style="margin-top:6px;"><strong>SKU và Tồn kho:</strong> Mã SKU sản phẩm cha và kho sản phẩm tiếp tục được lưu giữ.</div>
+                        </div>
+                        <div class="wpe-form-row" style="margin-top:14px;">
+                            <label for="wpe-first-option-name"><strong>Tên tùy chọn biến thể đầu tiên:</strong></label>
+                            <input type="text" id="wpe-first-option-name" class="wpe-input" value="Size" placeholder="e.g. Size, Color, Style" />
+                        </div>
+                    </div>
+                    <div class="wpe-modal-footer">
+                        <button type="button" class="button wpe-btn-cancel-modal">Hủy</button>
+                        <button type="button" class="button button-primary wpe-btn-confirm-to-variable">Xác nhận tạo tùy chọn</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const $modal = openModalHtml(modalHtml);
+
+        $modal.find('.wpe-btn-cancel-modal').on('click', function () {
+            layers.close($modal);
+        });
+
+        $modal.find('.wpe-btn-confirm-to-variable').on('click', function () {
+            const optName = $modal.find('#wpe-first-option-name').val().trim() || 'Size';
+            wpeVariantStore.variationOptions.push({
+                name: optName,
+                position: 0,
+                display_type: 'auto',
+                help_text: '',
+                values: []
+            });
+            wpeVariantStore.derivedType = 'variable';
+            wpeVariantStore.type = 'variable';
+            wpeVariantStore.product.type = 'variable';
+            if (wpeVariantStore.product.regular_price && !wpeVariantStore.commonPrice) {
+                const regStr = String(wpeVariantStore.product.regular_price);
+                const saleStr = wpeVariantStore.product.sale_price ? String(wpeVariantStore.product.sale_price) : '';
+                wpeVariantStore.commonPrice = {
+                    regular_price: regStr,
+                    sale_price: saleStr,
+                    sale_from: wpeVariantStore.product.sale_from || null,
+                    sale_to: wpeVariantStore.product.sale_to || null,
+                    regular: regStr,
+                    sale: saleStr,
+                    from: wpeVariantStore.product.sale_from || null,
+                    to: wpeVariantStore.product.sale_to || null
+                };
+                wpeVariantStore.product.regular_price = null;
+                wpeVariantStore.product.sale_price = null;
+                wpeVariantStore.product.sale_from = null;
+                wpeVariantStore.product.sale_to = null;
+            }
+            layers.close($modal);
+            wpeVariantStore.markDirty();
+            showToast(`Đã thêm tùy chọn "${optName}"!`, 'success');
+        });
+    }
+
+    function openVariableToSimpleModal() {
+        const vars = wpeVariantStore.variations;
+        const modalHtml = `
+            <div id="wpe-variable-to-simple-modal" class="wpe-modal-backdrop" role="dialog" aria-modal="true" aria-label="Chuyển sang sản phẩm đơn giản">
+                <div class="wpe-modal-dialog wpe-modal-dialog-md">
+                    <div class="wpe-modal-header">
+                        <h3 class="wpe-modal-title">Chuyển sang sản phẩm đơn giản / Switch to Simple Product</h3>
+                        <button type="button" class="wpe-modal-close wpe-btn-cancel-modal" aria-label="Đóng">&times;</button>
+                    </div>
+                    <div class="wpe-modal-body">
+                        <div class="wpe-dialog-warning-banner">
+                            <strong>Cảnh báo:</strong> Sản phẩm có biến thể sẽ chuyển thành Sản phẩm đơn giản. Tất cả tùy chọn và biến thể khác sẽ bị gỡ bỏ.
+                            Vui lòng chọn 1 biến thể kế thừa để giữ lại giá, SKU, tồn kho và kích thước cho sản phẩm đơn giản.
+                        </div>
+                        ${vars.length > 0 ? `
+                            <div class="wpe-form-row">
+                                <label for="wpe-receiver-variant-select"><strong>Biến thể kế thừa dữ liệu:</strong></label>
+                                <select id="wpe-receiver-variant-select" class="wpe-select">
+                                    ${vars.map((v, i) => `
+                                        <option value="${v.id}" ${i === 0 ? 'selected' : ''}>
+                                            ${escapeHtml(getVariantLabel(v))} (SKU: ${escapeHtml(v.sku || 'N/A')}, Giá: ${escapeHtml(v.regular_price || 'Chưa có')})
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div id="wpe-receiver-preview-box" style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:13px;">
+                            </div>
+                            ${vars.length > 1 ? `
+                                <div style="margin-top:14px;">
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                        <input type="checkbox" id="wpe-confirm-tombstone-check" checked />
+                                        <span>Tôi hiểu và xác nhận gỡ bỏ ${vars.length - 1} biến thể còn lại.</span>
+                                    </label>
+                                </div>
+                            ` : ''}
+                        ` : '<p>Chưa có biến thể nào được tạo. Sản phẩm sẽ chuyển về Sản phẩm đơn giản.</p>'}
+                    </div>
+                    <div class="wpe-modal-footer">
+                        <button type="button" class="button wpe-btn-cancel-modal">Hủy</button>
+                        <button type="button" class="button button-primary wpe-btn-confirm-to-simple">Xác nhận chuyển đổi</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const $modal = openModalHtml(modalHtml);
+
+        function updateReceiverPreview() {
+            const selId = parseInt($modal.find('#wpe-receiver-variant-select').val(), 10);
+            const receiver = vars.find(v => v.id === selId) || vars[0];
+            if (!receiver) {
+                $modal.find('#wpe-receiver-preview-box').html('');
+                return;
+            }
+            $modal.find('#wpe-receiver-preview-box').html(`
+                <div><strong>Giá bán sẽ nhận:</strong> $${escapeHtml(receiver.regular_price || 'Chưa có')}${receiver.sale_price ? ' (Sale: $' + escapeHtml(receiver.sale_price) + ')' : ''}</div>
+                <div><strong>SKU sẽ nhận:</strong> ${escapeHtml(receiver.sku || 'Giữ SKU cha')}</div>
+                <div><strong>Tồn kho sẽ nhận:</strong> ${receiver.manage_stock ? receiver.stock_quantity + ' cái' : (receiver.stock_status || 'Còn hàng')}</div>
+            `);
+        }
+
+        $modal.find('#wpe-receiver-variant-select').on('change', updateReceiverPreview);
+        updateReceiverPreview();
+
+        $modal.find('.wpe-btn-cancel-modal').on('click', function () {
+            layers.close($modal);
+        });
+
+        $modal.find('.wpe-btn-confirm-to-simple').on('click', function () {
+            if (vars.length > 1) {
+                const confirmed = $modal.find('#wpe-confirm-tombstone-check').is(':checked');
+                if (!confirmed) {
+                    alert('Vui lòng đánh dấu xác nhận gỡ bỏ các biến thể còn lại.');
+                    return;
+                }
+            }
+
+            const selId = parseInt($modal.find('#wpe-receiver-variant-select').val(), 10);
+            const receiver = vars.find(v => v.id === selId) || vars[0];
+
+            if (receiver) {
+                wpeVariantStore.product.sku = receiver.sku || wpeVariantStore.product.sku || '';
+                wpeVariantStore.product.regular_price = receiver.regular_price || '';
+                wpeVariantStore.product.sale_price = receiver.sale_price || '';
+                wpeVariantStore.product.sale_from = receiver.sale_from || null;
+                wpeVariantStore.product.sale_to = receiver.sale_to || null;
+                if (receiver.weight) wpeVariantStore.product.weight = receiver.weight;
+                if (receiver.length) wpeVariantStore.product.length = receiver.length;
+                if (receiver.width) wpeVariantStore.product.width = receiver.width;
+                if (receiver.height) wpeVariantStore.product.height = receiver.height;
+                if (receiver.manage_stock) {
+                    wpeVariantStore.product.manage_stock = 1;
+                    wpeVariantStore.product.stock_quantity = receiver.stock_quantity;
+                    wpeVariantStore.product.backorders = receiver.backorders || 'no';
+                } else {
+                    wpeVariantStore.product.manage_stock = 0;
+                    wpeVariantStore.product.stock_status = receiver.stock_status || 'instock';
+                }
+                const stockObj = {
+                    manage_stock: wpeVariantStore.product.manage_stock,
+                    stock_quantity: wpeVariantStore.product.stock_quantity,
+                    stock_status: wpeVariantStore.product.stock_status || 'instock',
+                    backorders: wpeVariantStore.product.backorders || 'no'
+                };
+                wpeVariantStore.product.stock = stockObj;
+                wpeVariantStore.product.parent_stock = stockObj;
+                wpeVariantStore.typeTransition = {
+                    receiver_id: receiver.id,
+                    confirm_tombstone: true
+                };
+            }
+
+            wpeVariantStore.variationOptions = [];
+            wpeVariantStore.variations = [];
+            wpeVariantStore.commonPrice = null;
+            wpeVariantStore.product.type = 'simple';
+            wpeVariantStore.type = 'simple';
+            wpeVariantStore.derivedType = 'simple';
+            layers.close($modal);
+            wpeVariantStore.markDirty();
+            showToast('Đã chuyển sang Sản phẩm đơn giản (vui lòng Lưu thay đổi để hoàn tất)', 'info');
+        });
+    }
+
+    function renderReferencePriceCard() {
+        const ref = getEffectiveReferencePrice();
+        if (ref.state === 'none') {
+            return `
+                <div class="wpe-ref-card">
+                    <div class="wpe-ref-header">
+                        <span class="wpe-ref-badge">Giá tham chiếu / Reference Price</span>
+                    </div>
+                    <div class="wpe-ref-help" style="margin:0 0 12px 0;">
+                        Chưa có biến thể nào được tạo để tham chiếu giá.
+                    </div>
+                    <button type="button" class="button button-secondary wpe-btn-set-common-price">
+                        <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                    </button>
+                </div>
+            `;
+        }
+
+        if (ref.state === 'unpriced') {
+            return `
+                <div class="wpe-ref-card unpriced">
+                    <div class="wpe-ref-header">
+                        <span class="wpe-ref-badge wpe-ref-badge-warning">Chưa có giá / No price yet</span>
+                        <span class="wpe-ref-source">Giá tham chiếu từ biến thể ${escapeHtml(ref.label)}</span>
+                    </div>
+                    <div class="wpe-ref-unpriced-warning">
+                        <span class="dashicons dashicons-warning"></span>
+                        Biến thể đầu tiên (${escapeHtml(ref.label)}) chưa có giá bán. Vui lòng cập nhật giá cho biến thể này tại block Biến thể hoặc thiết lập giá chung.
+                    </div>
+                    <div class="wpe-ref-help">
+                        Giá tham chiếu chỉ phục vụ hiển thị tại block này, không tự ghi thành giá chung hoặc phân phối sang các biến thể khác.
+                    </div>
+                    <button type="button" class="button button-secondary wpe-btn-set-common-price">
+                        <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                    </button>
+                </div>
+            `;
+        }
+
+        const regFormatted = '$' + parseFloat(ref.regular_price || 0).toFixed(2);
+        const saleFormatted = ref.sale_price !== null && ref.sale_price !== '' ? '$' + parseFloat(ref.sale_price).toFixed(2) : '';
+
+        return `
+            <div class="wpe-ref-card">
+                <div class="wpe-ref-header">
+                    <span class="wpe-ref-badge">Giá tham chiếu / Reference Price</span>
+                    <span class="wpe-ref-source">Giá tham chiếu từ biến thể ${escapeHtml(ref.label)}</span>
+                </div>
+                <div class="wpe-ref-amount">
+                    ${saleFormatted ? `<span style="text-decoration:line-through; color:#94a3b8; font-size:18px; margin-right:8px;">${regFormatted}</span><span>${saleFormatted}</span>` : `<span>${regFormatted}</span>`}
+                    ${ref.sale_active ? '<span class="wpe-ref-badge" style="background:#fee2e2; color:#b91c1c; margin-left:8px;">Sale</span>' : ''}
+                </div>
+                <div class="wpe-ref-help">
+                    Giá tham chiếu chỉ phục vụ hiển thị tại block này, không tự ghi thành giá chung hoặc phân phối sang các biến thể khác. Mỗi biến thể tiếp tục sử dụng giá riêng đã lưu.
+                </div>
+                <button type="button" class="button button-secondary wpe-btn-set-common-price">
+                    <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                </button>
+            </div>
+        `;
+    }
+
+    function renderCommonPriceCard() {
+        const cp = wpeVariantStore.commonPrice || {};
+        const cpReg = cp.regular_price !== undefined && cp.regular_price !== null ? cp.regular_price : (cp.regular || '');
+        const cpSale = cp.sale_price !== undefined && cp.sale_price !== null ? cp.sale_price : (cp.sale || '');
+        const cpFrom = cp.sale_from !== undefined && cp.sale_from !== null ? cp.sale_from : (cp.from || '');
+        const cpTo = cp.sale_to !== undefined && cp.sale_to !== null ? cp.sale_to : (cp.to || '');
+        return `
+            <div class="wpe-common-price-card">
+                <div class="wpe-common-price-header">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="wpe-common-badge">Giá chung / Common Price</span>
+                        <span style="font-size:13px; color:#166534; font-weight:500;">Áp dụng cho các biến thể ở chế độ "Dùng giá chung"</span>
+                    </div>
+                    <button type="button" class="button-link-delete wpe-btn-remove-common-price" title="Xóa cấu hình giá chung">
+                        <span class="dashicons dashicons-trash" style="font-size:16px;"></span> Xóa giá chung
+                    </button>
+                </div>
+                <div class="wpe-form-grid-2">
+                    <div class="wpe-form-row">
+                        <label>Giá thường chung ($)</label>
+                        <input type="text" class="wpe-input wpe-common-regular-price" value="${escapeHtml(formatNumberForInput(cpReg))}" placeholder="0.00" />
+                    </div>
+                    <div class="wpe-form-row">
+                        <label>Giá sale chung ($)</label>
+                        <input type="text" class="wpe-input wpe-common-sale-price" value="${escapeHtml(formatNumberForInput(cpSale))}" placeholder="0.00" />
+                    </div>
+                </div>
+                <div class="wpe-form-grid-2" style="margin-top:8px;">
+                    <div class="wpe-form-row">
+                        <label>Lịch sale từ ngày</label>
+                        <input type="date" class="wpe-input wpe-common-sale-from" value="${escapeHtml(formatDateForInput(cpFrom))}" />
+                    </div>
+                    <div class="wpe-form-row">
+                        <label>Lịch sale đến ngày</label>
+                        <input type="date" class="wpe-input wpe-common-sale-to" value="${escapeHtml(formatDateForInput(cpTo))}" />
+                    </div>
+                </div>
+                <div class="wpe-field-desc" style="margin-top:8px;">
+                    Biến thể mới sẽ mặc định dùng giá chung này nếu chưa cấu hình giá riêng.
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSimplePricing() {
+        const prod = wpeVariantStore.product || {};
+        return `
+            <div class="wpe-form-grid-2">
+                <div class="wpe-form-row">
+                    <label for="wpe-info-regular-price">Giá thường ($) <span class="required">*</span></label>
+                    <input type="text" id="wpe-info-regular-price" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.regular_price))}" placeholder="0.00" />
+                </div>
+                <div class="wpe-form-row">
+                    <label for="wpe-info-sale-price">Giá khuyến mãi / Sale ($)</label>
+                    <input type="text" id="wpe-info-sale-price" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.sale_price))}" placeholder="0.00" />
+                </div>
+            </div>
+            <div class="wpe-form-grid-2" style="margin-top:8px;">
+                <div class="wpe-form-row">
+                    <label for="wpe-info-sale-from">Lên lịch sale từ ngày</label>
+                    <input type="date" id="wpe-info-sale-from" class="wpe-input" value="${escapeHtml(formatDateForInput(prod.sale_from))}" />
+                </div>
+                <div class="wpe-form-row">
+                    <label for="wpe-info-sale-to">Lên lịch sale đến ngày</label>
+                    <input type="date" id="wpe-info-sale-to" class="wpe-input" value="${escapeHtml(formatDateForInput(prod.sale_to))}" />
+                </div>
+            </div>
+        `;
+    }
+
+    function renderProductInventory() {
+        const prod = wpeVariantStore.product || {};
+        const inv = prod.stock || prod.parent_stock || {};
+        const manageStock = !emptyVal(inv.manage_stock) || !emptyVal(prod.manage_stock);
+        const isVar = isVariableType();
+        const stockQty = inv.stock_quantity !== null && inv.stock_quantity !== undefined ? inv.stock_quantity : (prod.stock_quantity !== null && prod.stock_quantity !== undefined ? prod.stock_quantity : '');
+        const backorders = inv.backorders || prod.backorders || 'no';
+        const stockStatus = inv.stock_status || prod.stock_status || 'instock';
+
+        return `
+            <div class="wpe-form-row">
+                <label for="wpe-info-sku">Mã SKU sản phẩm</label>
+                <input type="text" id="wpe-info-sku" class="wpe-input" value="${escapeHtml(prod.sku || '')}" placeholder="e.g. PRD-001" />
+                <span class="wpe-field-desc">
+                    ${isVar ? 'SKU cấp sản phẩm cha. Phân biệt rõ với mã SKU riêng của từng biến thể.' : 'Mã định danh sản phẩm độc nhất cho quản lý kho và đơn hàng.'}
+                </span>
+            </div>
+            <div class="wpe-form-row" style="margin-top:14px;">
+                <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="wpe-info-manage-stock" ${manageStock ? 'checked' : ''} />
+                    <span><strong>Quản lý tồn kho cấp sản phẩm</strong> ${isVar ? '(Tồn kho chung)' : ''}</span>
+                </label>
+                <span class="wpe-field-desc" style="margin-left:24px;">
+                    ${isVar ? 'Khi bật, sản phẩm quản lý số lượng tồn kho chung thay vì quản lý theo từng biến thể riêng lẻ.' : 'Theo dõi số lượng hàng tồn kho cho sản phẩm này.'}
+                </span>
+            </div>
+            <div id="wpe-info-stock-fields" style="margin-top:12px; padding-left:24px; display:${manageStock ? 'block' : 'none'};">
+                <div class="wpe-form-grid-2">
+                    <div class="wpe-form-row">
+                        <label for="wpe-info-stock-quantity">Số lượng tồn kho</label>
+                        <input type="number" step="any" id="wpe-info-stock-quantity" class="wpe-input" value="${escapeHtml(formatNumberForInput(stockQty))}" placeholder="0" />
+                    </div>
+                    <div class="wpe-form-row">
+                        <label for="wpe-info-backorders">Cho phép đặt hàng trước (Backorders)</label>
+                        <select id="wpe-info-backorders" class="wpe-select">
+                            <option value="no" ${backorders === 'no' ? 'selected' : ''}>Không cho phép</option>
+                            <option value="notify" ${backorders === 'notify' ? 'selected' : ''}>Cho phép nhưng thông báo khách</option>
+                            <option value="yes" ${backorders === 'yes' ? 'selected' : ''}>Cho phép</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="wpe-info-stock-status-field" class="wpe-form-row" style="margin-top:12px; padding-left:24px; display:${manageStock ? 'none' : 'block'};">
+                <label for="wpe-info-stock-status">Trạng thái kho</label>
+                <select id="wpe-info-stock-status" class="wpe-select" style="max-width:260px;">
+                    <option value="instock" ${stockStatus === 'instock' ? 'selected' : ''}>Còn hàng (In stock)</option>
+                    <option value="outofstock" ${stockStatus === 'outofstock' ? 'selected' : ''}>Hết hàng (Out of stock)</option>
+                    <option value="onbackorder" ${stockStatus === 'onbackorder' ? 'selected' : ''}>Chờ hàng (On backorder)</option>
+                </select>
+            </div>
+        `;
+    }
+
+    function renderProductShipping() {
+        const prod = wpeVariantStore.product || {};
+        return `
+            <div class="wpe-form-grid-3">
+                <div class="wpe-form-row">
+                    <label for="wpe-info-weight">Trọng lượng (kg)</label>
+                    <input type="text" id="wpe-info-weight" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.weight))}" placeholder="0.0" />
+                </div>
+                <div class="wpe-form-row">
+                    <label for="wpe-info-length">Dài (cm)</label>
+                    <input type="text" id="wpe-info-length" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.length))}" placeholder="0" />
+                </div>
+                <div class="wpe-form-row">
+                    <label for="wpe-info-width">Rộng (cm)</label>
+                    <input type="text" id="wpe-info-width" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.width))}" placeholder="0" />
+                </div>
+            </div>
+            <div class="wpe-form-row" style="margin-top:8px; max-width:33%;">
+                <label for="wpe-info-height">Cao (cm)</label>
+                <input type="text" id="wpe-info-height" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.height))}" placeholder="0" />
+            </div>
+        `;
+    }
+
+    /**
+     * Render Descriptive Attributes (used_for_variation = 0)
+     */
+    function renderSectionA() {
+        const attrs = wpeVariantStore.descriptiveAttributes || [];
+        let rowsHtml = '';
+
+        if (attrs.length === 0) {
+            rowsHtml = `<div style="color:#64748b; font-style:italic; padding:6px 0;">No descriptive specs added (e.g. Material, Brand, Care Instructions).</div>`;
+        } else {
+            attrs.forEach((attr, idx) => {
+                const valStr = Array.isArray(attr.values)
+                    ? attr.values.map(v => typeof v === 'object' ? v.label : v).join(', ')
+                    : (attr.value || '');
+                rowsHtml += `
+                    <div class="wpe-desc-attr-row" data-attr-idx="${idx}" style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+                        <input type="text" class="wpe-desc-attr-name" value="${escapeHtml(attr.name || '')}" placeholder="Attribute Name (e.g. Material)" style="width:220px;" />
+                        <input type="text" class="wpe-desc-attr-values" value="${escapeHtml(valStr)}" placeholder="Values separated by comma (e.g. 100% Cotton, Ring-spun)" style="flex:1;" />
+                        <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#475569;">
+                            <input type="checkbox" class="wpe-desc-attr-visible" ${attr.visible !== 0 && attr.visible !== false ? 'checked' : ''} />
+                            Visible
+                        </label>
+                        <button type="button" class="button-link-delete wpe-btn-delete-desc-attr" title="Remove attribute">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        return `
+            <div class="wpe-section">
+                <div class="wpe-section-header">
+                    <div class="wpe-section-title-wrap">
+                        <span class="dashicons dashicons-tag" style="color:#2563eb;"></span>
+                        <h4 class="wpe-section-title">Descriptive Attributes</h4>
+                        <span class="wpe-section-count">${attrs.length}</span>
+                    </div>
+                    <button type="button" class="button wpe-btn-add-desc-attr">
+                        <span class="dashicons dashicons-plus-alt2"></span> Add Attribute
+                    </button>
+                </div>
+                <div class="wpe-section-body">
+                    ${rowsHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderProductInfoAppHtml() {
+        const isVar = isVariableType();
+
+        return `
+            <div class="wpe-info-wrap">
+                <div class="wpe-top-bar" style="margin-bottom:0;">
+                    <div class="wpe-top-title-area">
+                        <span class="wpe-badge-type">${isVar ? 'Sản phẩm có biến thể (Variable)' : 'Sản phẩm đơn giản (Simple)'}</span>
+                        <span class="wpe-dirty-badge ${wpeVariantStore.isDirty ? 'dirty' : 'clean'}">
+                            <span class="dashicons dashicons-${wpeVariantStore.isDirty ? 'warning' : 'yes'}"></span>
+                            ${wpeVariantStore.isDirty ? 'Chưa lưu' : 'Đã đồng bộ'}
+                        </span>
+                    </div>
+                    <div class="wpe-top-actions">
+                        <button type="button" class="button button-primary wpe-btn-save-api" ${!wpeVariantStore.isDirty ? 'disabled' : ''}>
+                            <span class="dashicons dashicons-saved"></span> Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+
+                <div class="wpe-info-section">
+                    <h4 class="wpe-info-section-title">
+                        <span class="dashicons dashicons-money-alt" style="color:#16a34a;"></span>
+                        ${isVar ? 'Giá chung & Giá tham chiếu' : 'Giá bán'}
+                    </h4>
+                    ${isVar ? (wpeVariantStore.commonPrice !== null ? renderCommonPriceCard() : renderReferencePriceCard()) : renderSimplePricing()}
+                </div>
+
+                <div class="wpe-info-section">
+                    <h4 class="wpe-info-section-title">
+                        <span class="dashicons dashicons-archive" style="color:#d97706;"></span>
+                        Mã sản phẩm & Quản lý tồn kho
+                    </h4>
+                    ${renderProductInventory()}
+                </div>
+
+                <div class="wpe-info-section">
+                    <h4 class="wpe-info-section-title">
+                        <span class="dashicons dashicons-car" style="color:#0284c7;"></span>
+                        Trọng lượng & Kích thước
+                    </h4>
+                    ${renderProductShipping()}
+                </div>
+
+                <div class="wpe-info-section" style="padding:0; border:none; background:transparent;">
+                    ${renderSectionA()}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderProductInfoApp(containerId) {
+        const $container = $(containerId || '#wpe-product-info-app');
+        if (!$container.length) return;
+
+        if (wpeVariantStore.isLoading) {
+            $container.html(`
+                <div class="wpe-editor-loading">
+                    <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
+                    <span>Đang tải thông tin sản phẩm...</span>
+                </div>
+            `);
+            return;
+        }
+
+        $container.html(renderProductInfoAppHtml());
+        bindProductInfoEvents($container);
+        layers.keepFocus();
+    }
+
+    function bindProductInfoEvents($container) {
+        $container.find('#wpe-info-sku').off('change').on('change', function () {
+            wpeVariantStore.product.sku = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('#wpe-info-regular-price').off('change').on('change', function () {
+            wpeVariantStore.product.regular_price = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-sale-price').off('change').on('change', function () {
+            wpeVariantStore.product.sale_price = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-sale-from').off('change').on('change', function () {
+            const val = $(this).val();
+            wpeVariantStore.product.sale_from = val ? val + ' 00:00:00' : null;
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-sale-to').off('change').on('change', function () {
+            const val = $(this).val();
+            wpeVariantStore.product.sale_to = val ? val + ' 23:59:59' : null;
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('.wpe-common-regular-price').off('change').on('change', function () {
+            if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
+            const val = $(this).val().trim();
+            wpeVariantStore.commonPrice.regular_price = val;
+            wpeVariantStore.commonPrice.regular = val;
+            wpeVariantStore.markDirty();
+        });
+        $container.find('.wpe-common-sale-price').off('change').on('change', function () {
+            if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
+            const val = $(this).val().trim();
+            wpeVariantStore.commonPrice.sale_price = val;
+            wpeVariantStore.commonPrice.sale = val;
+            wpeVariantStore.markDirty();
+        });
+        $container.find('.wpe-common-sale-from').off('change').on('change', function () {
+            if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
+            const val = $(this).val();
+            const from = val ? val + ' 00:00:00' : null;
+            wpeVariantStore.commonPrice.sale_from = from;
+            wpeVariantStore.commonPrice.from = from;
+            wpeVariantStore.markDirty();
+        });
+        $container.find('.wpe-common-sale-to').off('change').on('change', function () {
+            if (!wpeVariantStore.commonPrice) wpeVariantStore.commonPrice = {};
+            const val = $(this).val();
+            const to = val ? val + ' 23:59:59' : null;
+            wpeVariantStore.commonPrice.sale_to = to;
+            wpeVariantStore.commonPrice.to = to;
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('.wpe-btn-set-common-price').off('click').on('click', function () {
+            const ref = getEffectiveReferencePrice();
+            const rReg = ref.regular_price || '';
+            const rSale = ref.sale_price || '';
+            wpeVariantStore.commonPrice = {
+                regular_price: rReg,
+                sale_price: rSale,
+                sale_from: ref.sale_from || null,
+                sale_to: ref.sale_to || null,
+                regular: rReg,
+                sale: rSale,
+                from: ref.sale_from || null,
+                to: ref.sale_to || null
+            };
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('.wpe-btn-remove-common-price').off('click').on('click', function () {
+            const shared = wpeVariantStore.variations.filter(v => v.pricing_mode === 'shared');
+            if (shared.length > 0) {
+                openCommonPriceRemovalModal(shared);
+            } else {
+                wpeVariantStore.commonPrice = null;
+                wpeVariantStore.markDirty();
+            }
+        });
+
+        $container.find('#wpe-info-manage-stock').off('change').on('change', function () {
+            const isChecked = $(this).is(':checked');
+            wpeVariantStore.product.manage_stock = isChecked ? 1 : 0;
+            if (!wpeVariantStore.product.stock) wpeVariantStore.product.stock = {};
+            wpeVariantStore.product.stock.manage_stock = isChecked ? 1 : 0;
+            wpeVariantStore.product.parent_stock = Object.assign({}, wpeVariantStore.product.stock);
+            $container.find('#wpe-info-stock-fields').toggle(isChecked);
+            $container.find('#wpe-info-stock-status-field').toggle(!isChecked);
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('#wpe-info-stock-quantity').off('change').on('change', function () {
+            const val = $(this).val();
+            const qty = val === '' ? null : parseFloat(val);
+            wpeVariantStore.product.stock_quantity = qty;
+            if (!wpeVariantStore.product.stock) wpeVariantStore.product.stock = {};
+            wpeVariantStore.product.stock.stock_quantity = qty;
+            wpeVariantStore.product.parent_stock = Object.assign({}, wpeVariantStore.product.stock);
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-backorders').off('change').on('change', function () {
+            const bo = $(this).val();
+            wpeVariantStore.product.backorders = bo;
+            if (!wpeVariantStore.product.stock) wpeVariantStore.product.stock = {};
+            wpeVariantStore.product.stock.backorders = bo;
+            wpeVariantStore.product.parent_stock = Object.assign({}, wpeVariantStore.product.stock);
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-stock-status').off('change').on('change', function () {
+            const st = $(this).val();
+            wpeVariantStore.product.stock_status = st;
+            if (!wpeVariantStore.product.stock) wpeVariantStore.product.stock = {};
+            wpeVariantStore.product.stock.stock_status = st;
+            wpeVariantStore.product.parent_stock = Object.assign({}, wpeVariantStore.product.stock);
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('#wpe-info-weight').off('change').on('change', function () {
+            wpeVariantStore.product.weight = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-length').off('change').on('change', function () {
+            wpeVariantStore.product.length = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-width').off('change').on('change', function () {
+            wpeVariantStore.product.width = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+        $container.find('#wpe-info-height').off('change').on('change', function () {
+            wpeVariantStore.product.height = $(this).val().trim();
+            wpeVariantStore.markDirty();
+        });
+
+        // Descriptive Attributes
+        $container.find('.wpe-btn-add-desc-attr').off('click').on('click', function () {
+            wpeVariantStore.descriptiveAttributes.push({
+                name: '',
+                values: [],
+                visible: 1,
+                position: wpeVariantStore.descriptiveAttributes.length
+            });
+            wpeVariantStore.markDirty();
+        });
+
+        $container.find('.wpe-desc-attr-name').off('input change').on('input change', function () {
+            const idx = parseInt($(this).closest('.wpe-desc-attr-row').attr('data-attr-idx'), 10);
+            if (wpeVariantStore.descriptiveAttributes[idx]) {
+                wpeVariantStore.descriptiveAttributes[idx].name = $(this).val();
+                wpeVariantStore.isDirty = true;
+                wpeVariantStore.syncHiddenPayload();
+                updateBoxHeader();
+                updateDirtyChrome();
+            }
+        });
+
+        $container.find('.wpe-desc-attr-values').off('input change').on('input change', function () {
+            const idx = parseInt($(this).closest('.wpe-desc-attr-row').attr('data-attr-idx'), 10);
+            if (wpeVariantStore.descriptiveAttributes[idx]) {
+                const vals = $(this).val().split(',').map(s => s.trim()).filter(Boolean);
+                wpeVariantStore.descriptiveAttributes[idx].values = vals;
+                wpeVariantStore.isDirty = true;
+                wpeVariantStore.syncHiddenPayload();
+                updateBoxHeader();
+                updateDirtyChrome();
+            }
+        });
+
+        $container.find('.wpe-desc-attr-visible').off('change').on('change', function () {
+            const idx = parseInt($(this).closest('.wpe-desc-attr-row').attr('data-attr-idx'), 10);
+            if (wpeVariantStore.descriptiveAttributes[idx]) {
+                wpeVariantStore.descriptiveAttributes[idx].visible = $(this).is(':checked') ? 1 : 0;
+                wpeVariantStore.markDirty();
+            }
+        });
+
+        $container.find('.wpe-btn-delete-desc-attr').off('click').on('click', function () {
+            const idx = parseInt($(this).closest('.wpe-desc-attr-row').attr('data-attr-idx'), 10);
+            if (!isNaN(idx)) {
+                wpeVariantStore.descriptiveAttributes.splice(idx, 1);
+                wpeVariantStore.markDirty();
+            }
+        });
+
+        bindEditorEvents($container, '#wpe-product-info-app');
+    }
+
+    function renderEmptyVariantsState() {
+        return `
+            <div class="wpe-empty-variants-card">
+                <div class="wpe-empty-icon">
+                    <span class="dashicons dashicons-networking"></span>
+                </div>
+                <h3>Sản phẩm đơn giản (Chưa có biến thể)</h3>
+                <p>Sản phẩm này hiện chưa có tùy chọn biến thể. Bạn có thể bán sản phẩm với các thuộc tính như Màu sắc, Kích thước bằng cách thêm tùy chọn biến thể đầu tiên.</p>
+                <button type="button" class="button button-primary button-hero wpe-btn-add-first-option">
+                    <span class="dashicons dashicons-plus-alt2" style="margin-top:4px;"></span> Thêm tùy chọn / Add Option
+                </button>
+            </div>
+        `;
+    }
+
     function renderVariantsAppHtml() {
+        if (config.editorMode === 'blocks' && wpeVariantStore.variationOptions.length === 0) {
+            return renderEmptyVariantsState();
+        }
         return `
             <!-- Variation Options -->
             ${renderSectionB()}
@@ -2047,6 +3021,12 @@
             `);
             return;
         }
+
+        // Preserve search input focus and caret selection across reactive re-renders
+        const $activeSearch = $container.find('.wpe-search-input');
+        const wasSearchFocused = $activeSearch.length > 0 && document.activeElement === $activeSearch[0];
+        const caretStart = wasSearchFocused ? $activeSearch[0].selectionStart : null;
+        const caretEnd = wasSearchFocused ? $activeSearch[0].selectionEnd : null;
 
         let html = `
             <div class="wpe-editor-wrap">
@@ -2086,12 +3066,37 @@
 
         $container.html(html);
         bindEditorEvents($container, containerId);
-        layers.keepFocus();
+        if (wasSearchFocused) {
+            const $newSearch = $container.find('.wpe-search-input');
+            if ($newSearch.length) {
+                $newSearch[0].focus();
+                if (caretStart !== null && caretEnd !== null && typeof $newSearch[0].setSelectionRange === 'function') {
+                    try { $newSearch[0].setSelectionRange(caretStart, caretEnd); } catch (e) {}
+                }
+            }
+        } else {
+            layers.keepFocus();
+        }
     }
 
     function renderFullscreenApp(containerId) {
         const $container = $(containerId || '#wpe-product-editor-modal-app');
         if (!$container.length) return;
+
+        const $activeSearch = $container.find('.wpe-search-input');
+        const wasSearchFocused = $activeSearch.length > 0 && document.activeElement === $activeSearch[0];
+        const caretStart = wasSearchFocused ? $activeSearch[0].selectionStart : null;
+        const caretEnd = wasSearchFocused ? $activeSearch[0].selectionEnd : null;
+
+        const activeTab = wpeVariantStore.fullscreenTab || 'variants';
+        let tabBodyHtml = '';
+        if (activeTab === 'product_info') {
+            tabBodyHtml = renderProductInfoAppHtml();
+        } else if (activeTab === 'product_media') {
+            tabBodyHtml = `<div id="wpe-fullscreen-media-mount"></div>`;
+        } else {
+            tabBodyHtml = renderVariantsAppHtml();
+        }
 
         let html = `
             <div class="wpe-editor-wrap">
@@ -2113,8 +3118,20 @@
                     </div>
                 </div>
 
+                <div class="wpe-modal-nav" role="tablist">
+                    <button type="button" class="wpe-tab-btn ${activeTab === 'variants' ? 'active' : ''}" data-tab="variants">
+                        <span class="dashicons dashicons-grid-view"></span> Variants (${wpeVariantStore.variations.length})
+                    </button>
+                    <button type="button" class="wpe-tab-btn ${activeTab === 'product_info' ? 'active' : ''}" data-tab="product_info">
+                        <span class="dashicons dashicons-info-outline"></span> Product Info
+                    </button>
+                    <button type="button" class="wpe-tab-btn ${activeTab === 'product_media' ? 'active' : ''}" data-tab="product_media">
+                        <span class="dashicons dashicons-format-gallery"></span> Product Media (${(wpeVariantStore.mediaLibrary.assets || []).length})
+                    </button>
+                </div>
+
                 <div class="wpe-fullscreen-tab-body" style="padding-top:16px;">
-                    ${renderVariantsAppHtml()}
+                    ${tabBodyHtml}
                 </div>
 
                 ${wpeVariantStore.isDirty ? `
@@ -2133,8 +3150,44 @@
         `;
 
         $container.html(html);
+        if (activeTab === 'product_info') {
+            bindProductInfoEvents($container);
+        } else if (activeTab === 'product_media') {
+            renderFullProductMediaModalBody();
+            const $mount = $container.find('#wpe-fullscreen-media-mount');
+            if ($mount.length) {
+                const assets = getOrderedProductAssets();
+                const featuredId = wpeVariantStore.mediaLibrary.featured_asset_id;
+                $mount.html(`
+                    <div class="wpe-section">
+                        <div class="wpe-section-header">
+                            <div class="wpe-section-title-wrap">
+                                <span class="dashicons dashicons-format-gallery" style="color:#2563eb;"></span>
+                                <h4 class="wpe-section-title">Product Media Library (${assets.length})</h4>
+                            </div>
+                        </div>
+                        <div class="wpe-section-body">
+                            <div class="wpe-media-grid">
+                                ${assets.map((asset, idx) => renderMediaCardHtml(asset, idx, assets.length, featuredId)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `);
+                bindProductMediaEvents($mount);
+            }
+        }
         bindEditorEvents($container, containerId);
-        layers.keepFocus();
+        if (wasSearchFocused) {
+            const $newSearch = $container.find('.wpe-search-input');
+            if ($newSearch.length) {
+                $newSearch[0].focus();
+                if (caretStart !== null && caretEnd !== null && typeof $newSearch[0].setSelectionRange === 'function') {
+                    try { $newSearch[0].setSelectionRange(caretStart, caretEnd); } catch (e) {}
+                }
+            }
+        } else {
+            layers.keepFocus();
+        }
     }
 
     function updateDirtyChrome() {
@@ -2145,11 +3198,11 @@
             .html(`<span class="dashicons dashicons-${isDirty ? 'warning' : 'yes'}"></span> ${isDirty ? 'Unsaved changes' : 'In sync'}`);
         $('.wpe-btn-save-api').prop('disabled', !isDirty);
 
-        ['#wpe-product-editor-inline-app', '#wpe-product-editor-modal-app'].forEach(sel => {
+        ['#wpe-product-editor-inline-app', '#wpe-product-editor-modal-app', '#wpe-product-info-app'].forEach(sel => {
             const $wrap = $(sel).find('.wpe-editor-wrap').first();
             if (!$wrap.length) return;
             const $bar = $wrap.find('.wpe-sticky-savebar');
-            if (isDirty && !$bar.length) {
+            if (isDirty && !$bar.length && sel !== '#wpe-product-info-app') {
                 $wrap.append(`
                     <div class="wpe-sticky-savebar">
                         <div class="wpe-sticky-savebar-left">
@@ -2240,8 +3293,11 @@
     function renderEditor(containerId) {
         if (!containerId || containerId === '#wpe-product-editor-inline-app') {
             renderVariantsApp('#wpe-product-editor-inline-app');
+            renderProductInfoApp('#wpe-product-info-app');
         } else if (containerId === '#wpe-product-editor-modal-app') {
             renderFullscreenApp('#wpe-product-editor-modal-app');
+        } else if (containerId === '#wpe-product-info-app') {
+            renderProductInfoApp('#wpe-product-info-app');
         }
     }
 
@@ -2257,14 +3313,18 @@
         } else {
             options.forEach((opt, idx) => {
                 const rawValues = opt.values || [];
+                const isColorOpt = opt.display_type === 'color' || /^(color|colour|màu|màu sắc)$/i.test(String(opt.name || '').trim());
 
                 const chipsHtml = rawValues.map((vObj, vIdx) => {
                     const valLabel = typeof vObj === 'object' ? vObj.label : vObj;
+                    const valColor = (typeof vObj === 'object' && vObj && vObj.color) ? vObj.color : (isColorOpt ? inferPodHexColor(valLabel) : '');
+                    const colorDotHtml = valColor ? `<span class="wpe-chip-color-dot" style="background-color:${escapeHtml(valColor)};"></span>` : '';
                     const moveLeft = vIdx > 0 ? `<span class="wpe-chip-move wpe-chip-move-prev" data-opt-idx="${idx}" data-val-idx="${vIdx}" title="Move left">&lsaquo;</span>` : '';
                     const moveRight = vIdx < rawValues.length - 1 ? `<span class="wpe-chip-move wpe-chip-move-next" data-opt-idx="${idx}" data-val-idx="${vIdx}" title="Move right">&rsaquo;</span>` : '';
                     return `
                         <span class="wpe-chip" data-opt-idx="${idx}" data-val-idx="${vIdx}">
                             ${moveLeft}
+                            ${colorDotHtml}
                             <span>${escapeHtml(valLabel)}</span>
                             ${moveRight}
                             <span class="wpe-chip-remove" title="Remove value">&times;</span>
@@ -2272,10 +3332,14 @@
                     `;
                 }).join('');
 
-                const defaultVal = opt.default_value || '';
+                const normalizedOpt = normalizeVariationOptionDefaults(opt);
+                const defaultVal = normalizedOpt.default_value || '';
+                const defaultValId = normalizedOpt.default_value_id || null;
                 const defaultOptionsHtml = `<option value="">-- No Default --</option>` + rawValues.map(vObj => {
                     const valLabel = typeof vObj === 'object' ? vObj.label : vObj;
-                    const isDef = defaultVal !== '' && String(defaultVal) === String(valLabel);
+                    const valId = (typeof vObj === 'object' && vObj !== null && vObj.id) ? vObj.id : null;
+                    const isDef = (defaultValId !== null && valId !== null && String(defaultValId) === String(valId))
+                        || (defaultVal !== '' && String(defaultVal) === String(valLabel));
                     return `<option value="${escapeHtml(valLabel)}" ${isDef ? 'selected' : ''}>${escapeHtml(valLabel)}</option>`;
                 }).join('');
 
@@ -2363,6 +3427,7 @@
         const variations = wpeVariantStore.variations;
         const filters = wpeVariantStore.filters;
         const options = wpeVariantStore.variationOptions;
+        const hasCommonPrice = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
 
         const filtered = getFilteredVariations();
 
@@ -2472,6 +3537,7 @@
                                 <th style="width:44px;">Image</th>
                                 <th style="min-width:120px;">Combination</th>
                                 <th style="width:120px;">SKU</th>
+                                ${hasCommonPrice ? '<th style="width:100px;">Price Mode</th>' : ''}
                                 <th style="width:110px;">Regular (${config.currencySymbol})</th>
                                 <th style="width:110px;">Sale (${config.currencySymbol})</th>
                                 <th style="width:120px;">Stock</th>
@@ -2503,8 +3569,10 @@
      * Render Variations Table Rows with Grouping Support
      */
     function renderTableRows(variations, groupBy) {
+        const hasCommonPrice = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
+        const colSpan = hasCommonPrice ? 9 : 8;
         if (variations.length === 0) {
-            return `<tr><td colspan="8" style="text-align:center; padding:36px; color:#64748b;">No matching variants found.</td></tr>`;
+            return `<tr><td colspan="${colSpan}" style="text-align:center; padding:36px; color:#64748b;">No matching variants found.</td></tr>`;
         }
 
         let html = '';
@@ -2535,7 +3603,7 @@
                 const allGroupSelected = groupMembers.length > 0 && groupMembers.every(m => wpeVariantStore.selection.has(m.id));
                 html += `
                     <tr class="wpe-group-row" data-group-opt="${escapeHtml(groupBy)}" data-group-val="${escapeHtml(groupVal)}" data-group-key="${escapeHtml(groupKey)}">
-                        <td colspan="8">
+                        <td colspan="${colSpan}">
                             <div class="wpe-group-row-inner">
                                 <div class="wpe-group-row-left">
                                     <input type="checkbox" class="wpe-group-check" data-group-opt="${escapeHtml(groupBy)}" data-group-val="${escapeHtml(groupVal)}" ${allGroupSelected ? 'checked' : ''} title="Select all variants in this group" />
@@ -2561,8 +3629,13 @@
             }
 
             const isSelected = wpeVariantStore.selection.has(v.id);
-            const regVal = v.regular_price !== null && v.regular_price !== undefined ? v.regular_price : '';
-            const saleVal = v.sale_price !== null && v.sale_price !== undefined ? v.sale_price : '';
+            const isSharedPrice = hasCommonPrice && v.pricing_mode === 'shared';
+            const regVal = isSharedPrice
+                ? (wpeVariantStore.commonPrice.regular_price || '')
+                : (v.regular_price !== null && v.regular_price !== undefined ? v.regular_price : '');
+            const saleVal = isSharedPrice
+                ? (wpeVariantStore.commonPrice.sale_price || '')
+                : (v.sale_price !== null && v.sale_price !== undefined ? v.sale_price : '');
             const isParentStock = !v.manage_stock;
 
             // Badges
@@ -2571,7 +3644,7 @@
             `).join('');
 
             html += `
-                <tr class="${isSelected ? 'selected' : ''}" data-variant-id="${v.id}">
+                <tr class="wpe-variant-row ${isSelected ? 'selected' : ''}" data-variant-id="${v.id}">
                     <td><input type="checkbox" class="wpe-row-check wpe-row-select" data-id="${v.id}" ${isSelected ? 'checked' : ''} /></td>
                     <td>
                         <div class="wpe-media-slot wpe-row-thumb-btn" data-id="${v.id}" title="Click to choose image">
@@ -2582,11 +3655,19 @@
                     <td>
                         <input type="text" class="wpe-editable-input wpe-inline-sku" value="${escapeHtml(v.sku || '')}" placeholder="SKU" />
                     </td>
+                    ${hasCommonPrice ? `
                     <td>
-                        <input type="number" step="any" class="wpe-editable-input wpe-inline-reg-price" value="${escapeHtml(formatNumberForInput(regVal))}" placeholder="0.00" />
+                        <select class="wpe-editable-input wpe-pricing-mode-select" style="font-size:11px; padding:2px 4px;">
+                            <option value="shared" ${isSharedPrice ? 'selected' : ''}>Shared</option>
+                            <option value="own" ${!isSharedPrice ? 'selected' : ''}>Own</option>
+                        </select>
+                    </td>
+                    ` : ''}
+                    <td>
+                        <input type="number" step="any" class="wpe-editable-input wpe-inline-reg-price" value="${escapeHtml(formatNumberForInput(regVal))}" placeholder="0.00" ${isSharedPrice ? 'disabled title="Using Shared Common Price"' : ''} />
                     </td>
                     <td>
-                        <input type="number" step="any" class="wpe-editable-input wpe-inline-sale-price" value="${escapeHtml(formatNumberForInput(saleVal))}" placeholder="0.00" />
+                        <input type="number" step="any" class="wpe-editable-input wpe-inline-sale-price" value="${escapeHtml(formatNumberForInput(saleVal))}" placeholder="0.00" ${isSharedPrice ? 'disabled title="Using Shared Common Price"' : ''} />
                     </td>
                     <td>
                         <div class="wpe-stock-cell">
@@ -2623,6 +3704,11 @@
         const variant = wpeVariantStore.variations.find(v => v.id === variantId);
         if (!variant) return;
 
+        const filteredList = getFilteredVariations();
+        const currentIdx = filteredList.findIndex(v => v.id === variant.id);
+        const prevVariant = currentIdx > 0 ? filteredList[currentIdx - 1] : null;
+        const nextVariant = (currentIdx !== -1 && currentIdx < filteredList.length - 1) ? filteredList[currentIdx + 1] : null;
+
         const attrs = variant.attributes || variant.combination || {};
         const badgesHtml = Object.entries(attrs).map(([opt, val]) => `
             <span class="wpe-combo-badge"><strong>${escapeHtml(opt)}:</strong> ${escapeHtml(val)}</span>
@@ -2634,7 +3720,13 @@
                     <h4 class="wpe-drawer-title">Variant Details #${variant.id}</h4>
                     <div style="margin-top:6px;">${badgesHtml}</div>
                 </div>
-                <button type="button" class="button-link wpe-btn-close-drawer" style="font-size:22px; text-decoration:none; color:#64748b;">&times;</button>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="wpe-drawer-nav">
+                        <button type="button" class="wpe-btn-drawer-nav wpe-btn-drawer-prev" data-current-id="${variant.id}" data-target-id="${prevVariant ? prevVariant.id : ''}" ${!prevVariant ? 'disabled' : ''} title="Previous variant">&lsaquo; Prev</button>
+                        <button type="button" class="wpe-btn-drawer-nav wpe-btn-drawer-next" data-current-id="${variant.id}" data-target-id="${nextVariant ? nextVariant.id : ''}" ${!nextVariant ? 'disabled' : ''} title="Next variant">Next &rsaquo;</button>
+                    </div>
+                    <button type="button" class="button-link wpe-btn-close-drawer" style="font-size:22px; text-decoration:none; color:#64748b;">&times;</button>
+                </div>
             </div>
             <div class="wpe-drawer-body">
                 <!-- Variant Image (Product-scoped) -->
@@ -3128,7 +4220,10 @@
      * Open the fullscreen editor. It renders from the same store as the inline editor, so filters,
      * selection and edits are shared; closing it never saves or discards anything.
      */
-    function openFullscreen() {
+    function openFullscreen(initialTab) {
+        if (typeof initialTab === 'string' && initialTab) {
+            wpeVariantStore.fullscreenTab = initialTab;
+        }
         const $overlay = $('#wpe-fullscreen-modal-overlay');
         if (!$overlay.length || $overlay.is(':visible')) return;
         $overlay.fadeIn(150);
@@ -3137,6 +4232,7 @@
             onClose: function () {
                 $overlay.fadeOut(150);
                 if ($('#wpe-product-editor-inline-app').length) renderVariantsApp('#wpe-product-editor-inline-app');
+                if ($('#wpe-product-info-app').length) renderProductInfoApp('#wpe-product-info-app');
             }
         });
     }
@@ -3150,7 +4246,24 @@
         }
 
         // Fullscreen toggle
-        $container.find('.wpe-btn-open-fullscreen').off('click').on('click', openFullscreen);
+        $container.find('.wpe-btn-open-fullscreen').off('click').on('click', function () {
+            const targetTab = $(this).attr('data-target-tab') || 'variants';
+            openFullscreen(targetTab);
+        });
+
+        // Fullscreen tab switch
+        $container.find('.wpe-modal-nav .wpe-tab-btn').off('click').on('click', function () {
+            const tab = $(this).attr('data-tab');
+            if (tab) {
+                wpeVariantStore.fullscreenTab = tab;
+                renderFullscreenApp('#wpe-product-editor-modal-app');
+            }
+        });
+
+        // Empty variants card: Add First Option (Simple -> Variable transition)
+        $container.find('.wpe-btn-add-first-option').off('click').on('click', function () {
+            openSimpleToVariableModal();
+        });
 
         $('#wpe-fullscreen-modal-overlay').find('.wpe-btn-close-fullscreen').off('click').on('click', function () {
             layers.close($('#wpe-fullscreen-modal-overlay'));
@@ -3172,6 +4285,8 @@
                             wpeVariantStore.version = (res.result && res.result.new_version) || (wpeVariantStore.version + 1);
                         }
                         wpeVariantStore.isDirty = false;
+                        wpeVariantStore.mediaDirty = false;
+                        wpeVariantStore.typeTransition = null;
                         wpeVariantStore.notify();
                         const proj = (res.result && res.result.projection) || null;
                         const okMirror = ['mirrored', 'skipped_obsolete_revision'];
@@ -3414,6 +4529,19 @@
             const idx = $(this).closest('.wpe-option-card').data('idx');
             const opt = wpeVariantStore.variationOptions[idx];
 
+            if (config.editorMode === 'blocks' && wpeVariantStore.variationOptions.length === 1) {
+                if (wpeVariantStore.variations.length > 0) {
+                    openVariableToSimpleModal();
+                    return;
+                }
+                wpeVariantStore.variationOptions = [];
+                wpeVariantStore.derivedType = 'simple';
+                wpeVariantStore.type = 'simple';
+                wpeVariantStore.product.type = 'simple';
+                wpeVariantStore.markDirty();
+                return;
+            }
+
             const affected = wpeVariantStore.variations.filter(v => {
                 const combo = v.attributes || v.combination || {};
                 return combo[opt.name] !== undefined;
@@ -3452,8 +4580,8 @@
             wpeVariantStore.markDirty();
         });
 
-        // Filters & Search
-        $container.find('.wpe-search-input, .wpe-filter-input').off('input keyup').on('input keyup', function () {
+        // Filters & Search (use 'input' only so arrow keys / Shift do not trigger re-renders)
+        $container.find('.wpe-search-input, .wpe-filter-input').off('input keyup').on('input', function () {
             wpeVariantStore.filters.search = $(this).val();
             wpeVariantStore.filters.page = 1;
             renderEditor(containerId);
@@ -3629,6 +4757,22 @@
                 handleInlineGridNav(e, $(this), '.wpe-inline-sku');
             });
 
+        $container.find('.wpe-pricing-mode-select').off('change').on('change', function () {
+            const vId = $(this).closest('tr').data('variant-id');
+            const v = wpeVariantStore.variations.find(item => item.id === vId);
+            if (!v) return;
+            const mode = $(this).val();
+            v.pricing_mode = mode === 'shared' ? 'shared' : 'own';
+            if (v.pricing_mode === 'shared' && wpeVariantStore.commonPrice) {
+                v.regular_price = wpeVariantStore.commonPrice.regular_price || '0';
+                v.sale_price = wpeVariantStore.commonPrice.sale_price || '';
+            } else if (v.pricing_mode === 'own' && wpeVariantStore.commonPrice && emptyVal(v.regular_price)) {
+                v.regular_price = wpeVariantStore.commonPrice.regular_price || '0';
+                v.sale_price = wpeVariantStore.commonPrice.sale_price || '';
+            }
+            wpeVariantStore.markDirty();
+        });
+
         $container.find('.wpe-inline-reg-price').off('input change keydown')
             .on('input change', function () {
                 const vId = $(this).closest('tr').data('variant-id');
@@ -3785,6 +4929,30 @@
         });
     }
 
+    function commitDrawerEdits(vId) {
+        const v = wpeVariantStore.variations.find(item => item.id === vId);
+        if (!v || !$('#wpe-drawer-sku').length) return false;
+
+        v.sku = $('#wpe-drawer-sku').val().trim();
+        v.regular_price = $('#wpe-drawer-reg-price').val();
+        v.sale_price = $('#wpe-drawer-sale-price').val();
+        v.pricing_mode = 'own';
+        v.manage_stock = $('#wpe-drawer-manage-stock').is(':checked');
+        v.stock_quantity = v.manage_stock ? parseFloat($('#wpe-drawer-stock-qty').val()) || 0 : null;
+        v.stock_status = v.manage_stock ? (v.stock_quantity > 0 ? 'instock' : 'outofstock') : 'instock';
+        v.weight = $('#wpe-drawer-weight').val();
+        v.length = $('#wpe-drawer-length').val();
+        v.width = $('#wpe-drawer-width').val();
+        v.height = $('#wpe-drawer-height').val();
+        v.description = $('#wpe-drawer-desc').val();
+
+        if (!v.inventory) v.inventory = {};
+        v.inventory.manage_stock = v.manage_stock ? 1 : 0;
+        v.inventory.quantity = v.stock_quantity;
+        v.inventory.backorders = $('#wpe-drawer-backorders').val();
+        return true;
+    }
+
     /**
      * Bind Global & Modal Events
      */
@@ -3794,6 +4962,18 @@
             if (e.target === this) {
                 layers.close($('#wpe-variation-drawer-overlay'));
             }
+        });
+
+        // Drawer Prev / Next variant navigation
+        $(document).on('click', '.wpe-btn-drawer-prev, .wpe-btn-drawer-next', function () {
+            const currentId = parseInt($(this).attr('data-current-id'), 10);
+            const targetId = parseInt($(this).attr('data-target-id'), 10);
+            if (!targetId) return;
+            if (currentId) {
+                commitDrawerEdits(currentId);
+                wpeVariantStore.markDirty();
+            }
+            renderDrawer(targetId);
         });
 
         // Drawer manage stock checkbox toggle
@@ -3808,26 +4988,7 @@
         // Drawer save
         $(document).on('click', '.wpe-btn-save-drawer', function () {
             const vId = $(this).data('variant-id');
-            const v = wpeVariantStore.variations.find(item => item.id === vId);
-            if (!v) return;
-
-            v.sku = $('#wpe-drawer-sku').val().trim();
-            v.regular_price = $('#wpe-drawer-reg-price').val();
-            v.sale_price = $('#wpe-drawer-sale-price').val();
-            v.pricing_mode = 'own';
-            v.manage_stock = $('#wpe-drawer-manage-stock').is(':checked');
-            v.stock_quantity = v.manage_stock ? parseFloat($('#wpe-drawer-stock-qty').val()) || 0 : null;
-            v.stock_status = v.manage_stock ? (v.stock_quantity > 0 ? 'instock' : 'outofstock') : 'instock';
-            v.weight = $('#wpe-drawer-weight').val();
-            v.length = $('#wpe-drawer-length').val();
-            v.width = $('#wpe-drawer-width').val();
-            v.height = $('#wpe-drawer-height').val();
-            v.description = $('#wpe-drawer-desc').val();
-
-            if (!v.inventory) v.inventory = {};
-            v.inventory.manage_stock = v.manage_stock ? 1 : 0;
-            v.inventory.quantity = v.stock_quantity;
-            v.inventory.backorders = $('#wpe-drawer-backorders').val();
+            if (!commitDrawerEdits(vId)) return;
 
             layers.close($('#wpe-variation-drawer-overlay'));
             wpeVariantStore.markDirty();
@@ -3859,6 +5020,160 @@
         $(document).on('click', '.wpe-btn-close-modal', function () {
             const $own = $(this).closest('.wpe-modal-backdrop');
             layers.close($own.length ? $own : $('.wpe-modal-backdrop').last());
+        });
+
+        // Choice card radio highlight
+        $(document).on('change', '.wpe-choice-card input[type="radio"]', function () {
+            const $group = $(this).closest('.wpe-choice-group');
+            $group.find('.wpe-choice-card').removeClass('selected');
+            $(this).closest('.wpe-choice-card').addClass('selected');
+        });
+
+        // Confirm Common Price Removal Modal
+        $(document).on('click', '.wpe-btn-confirm-remove-common-price', function () {
+            const mode = $('input[name="wpe_common_price_removal_mode"]:checked').val() || 'copy';
+            const cp = wpeVariantStore.commonPrice || {};
+            wpeVariantStore.variations.forEach(v => {
+                if (v.pricing_mode === 'shared') {
+                    if (mode === 'copy') {
+                        v.regular_price = cp.regular_price || '0';
+                        v.sale_price = cp.sale_price || '';
+                        v.sale_from = cp.sale_from || null;
+                        v.sale_to = cp.sale_to || null;
+                    }
+                }
+                delete v.pricing_mode;
+            });
+            wpeVariantStore.commonPrice = null;
+            layers.close($('#wpe-remove-common-price-modal'));
+            showToast('Removed Common Price.', 'info');
+            wpeVariantStore.markDirty();
+        });
+
+        // Confirm Simple -> Variable Transition Modal
+        $(document).on('click', '.wpe-btn-confirm-s2v', function () {
+            const optName = ($('#wpe-first-opt-name').val() || '').trim() || 'Size';
+            const rawVals = ($('#wpe-first-opt-values').val() || '').trim() || 'Default';
+            const pricingChoice = $('input[name="wpe_s2v_pricing_choice"]:checked').val() || 'common_price';
+
+            const prod = wpeVariantStore.product || {};
+            const baseReg = !emptyVal(prod.regular_price) ? String(prod.regular_price) : '0';
+            const baseSale = !emptyVal(prod.sale_price) ? String(prod.sale_price) : '';
+
+            wpeVariantStore.type = 'variable';
+            $('#product-type').val('variable');
+
+            wpeVariantStore.variationOptions = [{
+                name: optName,
+                position: 0,
+                display_type: 'auto',
+                help_text: '',
+                values: []
+            }];
+            addValuesToOption(0, rawVals);
+
+            if (pricingChoice === 'common_price') {
+                wpeVariantStore.commonPrice = {
+                    regular_price: baseReg,
+                    sale_price: baseSale,
+                    sale_from: prod.sale_from || null,
+                    sale_to: prod.sale_to || null
+                };
+            } else {
+                wpeVariantStore.commonPrice = null;
+            }
+
+            wpeVariantStore.typeTransition = {
+                from: 'simple',
+                to: 'variable',
+                pricing_choice: pricingChoice
+            };
+
+            // Generate initial variations from the first option values
+            const optValues = (wpeVariantStore.variationOptions[0] && wpeVariantStore.variationOptions[0].values) || [];
+            const rawParentSku = (prod.sku || '').trim();
+            const skuPrefix = rawParentSku ? (rawParentSku.endsWith('-') ? rawParentSku : `${rawParentSku}-`) : '';
+            wpeVariantStore.variations = optValues.map((vObj, idx) => {
+                const label = typeof vObj === 'object' ? vObj.label : vObj;
+                const combo = { [optName]: label };
+                const suffix = String(label).replace(/\s+/g, '-').toUpperCase();
+                return {
+                    id: idx + 1,
+                    sku: skuPrefix ? `${skuPrefix}${suffix}` : '',
+                    regular_price: baseReg,
+                    sale_price: baseSale,
+                    sale_from: null,
+                    sale_to: null,
+                    pricing_mode: pricingChoice === 'common_price' ? 'shared' : 'own',
+                    status: 'publish',
+                    position: idx,
+                    manage_stock: false,
+                    stock_quantity: null,
+                    stock_status: 'instock',
+                    attributes: combo,
+                    combination: combo,
+                    image_asset_id: null,
+                    image_url: null,
+                    attachment_id: null,
+                    inventory: {
+                        manage_stock: 0,
+                        quantity: null,
+                        stock_status: 'instock',
+                        backorders: 'no'
+                    }
+                };
+            });
+
+            layers.close($('#wpe-simple-to-variable-modal'));
+            showToast('Converted draft to Variable Product.', 'success');
+            wpeVariantStore.markDirty();
+        });
+
+        // Confirm Variable -> Simple Transition Modal
+        $(document).on('click', '.wpe-btn-confirm-v2s', function () {
+            const source = $('input[name="wpe_v2s_price_source"]:checked').val() || 'min_price';
+            let newReg = '0';
+            let newSale = '';
+
+            if (source === 'variant') {
+                const sourceVarId = parseInt($('#wpe-v2s-source-variant').val(), 10);
+                const sv = (wpeVariantStore.variations || []).find(v => v.id === sourceVarId) || wpeVariantStore.variations[0];
+                if (sv) {
+                    const useShared = wpeVariantStore.commonPrice && sv.pricing_mode === 'shared';
+                    newReg = useShared ? (wpeVariantStore.commonPrice.regular_price || '0') : (sv.regular_price || '0');
+                    newSale = useShared ? (wpeVariantStore.commonPrice.sale_price || '') : (sv.sale_price || '');
+                }
+            } else if (source === 'manual') {
+                newReg = ($('#wpe-v2s-manual-reg').val() || '0').trim();
+                newSale = ($('#wpe-v2s-manual-sale').val() || '').trim();
+            } else {
+                const ref = getEffectiveReferencePrice();
+                newReg = (ref && ref.min_regular_price) ? String(ref.min_regular_price) : '0';
+                newSale = '';
+            }
+
+            wpeVariantStore.type = 'simple';
+            $('#product-type').val('simple');
+            wpeVariantStore.product.regular_price = newReg;
+            wpeVariantStore.product.sale_price = newSale;
+            $('#_regular_price').val(newReg);
+            $('#_sale_price').val(newSale);
+
+            wpeVariantStore.commonPrice = null;
+            wpeVariantStore.variationOptions = [];
+            wpeVariantStore.variations = [];
+            wpeVariantStore.selection.clear();
+            wpeVariantStore.typeTransition = {
+                from: 'variable',
+                to: 'simple',
+                price_source: source,
+                simple_regular_price: newReg,
+                simple_sale_price: newSale || null
+            };
+
+            layers.close($('#wpe-variable-to-simple-modal'));
+            showToast('Converted draft to Simple Product.', 'info');
+            wpeVariantStore.markDirty();
         });
 
         // Confirm Add Single Variant Modal
@@ -4007,16 +5322,19 @@
 
                 const maxId = wpeVariantStore.variations.reduce((max, v) => Math.max(max, v.id || 0), 0);
                 const newVarId = maxId + 1;
-                const regPrice = defPrice !== '' ? defPrice : '0';
+                const hasCommonPrice = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
+                const regPrice = hasCommonPrice
+                    ? (wpeVariantStore.commonPrice.regular_price || defPrice || '0')
+                    : (defPrice !== '' ? defPrice : '0');
 
                 wpeVariantStore.variations.push({
                     id: newVarId,
                     sku: sku,
                     regular_price: regPrice,
-                    sale_price: '',
+                    sale_price: hasCommonPrice ? (wpeVariantStore.commonPrice.sale_price || '') : '',
                     sale_from: null,
                     sale_to: null,
-                    pricing_mode: 'own',
+                    pricing_mode: hasCommonPrice ? 'shared' : 'own',
                     status: 'publish',
                     position: wpeVariantStore.variations.length,
                     manage_stock: defStock !== '',
@@ -4215,6 +5533,8 @@
                     if (res.success && res.data) {
                         applyServerData(res.data);
                         wpeVariantStore.isDirty = false;
+                        wpeVariantStore.mediaDirty = false;
+                        wpeVariantStore.typeTransition = null;
                         wpeVariantStore.notify();
                         showToast('Changes discarded', 'info');
                     }
@@ -4240,7 +5560,7 @@
         $(document).on('click', '#wpe-box-fullscreen', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (wpeVariantStore.isLoaded) openFullscreen();
+            if (wpeVariantStore.isLoaded) openFullscreen('variants');
         });
         $(document).on('click', '.wpe-btn-retry-load', function () {
             wpeVariantStore.isRequested = false;
@@ -4252,7 +5572,10 @@
         if (postForm) {
             postForm.addEventListener('submit', function (e) {
                 wpeVariantStore.syncHiddenPayload();
-                if (wpeVariantStore.isDirty && !isSupportedProductType()) {
+                const shouldWarnTypeChange = config.editorMode === 'blocks'
+                    ? !isSupportedProductType()
+                    : (!isVariableType() && !wpeVariantStore.mediaDirty);
+                if (wpeVariantStore.isDirty && shouldWarnTypeChange) {
                     if (!window.confirm(config.i18n.typeChangeWarning)) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
@@ -4299,10 +5622,11 @@
     }
 
     function updateBoxHeader() {
-        const id = config.variantsBoxId || config.boxId;
-        if (!$('#' + id).length) return;
-        ensureBoxHeader(id);
-        const $status = $('#' + id + ' .wpe-box-status');
+        const boxIds = [config.variantsBoxId || config.boxId];
+        const infoBoxId = config.infoBoxId || config.productInfoBoxId || 'wpe_product_info';
+        if (infoBoxId && config.editorMode === 'blocks') {
+            boxIds.push(infoBoxId);
+        }
         let label = '';
         let cls = 'idle';
         if (wpeVariantStore.loadFailed) {
@@ -4319,7 +5643,12 @@
             label = 'In sync';
             cls = 'clean';
         }
-        $status.text(label).attr('class', `wpe-box-status ${id}-status ${cls}`);
+        boxIds.forEach(id => {
+            if (!id || !$('#' + id).length) return;
+            ensureBoxHeader(id);
+            const $status = $('#' + id + ' .wpe-box-status');
+            $status.text(label).attr('class', `wpe-box-status ${id}-status ${cls}`);
+        });
         $('#wpe-box-fullscreen').prop('disabled', !wpeVariantStore.isLoaded);
     }
 
@@ -4344,29 +5673,103 @@
         wpeVariantStore.product.parent_stock = stockObj;
 
         wpeVariantStore.type = data.type || (data.product && data.product.type) || 'simple';
+        wpeVariantStore.derivedType = data.derived_type || wpeVariantStore.type;
+        if (config.editorMode === 'blocks' && $('#product-type').length && (wpeVariantStore.type === 'simple' || wpeVariantStore.type === 'variable')) {
+            $('#product-type').val(wpeVariantStore.type);
+        }
+        if (data.common_price && typeof data.common_price === 'object') {
+            const cp = data.common_price;
+            const reg = cp.regular_price !== undefined && cp.regular_price !== null ? cp.regular_price : (cp.regular !== undefined ? cp.regular : null);
+            const sale = cp.sale_price !== undefined && cp.sale_price !== null ? cp.sale_price : (cp.sale !== undefined ? cp.sale : null);
+            const from = cp.sale_from !== undefined && cp.sale_from !== null ? cp.sale_from : (cp.from !== undefined ? cp.from : null);
+            const to = cp.sale_to !== undefined && cp.sale_to !== null ? cp.sale_to : (cp.to !== undefined ? cp.to : null);
+            wpeVariantStore.commonPrice = {
+                regular_price: reg,
+                sale_price: sale,
+                sale_from: from,
+                sale_to: to,
+                regular: reg,
+                sale: sale,
+                from: from,
+                to: to
+            };
+        } else {
+            wpeVariantStore.commonPrice = null;
+        }
+        wpeVariantStore.referencePrice = data.reference_price || null;
+        wpeVariantStore.typeTransition = null;
         wpeVariantStore.descriptiveAttributes = data.descriptive_attributes || [];
-        wpeVariantStore.variationOptions = data.variation_options || [];
+        wpeVariantStore.variationOptions = (data.variation_options || []).map(normalizeVariationOptionDefaults);
+        const hasCommon = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
         wpeVariantStore.variations = (data.variations || []).map(v => {
             const copy = Object.assign({}, v);
-            delete copy.pricing_mode;
+            if (hasCommon) {
+                copy.pricing_mode = copy.pricing_mode === 'shared' ? 'shared' : 'own';
+            } else {
+                delete copy.pricing_mode;
+            }
             return copy;
         });
         wpeVariantStore.taxonomies = data.taxonomies || data.global_taxonomies || [];
         if (data.media_library) {
             wpeVariantStore.mediaLibrary = normalizeMediaLibrary(data.media_library);
+            wpeVariantStore.mediaLoaded = true;
         }
+    }
+
+    function normalizeVariationOptionDefaults(opt) {
+        if (!opt || typeof opt !== 'object') return opt;
+        const copy = Object.assign({}, opt);
+        const vals = Array.isArray(copy.values) ? copy.values : [];
+        const hasDefId = copy.default_value_id !== undefined && copy.default_value_id !== null && copy.default_value_id !== '';
+        const hasDefLabel = copy.default_value !== undefined && copy.default_value !== null && String(copy.default_value).trim() !== '';
+
+        let matchedVal = null;
+        if (hasDefId) {
+            const targetId = String(copy.default_value_id);
+            matchedVal = vals.find(v => typeof v === 'object' && v !== null && v.id !== undefined && v.id !== null && String(v.id) === targetId) || null;
+        }
+        if (!matchedVal && hasDefLabel) {
+            const targetLabel = String(copy.default_value).trim().toLowerCase();
+            matchedVal = vals.find(v => {
+                const lbl = typeof v === 'object' && v !== null ? String(v.label || '') : String(v || '');
+                return lbl.trim().toLowerCase() === targetLabel;
+            }) || null;
+        }
+
+        if (matchedVal !== null) {
+            const resolvedLabel = typeof matchedVal === 'object' && matchedVal !== null ? String(matchedVal.label || '') : String(matchedVal);
+            copy.default_value = resolvedLabel;
+            if (typeof matchedVal === 'object' && matchedVal !== null && matchedVal.id) {
+                copy.default_value_id = parseInt(matchedVal.id, 10);
+            } else {
+                delete copy.default_value_id;
+            }
+        } else {
+            copy.default_value = null;
+            copy.default_value_id = null;
+        }
+        return copy;
     }
 
     function applyRestoredDraft(draft) {
         if (!draft || typeof draft !== 'object') return false;
         if (draft.product) wpeVariantStore.product = draft.product;
         if (draft.type) wpeVariantStore.type = draft.type;
+        if (draft.derived_type) wpeVariantStore.derivedType = draft.derived_type;
+        if (draft.common_price !== undefined) wpeVariantStore.commonPrice = draft.common_price;
+        if (draft.type_transition !== undefined) wpeVariantStore.typeTransition = draft.type_transition;
         if (Array.isArray(draft.descriptive_attributes)) wpeVariantStore.descriptiveAttributes = draft.descriptive_attributes;
-        if (Array.isArray(draft.variation_options)) wpeVariantStore.variationOptions = draft.variation_options;
+        if (Array.isArray(draft.variation_options)) wpeVariantStore.variationOptions = draft.variation_options.map(normalizeVariationOptionDefaults);
+        const hasCommon = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
         if (Array.isArray(draft.variations)) {
             wpeVariantStore.variations = draft.variations.map(v => {
                 const copy = Object.assign({}, v);
-                delete copy.pricing_mode;
+                if (hasCommon) {
+                    copy.pricing_mode = copy.pricing_mode === 'shared' ? 'shared' : 'own';
+                } else {
+                    delete copy.pricing_mode;
+                }
                 return copy;
             });
         }
@@ -4391,8 +5794,11 @@
         wpeVariantStore.isRequested = true;
         wpeVariantStore.isLoading = true;
         wpeVariantStore.loadFailed = false;
-        if ($('#wpe-product-editor-inline-app').length && isVariableType()) {
+        if ($('#wpe-product-editor-inline-app').length && (isVariableType() || config.editorMode === 'blocks')) {
             renderVariantsApp('#wpe-product-editor-inline-app');
+        }
+        if ($('#wpe-product-info-app').length && config.editorMode === 'blocks') {
+            renderProductInfoApp('#wpe-product-info-app');
         }
         renderProductMediaApp();
         updateBoxHeader();
@@ -4419,6 +5825,23 @@
             });
     }
 
+    /**
+     * Load Product Media only (used for simple products in metabox mode so GET /variants is not called).
+     */
+    function loadMediaOnly() {
+        if (wpeVariantStore.mediaRequested || wpeVariantStore.isRequested) return;
+        wpeVariantStore.mediaRequested = true;
+        api.fetchMedia()
+            .done(function (res) {
+                const payload = (res && res.data) ? res.data : res;
+                if (payload && typeof payload === 'object') {
+                    wpeVariantStore.mediaLibrary = normalizeMediaLibrary(payload);
+                    wpeVariantStore.mediaLoaded = true;
+                    renderProductMediaApp();
+                }
+            });
+    }
+
     function failLoad(reason) {
         wpeVariantStore.isRequested = false;
         wpeVariantStore.isLoading = false;
@@ -4430,6 +5853,7 @@
             </div>
         `;
         if ($('#wpe-product-editor-inline-app').length) $('#wpe-product-editor-inline-app').html(errHtml);
+        if ($('#wpe-product-info-app').length) $('#wpe-product-info-app').html(errHtml);
         if ($('#wpe-product-media-app').length) $('#wpe-product-media-app').html(errHtml);
         updateBoxHeader();
     }
@@ -4440,17 +5864,41 @@
     function setupProductTypeToggle() {
         const $productTypeSelect = $('#product-type');
         const $metabox = $('#woocommerce-product-data');
-        const $box = $('#' + config.boxId);
+        const $variantsBox = $('#' + (config.variantsBoxId || config.boxId));
+        const infoBoxId = config.infoBoxId || config.productInfoBoxId || 'wpe_product_info';
+        const $infoBox = infoBoxId ? $('#' + infoBoxId) : $();
 
         function updateType() {
+            const selectedType = $productTypeSelect.length ? $productTypeSelect.val() : wpeVariantStore.type;
+            if (selectedType === 'simple' || selectedType === 'variable') {
+                wpeVariantStore.type = selectedType;
+            }
             const isVariable = isVariableType();
             const isSupported = isSupportedProductType();
-            $metabox.toggleClass('wpe-is-variable', isVariable);
-            $box.toggleClass('wpe-box-hidden', !isVariable);
-            ensureProductMediaBox();
-            if (isSupported) {
-                loadData();
-                renderProductMediaApp();
+
+            if (config.editorMode === 'blocks') {
+                $metabox.toggleClass('wpe-box-hidden', isSupported);
+                $infoBox.toggleClass('wpe-box-hidden', !isSupported);
+                $variantsBox.toggleClass('wpe-box-hidden', !isSupported);
+                ensureProductMediaBox();
+                if (isSupported) {
+                    loadData();
+                    renderProductInfoApp('#wpe-product-info-app');
+                    renderVariantsApp('#wpe-product-editor-inline-app');
+                    renderProductMediaApp();
+                }
+            } else {
+                $metabox.toggleClass('wpe-is-variable', isVariable);
+                $variantsBox.toggleClass('wpe-box-hidden', !isVariable);
+                ensureProductMediaBox();
+                if (isVariable) {
+                    loadData();
+                    renderProductMediaApp();
+                } else if (isSupported) {
+                    wpeVariantStore.isLoading = false;
+                    loadMediaOnly();
+                    renderProductMediaApp();
+                }
             }
             wpeVariantStore.syncHiddenPayload();
             updateBoxHeader();
@@ -4467,7 +5915,10 @@
         ensureProductMediaBox();
         wpeVariantStore.subscribe(() => {
             renderProductMediaApp();
-            if ($('#wpe-product-editor-inline-app').length && isVariableType()) {
+            if ($('#wpe-product-info-app').length && config.editorMode === 'blocks' && isSupportedProductType()) {
+                renderProductInfoApp('#wpe-product-info-app');
+            }
+            if ($('#wpe-product-editor-inline-app').length && (isVariableType() || (config.editorMode === 'blocks' && isSupportedProductType()))) {
                 renderVariantsApp('#wpe-product-editor-inline-app');
             }
             if ($('#wpe-fullscreen-modal-overlay').is(':visible')) {
@@ -4478,6 +5929,10 @@
 
         bindGlobalEvents();
         ensureBoxHeader(config.variantsBoxId || config.boxId);
+        const infoBoxId = config.infoBoxId || config.productInfoBoxId || 'wpe_product_info';
+        if (infoBoxId && config.editorMode === 'blocks') {
+            ensureBoxHeader(infoBoxId);
+        }
 
         if (config.restoredDraft) {
             loadData();

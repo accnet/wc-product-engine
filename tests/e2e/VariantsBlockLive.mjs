@@ -327,6 +327,21 @@ try {
     check('Reload shows the saved price in the editor', prices.includes('33.33') && (await page.locator(`${INLINE} .wpe-inline-reg-price`).evaluateAll((els) => els.map((e) => e.value))).includes('33.33'), `${savedFirst} / ${prices}`);
     check('Badge reads "In sync" after reload', (await badge()) === 'In sync', await badge());
 
+    // ================================================================ 8b. Option Default Value persists and clears cleanly
+    const defSelect = page.locator(`${INLINE} .wpe-option-default-value-select`).first();
+    await defSelect.selectOption('M');
+    check('Selecting option default value marks draft as Unsaved changes', (await badge()) === 'Unsaved changes', await badge());
+    await submitUpdate();
+    await waitEditor();
+    const defValAfterSave = await page.locator(`${INLINE} .wpe-option-default-value-select`).first().inputValue();
+    check('Option default value remains selected in dropdown after Update and reload', defValAfterSave === 'M', defValAfterSave);
+
+    await page.locator(`${INLINE} .wpe-option-default-value-select`).first().selectOption('');
+    await submitUpdate();
+    await waitEditor();
+    const defValAfterClear = await page.locator(`${INLINE} .wpe-option-default-value-select`).first().inputValue();
+    check('Clearing option default value to -- No Default -- persists after Update', defValAfterClear === '', defValAfterClear);
+
     // ================================================================ 9. Failed save is never silent and keeps the draft
     await setInlinePrice(1, '44.44');
     await page.evaluate(() => { document.getElementById('wpe_variants_nonce').value = 'tampered'; });

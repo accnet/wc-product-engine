@@ -298,6 +298,9 @@ class LegacyMirror
                 }
                 $this->updatePostMetaDirect($aggregateId, '_product_attributes', serialize($productAttributes));
                 $this->updatePostMetaDirect($aggregateId, '_default_attributes', serialize($defaultAttributes));
+            } else {
+                $this->updatePostMetaDirect($aggregateId, '_product_attributes', serialize([]));
+                $this->updatePostMetaDirect($aggregateId, '_default_attributes', serialize([]));
             }
 
             // Project taxonomy terms from wpe_product_terms first (without wiping product_type)
