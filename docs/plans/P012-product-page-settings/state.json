@@ -1,0 +1,842 @@
+{
+  "id": "P012",
+  "title": "Settings Product Page price display and variant selector",
+  "status": "done",
+  "content_hash": "26478eea8351ac47efa0e1dc2b52a5968d05707cc5302f9a3c5b6ae1b24d70b2",
+  "tasks": [
+    {
+      "id": "P012.1",
+      "title": "Contract and documentation amendments for Settings Product Page, Single Price Display, and Variant Selector",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/audits/P012-pre-implementation-audit.md"
+      ],
+      "files": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/NOTES.md",
+        "docs/audits/P012-pre-implementation-audit.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "cf66dadbf5151ccde53866067c4491d703139bf2593091c863fa1f0843116ece",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929210101-fc256c19.log",
+          "time": "2026-10-13T22:06:50.102Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "cf66dadbf5151ccde53866067c4491d703139bf2593091c863fa1f0843116ece",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929210248-4b037f8a.log",
+          "time": "2026-10-13T22:06:50.248Z"
+        }
+      ],
+      "started_at": "2026-10-13T22:06:49.939Z"
+    },
+    {
+      "id": "P012.2",
+      "title": "SettingsRegistry, PluginBootstrap flags, AdminApiController persistence, and Settings Product Page tab UI",
+      "depends_on": [
+        "P012.1"
+      ],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Admin/SettingsRegistry.php",
+        "src/Admin/SettingsPage.php",
+        "src/Admin/Rest/AdminApiController.php",
+        "assets/admin/settings.js",
+        "assets/admin/settings.css",
+        "tests/integration/SettingsApiTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "0f4b0787187ed78071ed53ade050cfc58b68f65131b0c30a4ff76542f6260c3c",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929670263-ab895f3c.log",
+          "time": "2026-10-13T22:14:30.264Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "0f4b0787187ed78071ed53ade050cfc58b68f65131b0c30a4ff76542f6260c3c",
+          "output_sha256": "194d44edbf229a68fbcda27820a6ca9e67c1101c33cd42f022f38e131073a6e6",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929671650-7f34250c.log",
+          "time": "2026-10-13T22:14:31.651Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "0f4b0787187ed78071ed53ade050cfc58b68f65131b0c30a4ff76542f6260c3c",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929671843-80f1bb86.log",
+          "time": "2026-10-13T22:14:31.843Z"
+        }
+      ],
+      "started_at": "2026-10-13T22:07:03.783Z"
+    },
+    {
+      "id": "P012.3",
+      "title": "Per-option display_type, help_text, and value color swatch persistence in ProductEditorService and editor UI",
+      "depends_on": [
+        "P012.2"
+      ],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "src/Admin/ProductEditor/ProductEditorService.php",
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css",
+        "tests/integration/ProductEditorServiceTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "3907c805c8b35d84e7df3e8ff1c4891b143f6764ba714561c8acd89e7c2818ae",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929880989-2b2d6ef3.log",
+          "time": "2026-10-13T22:18:00.990Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "3907c805c8b35d84e7df3e8ff1c4891b143f6764ba714561c8acd89e7c2818ae",
+          "output_sha256": "949982b8bdbab3ec69cc7b2f70dcbc846fb37f6318e8f8b2f15974f0bd9270db",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929883844-b502f1d2.log",
+          "time": "2026-10-13T22:18:03.845Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "64c6c01231830cd6c6acfc26a155765cb69055812d4ae2bc208f034d741c5ae6",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929926684-abb74cd8.log",
+          "time": "2026-10-13T22:18:46.685Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "64c6c01231830cd6c6acfc26a155765cb69055812d4ae2bc208f034d741c5ae6",
+          "output_sha256": "b571adf1f8112d7c3ff923fe963e29d3c378797dc62e4d7327eef09ba15096fe",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929929759-347e3db2.log",
+          "time": "2026-10-13T22:18:49.759Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "64c6c01231830cd6c6acfc26a155765cb69055812d4ae2bc208f034d741c5ae6",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791929929957-8216ab80.log",
+          "time": "2026-10-13T22:18:49.957Z"
+        }
+      ],
+      "started_at": "2026-10-13T22:14:44.490Z"
+    },
+    {
+      "id": "P012.4",
+      "title": "VariantResolver availability engine, 5-step candidate image swatch resolver, and full variation price_html",
+      "depends_on": [
+        "P012.3"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "src/Application/Variant/VariantResolver.php",
+        "src/Application/Variant/ResolverApi.php",
+        "tests/integration/T25Test.php",
+        "tests/integration/T26Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T25Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T26Test.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "1e3fdcb40aa372431533590bc7c0acdb59a7394a0a371994fd3e72678d4da5cd",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930614928-edc665ac.log",
+          "time": "2026-10-13T22:30:14.929Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T25Test.php"
+          ],
+          "exit_code": 255,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "1e3fdcb40aa372431533590bc7c0acdb59a7394a0a371994fd3e72678d4da5cd",
+          "output_sha256": "59f2130501ef5cf396b7625aa7d91b871546df0f8065e161d91b6ac425d28f53",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930616257-daf223b1.log",
+          "time": "2026-10-13T22:30:16.258Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "81d50a0896b8f456698191add7044460adf6fb95b57d1cb56b976a9de625286d",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930739277-add0cd2d.log",
+          "time": "2026-10-13T22:32:19.278Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T25Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "81d50a0896b8f456698191add7044460adf6fb95b57d1cb56b976a9de625286d",
+          "output_sha256": "ca09f7d68b86cd0bddbc6a7ac1bb3a588c0e8b77186c2769f676aaba1d11e9fc",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930740684-820cfca9.log",
+          "time": "2026-10-13T22:32:20.685Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T26Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "81d50a0896b8f456698191add7044460adf6fb95b57d1cb56b976a9de625286d",
+          "output_sha256": "7c848c4cd726aa79e7d351305a14327d4ef50d0812c3d69c7a3ad040500eb3ee",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930742248-9d705b85.log",
+          "time": "2026-10-13T22:32:22.249Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "81d50a0896b8f456698191add7044460adf6fb95b57d1cb56b976a9de625286d",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791930742414-e9c210b1.log",
+          "time": "2026-10-13T22:32:22.415Z"
+        }
+      ],
+      "started_at": "2026-10-13T22:19:05.535Z"
+    },
+    {
+      "id": "P012.5",
+      "title": "SelectorAdapter: Single Price Display hooks, stable ID display type resolution, help text, and cached storefront payload",
+      "depends_on": [
+        "P012.4"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/09-ui.md",
+        "docs/10-integrations.md"
+      ],
+      "files": [
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Compatibility/WooDataStore/ProductLifecycle.php",
+        "tests/integration/T27Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T27Test.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "e3f9d28ad562c66375d078becdefd5abd2bdea54c3a796743f187fb10df94e74",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791942310619-4b9799d8.log",
+          "time": "2026-10-14T01:45:10.620Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T27Test.php"
+          ],
+          "exit_code": 255,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "e3f9d28ad562c66375d078becdefd5abd2bdea54c3a796743f187fb10df94e74",
+          "output_sha256": "fd537434b91fe797c5c4b326a42b38f50a41b75c41fbc3613a4937ba697dcf58",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791942317880-fca22e28.log",
+          "time": "2026-10-14T01:45:17.881Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T27Test.php"
+          ],
+          "exit_code": 255,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "82ee820af0ec7d40637dce8c1043d07ebf7628ca5b2fad3357d43b98f1deed1c",
+          "output_sha256": "2ed17ce3ceb1006e9e1a0de5f95f11a514e8ff98bbcc7af80e100b94f1577aa7",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791942911956-8ec35174.log",
+          "time": "2026-10-14T01:55:11.956Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "4a3915bf3d89d7bf23477ef97dec85d096aafe3f426116cf1bf169852c767536",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791942992895-ed2a5dcd.log",
+          "time": "2026-10-14T01:56:32.896Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T27Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "4a3915bf3d89d7bf23477ef97dec85d096aafe3f426116cf1bf169852c767536",
+          "output_sha256": "ee468b7ab9ddeb7d9a316c07405a98589a2f6431da9ad6fa90a6bc274f0f5239",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791942999931-6b03ed2a.log",
+          "time": "2026-10-14T01:56:39.931Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "4a3915bf3d89d7bf23477ef97dec85d096aafe3f426116cf1bf169852c767536",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943000014-628a877a.log",
+          "time": "2026-10-14T01:56:40.014Z"
+        }
+      ],
+      "started_at": "2026-10-13T22:32:32.108Z"
+    },
+    {
+      "id": "P012.6",
+      "title": "Storefront selector JS and CSS: instance scoping, selected value label, dynamic image thumbnails, single price sync, and unavailable states",
+      "depends_on": [
+        "P012.5"
+      ],
+      "read_first": [
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "assets/variant-selector/selector.js",
+        "assets/variant-selector/selector.css",
+        "tests/integration/ProductPageSettingsTest.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "2b85353a2a4cbf96f77d56e92e211a427f95480b013e104f538c9936bf55aa33",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943400812-839238be.log",
+          "time": "2026-10-14T02:03:20.813Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "2b85353a2a4cbf96f77d56e92e211a427f95480b013e104f538c9936bf55aa33",
+          "output_sha256": "a6a713713824dc7c622b4f7a4e0862a359953b823a177c8fcc5c85ac9ceeeae2",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943401385-f894ac27.log",
+          "time": "2026-10-14T02:03:21.386Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "7842931ccc2ff399177b770f313478d3dd84cc79c8a42fcac8d671c2faf51fd0",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943429992-dcfba4e2.log",
+          "time": "2026-10-14T02:03:49.993Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 255,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "7842931ccc2ff399177b770f313478d3dd84cc79c8a42fcac8d671c2faf51fd0",
+          "output_sha256": "df03c895abf9aa90aed32524db18ee86f5537c2992d6fced66e124437441de5e",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943430617-3f11f8ed.log",
+          "time": "2026-10-14T02:03:50.617Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "5d2e064fd2ec30ffb620dc9346c518d197f272c5d15bc1878f9cbc4f819bb168",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943461975-069fafb7.log",
+          "time": "2026-10-14T02:04:21.975Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 255,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "5d2e064fd2ec30ffb620dc9346c518d197f272c5d15bc1878f9cbc4f819bb168",
+          "output_sha256": "895a6b85ab73324ea103ff0d5778a250873d99f0d986b1ad1759c79003d65703",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943462572-c7aa0cc9.log",
+          "time": "2026-10-14T02:04:22.573Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "3acdd318b16e4fb2f1cec97172e9c9bee4c486b8a078069bbe581792a0247398",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943483331-2ce60eee.log",
+          "time": "2026-10-14T02:04:43.332Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "3acdd318b16e4fb2f1cec97172e9c9bee4c486b8a078069bbe581792a0247398",
+          "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943484375-36712647.log",
+          "time": "2026-10-14T02:04:44.376Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "3acdd318b16e4fb2f1cec97172e9c9bee4c486b8a078069bbe581792a0247398",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791943484460-32cac586.log",
+          "time": "2026-10-14T02:04:44.461Z"
+        }
+      ],
+      "started_at": "2026-10-14T01:56:49.855Z"
+    },
+    {
+      "id": "P012.7",
+      "title": "Playwright live E2E verification across Settings Product Page, storefront PDP, archive cards, quick-view isolation, and cart/checkout parity",
+      "depends_on": [
+        "P012.6"
+      ],
+      "read_first": [
+        "docs/07-testing.md",
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "tests/e2e/ProductPageSettingsLive.mjs",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductPageSettingsLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "d9c47854bdf823b2de11918b6ae780468ffb69e6217808bc94b18b703164a996",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791944268787-f2993908.log",
+          "time": "2026-10-14T02:17:48.788Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "d9c47854bdf823b2de11918b6ae780468ffb69e6217808bc94b18b703164a996",
+          "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791944270088-9fe57d49.log",
+          "time": "2026-10-14T02:17:50.089Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductPageSettingsLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "d9c47854bdf823b2de11918b6ae780468ffb69e6217808bc94b18b703164a996",
+          "output_sha256": "91c8ef3891d4ac4e11e1f2a43117784a3f73eede662e01244944d9105eea6c8d",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791944314319-c9a99587.log",
+          "time": "2026-10-14T02:18:34.319Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "d9c47854bdf823b2de11918b6ae780468ffb69e6217808bc94b18b703164a996",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P012-product-page-settings/command-1791944314420-4b06c37a.log",
+          "time": "2026-10-14T02:18:34.420Z"
+        }
+      ],
+      "started_at": "2026-10-14T02:05:01.176Z"
+    }
+  ],
+  "approved_hash": "26478eea8351ac47efa0e1dc2b52a5968d05707cc5302f9a3c5b6ae1b24d70b2",
+  "report_hash": "3f827c9a33dad3365cb84c2498432fb6ff21a2153e8e4360c7ad04d7c88ceb4b"
+}

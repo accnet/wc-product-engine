@@ -133,15 +133,17 @@ class AdminApiController
     {
         $bootstrap = PluginBootstrap::instance();
         return new WP_REST_Response([
-            'status'    => 'success',
-            'flags'     => $bootstrap->getFlags(),
-            'effective' => $this->effectiveFlags($bootstrap),
-            'dependencies_satisfied' => $bootstrap->areDependenciesSatisfied(),
+            'status'                    => 'success',
+            'flags'                     => $bootstrap->getFlags(),
+            'effective'                 => $this->effectiveFlags($bootstrap),
+            'attribute_display_config'  => $bootstrap->getAttributeDisplayConfig(),
+            'product_page_settings_ver' => $bootstrap->getProductPageSettingsVersion(),
+            'dependencies_satisfied'    => $bootstrap->areDependenciesSatisfied(),
         ], 200);
     }
 
     /**
-     * Save editable feature flags.
+     * Save editable feature flags and optional global attribute display config.
      *
      * The payload is validated as a whole: if any key is rejected nothing is
      * written. Authority state (`cohort_mode`) is read-only here by design; it
@@ -175,6 +177,8 @@ class AdminApiController
             ], 400);
         }
 
+        $hasChanges = ($result['values'] !== []) || !empty($result['has_attribute_display_config']);
+
         // Merge onto the stored option so unrelated keys (e.g. cohort_mode) are preserved untouched.
         // An empty payload is a true no-op: nothing is written.
         if ($result['values'] !== []) {
@@ -187,14 +191,22 @@ class AdminApiController
             $bootstrap->loadFlags();
         }
 
+        if (!empty($result['has_attribute_display_config'])) {
+            $bootstrap->saveAttributeDisplayConfig($result['attribute_display_config']);
+        } elseif ($hasChanges) {
+            $bootstrap->bumpProductPageSettingsVersion();
+        }
+
         return new WP_REST_Response([
-            'status'    => 'success',
-            'message'   => $result['values'] === []
+            'status'                    => 'success',
+            'message'                   => !$hasChanges
                 ? __('No changes to save.', 'wc-product-engine')
                 : __('Settings saved.', 'wc-product-engine'),
-            'flags'     => $bootstrap->getFlags(),
-            'effective' => $this->effectiveFlags($bootstrap),
-            'dependencies_satisfied' => $bootstrap->areDependenciesSatisfied(),
+            'flags'                     => $bootstrap->getFlags(),
+            'effective'                 => $this->effectiveFlags($bootstrap),
+            'attribute_display_config'  => $bootstrap->getAttributeDisplayConfig(),
+            'product_page_settings_ver' => $bootstrap->getProductPageSettingsVersion(),
+            'dependencies_satisfied'    => $bootstrap->areDependenciesSatisfied(),
         ], 200);
     }
 

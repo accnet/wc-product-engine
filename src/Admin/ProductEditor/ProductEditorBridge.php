@@ -93,6 +93,34 @@ class ProductEditorBridge
         'upload_image_id',
     ];
 
+    /** Variation-level legacy keys that WooCommerce must not save when native Variants Manager is active. */
+    public const LEGACY_VARIATION_POST_KEYS = [
+        'attribute_names',
+        'attribute_values',
+        'attribute_visibility',
+        'attribute_variation',
+        'attribute_position',
+        'variable_post_id',
+        'variable_sku',
+        'variable_regular_price',
+        'variable_sale_price',
+        'variable_price',
+        'variable_manage_stock',
+        'variable_stock',
+        'variable_stock_status',
+        'variable_backorders',
+        'variable_weight',
+        'variable_length',
+        'variable_width',
+        'variable_height',
+        'variable_enabled',
+        'variable_is_virtual',
+        'variable_is_downloadable',
+        'variable_tax_class',
+        'variable_description',
+        'upload_image_id',
+    ];
+
     /** Native image boxes that the product image library replaces. */
     public const NATIVE_IMAGE_BOXES = ['postimagediv', 'woocommerce-product-images'];
 
@@ -137,6 +165,7 @@ class ProductEditorBridge
         add_action('admin_notices', [$this, 'renderSaveNotices']);
         add_action('woocommerce_process_product_meta', [$this, 'guardLegacyProductKeys'], 1, 2);
         add_action('woocommerce_process_product_meta', [$this, 'processProductMetaSave'], 20, 2);
+        add_action('woocommerce_ajax_save_product_variations', [$this, 'onAjaxSaveLegacyVariations'], 20, 1);
         add_action('admin_enqueue_scripts', [$this, 'enqueueProductEditorAssets']);
 
         // The product image library replaces the native image boxes (hidden, not removed, so the editor can
@@ -145,6 +174,14 @@ class ProductEditorBridge
             add_filter('postbox_classes_product_' . $boxId, [$this, 'filterNativeImageBoxClasses']);
         }
         add_action('admin_init', [$this, 'guardNativeImageKeys'], 1);
+        add_action('wpe_product_media_changed', [$this, 'onProductMediaChanged'], 10, 1);
+    }
+
+    public function onProductMediaChanged(int $productId): void
+    {
+        if ($productId > 0) {
+            $this->service->syncProductMediaProjection($productId);
+        }
     }
 
     /**
@@ -152,7 +189,7 @@ class ProductEditorBridge
      */
     public static function supportsMediaLibrary(string $productType): bool
     {
-        if (self::getEditorMode() === self::MODE_LEGACY) {
+        if (self::getEditorMode() !== self::MODE_BLOCKS) {
             return false;
         }
 
@@ -184,20 +221,26 @@ class ProductEditorBridge
     }
 
     /**
-     * Recovery switch: determine the active editor mode ('blocks', 'metabox', or 'legacy').
+     * Recovery & feature switch: determine the active editor mode ('metabox' default, 'blocks', or 'legacy').
+     * When the `variants_ui_enabled` feature flag is disabled in Settings -> Features, returns MODE_LEGACY
+     * so the default WooCommerce Variations & Attributes tabs are shown.
      */
     public static function getEditorMode(): string
     {
-        $opt = get_option('wpe_editor_mode', self::MODE_BLOCKS);
+        if (!\WPE\Bootstrap\PluginBootstrap::instance()->isFlagEnabled('variants_ui_enabled')) {
+            return (string)apply_filters('wpe_editor_mode', self::MODE_LEGACY);
+        }
+
+        $opt = get_option('wpe_editor_mode', self::MODE_METABOX);
         $mode = in_array($opt, [self::MODE_BLOCKS, self::MODE_METABOX, self::MODE_LEGACY], true)
             ? (string)$opt
-            : self::MODE_BLOCKS;
+            : self::MODE_METABOX;
 
         return (string)apply_filters('wpe_editor_mode', $mode);
     }
 
     /**
-     * Single writer guard: on a product update for a supported type (Simple or Variable), remove all owned legacy
+     * Single writer guard: on a product update for a supported type (Simple or Variable), remove owned legacy
      * post keys at priority 1 of woocommerce_process_product_meta so WooCommerce at priority 10 cannot write them.
      *
      * @return bool True when legacy keys were guarded/stripped.
@@ -226,11 +269,24 @@ class ProductEditorBridge
             return false;
         }
 
-        foreach (self::LEGACY_OWNED_POST_KEYS as $key) {
-            unset($_POST[$key], $_REQUEST[$key]);
+        if ($mode === self::MODE_BLOCKS) {
+            foreach (self::LEGACY_OWNED_POST_KEYS as $key) {
+                unset($_POST[$key], $_REQUEST[$key]);
+            }
+            remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Images', 'save'], 20);
+            remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Data', 'save_variations'], 10);
+            return true;
         }
 
-        remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Images', 'save'], 20);
+        // In MODE_METABOX, parent product fields are owned by WooCommerce; only strip variation/attribute keys,
+        // plus image keys when the payload carries a media_library draft.
+        foreach (self::LEGACY_VARIATION_POST_KEYS as $key) {
+            unset($_POST[$key], $_REQUEST[$key]);
+        }
+        if ($hasPayload && strpos((string)wp_unslash((string)$_POST['wpe_variants_payload']), '"media_library"') !== false) {
+            unset($_POST['_thumbnail_id'], $_POST['product_image_gallery'], $_REQUEST['_thumbnail_id'], $_REQUEST['product_image_gallery']);
+            remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Images', 'save'], 20);
+        }
         remove_action('woocommerce_process_product_meta', ['WC_Meta_Box_Product_Data', 'save_variations'], 10);
 
         return true;
@@ -261,7 +317,11 @@ class ProductEditorBridge
             $product = wc_get_product($productId);
             $type = $product ? (string)$product->get_type() : 'simple';
         }
-        if (!self::supportsMediaLibrary($type !== '' ? $type : 'simple')) {
+        $effectiveType = $type !== '' ? $type : 'simple';
+        $hasMediaPayload = !empty($_POST['wpe_variants_payload'])
+            && in_array($effectiveType, self::MEDIA_LIBRARY_TYPES, true)
+            && strpos((string)wp_unslash((string)$_POST['wpe_variants_payload']), '"media_library"') !== false;
+        if (!self::supportsMediaLibrary($effectiveType) && !$hasMediaPayload) {
             return false;
         }
 
@@ -519,6 +579,18 @@ class ProductEditorBridge
     }
 
     /**
+     * When variations are saved via WooCommerce's default AJAX Variations tab in MODE_LEGACY,
+     * sync updated variation fields back into wpe_variants / wpe_inventory.
+     */
+    public function onAjaxSaveLegacyVariations(int $productId): void
+    {
+        if ($productId <= 0 || self::getEditorMode() !== self::MODE_LEGACY) {
+            return;
+        }
+        $this->service->syncLegacyVariationsToNative($productId);
+    }
+
+    /**
      * Process standard WordPress product update / publish form submission.
      */
     public function processProductMetaSave(int $productId, $post = null): void
@@ -527,8 +599,18 @@ class ProductEditorBridge
             return;
         }
 
-        // The editor leaves the payload empty when nothing was edited: variants are then not touched.
+        $mode = self::getEditorMode();
+        $syncParentMeta = $mode === self::MODE_METABOX;
+
+        // The editor leaves the payload empty when nothing was edited: variants are then not touched,
+        // but we still sync parent product fields and re-project if variants were saved via inline REST earlier.
         if (empty($_POST['wpe_variants_payload'])) {
+            if ($mode === self::MODE_LEGACY) {
+                $this->service->syncFromWordPressPost($productId, true, false);
+                $this->service->syncLegacyVariationsToNative($productId);
+                return;
+            }
+            $this->service->syncFromWordPressPost($productId, $syncParentMeta, true);
             return;
         }
 
@@ -551,6 +633,7 @@ class ProductEditorBridge
         }
 
         try {
+            $this->service->syncFromWordPressPost($productId, $syncParentMeta, false);
             $actorId = (int) get_current_user_id();
             $result = $this->service->saveProductVariants($productId, $payload, $actorId);
         } catch (Throwable $e) {
@@ -639,17 +722,21 @@ class ProductEditorBridge
         }
 
         wp_localize_script('wpe-product-editor-js', 'wpeEditorConfig', [
-            'productId'       => $productId,
-            'editorMode'      => $editorMode,
-            'infoBoxId'       => self::PRODUCT_INFO_BOX_ID,
-            'variantsBoxId'   => self::BOX_ID,
-            'boxId'           => self::BOX_ID,
-            'supportedTypes'  => self::SUPPORTED_PRODUCT_TYPES,
-            'restBase'        => esc_url_raw(rest_url('wpe/v1/admin/product/' . $productId . '/variants')),
-            'nonce'           => wp_create_nonce('wp_rest'),
-            'currencySymbol'  => $currencySymbol,
-            'productType'     => $productType,
-            'restoredDraft'   => $draft,
+            'productId'           => $productId,
+            'editorMode'          => $editorMode,
+            'infoBoxId'           => self::PRODUCT_INFO_BOX_ID,
+            'variantsBoxId'       => self::BOX_ID,
+            'boxId'               => self::BOX_ID,
+            'supportedTypes'      => self::SUPPORTED_PRODUCT_TYPES,
+            'restBase'            => esc_url_raw(rest_url('wpe/v1/admin/product/' . $productId . '/variants')),
+            'restMediaBase'       => esc_url_raw(rest_url('wpe/v1/admin/products/' . $productId . '/media')),
+            'restAssetsUrl'       => esc_url_raw(rest_url('wpe/v1/admin/assets')),
+            'restPreviewImageUrl' => esc_url_raw(rest_url('wpe/v1/admin/product/' . $productId . '/variants/preview-image-assignment')),
+            'uploadLimits'        => \WPE\Application\Media\ManagedUploadService::limits(),
+            'nonce'               => wp_create_nonce('wp_rest'),
+            'currencySymbol'      => $currencySymbol,
+            'productType'         => $productType,
+            'restoredDraft'       => $draft,
             'i18n'            => [
                 'saveSuccess'       => __('Variants saved successfully!', 'wc-product-engine'),
                 'saving'            => __('Saving changes...', 'wc-product-engine'),

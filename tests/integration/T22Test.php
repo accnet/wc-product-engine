@@ -218,6 +218,18 @@ class T22Test
             throw new RuntimeException("R88 Failed: wp_get_attachment_image missing alt attribute.");
         }
 
+        // 6. Non-numeric attachment IDs (e.g., Flatsome element-logo.php passing default logo URL string or '')
+        $nonNumericLogoUrl = 'http://site1.localhost/wp-content/themes/flatsome/assets/img/logo.png';
+        if (wp_get_attachment_image_src($nonNumericLogoUrl, 'large') !== false) {
+            throw new RuntimeException("R88 Failed: wp_get_attachment_image_src with URL string must return false without TypeError.");
+        }
+        if (wp_get_attachment_image_src('', 'large') !== false) {
+            throw new RuntimeException("R88 Failed: wp_get_attachment_image_src with empty string must return false without TypeError.");
+        }
+        if (wp_get_attachment_url('') !== false) {
+            throw new RuntimeException("R88 Failed: wp_get_attachment_url with empty string must return false without TypeError.");
+        }
+
         echo " OK\n";
     }
 

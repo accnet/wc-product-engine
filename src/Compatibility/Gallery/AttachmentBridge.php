@@ -233,6 +233,10 @@ class AttachmentBridge
      */
     public function getAssetIdForAttachment(int $attachmentId): ?int
     {
+        if ($attachmentId <= 0) {
+            return null;
+        }
+
         if (isset($this->attachmentToAsset[$attachmentId])) {
             return $this->attachmentToAsset[$attachmentId];
         }
@@ -263,6 +267,10 @@ class AttachmentBridge
      */
     public function getAssetForAttachment(int $attachmentId): ?array
     {
+        if ($attachmentId <= 0) {
+            return null;
+        }
+
         $assetId = $this->getAssetIdForAttachment($attachmentId);
         if (!$assetId) {
             return null;
@@ -278,9 +286,13 @@ class AttachmentBridge
     /**
      * Intercept wp_get_attachment_url for bridged CDN assets (R88).
      */
-    public function filterAttachmentUrl($url, int $attachmentId): string
+    public function filterAttachmentUrl($url, $attachmentId): string
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return (string)$url;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return (string)$url;
         }
@@ -292,9 +304,13 @@ class AttachmentBridge
      * Intercept image_downsize for bridged CDN assets (R88).
      * Returns: [$url, $width, $height, $is_intermediate]
      */
-    public function filterImageDownsize($out, int $attachmentId, $size)
+    public function filterImageDownsize($out, $attachmentId, $size)
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $out;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return $out; // Pass through to default local attachment handler
         }
@@ -306,9 +322,13 @@ class AttachmentBridge
     /**
      * Provide rich attachment metadata for WordPress (R88).
      */
-    public function filterAttachmentMetadata($data, int $attachmentId)
+    public function filterAttachmentMetadata($data, $attachmentId)
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $data;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return $data;
         }
@@ -319,9 +339,13 @@ class AttachmentBridge
     /**
      * Intercept wp_calculate_image_srcset to generate accurate responsive CDN sources (R88).
      */
-    public function filterCalculateImageSrcset($sources, $size_array, $image_src, $image_meta, int $attachmentId)
+    public function filterCalculateImageSrcset($sources, $size_array, $image_src, $image_meta, $attachmentId)
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $sources;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return $sources;
         }
@@ -353,9 +377,13 @@ class AttachmentBridge
     /**
      * Intercept wp_calculate_image_sizes for responsive rendering (R88).
      */
-    public function filterCalculateImageSizes($sizes, $size, $image_src, $image_meta, int $attachmentId)
+    public function filterCalculateImageSizes($sizes, $size, $image_src, $image_meta, $attachmentId)
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $sizes;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return $sizes;
         }
@@ -371,8 +399,12 @@ class AttachmentBridge
     /**
      * Prepare attachment data for WordPress Media Library JS preview modal and grid (AC-T22-01).
      */
-    public function filterPrepareAttachmentForJs(array $response, WP_Post $attachment, $meta): array
+    public function filterPrepareAttachmentForJs($response, $attachment, $meta)
     {
+        if (!is_array($response) || !($attachment instanceof WP_Post)) {
+            return $response;
+        }
+
         $asset = $this->getAssetForAttachment((int)$attachment->ID);
         if (!$asset) {
             return $response;
@@ -412,9 +444,13 @@ class AttachmentBridge
      * Intercept get_attached_file.
      * Strictly avoids returning fake local file paths (03 §3, 10 §3, R89).
      */
-    public function filterGetAttachedFile($file, int $attachmentId)
+    public function filterGetAttachedFile($file, $attachmentId)
     {
-        $asset = $this->getAssetForAttachment($attachmentId);
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $file;
+        }
+
+        $asset = $this->getAssetForAttachment((int)$attachmentId);
         if (!$asset) {
             return $file;
         }
@@ -458,8 +494,12 @@ class AttachmentBridge
      * unlinks attachment_id from wpe_assets, preserves product media relations,
      * and strictly avoids deleting remote CDN images (R90, AC-T22-02).
      */
-    public function onDeleteAttachment(int $attachmentId, ?WP_Post $post = null): void
+    public function onDeleteAttachment($attachmentId, $post = null): void
     {
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return;
+        }
+        $attachmentId = (int)$attachmentId;
         $assetId = $this->getAssetIdForAttachment($attachmentId);
         if (!$assetId) {
             return;
@@ -524,6 +564,34 @@ class AttachmentBridge
     /* Helpers                                                                    */
     /* -------------------------------------------------------------------------- */
 
+    public function primeAsset(array $row): void
+    {
+        if (empty($row['id'])) {
+            return;
+        }
+        $assetId = (int)$row['id'];
+        $this->assetCache[$assetId] = $row;
+        if (!empty($row['attachment_id'])) {
+            $this->attachmentToAsset[(int)$row['attachment_id']] = $assetId;
+        }
+    }
+
+    public function primeAssets(array $rows): void
+    {
+        $attachmentIdsToPrime = [];
+        foreach ($rows as $row) {
+            if (is_array($row) && !empty($row['id'])) {
+                $this->primeAsset($row);
+                if (!empty($row['attachment_id'])) {
+                    $attachmentIdsToPrime[] = (int)$row['attachment_id'];
+                }
+            }
+        }
+        if (count($attachmentIdsToPrime) > 0 && function_exists('_prime_post_caches')) {
+            _prime_post_caches($attachmentIdsToPrime, false, true);
+        }
+    }
+
     private function getAssetById(int $assetId): ?array
     {
         if (isset($this->assetCache[$assetId])) {
@@ -532,10 +600,7 @@ class AttachmentBridge
 
         $row = $this->mediaRepo->getAssetById($assetId);
         if ($row) {
-            $this->assetCache[$assetId] = $row;
-            if (!empty($row['attachment_id'])) {
-                $this->attachmentToAsset[(int)$row['attachment_id']] = $assetId;
-            }
+            $this->primeAsset($row);
         }
 
         return $row;

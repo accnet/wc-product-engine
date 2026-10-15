@@ -161,10 +161,45 @@ class ProductEditorService
                 'updated_at'   => $now,
             ]);
 
+            $epoch = LegacyMirror::getInstance()->getGlobalEpoch();
+            $this->wpdb->query($this->wpdb->prepare(
+                "INSERT INTO {$this->tableObjectState}
+                 (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, tombstone, updated_at)
+                 VALUES (%d, 'product', NULL, 'native', %d, 1, 1, 0, 0, 0, %s)
+                 ON DUPLICATE KEY UPDATE authority = 'native', updated_at = VALUES(updated_at), tombstone = 0",
+                $productId,
+                $epoch,
+                $now
+            ));
+
             $product = $this->wpdb->get_row($this->wpdb->prepare(
                 "SELECT * FROM {$this->tableProducts} WHERE id = %d",
                 $productId
             ), ARRAY_A);
+        } else {
+            $post = get_post($productId);
+            if ($post && $post->post_type === 'product') {
+                $syncFields = [];
+                if (($product['status'] ?? '') === 'auto-draft' && $post->post_status !== '' && $post->post_status !== 'auto-draft') {
+                    $syncFields['status'] = $post->post_status;
+                    $product['status'] = $post->post_status;
+                }
+                if (in_array($product['title'] ?? '', ['', 'Auto Draft', 'Untitled Product'], true) && $post->post_title !== '' && $post->post_title !== 'Auto Draft') {
+                    $syncFields['title'] = $post->post_title;
+                    $product['title'] = $post->post_title;
+                }
+                if (
+                    (empty($product['slug']) || $product['slug'] === 'auto-draft' || str_starts_with((string)$product['slug'], 'product-'))
+                    && $post->post_name !== ''
+                    && $post->post_name !== 'auto-draft'
+                ) {
+                    $syncFields['slug'] = $post->post_name;
+                    $product['slug'] = $post->post_name;
+                }
+                if (!empty($syncFields)) {
+                    $this->wpdb->update($this->tableProducts, $syncFields, ['id' => $productId]);
+                }
+            }
         }
 
         // Parent inventory
@@ -177,10 +212,25 @@ class ProductEditorService
         $allOptions = $this->optionsRepo->getOptionsByProductId($productId);
         $descriptiveAttributes = [];
         $variationOptions = [];
+        $productExtraProps = json_decode((string)($product['extra_props'] ?? ''), true);
+        if (!is_array($productExtraProps)) {
+            $productExtraProps = [];
+        }
+        $optionUiMap = is_array($productExtraProps['option_ui'] ?? null) ? $productExtraProps['option_ui'] : [];
 
         foreach ($allOptions as $opt) {
+            $optId = (int)$opt['id'];
+            $optUi = is_array($optionUiMap[(string)$optId] ?? null)
+                ? $optionUiMap[(string)$optId]
+                : (is_array($optionUiMap[$optId] ?? null) ? $optionUiMap[$optId] : []);
+            $displayType = (string)($optUi['display_type'] ?? 'auto');
+            if (!in_array($displayType, ['auto', 'dropdown', 'button', 'color', 'image'], true)) {
+                $displayType = 'auto';
+            }
+            $helpText = (string)($optUi['help_text'] ?? '');
+
             $optItem = [
-                'id'                 => (int)$opt['id'],
+                'id'                 => $optId,
                 'name'               => $opt['name'],
                 'key'                => $opt['key'],
                 'taxonomy'           => $opt['taxonomy'],
@@ -188,12 +238,23 @@ class ProductEditorService
                 'visible'            => !empty($opt['visible']),
                 'used_for_variation' => !empty($opt['used_for_variation']),
                 'default_value_id'   => $opt['default_value_id'] ? (int)$opt['default_value_id'] : null,
+                'display_type'       => $displayType,
+                'help_text'          => $helpText,
                 'values'             => array_map(function ($v) {
+                    $swatchData = !empty($v['swatch']) ? (json_decode((string)$v['swatch'], true) ?: []) : [];
+                    if (!is_array($swatchData)) {
+                        $swatchData = [];
+                    }
+                    $color = isset($swatchData['color']) && is_string($swatchData['color']) && preg_match('/^#[0-9a-fA-F]{6}$/', $swatchData['color'])
+                        ? strtolower($swatchData['color'])
+                        : '';
                     return [
                         'id'        => (int)$v['id'],
                         'label'     => $v['label'],
                         'value_key' => $v['value_key'],
                         'position'  => (int)$v['position'],
+                        'color'     => $color,
+                        'swatch'    => $swatchData,
                     ];
                 }, $opt['values'] ?? []),
             ];
@@ -352,6 +413,7 @@ class ProductEditorService
             'descriptive_attributes' => $descriptiveAttributes,
             'variation_options'      => $variationOptions,
             'variations'             => $variations,
+            'media_library'          => $this->library()->read($productId, (int)get_current_user_id()),
             // `taxonomies` is the key consumed by the editor JS; `global_taxonomies` is kept as an alias.
             'taxonomies'             => $globalTaxonomies,
             'global_taxonomies'      => $globalTaxonomies,
@@ -972,8 +1034,25 @@ class ProductEditorService
             }
             if (isset($payload['product']) && is_array($payload['product'])) {
                 $pData = $payload['product'];
-                if (isset($pData['status'])) {
+                if (isset($pData['status']) && $pData['status'] !== 'auto-draft') {
                     $pUpdates['status'] = $pData['status'];
+                }
+            }
+            $wpPost = get_post($productId);
+            if ($wpPost && $wpPost->post_type === 'product') {
+                if ($wpPost->post_status !== '' && $wpPost->post_status !== 'auto-draft' && (($currentProduct['status'] ?? '') === 'auto-draft' || ($pUpdates['status'] ?? '') === 'auto-draft')) {
+                    $pUpdates['status'] = $wpPost->post_status;
+                }
+                if ($wpPost->post_title !== '' && $wpPost->post_title !== 'Auto Draft' && !isset($pUpdates['title']) && in_array($currentProduct['title'] ?? '', ['', 'Auto Draft', 'Untitled Product'], true)) {
+                    $pUpdates['title'] = $wpPost->post_title;
+                }
+                if (
+                    $wpPost->post_name !== ''
+                    && $wpPost->post_name !== 'auto-draft'
+                    && !isset($pUpdates['slug'])
+                    && (empty($currentProduct['slug']) || $currentProduct['slug'] === 'auto-draft' || str_starts_with((string)$currentProduct['slug'], 'product-'))
+                ) {
+                    $pUpdates['slug'] = $wpPost->post_name;
                 }
             }
             if ($infoPlan !== null) {
@@ -1034,6 +1113,11 @@ class ProductEditorService
                 }
             }
 
+            // Sync Product Media Library draft if provided
+            if (isset($payload['media_library']) && is_array($payload['media_library'])) {
+                $this->syncDraftMediaLibrary($productId, $payload['media_library'], $actorId);
+            }
+
             // Sync Variations Matrix
             if ($effectiveType === 'variable' && isset($payload['variations']) && is_array($payload['variations'])) {
                 $this->syncVariations($productId, $payload['variations'], $pricingPlan['rows'], $inventoryPlan);
@@ -1047,6 +1131,10 @@ class ProductEditorService
             // Commit transaction
             $this->wpdb->query("COMMIT");
 
+            if (isset($payload['media_library']) && is_array($payload['media_library'])) {
+                $this->syncProductMediaProjection($productId);
+            }
+
             // Complete transition after commit
             if ($transitionPlan['changed']) {
                 $this->transition()->complete($productId, $transitionPlan);
@@ -1059,10 +1147,27 @@ class ProductEditorService
                     "SELECT native_revision, native_applied, epoch FROM {$this->tableObjectState} WHERE object_id = %d",
                     $productId
                 ), ARRAY_A);
-                $rev = $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1;
+                $rev = max($newVersion, $state ? max((int)$state['native_revision'], (int)$state['native_applied'] + 1) : 1);
                 $workerEpoch = LegacyMirror::getInstance()->getAggregateEpoch($productId);
+                $this->wpdb->query($this->wpdb->prepare(
+                    "INSERT INTO {$this->tableObjectState}
+                     (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, tombstone, updated_at)
+                     VALUES (%d, 'product', NULL, 'native', %d, 1, %d, 0, 0, 0, %s)
+                     ON DUPLICATE KEY UPDATE authority = 'native', native_revision = %d, tombstone = 0, updated_at = VALUES(updated_at)",
+                    $productId,
+                    $workerEpoch,
+                    $rev,
+                    $now,
+                    $rev
+                ));
                 $mirror = LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
                 $projection['legacy_mirror'] = (string)($mirror['status'] ?? 'unknown');
+                $this->wpdb->query($this->wpdb->prepare(
+                    "UPDATE {$this->wpdb->prefix}wpe_outbox
+                     SET state = 'completed', lease_owner = NULL, lease_until = NULL
+                     WHERE aggregate_id = %d AND state = 'pending'",
+                    $productId
+                ));
             } catch (\Throwable $mE) {
                 $projection['legacy_mirror'] = 'error';
             }
@@ -1112,6 +1217,251 @@ class ProductEditorService
         }
     }
 
+    /**
+     * Synchronize parent product fields from WordPress/WooCommerce post & postmeta into wpe_products
+     * when saving in metabox mode, and re-project native options/variations to WooCommerce shell
+     * when no new variants payload was submitted (e.g. when variants were saved via inline REST first).
+     */
+    public function syncFromWordPressPost(int $productId, bool $syncParentMeta = false, bool $reprojectIfNoPayload = false): void
+    {
+        $product = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT * FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
+            $productId
+        ), ARRAY_A);
+
+        if (!$product) {
+            return;
+        }
+
+        $post = get_post($productId);
+        if (!$post || $post->post_type !== 'product') {
+            return;
+        }
+
+        $now = gmdate('Y-m-d H:i:s.u');
+        $updates = ['updated_at' => $now];
+
+        if ($post->post_title !== '' && $post->post_title !== 'Auto Draft') {
+            $updates['title'] = $post->post_title;
+        }
+        if ($post->post_name !== '' && $post->post_name !== 'auto-draft') {
+            $updates['slug'] = $post->post_name;
+        } elseif (!empty($updates['title']) && (empty($product['slug']) || $product['slug'] === 'auto-draft' || str_starts_with((string)$product['slug'], 'product-'))) {
+            $updates['slug'] = sanitize_title($updates['title']);
+        }
+        if ($post->post_status !== '' && $post->post_status !== 'auto-draft') {
+            $updates['status'] = $post->post_status;
+        }
+        $updates['description'] = (string)$post->post_content;
+        $updates['short_description'] = (string)$post->post_excerpt;
+
+        if ($syncParentMeta) {
+            $postedType = isset($_POST['product-type']) ? sanitize_key((string)wp_unslash($_POST['product-type'])) : '';
+            if ($postedType === '') {
+                $terms = wp_get_object_terms($productId, 'product_type');
+                if (!is_wp_error($terms) && !empty($terms)) {
+                    $termSlugs = wp_list_pluck($terms, 'slug');
+                    if (in_array('variable', $termSlugs, true)) {
+                        $postedType = 'variable';
+                    } elseif (in_array('simple', $termSlugs, true)) {
+                        $postedType = 'simple';
+                    }
+                }
+            }
+            if (in_array($postedType, ['simple', 'variable'], true)) {
+                $updates['type'] = $postedType;
+            }
+
+            $rawMetaRows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$this->wpdb->postmeta}
+                 WHERE post_id = %d AND meta_key IN ('_sku','_regular_price','_sale_price','_weight','_length','_width','_height','_manage_stock','_stock','_stock_status','_backorders')",
+                $productId
+            ), ARRAY_A) ?: [];
+            $rawMeta = [];
+            foreach ($rawMetaRows as $rm) {
+                $rawMeta[$rm['meta_key']] = $rm['meta_value'];
+            }
+
+            if (array_key_exists('_sku', $rawMeta)) {
+                $skuVal = trim((string)$rawMeta['_sku']);
+                $updates['sku'] = $skuVal !== '' ? $skuVal : null;
+            }
+            if (($updates['type'] ?? $product['type']) === 'simple') {
+                if (array_key_exists('_regular_price', $rawMeta)) {
+                    $updates['regular_price'] = $rawMeta['_regular_price'] !== '' && is_numeric($rawMeta['_regular_price']) ? sprintf('%.6f', (float)$rawMeta['_regular_price']) : null;
+                }
+                if (array_key_exists('_sale_price', $rawMeta)) {
+                    $updates['sale_price'] = $rawMeta['_sale_price'] !== '' && is_numeric($rawMeta['_sale_price']) ? sprintf('%.6f', (float)$rawMeta['_sale_price']) : null;
+                }
+            }
+            foreach (['weight' => '_weight', 'length' => '_length', 'width' => '_width', 'height' => '_height'] as $col => $mKey) {
+                if (array_key_exists($mKey, $rawMeta)) {
+                    $updates[$col] = $rawMeta[$mKey] !== '' && is_numeric($rawMeta[$mKey]) ? sprintf('%.6f', (float)$rawMeta[$mKey]) : null;
+                }
+            }
+
+            if (isset($rawMeta['_manage_stock']) || isset($rawMeta['_stock_status'])) {
+                $mStock = ($rawMeta['_manage_stock'] ?? 'no') === 'yes' ? 1 : 0;
+                $sQty = ($mStock && isset($rawMeta['_stock']) && $rawMeta['_stock'] !== '' && is_numeric($rawMeta['_stock']))
+                    ? (float)$rawMeta['_stock']
+                    : null;
+                $sStatus = in_array($rawMeta['_stock_status'] ?? 'instock', ['instock', 'outofstock', 'onbackorder'], true)
+                    ? $rawMeta['_stock_status']
+                    : 'instock';
+                $bOrders = in_array($rawMeta['_backorders'] ?? 'no', ['no', 'notify', 'yes'], true)
+                    ? $rawMeta['_backorders']
+                    : 'no';
+                $this->wpdb->update($this->tableInventory, [
+                    'manage_stock' => $mStock,
+                    'quantity'     => $sQty,
+                    'stock_status' => $sStatus,
+                    'backorders'   => $bOrders,
+                    'updated_at'   => $now,
+                ], ['owner_id' => $productId]);
+            }
+        }
+
+        $this->wpdb->update($this->tableProducts, $updates, ['id' => $productId]);
+
+        if ($reprojectIfNoPayload) {
+            $hasOptionsOrVariants = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT (SELECT COUNT(1) FROM {$this->tableOptions} WHERE product_id = %d) +
+                        (SELECT COUNT(1) FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL)",
+                $productId,
+                $productId
+            ));
+            if ($hasOptionsOrVariants > 0 || ($updates['type'] ?? $product['type']) === 'variable') {
+                try {
+                    $state = $this->wpdb->get_row($this->wpdb->prepare(
+                        "SELECT native_revision, native_applied, epoch FROM {$this->tableObjectState} WHERE object_id = %d",
+                        $productId
+                    ), ARRAY_A);
+                    $rev = $state ? max((int)$state['native_revision'] + 1, (int)$state['native_applied'] + 1) : 1;
+                    $workerEpoch = LegacyMirror::getInstance()->getAggregateEpoch($productId);
+                    $this->wpdb->query($this->wpdb->prepare(
+                        "INSERT INTO {$this->tableObjectState}
+                         (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, tombstone, updated_at)
+                         VALUES (%d, 'product', NULL, 'native', %d, 1, %d, 0, 0, 0, %s)
+                         ON DUPLICATE KEY UPDATE authority = 'native', native_revision = %d, tombstone = 0, updated_at = VALUES(updated_at)",
+                        $productId,
+                        $workerEpoch,
+                        $rev,
+                        $now,
+                        $rev
+                    ));
+                    LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+                    (new CatalogProjector($this->wpdb))->buildNewGeneration();
+                } catch (\Throwable $e) {
+                    // Best-effort re-projection on parent post update
+                }
+            }
+        }
+    }
+
+    /**
+     * Sync variations edited through WooCommerce's default Variations tab (MODE_LEGACY)
+     * back into wpe_variants and wpe_inventory so turning Custom Variants UI back on
+     * preserves all edits made while Custom UI was disabled.
+     */
+    public function syncLegacyVariationsToNative(int $productId): void
+    {
+        $productExists = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(1) FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
+            $productId
+        ));
+        if ($productExists === 0) {
+            return;
+        }
+
+        $now = gmdate('Y-m-d H:i:s.u');
+        $varPosts = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT ID, post_status, menu_order FROM {$this->wpdb->posts}
+             WHERE post_parent = %d AND post_type = 'product_variation' AND post_status IN ('publish', 'private')
+             ORDER BY menu_order ASC, ID ASC",
+            $productId
+        ), ARRAY_A) ?: [];
+
+        $activeIds = [];
+        foreach ($varPosts as $idx => $vp) {
+            $vId = (int)$vp['ID'];
+            $activeIds[] = $vId;
+
+            $metaRows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$this->wpdb->postmeta}
+                 WHERE post_id = %d AND meta_key IN ('_sku','_regular_price','_sale_price','_manage_stock','_stock','_stock_status','_backorders','_variation_description','_weight','_length','_width','_height')",
+                $vId
+            ), ARRAY_A) ?: [];
+            $meta = [];
+            foreach ($metaRows as $mr) {
+                $meta[$mr['meta_key']] = $mr['meta_value'];
+            }
+
+            $existingVar = $this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT id FROM {$this->tableVariants} WHERE id = %d",
+                $vId
+            ));
+            if (!$existingVar) {
+                continue;
+            }
+
+            $skuVal = isset($meta['_sku']) && trim((string)$meta['_sku']) !== '' ? trim((string)$meta['_sku']) : null;
+            $regPrice = isset($meta['_regular_price']) && $meta['_regular_price'] !== '' && is_numeric($meta['_regular_price'])
+                ? sprintf('%.6f', (float)$meta['_regular_price'])
+                : null;
+            $salePrice = isset($meta['_sale_price']) && $meta['_sale_price'] !== '' && is_numeric($meta['_sale_price'])
+                ? sprintf('%.6f', (float)$meta['_sale_price'])
+                : null;
+
+            $varUpdates = [
+                'status'        => $vp['post_status'] === 'publish' ? 'publish' : 'private',
+                'sku'           => $skuVal,
+                'regular_price' => $regPrice,
+                'sale_price'    => $salePrice,
+                'description'   => isset($meta['_variation_description']) ? (string)$meta['_variation_description'] : '',
+                'position'      => (int)($vp['menu_order'] ?? $idx),
+                'deleted_at'    => null,
+                'updated_at'    => $now,
+            ];
+            foreach (['weight' => '_weight', 'length' => '_length', 'width' => '_width', 'height' => '_height'] as $col => $mKey) {
+                if (array_key_exists($mKey, $meta)) {
+                    $varUpdates[$col] = $meta[$mKey] !== '' && is_numeric($meta[$mKey]) ? sprintf('%.6f', (float)$meta[$mKey]) : null;
+                }
+            }
+            $this->wpdb->update($this->tableVariants, $varUpdates, ['id' => $vId]);
+
+            $mStock = ($meta['_manage_stock'] ?? 'no') === 'yes' ? 1 : 0;
+            $sQty = ($mStock && isset($meta['_stock']) && $meta['_stock'] !== '' && is_numeric($meta['_stock']))
+                ? (float)$meta['_stock']
+                : null;
+            $sStatus = in_array($meta['_stock_status'] ?? 'instock', ['instock', 'outofstock', 'onbackorder'], true)
+                ? $meta['_stock_status']
+                : 'instock';
+            $bOrders = in_array($meta['_backorders'] ?? 'no', ['no', 'notify', 'yes'], true)
+                ? $meta['_backorders']
+                : 'no';
+
+            $this->wpdb->update($this->tableInventory, [
+                'manage_stock' => $mStock,
+                'quantity'     => $sQty,
+                'stock_status' => $sStatus,
+                'backorders'   => $bOrders,
+                'updated_at'   => $now,
+            ], ['owner_id' => $vId]);
+        }
+
+        // Soft-delete any wpe_variants rows whose WC variation post was removed/trashed in legacy UI
+        if (!empty($activeIds)) {
+            $idList = implode(',', array_map('intval', $activeIds));
+            $this->wpdb->query($this->wpdb->prepare(
+                "UPDATE {$this->tableVariants} SET deleted_at = %s, active_combination_key = NULL, updated_at = %s
+                 WHERE product_id = %d AND deleted_at IS NULL AND id NOT IN ({$idList})",
+                $now,
+                $now,
+                $productId
+            ));
+        }
+    }
+
     private function renumberOptionGroup(int $productId, int $usedForVariation, int &$pos): void
     {
         $ids = $this->wpdb->get_col($this->wpdb->prepare(
@@ -1138,6 +1488,17 @@ class ProductEditorService
         }
         $touchedIds = [];
 
+        $rawExtra = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT extra_props FROM {$this->tableProducts} WHERE id = %d",
+            $productId
+        ));
+        $extraProps = json_decode((string)($rawExtra ?? ''), true);
+        if (!is_array($extraProps)) {
+            $extraProps = [];
+        }
+        $optionUiMap = is_array($extraProps['option_ui'] ?? null) ? $extraProps['option_ui'] : [];
+        $optionUiDirty = false;
+
         foreach ($optionsList as $opt) {
             $name = trim((string)($opt['name'] ?? ''));
             if ($name === '') {
@@ -1162,6 +1523,25 @@ class ProductEditorService
                 $created = $this->optionsRepo->createOption($productId, $optPayload);
                 $optId = (int)$created['id'];
                 $touchedIds[] = $optId;
+            }
+
+            if ($usedForVariation === 1 && (array_key_exists('display_type', $opt) || array_key_exists('help_text', $opt))) {
+                $existingUi = is_array($optionUiMap[(string)$optId] ?? null) ? $optionUiMap[(string)$optId] : [];
+                $displayType = array_key_exists('display_type', $opt)
+                    ? (string)$opt['display_type']
+                    : (string)($existingUi['display_type'] ?? 'auto');
+                if (!in_array($displayType, ['auto', 'dropdown', 'button', 'color', 'image'], true)) {
+                    throw new InvalidArgumentException("Invalid option display_type '{$displayType}' for option '{$name}'.");
+                }
+                $helpText = array_key_exists('help_text', $opt)
+                    ? mb_substr(sanitize_text_field((string)$opt['help_text']), 0, 255)
+                    : (string)($existingUi['help_text'] ?? '');
+
+                $optionUiMap[(string)$optId] = [
+                    'display_type' => $displayType,
+                    'help_text'    => $helpText,
+                ];
+                $optionUiDirty = true;
             }
 
             // Sync option values. A value keeps its ID: it is matched by the submitted id first (so a renamed label is
@@ -1190,19 +1570,46 @@ class ProductEditorService
                     $valId = (int)$valByName[$lower]['id'];
                 }
 
+                $hasColorInput = is_array($v) && (array_key_exists('color', $v) || (isset($v['swatch']) && is_array($v['swatch']) && array_key_exists('color', $v['swatch'])));
+                $swatchPayload = null;
+                if ($hasColorInput) {
+                    $rawColor = array_key_exists('color', $v) ? $v['color'] : ($v['swatch']['color'] ?? '');
+                    $hexColor = strtolower(trim((string)$rawColor));
+                    if ($hexColor !== '' && !preg_match('/^#[0-9a-f]{6}$/', $hexColor)) {
+                        throw new InvalidArgumentException("Invalid hex color '{$rawColor}' for value '{$vLabel}'. Expected #RRGGBB.");
+                    }
+                    $swatchPayload = $hexColor !== '' ? ['color' => $hexColor] : [];
+                }
+
                 if ($valId > 0) {
                     $valueUpdate = ['position' => $vPos++];
                     if (trim((string)$valById[$valId]['label']) !== $vLabel) {
                         $valueUpdate['label'] = $vLabel;
                     }
+                    if ($swatchPayload !== null) {
+                        $existingSwatch = !empty($valById[$valId]['swatch']) ? (json_decode((string)$valById[$valId]['swatch'], true) ?: []) : [];
+                        if (!is_array($existingSwatch)) {
+                            $existingSwatch = [];
+                        }
+                        if (isset($swatchPayload['color'])) {
+                            $existingSwatch['color'] = $swatchPayload['color'];
+                        } else {
+                            unset($existingSwatch['color']);
+                        }
+                        $valueUpdate['swatch'] = $existingSwatch;
+                    }
                     $this->optionsRepo->updateOptionValue($valId, $valueUpdate);
                     $touchedValIds[] = $valId;
                 } else {
-                    $createdVal = $this->optionsRepo->createOptionValue($optId, [
+                    $createValData = [
                         'label'     => $vLabel,
                         'value_key' => sanitize_title($vLabel),
                         'position'  => $vPos++,
-                    ]);
+                    ];
+                    if ($swatchPayload !== null && !empty($swatchPayload)) {
+                        $createValData['swatch'] = $swatchPayload;
+                    }
+                    $createdVal = $this->optionsRepo->createOptionValue($optId, $createValData);
                     $valId = (int)$createdVal['id'];
                     $touchedValIds[] = $valId;
                 }
@@ -1235,7 +1642,20 @@ class ProductEditorService
         foreach ($existingIds as $oldOptId) {
             if (!in_array($oldOptId, $touchedIds, true)) {
                 $this->optionsRepo->deleteOption($oldOptId);
+                if (isset($optionUiMap[(string)$oldOptId])) {
+                    unset($optionUiMap[(string)$oldOptId]);
+                    $optionUiDirty = true;
+                }
             }
+        }
+
+        if ($optionUiDirty) {
+            $extraProps['option_ui'] = $optionUiMap;
+            $this->wpdb->update(
+                $this->tableProducts,
+                ['extra_props' => json_encode($extraProps, JSON_UNESCAPED_UNICODE)],
+                ['id' => $productId]
+            );
         }
     }
 
@@ -1324,6 +1744,15 @@ class ProductEditorService
                     'updated_at'       => $now,
                 ], ['id' => $varId]);
             }
+
+            $this->wpdb->query($this->wpdb->prepare(
+                "INSERT INTO {$this->tableObjectState} (object_id, kind, parent_id, authority, tombstone, updated_at)
+                 VALUES (%d, 'variation', %d, 'native', 0, %s)
+                 ON DUPLICATE KEY UPDATE parent_id = VALUES(parent_id), authority = 'native', tombstone = 0, updated_at = VALUES(updated_at)",
+                $varId,
+                $productId,
+                $now
+            ));
 
             // Sync SKU in registry
             if ($sku) {
@@ -1441,8 +1870,44 @@ class ProductEditorService
                     $target = $currentId;
                 } else {
                     $found = $clean !== '' ? $this->assetService->getAssetByUrl($clean) : null;
+                    if (!$found && $url !== '' && $url !== $clean) {
+                        $found = $this->assetService->getAssetByUrl($url);
+                    }
                     if ($found) {
                         $target = (int)$found['id'];
+                    }
+                }
+                $attId = !empty($varData['attachment_id']) ? (int)$varData['attachment_id'] : 0;
+                if ($target === -1 && $attId > 0 && get_post_type($attId) === 'attachment') {
+                    $byAttId = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT id FROM {$this->tableAssets} WHERE attachment_id = %d ORDER BY id DESC LIMIT 1",
+                        $attId
+                    ));
+                    if ($byAttId > 0) {
+                        $target = $byAttId;
+                    } else {
+                        $created = $this->mediaRepo->createAsset([
+                            'source_url'    => $clean !== '' ? $clean : $url,
+                            'attachment_id' => $attId,
+                            'mime'          => get_post_mime_type($attId) ?: 'image/jpeg',
+                            'alt_text'      => (string)get_post_meta($attId, '_wp_attachment_image_alt', true),
+                        ]);
+                        $target = (int)$created['id'];
+                    }
+                }
+                if ($target > 0 && $attId > 0 && get_post_type($attId) === 'attachment') {
+                    $productId = (int)$this->wpdb->get_var($this->wpdb->prepare("SELECT product_id FROM {$this->tableVariants} WHERE id = %d", $variantId));
+                    if ($productId > 0 && !in_array($target, $this->library()->libraryAssetIds($productId), true)) {
+                        $maxPos = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                            "SELECT COALESCE(MAX(position), -1) FROM {$this->tableProductMedia} WHERE product_id = %d AND role = 'gallery'",
+                            $productId
+                        ));
+                        $this->wpdb->insert($this->tableProductMedia, [
+                            'product_id' => $productId,
+                            'asset_id'   => $target,
+                            'role'       => 'gallery',
+                            'position'   => $maxPos + 1,
+                        ], ['%d', '%d', '%s', '%d']);
                     }
                 }
                 if ($target === -1) {
@@ -1562,6 +2027,198 @@ class ProductEditorService
             'affected'       => $affected,
             'unchanged'      => $unchanged,
         ];
+    }
+
+    /**
+     * Apply media_library draft changes (featured_asset_id, gallery order, alt texts/overrides) inside saveProductVariants.
+     */
+    private function syncDraftMediaLibrary(int $productId, array $mediaPayload, int $actorId = 0): void
+    {
+        $now = gmdate('Y-m-d H:i:s.u');
+        if (!empty($mediaPayload['alt_texts']) && is_array($mediaPayload['alt_texts'])) {
+            foreach ($mediaPayload['alt_texts'] as $key => $altEntry) {
+                if (is_array($altEntry)) {
+                    $aid = (int)($altEntry['asset_id'] ?? 0);
+                    $rawAlt = array_key_exists('alt_text', $altEntry) ? (string)$altEntry['alt_text'] : null;
+                } else {
+                    $aid = (int)$key;
+                    $rawAlt = is_scalar($altEntry) ? (string)$altEntry : null;
+                }
+                if ($aid > 0 && $rawAlt !== null) {
+                    $altText = mb_substr(sanitize_text_field($rawAlt), 0, 500);
+                    $this->wpdb->update(
+                        $this->tableAssets,
+                        ['alt_text' => $altText, 'updated_at' => $now],
+                        ['id' => $aid]
+                    );
+                }
+            }
+        }
+
+        if (array_key_exists('featured_asset_id', $mediaPayload) || isset($mediaPayload['gallery'])) {
+            $this->wpdb->query($this->wpdb->prepare(
+                "DELETE FROM {$this->tableProductMedia} WHERE product_id = %d AND role IN ('featured', 'gallery')",
+                $productId
+            ));
+
+            $linkedIds = [];
+            $featuredId = !empty($mediaPayload['featured_asset_id']) ? (int)$mediaPayload['featured_asset_id'] : 0;
+            if ($featuredId > 0) {
+                $exists = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                    "SELECT COUNT(1) FROM {$this->tableAssets} WHERE id = %d",
+                    $featuredId
+                ));
+                if ($exists > 0) {
+                    $fAlt = isset($mediaPayload['featured_alt_override']) && is_string($mediaPayload['featured_alt_override']) && trim($mediaPayload['featured_alt_override']) !== ''
+                        ? mb_substr(sanitize_text_field($mediaPayload['featured_alt_override']), 0, 500)
+                        : null;
+                    $this->wpdb->insert($this->tableProductMedia, [
+                        'product_id'   => $productId,
+                        'asset_id'     => $featuredId,
+                        'role'         => 'featured',
+                        'position'     => 0,
+                        'alt_override' => $fAlt,
+                    ]);
+                    $linkedIds[] = $featuredId;
+                }
+            }
+
+            if (isset($mediaPayload['gallery']) && is_array($mediaPayload['gallery'])) {
+                $gPos = 0;
+                $seen = [];
+                foreach ($mediaPayload['gallery'] as $gItem) {
+                    $gId = is_array($gItem) ? (int)($gItem['asset_id'] ?? 0) : (int)$gItem;
+                    if ($gId <= 0 || isset($seen[$gId])) {
+                        continue;
+                    }
+                    $exists = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                        "SELECT COUNT(1) FROM {$this->tableAssets} WHERE id = %d",
+                        $gId
+                    ));
+                    if ($exists === 0) {
+                        continue;
+                    }
+                    $seen[$gId] = true;
+                    $gAlt = (is_array($gItem) && isset($gItem['alt_override']) && is_string($gItem['alt_override']) && trim($gItem['alt_override']) !== '')
+                        ? mb_substr(sanitize_text_field($gItem['alt_override']), 0, 500)
+                        : null;
+                    $this->wpdb->insert($this->tableProductMedia, [
+                        'product_id'   => $productId,
+                        'asset_id'     => $gId,
+                        'role'         => 'gallery',
+                        'position'     => $gPos++,
+                        'alt_override' => $gAlt,
+                    ]);
+                    $linkedIds[] = $gId;
+                }
+            }
+
+            if ($linkedIds !== []) {
+                $idList = implode(',', array_map('intval', array_unique($linkedIds)));
+                $this->wpdb->query($this->wpdb->prepare(
+                    "UPDATE {$this->wpdb->prefix}wpe_upload_items
+                     SET state = 'linked', updated_at = %s
+                     WHERE product_id = %d AND asset_id IN ({$idList}) AND state = 'registered'",
+                    $now,
+                    $productId
+                ));
+            }
+        }
+    }
+
+    /**
+     * Project canonical product and variation media from wpe_product_media / wpe_variant_media
+     * to WordPress _thumbnail_id and _product_image_gallery when the product media library changes.
+     */
+    public function syncProductMediaProjection(int $productId): void
+    {
+        $exists = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(1) FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
+            $productId
+        ));
+        if ($exists === 0) {
+            return;
+        }
+
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT pm.asset_id, pm.role, pm.position, a.attachment_id, a.source_url
+             FROM {$this->tableProductMedia} pm
+             JOIN {$this->tableAssets} a ON a.id = pm.asset_id
+             WHERE pm.product_id = %d AND pm.role IN ('featured', 'gallery')
+             ORDER BY pm.role ASC, pm.position ASC, pm.asset_id ASC",
+            $productId
+        ), ARRAY_A) ?: [];
+
+        $featuredAttId = 0;
+        $galleryAttIds = [];
+        foreach ($rows as $r) {
+            $assetId = (int)$r['asset_id'];
+            $attId = !empty($r['attachment_id']) ? (int)$r['attachment_id'] : 0;
+            if ($attId <= 0) {
+                try {
+                    $attId = $this->attachmentBridge->getOrCreateAttachmentId($assetId);
+                } catch (\Throwable $e) {
+                    $attId = 0;
+                }
+            }
+            if ($attId > 0) {
+                if ($r['role'] === 'featured' && $featuredAttId === 0) {
+                    $featuredAttId = $attId;
+                } elseif ($r['role'] === 'gallery') {
+                    $galleryAttIds[] = $attId;
+                }
+            }
+        }
+
+        $varIds = $this->wpdb->get_col($this->wpdb->prepare(
+            "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
+            $productId
+        )) ?: [];
+        $varAttMap = [];
+        foreach ($varIds as $rawVarId) {
+            $varId = (int)$rawVarId;
+            $vRow = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT vm.asset_id, a.attachment_id
+                 FROM {$this->tableVariantMedia} vm
+                 JOIN {$this->tableAssets} a ON a.id = vm.asset_id
+                 WHERE vm.variant_id = %d
+                 ORDER BY vm.is_primary DESC, vm.position ASC, vm.asset_id ASC
+                 LIMIT 1",
+                $varId
+            ), ARRAY_A);
+            $vAttId = 0;
+            if ($vRow) {
+                $vAttId = !empty($vRow['attachment_id']) ? (int)$vRow['attachment_id'] : 0;
+                if ($vAttId <= 0) {
+                    try {
+                        $vAttId = $this->attachmentBridge->getOrCreateAttachmentId((int)$vRow['asset_id']);
+                    } catch (\Throwable $e) {
+                        $vAttId = 0;
+                    }
+                }
+            }
+            $varAttMap[$varId] = $vAttId;
+        }
+
+        \WPE\Application\Migration\LegacyCapture::withOrigin('native_projection', function () use ($productId, $featuredAttId, $galleryAttIds, $varAttMap): void {
+            if ($featuredAttId > 0) {
+                update_post_meta($productId, '_thumbnail_id', (string)$featuredAttId);
+            } else {
+                delete_post_meta($productId, '_thumbnail_id');
+            }
+            if ($galleryAttIds !== []) {
+                update_post_meta($productId, '_product_image_gallery', implode(',', $galleryAttIds));
+            } else {
+                delete_post_meta($productId, '_product_image_gallery');
+            }
+            foreach ($varAttMap as $varId => $vAttId) {
+                if ($vAttId > 0) {
+                    update_post_meta($varId, '_thumbnail_id', (string)$vAttId);
+                } else {
+                    delete_post_meta($varId, '_thumbnail_id');
+                }
+            }
+        });
     }
 
     private function rules(): VariantRulesService

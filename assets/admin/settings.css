@@ -1,7 +1,8 @@
 /* WC Product Engine — Settings screen.
  * Everything is scoped under .wpe-admin so nothing leaks into other wp-admin screens. */
 
-.wpe-admin {
+.wpe-admin,
+.wrap.wpe-admin {
     --wpe-bg: #f1f2f4;
     --wpe-surface: #ffffff;
     --wpe-surface-subdued: #fafbfb;
@@ -24,7 +25,9 @@
     --wpe-radius-sm: 8px;
 
     max-width: 960px;
-    margin: 20px 20px 0 2px;
+    margin: 20px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
     color: var(--wpe-text);
 }
 
@@ -337,9 +340,70 @@
 .wpe-btn:hover { background: #f4f5f6; }
 .wpe-btn.is-primary { background: var(--wpe-primary); border-color: var(--wpe-primary); color: #fff; font-weight: 600; }
 .wpe-btn.is-primary:hover { background: var(--wpe-primary-hover); }
+.wpe-btn.is-danger { background: var(--wpe-error-bg); border-color: #f4b6ac; color: var(--wpe-error); font-weight: 600; }
+.wpe-btn.is-danger:hover { background: #fbd4ce; }
 .wpe-btn.is-ghost { background: transparent; border-color: transparent; color: #e3e3e3; }
 .wpe-btn.is-ghost:hover { background: rgba(255, 255, 255, 0.12); }
+.wpe-btn--sm { min-height: 28px; padding: 3px 10px; font-size: 12px; }
 .wpe-btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* ---- Operations & Health tab ----------------------------------------- */
+.wpe-metrics--ops {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.wpe-ops-status-text {
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.wpe-metric__value.is-ok { color: var(--wpe-ok); }
+.wpe-metric__value.is-error { color: var(--wpe-error); }
+
+.wpe-ops-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.wpe-ops-rollback-btn {
+    margin-left: auto;
+}
+
+.wpe-ops-result {
+    margin: 14px 0 0;
+}
+
+.wpe-ops-table-wrap {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+.wpe-ops-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.wpe-ops-table th,
+.wpe-ops-table td {
+    padding: 9px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--wpe-border-subdued);
+}
+
+.wpe-ops-table th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--wpe-text-subdued);
+    background: var(--wpe-surface-subdued);
+}
+
+.wpe-ops-table tbody tr:last-child td {
+    border-bottom: 0;
+}
 
 /* ---- Sticky save bar -------------------------------------------------- */
 .wpe-savebar {
@@ -403,14 +467,164 @@
 .wpe-dialog h2 { margin: 0 0 8px; font-size: 16px; }
 .wpe-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
+/* ---- Product Page tab ------------------------------------------------ */
+.wpe-product-page-form {
+    display: grid;
+    gap: 16px;
+}
+
+.wpe-settings-group {
+    padding: 0;
+    overflow: hidden;
+}
+
+.wpe-settings-group__header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--wpe-border-subdued);
+    background: var(--wpe-surface-subdued);
+}
+
+.wpe-settings-group__header h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.wpe-settings-group__header .wpe-help {
+    margin: 0;
+}
+
+.wpe-empty-hint {
+    padding: 18px 20px;
+    margin: 0;
+}
+
+.wpe-attr-config-list {
+    display: grid;
+}
+
+.wpe-attr-config-item {
+    padding: 16px 20px;
+}
+
+.wpe-attr-config-item + .wpe-attr-config-item {
+    border-top: 1px solid var(--wpe-border-subdued);
+}
+
+.wpe-attr-config-item__main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.wpe-attr-config-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+}
+
+.wpe-attr-config-item__label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wpe-attr-config-item__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.wpe-attr-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 210px;
+}
+
+.wpe-attr-field--wide {
+    flex: 1;
+    min-width: 240px;
+    max-width: 380px;
+}
+
+.wpe-attr-field__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--wpe-text-subdued);
+}
+
+.wpe-input {
+    min-height: 34px;
+    padding: 4px 10px;
+    border: 1px solid var(--wpe-border);
+    border-radius: var(--wpe-radius-sm);
+    background: #fff;
+    color: var(--wpe-text);
+    font-size: 13px;
+}
+
+.wpe-input--hex {
+    width: 96px;
+    font-family: monospace;
+}
+
+.wpe-attr-config-item__colors {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--wpe-border-subdued);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wpe-attr-term-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.wpe-attr-term-color {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid var(--wpe-border-subdued);
+    border-radius: var(--wpe-radius-sm);
+    background: var(--wpe-surface-subdued);
+}
+
+.wpe-color-picker {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--wpe-border);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.wpe-attr-term-color__name {
+    font-size: 12px;
+    font-weight: 500;
+}
+
 /* ---- Responsive ------------------------------------------------------- */
 @media (max-width: 782px) {
-    .wpe-admin { margin-right: 10px; }
+    .wpe-admin,
+    .wrap.wpe-admin { margin: 16px auto; padding: 0 12px; }
     .wpe-statusbar { flex-wrap: wrap; }
     .wpe-feature { padding: 16px; }
     .wpe-dl { grid-template-columns: 1fr; gap: 2px; }
     .wpe-dl dd { margin-bottom: 8px; }
     .wpe-savebar { min-width: 0; width: calc(100vw - 24px); flex-wrap: wrap; bottom: 12px; }
+    .wpe-ops-rollback-btn { margin-left: 0; }
+    .wpe-attr-config-item__controls { justify-content: flex-start; }
+    .wpe-attr-field, .wpe-attr-field--wide { width: 100%; max-width: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

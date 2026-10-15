@@ -147,6 +147,22 @@ class T23Test
             throw new RuntimeException("R91 Failed: Incoherent thumbnail or link destination.");
         }
 
+        // Verify non-numeric / empty string attachmentId passthrough (e.g. Flatsome placeholder when product has no featured image)
+        $placeholderHtml = '<div class="woocommerce-product-gallery__image--placeholder"><img src="placeholder.png" /></div>';
+        if ($this->adapter->filterGalleryThumbnailHtml($placeholderHtml, '') !== $placeholderHtml) {
+            throw new RuntimeException("R91 Failed: filterGalleryThumbnailHtml must pass through placeholder HTML when attachmentId is empty string.");
+        }
+
+        // Verify Flatsome Flickity slide class preservation and thumbnail strip passthrough
+        $slideFirstHtml = $this->adapter->filterGalleryThumbnailHtml('<div class="woocommerce-product-gallery__image slide first"></div>', $attId);
+        if (!str_contains($slideFirstHtml, 'class="woocommerce-product-gallery__image slide first"')) {
+            throw new RuntimeException("R91 Failed: filterGalleryThumbnailHtml must preserve Flatsome slide first class.");
+        }
+        $thumbColHtml = '<div class="col"><a><img src="https://cdn.example.com/gallery/classic-jacket.jpg" /></a></div>';
+        if ($this->adapter->filterGalleryThumbnailHtml($thumbColHtml, $attId) !== $thumbColHtml) {
+            throw new RuntimeException("R91 Failed: filterGalleryThumbnailHtml must preserve Flatsome <div class=\"col\"> thumbnail strip item.");
+        }
+
         echo " OK\n";
     }
 

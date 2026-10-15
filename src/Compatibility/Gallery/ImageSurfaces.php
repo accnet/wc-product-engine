@@ -159,8 +159,13 @@ class ImageSurfaces
      * Intercept cart and mini-cart item thumbnail markup.
      * Guarantees variation-specific CDN image or deterministic parent fallback.
      */
-    public function filterCartItemThumbnail(string $thumbnailHtml, array $cartItem, string $cartItemKey = ''): string
+    public function filterCartItemThumbnail($thumbnailHtml, $cartItem, $cartItemKey = ''): string
     {
+        $thumbnailHtml = (string)$thumbnailHtml;
+        if (!is_array($cartItem)) {
+            return $thumbnailHtml;
+        }
+
         $variationId = !empty($cartItem['variation_id']) ? (int)$cartItem['variation_id'] : 0;
         $productId = !empty($cartItem['product_id']) ? (int)$cartItem['product_id'] : 0;
 
@@ -181,8 +186,9 @@ class ImageSurfaces
     /**
      * Intercept order item thumbnail in emails and order details.
      */
-    public function filterOrderItemThumbnail(string $thumbnailHtml, $item): string
+    public function filterOrderItemThumbnail($thumbnailHtml, $item): string
     {
+        $thumbnailHtml = (string)$thumbnailHtml;
         $productId = 0;
         $variationId = 0;
 
@@ -201,9 +207,9 @@ class ImageSurfaces
     /**
      * Intercept admin order item thumbnail.
      */
-    public function filterAdminOrderItemThumbnail(string $thumbnailHtml, $itemId, $item): string
+    public function filterAdminOrderItemThumbnail($thumbnailHtml, $itemId, $item): string
     {
-        return $this->filterOrderItemThumbnail($thumbnailHtml, $item);
+        return $this->filterOrderItemThumbnail((string)$thumbnailHtml, $item);
     }
 
     /**

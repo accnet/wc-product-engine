@@ -89,7 +89,10 @@ class LegacyWriterGuardTest
     {
         echo " - editor mode resolution and recovery filter...";
         delete_option('wpe_editor_mode');
-        $this->check(ProductEditorBridge::getEditorMode() === ProductEditorBridge::MODE_BLOCKS, 'default editor mode is blocks');
+        $this->check(ProductEditorBridge::getEditorMode() === ProductEditorBridge::MODE_METABOX, 'default editor mode is metabox');
+
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_BLOCKS);
+        $this->check(ProductEditorBridge::getEditorMode() === ProductEditorBridge::MODE_BLOCKS, 'option sets blocks mode');
 
         update_option('wpe_editor_mode', ProductEditorBridge::MODE_METABOX);
         $this->check(ProductEditorBridge::getEditorMode() === ProductEditorBridge::MODE_METABOX, 'option sets metabox mode');
@@ -110,6 +113,8 @@ class LegacyWriterGuardTest
         echo " - legacy keys stripped at priority 1 of product meta save...";
         $productId = $this->createProduct('simple');
 
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_BLOCKS);
+
         $_POST['product-type'] = 'simple';
         $_POST['_regular_price'] = '999.00';
         $_POST['_sale_price'] = '888.00';
@@ -128,6 +133,7 @@ class LegacyWriterGuardTest
             $this->check(!isset($_REQUEST[$key]), "legacy key {$key} was stripped from \$_REQUEST");
         }
 
+        delete_option('wpe_editor_mode');
         // Clean superglobals
         unset($_POST['product-type'], $_POST['_regular_price'], $_POST['_sku'], $_REQUEST['_regular_price'], $_REQUEST['_sku']);
         echo " OK\n";
@@ -136,6 +142,8 @@ class LegacyWriterGuardTest
     private function testLegacySaveCannotOverwriteNativeData(): void
     {
         echo " - legacy form submission cannot overwrite native data...";
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_BLOCKS);
+
         $safeSku = 'SAFE-SKU-' . uniqid();
         $productId = $this->createProduct('simple', [
             'product' => [
@@ -173,6 +181,7 @@ class LegacyWriterGuardTest
         $metaPrice = get_post_meta($productId, '_regular_price', true);
         $this->check((string)$metaPrice !== '9999.00', 'legacy postmeta _regular_price did not get 9999.00');
 
+        delete_option('wpe_editor_mode');
         unset($_POST['post_ID'], $_POST['product-type'], $_POST['_regular_price'], $_POST['_sale_price'], $_POST['_sku'], $_POST['_manage_stock'], $_POST['_stock'], $_POST['wpe_variants_payload']);
         echo " OK\n";
     }

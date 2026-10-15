@@ -81,6 +81,15 @@ class ProductEditorE2ETest
                 $idList = implode(',', array_map('intval', $variantIds));
                 $this->wpdb->query("DELETE FROM {$prefix}wpe_inventory WHERE owner_id IN ({$idList})");
             }
+            $optionIds = $this->wpdb->get_col($this->wpdb->prepare(
+                "SELECT id FROM {$prefix}wpe_options WHERE product_id = %d",
+                $id
+            ));
+            if (!empty($optionIds)) {
+                $optList = implode(',', array_map('intval', $optionIds));
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_values WHERE option_id IN ({$optList})");
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_option_values WHERE option_id IN ({$optList})");
+            }
             $this->wpdb->delete("{$prefix}wpe_inventory", ['owner_id' => $id]);
             $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $id]);
             $this->wpdb->delete("{$prefix}wpe_options", ['product_id' => $id]);

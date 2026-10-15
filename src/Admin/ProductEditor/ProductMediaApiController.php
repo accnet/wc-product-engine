@@ -9,6 +9,7 @@ use Throwable;
 use WP_REST_Request;
 use WP_REST_Response;
 use WPE\Application\Media\ManagedUploadService;
+use WPE\Application\Media\OrphanCleanup;
 use WPE\Application\Media\ProductMediaLibrary;
 use WPE\Application\Media\Storage\StorageException;
 use WPE\Application\Media\UploadRejectedException;
@@ -19,11 +20,12 @@ use WPE\Infrastructure\Database\UploadItemRepository;
 /**
  * REST routes of the per-product image library (docs/04 §7, contracts/api/endpoints.json):
  *
- * - POST  /wpe/v1/admin/assets                              upload a file or add a CDN URL (product or session)
- * - GET   /wpe/v1/admin/products/{id}/media                 library read
- * - PATCH /wpe/v1/admin/products/{id}/media                 apply a media patch (If-Match = library version)
- * - POST  /wpe/v1/admin/products/{id}/media/unlink-preview  places affected by removing images
- * - POST  /wpe/v1/admin/upload-sessions/{session}/claim     give a session's uploads to a created product
+ * - POST   /wpe/v1/admin/assets                              upload a file or add a CDN URL (product or session)
+ * - GET    /wpe/v1/admin/products/{id}/media                 library read
+ * - PATCH  /wpe/v1/admin/products/{id}/media                 apply a media patch (If-Match = library version)
+ * - POST   /wpe/v1/admin/products/{id}/media/unlink-preview  places affected by removing images
+ * - POST   /wpe/v1/admin/upload-sessions/{session}/claim     give a session's uploads to a created product
+ * - DELETE /wpe/v1/admin/assets/{id}/file                    explicit file deletion for unreferenced managed assets
  *
  * Every handler answers with the error envelope of docs/04 §1.6. Cookie requests carry the REST nonce, which
  * WordPress verifies before the permission callbacks run. Storage credentials never leave the backend.
@@ -42,19 +44,22 @@ final class ProductMediaApiController
     private ?UploadItemRepository $uploads;
     private ?AssetService $assets;
     private ?MediaRepository $media;
+    private ?OrphanCleanup $cleanup;
 
     public function __construct(
         ?ProductMediaLibrary $library = null,
         ?ManagedUploadService $uploader = null,
         ?UploadItemRepository $uploads = null,
         ?AssetService $assets = null,
-        ?MediaRepository $media = null
+        ?MediaRepository $media = null,
+        ?OrphanCleanup $cleanup = null
     ) {
         $this->library  = $library;
         $this->uploader = $uploader;
         $this->uploads  = $uploads;
         $this->assets   = $assets;
         $this->media    = $media;
+        $this->cleanup  = $cleanup;
     }
 
     public static function getInstance(): self
@@ -103,6 +108,12 @@ final class ProductMediaApiController
             'callback'            => [$this, 'claimSession'],
             'permission_callback' => [$this, 'canUpload'],
         ]);
+
+        register_rest_route(self::NAMESPACE_, '/admin/assets/(?P<id>[1-9][0-9]*)/file', [
+            'methods'             => 'DELETE',
+            'callback'            => [$this, 'deleteAssetFile'],
+            'permission_callback' => [$this, 'canDeleteAssetFile'],
+        ]);
     }
 
     /** @return bool|\WP_Error */
@@ -130,6 +141,18 @@ final class ProductMediaApiController
         return current_user_can('edit_post', $productId)
             ? true
             : $this->permissionError('forbidden', 'You are not allowed to edit this product.', 403);
+    }
+
+    /** @return bool|\WP_Error */
+    public function canDeleteAssetFile()
+    {
+        $allowed = $this->canUpload();
+        if ($allowed !== true) {
+            return $allowed;
+        }
+        return (current_user_can('manage_woocommerce') || current_user_can('edit_products'))
+            ? true
+            : $this->permissionError('forbidden', 'You are not allowed to delete managed files.', 403);
     }
 
     /**
@@ -225,7 +248,7 @@ final class ProductMediaApiController
                      */
                     do_action('wpe_product_media_changed', $productId, $userId);
                 }
-                return [200, ['id' => (string) $productId, 'version' => $new, 'parent_version' => $new]];
+                return [200, ['id' => (string) $productId, 'version' => $new]];
             });
         } catch (Throwable $e) {
             return $this->errorResponse($e);
@@ -277,6 +300,23 @@ final class ProductMediaApiController
             return $this->idempotent($userId, 'POST claim ' . $session, $idemKey, [$productId], function () use ($session, $userId, $productId): array {
                 $claimed = $this->uploads()->claimSession($session, $userId, $productId);
                 return [200, ['claimed' => $claimed]];
+            });
+        } catch (Throwable $e) {
+            return $this->errorResponse($e);
+        }
+    }
+
+    public function deleteAssetFile(WP_REST_Request $request): WP_REST_Response
+    {
+        try {
+            $this->rateLimit('write', self::RATE_WRITE_PER_MINUTE);
+            $userId  = (int) get_current_user_id();
+            $assetId = (int) $request->get_param('id');
+            $idemKey = $this->requireHeader($request, 'idempotency_key', 'Idempotency-Key');
+
+            return $this->idempotent($userId, 'DELETE asset file ' . $assetId, $idemKey, [$assetId], function () use ($assetId): array {
+                $result = $this->cleanup()->deleteFile($assetId);
+                return [200, $result];
             });
         } catch (Throwable $e) {
             return $this->errorResponse($e);
@@ -602,5 +642,10 @@ final class ProductMediaApiController
     private function media(): MediaRepository
     {
         return $this->media ??= new MediaRepository($GLOBALS['wpdb']);
+    }
+
+    private function cleanup(): OrphanCleanup
+    {
+        return $this->cleanup ??= new OrphanCleanup();
     }
 }

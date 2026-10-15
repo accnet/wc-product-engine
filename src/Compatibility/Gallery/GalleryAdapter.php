@@ -32,6 +32,22 @@ class GalleryAdapter
     private string $tableProductMedia;
     private string $tableVariantMedia;
 
+    /** @var array<int, int> */
+    private static array $featuredAttachmentCache = [];
+
+    /** @var array<int, array<int, int>> */
+    private static array $galleryAttachmentIdsCache = [];
+
+    public static function invalidateStaticProductCache(?int $productId = null): void
+    {
+        if ($productId === null) {
+            self::$featuredAttachmentCache = [];
+            self::$galleryAttachmentIdsCache = [];
+            return;
+        }
+        unset(self::$featuredAttachmentCache[$productId], self::$galleryAttachmentIdsCache[$productId]);
+    }
+
     public function __construct(
         ?\wpdb $wpdb = null,
         ?AssetService $assetService = null,
@@ -64,6 +80,7 @@ class GalleryAdapter
     public static function register(?GalleryAdapter $instance = null): self
     {
         $adapter = $instance ?? self::instance();
+        self::$instance = $adapter;
 
         // Available variation image payload (R92, R93, R94)
         add_filter('woocommerce_available_variation', [$adapter, 'filterAvailableVariation'], 10, 3);
@@ -87,8 +104,12 @@ class GalleryAdapter
      * Intercept woocommerce_available_variation to enrich the variation image payload.
      * Guarantees coherent src, full_src, gallery_thumbnail_src, and multi-image extension (R93).
      */
-    public function filterAvailableVariation(array $variationData, $product, $variation): array
+    public function filterAvailableVariation($variationData, $product, $variation)
     {
+        if (!is_array($variationData)) {
+            return $variationData;
+        }
+
         $variationId = 0;
         if ($variation instanceof WC_Product_Variation) {
             $variationId = (int)$variation->get_id();
@@ -177,6 +198,9 @@ class GalleryAdapter
                 ORDER BY vm.position ASC";
 
         $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $variantId), ARRAY_A);
+        if (!empty($rows)) {
+            $this->bridge->primeAssets($rows);
+        }
         $gallery = [];
 
         foreach ($rows as $row) {
@@ -212,6 +236,9 @@ class GalleryAdapter
                        WHERE pm.product_id = %d AND pm.role = 'gallery'
                        ORDER BY pm.position ASC";
         $galleryRows = $this->wpdb->get_results($this->wpdb->prepare($sqlGallery, $productId), ARRAY_A);
+        if (!empty($galleryRows)) {
+            $this->bridge->primeAssets($galleryRows);
+        }
 
         $gallery = [];
         $galleryImageIds = [];
@@ -237,11 +264,23 @@ class GalleryAdapter
      * Filter single product image thumbnail HTML markup.
      * Ensures coherent zoom (data-large_image/full_src), lightbox, and thumbnails (R91, AC-T23-01).
      */
-    public function filterGalleryThumbnailHtml(string $html, int $attachmentId): string
+    public function filterGalleryThumbnailHtml($html, $attachmentId): string
     {
+        $htmlStr = (string)$html;
+        if (!is_numeric($attachmentId) || (int)$attachmentId <= 0) {
+            return $htmlStr;
+        }
+
+        $attachmentId = (int)$attachmentId;
         $asset = $this->bridge->getAssetForAttachment($attachmentId);
         if (!$asset) {
-            return $html;
+            return $htmlStr;
+        }
+
+        // Preserve custom theme thumbnail strip items (e.g., Flatsome <div class="col"><a><img/></a></div>)
+        // that already resolved their CDN src via wp_get_attachment_image_src()
+        if ($htmlStr !== '' && str_contains($htmlStr, '<div class="col') && !str_contains($htmlStr, 'woocommerce-product-gallery__image')) {
+            return $htmlStr;
         }
 
         $provider  = $this->assetService->getProvider($asset['provider'] ?? 'default');
@@ -270,15 +309,23 @@ class GalleryAdapter
         $srcsetAttribute = $srcset ? sprintf(' srcset="%s"', esc_attr($srcset)) : '';
         $sizesAttribute  = $sizes ? sprintf(' sizes="%s"', esc_attr($sizes)) : '';
 
+        $wrapperClass = 'woocommerce-product-gallery__image';
+        if (str_contains($htmlStr, 'slide first')) {
+            $wrapperClass .= ' slide first';
+        } elseif (str_contains($htmlStr, 'class="slide"') || str_contains($htmlStr, ' slide"') || str_contains($htmlStr, ' slide ')) {
+            $wrapperClass .= ' slide';
+        }
+
         // Native WooCommerce gallery markup and data attributes
         return sprintf(
-            '<div data-thumb="%s" data-thumb-alt="%s" class="woocommerce-product-gallery__image">' .
+            '<div data-thumb="%s" data-thumb-alt="%s" class="%s">' .
             '<a href="%s">' .
             '<img width="%d" height="%d" src="%s" class="wp-post-image" alt="%s" title="%s" data-src="%s" data-large_image="%s" data-large_image_width="%d" data-large_image_height="%d"%s%s loading="lazy" decoding="async" />' .
             '</a>' .
             '</div>',
             $thumbSrc,
             $altText,
+            esc_attr($wrapperClass),
             $fullSrc,
             $singleW,
             $singleH,
@@ -308,11 +355,20 @@ class GalleryAdapter
             return $imageId;
         }
 
-        $feat = $this->mediaRepo->getFeaturedImage($productId);
-        if ($feat && !empty($feat['id'])) {
-            return $this->bridge->getOrCreateAttachmentId((int)$feat['id']);
+        if (array_key_exists($productId, self::$featuredAttachmentCache)) {
+            $cached = self::$featuredAttachmentCache[$productId];
+            return $cached > 0 ? $cached : $imageId;
         }
 
+        $feat = $this->mediaRepo->getFeaturedImage($productId);
+        if ($feat && !empty($feat['id'])) {
+            $this->bridge->primeAsset($feat);
+            $attId = $this->bridge->getOrCreateAttachmentId((int)$feat['id']);
+            self::$featuredAttachmentCache[$productId] = $attId;
+            return $attId;
+        }
+
+        self::$featuredAttachmentCache[$productId] = 0;
         return $imageId;
     }
 
@@ -326,11 +382,18 @@ class GalleryAdapter
             return $galleryIds;
         }
 
+        if (array_key_exists($productId, self::$galleryAttachmentIdsCache)) {
+            $cached = self::$galleryAttachmentIdsCache[$productId];
+            return !empty($cached) ? $cached : $galleryIds;
+        }
+
         $gallery = $this->mediaRepo->getGallery($productId);
         if (empty($gallery)) {
+            self::$galleryAttachmentIdsCache[$productId] = [];
             return $galleryIds;
         }
 
+        $this->bridge->primeAssets($gallery);
         $attachmentIds = [];
         foreach ($gallery as $item) {
             if (!empty($item['id'])) {
@@ -338,6 +401,7 @@ class GalleryAdapter
             }
         }
 
+        self::$galleryAttachmentIdsCache[$productId] = $attachmentIds;
         return !empty($attachmentIds) ? $attachmentIds : $galleryIds;
     }
 
@@ -348,6 +412,7 @@ class GalleryAdapter
     private function buildImagePayloadFromAsset(array $asset, ?string $altOverride = null): array
     {
         $assetId      = (int)$asset['id'];
+        $this->bridge->primeAsset($asset);
         $attachmentId = $this->bridge->getOrCreateAttachmentId($assetId);
         $provider     = $this->assetService->getProvider($asset['provider'] ?? 'default');
         $sourceUrl    = $asset['source_url'];

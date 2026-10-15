@@ -566,6 +566,8 @@ class AssetService
             ['%d', '%d', '%s', '%d', '%s']
         );
 
+        GalleryAdapter::invalidateStaticProductCache($productId);
+
         return $res !== false;
     }
 
@@ -895,6 +897,7 @@ class AssetService
                 WHERE id = %d";
 
         $res = $this->wpdb->query($this->wpdb->prepare($sql, $health, $now, $assetId));
+        GalleryAdapter::invalidateStaticProductCache(null);
         return $res !== false;
     }
 

@@ -209,9 +209,28 @@ class OptionsRepository
             $productId
         ), ARRAY_A);
 
+        if (empty($rows)) {
+            return [];
+        }
+
+        $optIds = array_map(static fn(array $r): int => (int)$r['id'], $rows);
+        $idList = implode(',', $optIds);
+        $valRows = $this->wpdb->get_results(
+            "SELECT * FROM {$this->tableOptionValues} WHERE option_id IN ({$idList}) ORDER BY option_id ASC, position ASC, id ASC",
+            ARRAY_A
+        );
+
+        $valuesByOption = [];
+        if (is_array($valRows)) {
+            foreach ($valRows as $vRow) {
+                $valuesByOption[(int)$vRow['option_id']][] = $vRow;
+            }
+        }
+
         $options = [];
         foreach ($rows as $row) {
-            $row['values'] = $this->getOptionValues((int)$row['id']);
+            $optId = (int)$row['id'];
+            $row['values'] = $valuesByOption[$optId] ?? [];
             $options[] = $row;
         }
 

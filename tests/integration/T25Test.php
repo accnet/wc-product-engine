@@ -38,6 +38,8 @@ class T25Test
     private array $cleanOptionIds = [];
     private array $cleanValueIds = [];
 
+    private array $cleanAssetIds = [];
+
     public function __construct()
     {
         global $wpdb;
@@ -75,6 +77,12 @@ class T25Test
             $this->wpdb->query("DELETE FROM {$prefix}wpe_option_values WHERE id IN ({$valIds})");
             $this->cleanValueIds = [];
         }
+
+        if (!empty($this->cleanAssetIds)) {
+            $assetIds = implode(',', array_map('intval', $this->cleanAssetIds));
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_assets WHERE id IN ({$assetIds})");
+            $this->cleanAssetIds = [];
+        }
     }
 
     public function runAll(): void
@@ -88,6 +96,8 @@ class T25Test
             $this->testR102_unknown_option_wrong_product();
             $this->testAC_T25_01_StatesAndFixtures();
             $this->testAC_T25_02_DuplicateOverlappingAnyReported();
+            $this->testP012_availability_backorders_and_lowest_price();
+            $this->testP012_five_step_candidate_image_swatch_resolution();
 
             echo "All T25 tests passed successfully!\n";
         } finally {
@@ -526,6 +536,263 @@ class T25Test
         $this->assert(count($auditLog) === 1, "Conflict audit log must record the ambiguity event");
         $this->assert($auditLog[0]['product_id'] === $parentId, "Logged event must match product ID");
         $this->assert(count($auditLog[0]['conflicting_variant_ids']) === 2, "Logged event must reference conflicting variant IDs");
+
+        echo " OK\n";
+    }
+
+    /**
+     * P012.4: Availability evaluation (stock=0 + backorders='no' vs backorders='yes' vs unpriced) and lowest_price_html.
+     */
+    public function testP012_availability_backorders_and_lowest_price(): void
+    {
+        echo " - testP012_availability_backorders_and_lowest_price...";
+
+        $prefix = $this->wpdb->prefix;
+        $parentId = $this->allocator->allocateShell('product');
+        $this->cleanProductIds[] = $parentId;
+
+        $this->wpdb->insert("{$prefix}wpe_products", [
+            'id' => $parentId, 'sku' => 'P012-AVAIL', 'slug' => 'p012-avail-' . $parentId, 'title' => 'P012 Availability Product',
+            'type' => 'variable', 'status' => 'publish', 'description' => '', 'short_description' => '',
+            'default_selection' => '{}', 'extra_props' => '{}', 'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'), 'version' => 2
+        ]);
+
+        $opt = $this->optionsRepo->createOption($parentId, ['key' => 'pa_size', 'name' => 'Size', 'position' => 0]);
+        $optId = (int)$opt['id'];
+        $this->cleanOptionIds[] = $optId;
+
+        $valS  = $this->optionsRepo->createOptionValue($optId, ['value_key' => 's', 'label' => 'Small']);
+        $valM  = $this->optionsRepo->createOptionValue($optId, ['value_key' => 'm', 'label' => 'Medium']);
+        $valL  = $this->optionsRepo->createOptionValue($optId, ['value_key' => 'l', 'label' => 'Large']);
+        $valXL = $this->optionsRepo->createOptionValue($optId, ['value_key' => 'xl', 'label' => 'X-Large']);
+        $this->cleanValueIds = array_merge($this->cleanValueIds, [
+            (int)$valS['id'], (int)$valM['id'], (int)$valL['id'], (int)$valXL['id']
+        ]);
+
+        $vSId  = $this->allocator->allocateShell('product_variation');
+        $vMId  = $this->allocator->allocateShell('product_variation');
+        $vLId  = $this->allocator->allocateShell('product_variation');
+        $vXLId = $this->allocator->allocateShell('product_variation');
+        $this->cleanProductIds = array_merge($this->cleanProductIds, [$vSId, $vMId, $vLId, $vXLId]);
+
+        $pastDate   = gmdate('Y-m-d H:i:s', time() - 3600);
+        $futureDate = gmdate('Y-m-d H:i:s', time() + 3600);
+
+        // Var S: $10.00, OUT OF STOCK (quantity = 0, backorders = 'no', stock_status = 'outofstock')
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $vSId, 'product_id' => $parentId, 'sku' => 'P012-S-OOS', 'regular_price' => '10.000000',
+            'position' => 0, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-s', true),
+            'description' => '', 'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+        $this->wpdb->insert("{$prefix}wpe_inventory", [
+            'owner_id' => $vSId, 'manage_stock' => 1, 'quantity' => 0, 'stock_status' => 'outofstock', 'backorders' => 'no'
+        ]);
+        $this->optionsRepo->assignVariantCombination($parentId, $vSId, [$optId => (int)$valS['id']]);
+
+        // Var M: $35.00 regular, $22.00 active sale, IN STOCK via backorders (quantity = 0, backorders = 'yes', stock_status = 'onbackorder')
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $vMId, 'product_id' => $parentId, 'sku' => 'P012-M-BACKORDER', 'regular_price' => '35.000000',
+            'sale_price' => '22.000000', 'sale_from' => $pastDate, 'sale_to' => $futureDate,
+            'position' => 1, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-m', true),
+            'description' => '', 'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+        $this->wpdb->insert("{$prefix}wpe_inventory", [
+            'owner_id' => $vMId, 'manage_stock' => 1, 'quantity' => 0, 'stock_status' => 'onbackorder', 'backorders' => 'yes'
+        ]);
+        $this->optionsRepo->assignVariantCombination($parentId, $vMId, [$optId => (int)$valM['id']]);
+
+        // Var L: $28.00 regular, IN STOCK (quantity = 5)
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $vLId, 'product_id' => $parentId, 'sku' => 'P012-L-INSTOCK', 'regular_price' => '28.000000',
+            'position' => 2, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-l', true),
+            'description' => '', 'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+        $this->wpdb->insert("{$prefix}wpe_inventory", [
+            'owner_id' => $vLId, 'manage_stock' => 1, 'quantity' => 5, 'stock_status' => 'instock', 'backorders' => 'no'
+        ]);
+        $this->optionsRepo->assignVariantCombination($parentId, $vLId, [$optId => (int)$valL['id']]);
+
+        // Var XL: Unpriced (regular_price = null), IN STOCK (quantity = 5)
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $vXLId, 'product_id' => $parentId, 'sku' => 'P012-XL-UNPRICED', 'regular_price' => null, 'sale_price' => null,
+            'position' => 3, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-xl', true),
+            'description' => '', 'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+        $this->wpdb->insert("{$prefix}wpe_inventory", [
+            'owner_id' => $vXLId, 'manage_stock' => 1, 'quantity' => 5, 'stock_status' => 'instock', 'backorders' => 'no'
+        ]);
+        $this->optionsRepo->assignVariantCombination($parentId, $vXLId, [$optId => (int)$valXL['id']]);
+
+        $res = $this->resolver->resolve($parentId, []);
+        $allowed = $res['allowed_values'][(string)$optId];
+        $details = $res['allowed_details'][(string)$optId];
+
+        // Var S ($10 OOS): exists=true, in_stock=false, purchasable=false -> NOT in allowed_values
+        $this->assert(!in_array((string)$valS['id'], $allowed, true), "Out-of-stock S must NOT be in allowed_values");
+        $this->assert($details[(string)$valS['id']]['exists'] === true, "Out-of-stock S must have exists=true");
+        $this->assert($details[(string)$valS['id']]['in_stock'] === false, "Out-of-stock S must have in_stock=false");
+        $this->assert($details[(string)$valS['id']]['purchasable'] === false, "Out-of-stock S must have purchasable=false");
+
+        // Var M ($22 sale, qty=0 but backorders='yes'): exists=true, in_stock=true, purchasable=true -> IN allowed_values
+        $this->assert(in_array((string)$valM['id'], $allowed, true), "Backorderable M must be in allowed_values");
+        $this->assert($details[(string)$valM['id']]['in_stock'] === true, "Backorderable M must have in_stock=true");
+        $this->assert($details[(string)$valM['id']]['purchasable'] === true, "Backorderable M must have purchasable=true");
+
+        // Var L ($28 in stock): IN allowed_values
+        $this->assert(in_array((string)$valL['id'], $allowed, true), "In-stock L must be in allowed_values");
+
+        // Var XL (unpriced): exists=true, in_stock=true, purchasable=false -> NOT in allowed_values
+        $this->assert(!in_array((string)$valXL['id'], $allowed, true), "Unpriced XL must NOT be in allowed_values");
+        $this->assert($details[(string)$valXL['id']]['exists'] === true, "Unpriced XL must have exists=true");
+        $this->assert($details[(string)$valXL['id']]['in_stock'] === true, "Unpriced XL must have in_stock=true");
+        $this->assert($details[(string)$valXL['id']]['purchasable'] === false, "Unpriced XL must have purchasable=false");
+
+        // Lowest purchasable variation must be Var M ($22 sale / $35 regular), ignoring $10 OOS Var S and unpriced Var XL
+        $lowest = $this->resolver->resolveLowestPurchasableVariation($parentId);
+        $this->assert($lowest !== null, "Lowest purchasable variation must be found");
+        $this->assert($lowest['variant_id'] === (string)$vMId, "Lowest purchasable variation must be Var M (not OOS Var S)");
+        $this->assert($lowest['active_price'] === '22.000000', "Lowest active price must be 22.000000");
+        $this->assert($lowest['regular_price'] === '35.000000', "Regular price must come from the same variation M (35.000000)");
+        $this->assert(str_contains($res['lowest_price_html'], '35.00') && str_contains($res['lowest_price_html'], '22.00'), "lowest_price_html must include both regular 35.00 and sale 22.00 from Var M");
+        $this->assert(str_contains($res['lowest_price_html'], '<del') && str_contains($res['lowest_price_html'], '<ins'), "lowest_price_html must contain <del> and <ins> markup");
+
+        echo " OK\n";
+    }
+
+    /**
+     * P012.4: 5-step candidate image swatch resolution (Color -> Size -> Style).
+     */
+    public function testP012_five_step_candidate_image_swatch_resolution(): void
+    {
+        echo " - testP012_five_step_candidate_image_swatch_resolution...";
+
+        $prefix = $this->wpdb->prefix;
+        $parentId = $this->allocator->allocateShell('product');
+        $this->cleanProductIds[] = $parentId;
+
+        $this->wpdb->insert("{$prefix}wpe_products", [
+            'id' => $parentId, 'sku' => 'P012-IMG-SWATCH', 'slug' => 'p012-img-swatch-' . $parentId, 'title' => 'P012 Image Swatch Hoodie',
+            'type' => 'variable', 'status' => 'publish', 'description' => '', 'short_description' => '',
+            'default_selection' => '{}', 'extra_props' => '{}', 'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+
+        // Options: Color (0) -> Size (1) -> Style (2)
+        $colorOpt = $this->optionsRepo->createOption($parentId, ['key' => 'pa_color', 'name' => 'Color', 'position' => 0]);
+        $sizeOpt  = $this->optionsRepo->createOption($parentId, ['key' => 'pa_size', 'name' => 'Size', 'position' => 1]);
+        $styleOpt = $this->optionsRepo->createOption($parentId, ['key' => 'pa_style', 'name' => 'Style', 'position' => 2]);
+        $colorOptId = (int)$colorOpt['id'];
+        $sizeOptId  = (int)$sizeOpt['id'];
+        $styleOptId = (int)$styleOpt['id'];
+        $this->cleanOptionIds = array_merge($this->cleanOptionIds, [$colorOptId, $sizeOptId, $styleOptId]);
+
+        $valBlack = $this->optionsRepo->createOptionValue($colorOptId, ['value_key' => 'black', 'label' => 'Black']);
+        $valWhite = $this->optionsRepo->createOptionValue($colorOptId, ['value_key' => 'white', 'label' => 'White']);
+        $valGray  = $this->optionsRepo->createOptionValue($colorOptId, ['value_key' => 'gray', 'label' => 'Gray']);
+        $valM     = $this->optionsRepo->createOptionValue($sizeOptId, ['value_key' => 'm', 'label' => 'M']);
+        $valL     = $this->optionsRepo->createOptionValue($sizeOptId, ['value_key' => 'l', 'label' => 'L']);
+        $valTee    = $this->optionsRepo->createOptionValue($styleOptId, ['value_key' => 'tee', 'label' => 'Tee']);
+        $valHoodie = $this->optionsRepo->createOptionValue($styleOptId, ['value_key' => 'hoodie', 'label' => 'Hoodie']);
+
+        $this->cleanValueIds = array_merge($this->cleanValueIds, [
+            (int)$valBlack['id'], (int)$valWhite['id'], (int)$valGray['id'],
+            (int)$valM['id'], (int)$valL['id'], (int)$valTee['id'], (int)$valHoodie['id']
+        ]);
+
+        $mediaRepo = new \WPE\Infrastructure\Database\MediaRepository($this->wpdb);
+        $insertAsset = function (string $url, string $alt) use ($mediaRepo): int {
+            $asset = $mediaRepo->createAsset([
+                'kind'       => 'image',
+                'source_url' => $url,
+                'provider'   => 'default',
+                'mime'       => 'image/jpeg',
+                'width'      => 800,
+                'height'     => 800,
+                'alt_text'   => $alt,
+                'title'      => $alt,
+                'health'     => 'healthy',
+            ]);
+            $id = (int)$asset['id'];
+            $this->cleanAssetIds[] = $id;
+            return $id;
+        };
+
+        $assetParent    = $insertAsset('https://cdn.example.com/p012/parent-featured.jpg', 'Parent Featured');
+        $assetBlackMTee = $insertAsset('https://cdn.example.com/p012/black-m-tee.jpg', 'Black M Tee');
+        $assetBlackLTee = $insertAsset('https://cdn.example.com/p012/black-l-tee.jpg', 'Black L Tee');
+        $assetBlackLHd  = $insertAsset('https://cdn.example.com/p012/black-l-hoodie.jpg', 'Black L Hoodie');
+        $assetWhiteMTee = $insertAsset('https://cdn.example.com/p012/white-m-tee.jpg', 'White M Tee');
+
+        // Parent featured image
+        $this->wpdb->insert("{$prefix}wpe_product_media", [
+            'product_id' => $parentId, 'asset_id' => $assetParent, 'role' => 'featured', 'position' => 0
+        ]);
+
+        // Create variations in saved position order:
+        // pos 0: Black + M + Tee (has own image black-m-tee.jpg)
+        // pos 1: Black + L + Tee (has own image black-l-tee.jpg)
+        // pos 2: Black + L + Hoodie (has own image black-l-hoodie.jpg)
+        // pos 3: White + M + Tee (has own image white-m-tee.jpg; NO White+L exists!)
+        // pos 4: Gray + L + Hoodie (has NO own image -> falls back to parent-featured.jpg)
+        $vBlkMTee = $this->allocator->allocateShell('product_variation');
+        $vBlkLTee = $this->allocator->allocateShell('product_variation');
+        $vBlkLHd  = $this->allocator->allocateShell('product_variation');
+        $vWhtMTee = $this->allocator->allocateShell('product_variation');
+        $vGryLHd  = $this->allocator->allocateShell('product_variation');
+        $this->cleanProductIds = array_merge($this->cleanProductIds, [$vBlkMTee, $vBlkLTee, $vBlkLHd, $vWhtMTee, $vGryLHd]);
+
+        $varConfigs = [
+            [$vBlkMTee, 0, 'BLK-M-TEE', [$colorOptId => (int)$valBlack['id'], $sizeOptId => (int)$valM['id'], $styleOptId => (int)$valTee['id']], $assetBlackMTee],
+            [$vBlkLTee, 1, 'BLK-L-TEE', [$colorOptId => (int)$valBlack['id'], $sizeOptId => (int)$valL['id'], $styleOptId => (int)$valTee['id']], $assetBlackLTee],
+            [$vBlkLHd,  2, 'BLK-L-HD',  [$colorOptId => (int)$valBlack['id'], $sizeOptId => (int)$valL['id'], $styleOptId => (int)$valHoodie['id']], $assetBlackLHd],
+            [$vWhtMTee, 3, 'WHT-M-TEE', [$colorOptId => (int)$valWhite['id'], $sizeOptId => (int)$valM['id'], $styleOptId => (int)$valTee['id']], $assetWhiteMTee],
+            [$vGryLHd,  4, 'GRY-L-HD',  [$colorOptId => (int)$valGray['id'],  $sizeOptId => (int)$valL['id'], $styleOptId => (int)$valHoodie['id']], null],
+        ];
+
+        foreach ($varConfigs as [$vId, $pos, $sku, $combo, $assetId]) {
+            $this->wpdb->insert("{$prefix}wpe_variants", [
+                'id' => $vId, 'product_id' => $parentId, 'sku' => $sku, 'regular_price' => '45.000000',
+                'position' => $pos, 'status' => 'publish', 'combination_key' => hash('sha256', $sku, true),
+                'description' => '', 'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+            ]);
+            $this->optionsRepo->assignVariantCombination($parentId, $vId, $combo);
+            if ($assetId !== null) {
+                $this->wpdb->insert("{$prefix}wpe_variant_media", [
+                    'variant_id' => $vId, 'asset_id' => $assetId, 'position' => 0, 'is_primary' => 1
+                ]);
+            }
+        }
+
+        $colorKey = (string)$colorOptId;
+        $blackKey = (string)$valBlack['id'];
+        $whiteKey = (string)$valWhite['id'];
+        $grayKey  = (string)$valGray['id'];
+
+        // Case 1: Unselected Size/Style -> Black takes first Black variation with image (pos 0: black-m-tee.jpg)
+        $resEmpty = $this->resolver->resolve($parentId, []);
+        $thumbsEmpty = $resEmpty['value_thumbnails'][$colorKey];
+        $this->assert(str_contains($thumbsEmpty[$blackKey]['src'], 'black-m-tee.jpg'), "Unselected: Black must use first Black variation image (black-m-tee.jpg)");
+        $this->assert(str_contains($thumbsEmpty[$whiteKey]['src'], 'white-m-tee.jpg'), "Unselected: White must use first White variation image (white-m-tee.jpg)");
+        $this->assert(str_contains($thumbsEmpty[$grayKey]['src'], 'parent-featured.jpg'), "Unselected: Gray (no own image) must fall back to parent-featured.jpg");
+        $this->assert($thumbsEmpty[$grayKey]['source'] === 'product_featured', "Gray fallback source must be product_featured");
+
+        // Case 2: Size = L selected -> Black takes first Black+L variation with image (pos 1: black-l-tee.jpg);
+        // White has NO White+L combination -> exists=false, available=false, keeps representative thumbnail (white-m-tee.jpg)
+        $resSizeL = $this->resolver->resolve($parentId, [$sizeOptId => (int)$valL['id']]);
+        $thumbsSizeL = $resSizeL['value_thumbnails'][$colorKey];
+        $this->assert(str_contains($thumbsSizeL[$blackKey]['src'], 'black-l-tee.jpg'), "Size=L: Black must use first Black+L variation image (black-l-tee.jpg)");
+        $this->assert($thumbsSizeL[$blackKey]['available'] === true, "Size=L: Black must be available");
+        $this->assert($thumbsSizeL[$whiteKey]['exists'] === false, "Size=L: White must have exists=false");
+        $this->assert($thumbsSizeL[$whiteKey]['available'] === false, "Size=L: White must be marked unavailable");
+        $this->assert($thumbsSizeL[$whiteKey]['source'] === 'representative', "Size=L: Unavailable White must use representative thumbnail source");
+        $this->assert(str_contains($thumbsSizeL[$whiteKey]['src'], 'white-m-tee.jpg'), "Size=L: Unavailable White must keep representative thumbnail (white-m-tee.jpg)");
+
+        // Case 3: Size = L, Style = Hoodie -> Black takes exact Black+L+Hoodie image (black-l-hoodie.jpg)
+        $resLHoodie = $this->resolver->resolve($parentId, [$sizeOptId => (int)$valL['id'], $styleOptId => (int)$valHoodie['id']]);
+        $thumbsLHoodie = $resLHoodie['value_thumbnails'][$colorKey];
+        $this->assert(str_contains($thumbsLHoodie[$blackKey]['src'], 'black-l-hoodie.jpg'), "Size=L, Style=Hoodie: Black must use exact black-l-hoodie.jpg");
+        $this->assert($thumbsLHoodie[$blackKey]['source'] === 'variation', "Size=L, Style=Hoodie: Black source must be variation");
 
         echo " OK\n";
     }

@@ -37,6 +37,8 @@ class T27Test
     private array $cleanProductIds = [];
     private array $cleanOptionIds = [];
     private array $cleanValueIds = [];
+    private mixed $savedFlags = false;
+    private mixed $savedAttrConfig = false;
 
     public function __construct()
     {
@@ -45,6 +47,8 @@ class T27Test
         $this->optionsRepo = new OptionsRepository($this->wpdb);
         $this->adapter = SelectorAdapter::register(new SelectorAdapter($this->wpdb, $this->optionsRepo));
         $this->allocator = new PostIdAllocator($this->wpdb);
+        $this->savedFlags = get_option('wpe_feature_flags', false);
+        $this->savedAttrConfig = get_option('wpe_attribute_display_config', false);
     }
 
     public function run(): void
@@ -57,6 +61,7 @@ class T27Test
             $this->testR110_large_variant_payload_budget();
             $this->testAC_T27_01_KeyboardAndFastSwitching();
             $this->testAC_T27_02_LargeVariantBudgetAndResponsivePreservation();
+            $this->testP012_stable_id_display_types_help_text_and_single_price();
             echo "All T27 tests passed successfully!\n";
         } finally {
             $this->tearDown();
@@ -75,13 +80,25 @@ class T27Test
         $prefix = $this->wpdb->prefix;
         if (!empty($this->cleanProductIds)) {
             $ids = implode(',', array_map('intval', $this->cleanProductIds));
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_inventory WHERE owner_id IN ($ids) OR owner_id IN (SELECT id FROM {$prefix}wpe_variants WHERE product_id IN ($ids))");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_values WHERE variant_id IN (SELECT id FROM {$prefix}wpe_variants WHERE product_id IN ($ids))");
-            $this->wpdb->query("DELETE FROM {$prefix}wpe_variants WHERE product_id IN ($ids)");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_variants WHERE product_id IN ($ids) OR id IN ($ids)");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_option_values WHERE option_id IN (SELECT id FROM {$prefix}wpe_options WHERE product_id IN ($ids))");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_options WHERE product_id IN ($ids)");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_products WHERE id IN ($ids)");
             $this->wpdb->query("DELETE FROM {$this->wpdb->posts} WHERE ID IN ($ids)");
         }
+        if ($this->savedFlags === false) {
+            delete_option('wpe_feature_flags');
+        } else {
+            update_option('wpe_feature_flags', $this->savedFlags);
+        }
+        if ($this->savedAttrConfig === false) {
+            delete_option('wpe_attribute_display_config');
+        } else {
+            update_option('wpe_attribute_display_config', $this->savedAttrConfig);
+        }
+        delete_option('wpe_selector_cache_ver');
     }
 
     /**
@@ -240,6 +257,30 @@ class T27Test
         echo " - testR108_keyboard_accessibility...";
 
         $fixture = $this->createVariableProductFixture();
+        $prefix = $this->wpdb->prefix;
+
+        // Explicitly configure pa_color option as 'color' display_type and enable color_swatches toggle (P012: no name-guessing)
+        $colorOptId = (int)$fixture['colorOpt']['id'];
+        $this->wpdb->update(
+            "{$prefix}wpe_products",
+            ['extra_props' => wp_json_encode(['option_ui' => [(string)$colorOptId => ['display_type' => 'color', 'help_text' => '']]])],
+            ['id' => (int)$fixture['productId']]
+        );
+        $this->wpdb->update(
+            "{$prefix}wpe_option_values",
+            ['swatch' => '{"color":"#000000"}'],
+            ['id' => (int)$fixture['valBlack']['id']]
+        );
+        $this->wpdb->update(
+            "{$prefix}wpe_option_values",
+            ['swatch' => '{"color":"#ffffff"}'],
+            ['id' => (int)$fixture['valWhite']['id']]
+        );
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'color_swatches'      => true,
+        ]);
+
         $config = $this->adapter->getSelectorConfig($fixture['productId']);
 
         $this->assert(!empty($config['options']), "Selector config must return options");
@@ -253,7 +294,7 @@ class T27Test
             }
         }
         $this->assert($colorOpt !== null, "pa_color option must exist in config");
-        $this->assert($colorOpt['swatch_type'] === 'color', "pa_color must be detected as color swatch");
+        $this->assert($colorOpt['swatch_type'] === 'color', "pa_color configured as color with color_swatches enabled must resolve to color swatch");
 
         $html = $this->adapter->buildAccessibleSwatchGroupHtml($colorOpt, (string)$fixture['valBlack']['id']);
 
@@ -530,6 +571,224 @@ NODE;
         $this->assert(is_array($config), "Store API config must be an array");
         $this->assert(isset($config['options']) && count($config['options']) === 2, "Options count must be exactly 2 for fixture");
         $this->assert(isset($config['productRevision']), "productRevision must be included");
+
+        echo " OK\n";
+    }
+
+    /**
+     * P012.5: Stable ID display type resolution, default 1st variation option as image,
+     * global toggle fallback to dropdown, help text ARIA linking, and Single Price Display.
+     */
+    public function testP012_stable_id_display_types_help_text_and_single_price(): void
+    {
+        echo " - testP012_stable_id_display_types_help_text_and_single_price...";
+
+        $fixture = $this->createVariableProductFixture('P012 Adapter Test Product');
+        $productId = (int)$fixture['productId'];
+        $colorOptId = (int)$fixture['colorOpt']['id'];
+        $sizeOptId = (int)$fixture['sizeOpt']['id'];
+        $prefix = $this->wpdb->prefix;
+
+        // 1. Default behavior when image_swatches=true and color_swatches=false:
+        // 1st variation-forming option by saved position (colorOpt, pos=0) defaults to 'image',
+        // 2nd option (sizeOpt, pos=1) defaults to 'dropdown'.
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui'      => true,
+            'single_price_display'     => false,
+            'show_selected_value'      => false,
+            'show_help_text'           => false,
+            'button_selector'          => false,
+            'color_swatches'           => false,
+            'image_swatches'           => true,
+            'mark_unavailable_options' => false,
+        ]);
+        update_option('wpe_attribute_display_config', []);
+        $this->adapter->invalidateCache($productId);
+
+        $configDefault = $this->adapter->getSelectorConfig($productId);
+        $opt0 = $configDefault['options'][0];
+        $opt1 = $configDefault['options'][1];
+        $this->assert($opt0['id'] === $colorOptId, "First option by position must be colorOpt");
+        $this->assert($opt0['configured_display_type'] === 'image', "Unconfigured 1st variation option must default to 'image' display_type when color_swatches is false");
+        $this->assert($opt0['display_type'] === 'image', "With image_swatches enabled, effective display_type must be 'image'");
+        $this->assert($opt1['id'] === $sizeOptId, "Second option by position must be sizeOpt");
+        $this->assert($opt1['configured_display_type'] === 'dropdown', "Unconfigured 2nd variation option must default to 'dropdown' when button_selector is false");
+        $this->assert($opt1['display_type'] === 'dropdown', "Second option effective display_type must be 'dropdown' when button_selector is false");
+
+        // 1a. When color_swatches is ON, unconfigured color attribute automatically resolves to 'color' circular swatches
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'image_swatches'      => false,
+            'color_swatches'      => true,
+            'button_selector'     => true,
+        ]);
+        $this->adapter->invalidateCache($productId);
+        $configColorAuto = $this->adapter->getSelectorConfig($productId);
+        $this->assert($configColorAuto['options'][0]['display_type'] === 'color', "Unconfigured color option must auto-resolve to 'color' when color_swatches is true");
+        $this->assert($configColorAuto['options'][1]['display_type'] === 'button', "Unconfigured non-color option must resolve to 'button' when button_selector is true");
+
+        // 1b. When button_selector is ON and color_swatches/image_swatches are OFF, unconfigured options resolve to 'button'
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'image_swatches'      => false,
+            'color_swatches'      => false,
+            'button_selector'     => true,
+        ]);
+        $this->adapter->invalidateCache($productId);
+        $configBtnAuto = $this->adapter->getSelectorConfig($productId);
+        $this->assert($configBtnAuto['options'][0]['display_type'] === 'button', "Unconfigured 1st option must resolve to 'button' when image_swatches/color_swatches are false and button_selector is true");
+        $this->assert($configBtnAuto['options'][1]['display_type'] === 'button', "Unconfigured 2nd option must resolve to 'button' when button_selector is true");
+
+        // 2. When image_swatches, color_swatches, and button_selector are OFF, 1st option falls back to 'dropdown' and renders NO swatch group
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'image_swatches'      => false,
+            'color_swatches'      => false,
+            'button_selector'     => false,
+        ]);
+        $this->adapter->invalidateCache($productId);
+        $configImgOff = $this->adapter->getSelectorConfig($productId);
+        $this->assert($configImgOff['options'][0]['display_type'] === 'dropdown', "When image_swatches, color_swatches, and button_selector are false, option must fallback to 'dropdown'");
+        $dropdownHtml = $this->adapter->filterDropdownAttributeOptionsHtml('<select name="attribute_pa_color"><option value="">Choose</option></select>', [
+            'product'   => wc_get_product($productId),
+            'attribute' => 'pa_color',
+        ]);
+        $this->assert(!str_contains($dropdownHtml, 'wpe-swatches'), "Dropdown display_type must NOT render competing .wpe-swatches buttons");
+
+        // 3. Explicit per-option display_type + help_text + POD color palette resolution + fallback for unknown non-hex value & light border
+        $valCobalt = $this->optionsRepo->createOptionValue($colorOptId, ['value_key' => 'cobalt', 'label' => 'Cobalt Blue', 'position' => 2]);
+        $this->cleanValueIds[] = (int)$valCobalt['id'];
+
+        $this->wpdb->update(
+            "{$prefix}wpe_products",
+            [
+                'extra_props' => wp_json_encode([
+                    'option_ui' => [
+                        (string)$colorOptId => ['display_type' => 'color', 'help_text' => 'Pick a shade'],
+                        (string)$sizeOptId  => ['display_type' => 'button', 'help_text' => 'Choose your size'],
+                    ],
+                ]),
+            ],
+            ['id' => $productId]
+        );
+        // Black has swatch=null in DB -> resolves to #111111 via POD color palette; White has #ffffff (light swatch border); Cobalt has null -> fallback button
+        $this->wpdb->update(
+            "{$prefix}wpe_option_values",
+            ['swatch' => null],
+            ['id' => (int)$fixture['valBlack']['id']]
+        );
+        $this->wpdb->update(
+            "{$prefix}wpe_option_values",
+            ['swatch' => '{"color":"#ffffff"}'],
+            ['id' => (int)$fixture['valWhite']['id']]
+        );
+
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'color_swatches'      => true,
+            'button_selector'     => true,
+            'show_help_text'      => true,
+        ]);
+        $this->adapter->invalidateCache($productId);
+
+        $configExplicit = $this->adapter->getSelectorConfig($productId);
+        $cOpt = $configExplicit['options'][0];
+        $sOpt = $configExplicit['options'][1];
+        $this->assert($cOpt['display_type'] === 'color', "colorOpt must resolve to 'color'");
+        $this->assert($cOpt['help_text'] === 'Pick a shade', "colorOpt must expose help_text");
+        $this->assert($cOpt['values'][0]['color_hex'] === '#111111', "POD color 'Black' with null swatch in DB must resolve to #111111");
+        $this->assert($sOpt['display_type'] === 'button', "sizeOpt must resolve to 'button'");
+        $this->assert($sOpt['help_text'] === 'Choose your size', "sizeOpt must expose help_text");
+
+        $colorFieldHtml = $this->adapter->filterDropdownAttributeOptionsHtml('<select name="attribute_pa_color"></select>', [
+            'product'   => wc_get_product($productId),
+            'attribute' => 'pa_color',
+        ]);
+        $this->assert(str_contains($colorFieldHtml, 'wpe-option-help-text'), "When show_help_text is ON, help text element must render");
+        $this->assert(str_contains($colorFieldHtml, 'Pick a shade'), "Help text content must be rendered");
+        $this->assert(str_contains($colorFieldHtml, 'aria-describedby="wpe-help-' . $productId . '-' . $colorOptId . '"'), "Radiogroup and select must link to help text via aria-describedby");
+        $this->assert(str_contains($colorFieldHtml, 'background-color: #111111;'), "POD color 'Black' must render circular color bubble with #111111");
+        $this->assert(str_contains($colorFieldHtml, 'wpe-swatch-color-fallback'), "Color value missing hex code and not in POD palette (Cobalt) must fallback to named button (.wpe-swatch-color-fallback)");
+        $this->assert(str_contains($colorFieldHtml, 'is-light-swatch'), "Light hex color (#ffffff) must receive .is-light-swatch for border visibility");
+        $this->assert(str_contains($colorFieldHtml, 'wpe-select-hidden'), "Native select must be hidden when swatch/button control is active");
+
+        // When show_help_text is OFF, help text element must NOT render
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui' => true,
+            'color_swatches'      => true,
+            'button_selector'     => true,
+            'show_help_text'      => false,
+        ]);
+        $this->adapter->invalidateCache($productId);
+        $colorFieldNoHelp = $this->adapter->filterDropdownAttributeOptionsHtml('<select name="attribute_pa_color"></select>', [
+            'product'   => wc_get_product($productId),
+            'attribute' => 'pa_color',
+        ]);
+        $this->assert(!str_contains($colorFieldNoHelp, 'wpe-option-help-text'), "When show_help_text is OFF, no help text element may render");
+
+        // 4. Single Price Display:
+        // Add inventory for var1 ($19.99) and var2 ($24.95)
+        $this->wpdb->replace(
+            "{$prefix}wpe_inventory",
+            [
+                'owner_id'     => (int)$fixture['var1Id'],
+                'manage_stock' => 1,
+                'quantity'     => 5,
+                'stock_status' => 'instock',
+                'backorders'   => 'no',
+                'version'      => 1,
+                'updated_at'   => current_time('mysql', true),
+            ]
+        );
+        $this->wpdb->replace(
+            "{$prefix}wpe_inventory",
+            [
+                'owner_id'     => (int)$fixture['var2Id'],
+                'manage_stock' => 1,
+                'quantity'     => 5,
+                'stock_status' => 'instock',
+                'backorders'   => 'no',
+                'version'      => 1,
+                'updated_at'   => current_time('mysql', true),
+            ]
+        );
+
+        $wcProduct = wc_get_product($productId);
+        // When single_price_display is OFF, original price range is untouched
+        $origRangeHtml = '<span class="price">$19.95 &ndash; $24.95</span>';
+        $filteredOff = $this->adapter->filterVariablePriceHtml($origRangeHtml, $wcProduct);
+        $this->assert($filteredOff === $origRangeHtml, "When single_price_display is OFF, original price range must be preserved");
+
+        // Enable single_price_display
+        update_option('wpe_feature_flags', [
+            'variant_selector_ui'  => true,
+            'single_price_display' => true,
+        ]);
+        $this->adapter->invalidateCache($productId);
+
+        $filteredOn = $this->adapter->filterVariablePriceHtml($origRangeHtml, $wcProduct);
+        $this->assert(str_contains($filteredOn, '19.95') && !str_contains($filteredOn, '24.95'), "When single_price_display is ON, lowest purchasable price ($19.95) must replace range");
+        $this->assert(str_contains($filteredOn, 'wpe-single-price-target'), "Single Price Display output must include .wpe-single-price-target wrapper");
+
+        // Make var1 out of stock -> lowest purchasable becomes var2 ($24.95)
+        $this->wpdb->update(
+            "{$prefix}wpe_inventory",
+            ['quantity' => 0, 'stock_status' => 'outofstock'],
+            ['owner_id' => (int)$fixture['var1Id']]
+        );
+        $this->adapter->invalidateCache($productId);
+        $filteredVar2 = $this->adapter->filterVariablePriceHtml($origRangeHtml, $wcProduct);
+        $this->assert(str_contains($filteredVar2, '24.95') && !str_contains($filteredVar2, '19.95'), "When var1 is out of stock, lowest purchasable price must become var2 ($24.95)");
+
+        // Make var2 also out of stock -> no valid purchasable variation -> must return '' (never fake 0)
+        $this->wpdb->update(
+            "{$prefix}wpe_inventory",
+            ['quantity' => 0, 'stock_status' => 'outofstock'],
+            ['owner_id' => (int)$fixture['var2Id']]
+        );
+        $this->adapter->invalidateCache($productId);
+        $filteredNone = $this->adapter->filterVariablePriceHtml($origRangeHtml, $wcProduct);
+        $this->assert($filteredNone === '', "When no valid purchasable variation exists, Single Price Display must return empty string (never fake 0)");
 
         echo " OK\n";
     }

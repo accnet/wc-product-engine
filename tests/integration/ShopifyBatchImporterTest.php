@@ -1,5 +1,15 @@
 <?php
 
+if (!defined('ABSPATH')) {
+    $wp_load = '/var/www/site1.localhost/wp-load.php';
+    if (file_exists($wp_load)) {
+        require_once $wp_load;
+    } else {
+        fwrite(STDERR, "Error: WordPress environment not found.\n");
+        exit(1);
+    }
+}
+
 require_once dirname(__DIR__, 2) . '/wc-product-engine.php';
 
 use WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter;

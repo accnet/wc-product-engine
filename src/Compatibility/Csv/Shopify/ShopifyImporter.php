@@ -75,6 +75,8 @@ class ShopifyImporter
         'compare at price'          => 'compare_at_price',
         'variant inventory qty'     => 'inventory_qty',
         'inventory qty'             => 'inventory_qty',
+        'variant inventory tracker' => 'inventory_tracker',
+        'inventory tracker'         => 'inventory_tracker',
         'variant inventory policy'  => 'inventory_policy',
         'variant grams'             => 'grams',
         'variant weight unit'       => 'weight_unit',
@@ -249,9 +251,9 @@ class ShopifyImporter
             }
 
             // Determine if this row is an IMAGE-ONLY row or blank continuation row (R137, AC-T34-01):
-            $hasSku = !empty($row['sku']);
+            $hasSku = ($row['sku'] ?? '') !== '';
             $hasPrice = isset($row['price']) && $row['price'] !== '';
-            $hasOptionVal = !empty($row['option1_value']) || !empty($row['option2_value']) || !empty($row['option3_value']);
+            $hasOptionVal = ($row['option1_value'] ?? '') !== '' || ($row['option2_value'] ?? '') !== '' || ($row['option3_value'] ?? '') !== '';
 
             if (!$hasSku && !$hasPrice && !$hasOptionVal) {
                 if ($imgUrl !== '' || !empty($groups[$handleKey]['variants'])) {
@@ -264,7 +266,7 @@ class ShopifyImporter
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
 
-                if (!empty($row[$optNameKey])) {
+                if (($row[$optNameKey] ?? '') !== '') {
                     $groups[$handleKey]['option_names'][$optIdx] = trim($row[$optNameKey]);
                 }
                 $optName = $groups[$handleKey]['option_names'][$optIdx] ?? null;
@@ -273,7 +275,7 @@ class ShopifyImporter
                     if (!isset($groups[$handleKey]['options'][$optName])) {
                         $groups[$handleKey]['options'][$optName] = [];
                     }
-                    if (!empty($row[$optValKey])) {
+                    if (($row[$optValKey] ?? '') !== '') {
                         $val = trim($row[$optValKey]);
                         if (!in_array($val, $groups[$handleKey]['options'][$optName], true)) {
                             $groups[$handleKey]['options'][$optName][] = $val;
@@ -302,8 +304,8 @@ class ShopifyImporter
             for ($optIdx = 1; $optIdx <= 3; $optIdx++) {
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
-                $optName = !empty($row[$optNameKey]) ? trim($row[$optNameKey]) : ($groups[$handleKey]['option_names'][$optIdx] ?? null);
-                if ($optName !== null && $optName !== '' && !empty($row[$optValKey])) {
+                $optName = ($row[$optNameKey] ?? '') !== '' ? trim($row[$optNameKey]) : ($groups[$handleKey]['option_names'][$optIdx] ?? null);
+                if ($optName !== null && $optName !== '' && ($row[$optValKey] ?? '') !== '') {
                     $attributes[$optName] = trim($row[$optValKey]);
                 }
             }
@@ -314,6 +316,9 @@ class ShopifyImporter
                 $manageStock = 1;
                 $stockQuantity = (string)(float)$row['inventory_qty'];
             }
+            $inventoryPolicy = strtolower(trim($row['inventory_policy'] ?? ''));
+            $backorders = ($inventoryPolicy === 'continue') ? 'yes' : 'no';
+            $stockStatus = ($manageStock === 1 && (float)$stockQuantity <= 0 && $backorders === 'no') ? 'outofstock' : 'instock';
 
             $groups[$handleKey]['variants'][] = [
                 'sku'              => $row['sku'] !== '' ? trim($row['sku']) : null,
@@ -323,7 +328,8 @@ class ShopifyImporter
                 'weight'           => $weightKg,
                 'manage_stock'     => $manageStock,
                 'stock_quantity'   => $stockQuantity,
-                'stock_status'     => ($manageStock === 1 && (float)$stockQuantity <= 0) ? 'outofstock' : 'instock',
+                'stock_status'     => $stockStatus,
+                'backorders'       => $backorders,
                 'attributes'       => $attributes,
                 'image_url'        => $varImgUrl !== '' ? $varImgUrl : null,
                 'row_number'       => $rowNum,
@@ -331,6 +337,13 @@ class ShopifyImporter
         }
 
         fclose($handle);
+
+        foreach ($groups as &$grp) {
+            if (count($grp['images']) > 1) {
+                usort($grp['images'], static fn(array $a, array $b): int => ($a['position'] <=> $b['position']));
+            }
+        }
+        unset($grp);
 
         return array_values($groups);
     }
@@ -414,9 +427,11 @@ class ShopifyImporter
                     $pPayload['sku']            = $v0['sku'];
                     $pPayload['regular_price']  = $v0['regular_price'];
                     $pPayload['sale_price']     = $v0['sale_price'];
+                    $pPayload['weight']         = $v0['weight'] ?? null;
                     $pPayload['manage_stock']   = $v0['manage_stock'];
                     $pPayload['stock_quantity'] = $v0['stock_quantity'];
                     $pPayload['stock_status']   = $v0['stock_status'];
+                    $pPayload['backorders']     = $v0['backorders'] ?? 'no';
                 }
 
                 // Create or update parent product (AC-T34-02: repeated handles do NOT duplicate products)
@@ -439,17 +454,23 @@ class ShopifyImporter
                 if ($isVariable) {
                     $this->syncShopifyOptions($productId, $group['options']);
 
-                    foreach ($group['variants'] as $vData) {
+                    foreach ($group['variants'] as $vIdx => $vData) {
                         $vSku = $vData['sku'];
-                        $vId = $vSku ? $this->resolveVariantIdBySku($vSku) : null;
+                        $vId = ($vSku !== null && $vSku !== '') ? $this->resolveVariantIdBySku($vSku) : null;
+                        if ($vId === null && !empty($vData['attributes'])) {
+                            $vId = $this->resolveVariantIdByAttributes($productId, $vData['attributes']);
+                        }
 
                         $vPayload = [
                             'sku'            => $vSku,
                             'regular_price'  => $vData['regular_price'],
                             'sale_price'     => $vData['sale_price'],
+                            'weight'         => $vData['weight'] ?? null,
                             'manage_stock'   => $vData['manage_stock'],
                             'stock_quantity' => $vData['stock_quantity'],
                             'stock_status'   => $vData['stock_status'],
+                            'backorders'     => $vData['backorders'] ?? 'no',
+                            'position'       => $vIdx,
                             'attributes'     => $vData['attributes'],
                         ];
 
@@ -459,15 +480,25 @@ class ShopifyImporter
 
                         $this->productRepo->update($productId, ['variations' => [$vPayload]]);
 
-                        // Fetch updated/created variant ID
-                        $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
-                            "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s",
-                            $productId,
-                            $vSku
-                        ), ARRAY_A);
+                        // Fetch updated/created variant ID without colliding on empty SKU
+                        if ($vId !== null) {
+                            $savedVarId = $vId;
+                        } elseif ($vSku !== null && $vSku !== '') {
+                            $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                                $productId,
+                                $vSku
+                            ), ARRAY_A);
+                            $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                        } else {
+                            $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                                $productId
+                            ), ARRAY_A);
+                            $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                        }
 
-                        if ($savedVariant) {
-                            $savedVarId = (int)$savedVariant['id'];
+                        if ($savedVarId > 0) {
                             $createdVariants[] = $savedVarId;
 
                             // Assign option values combination vector
@@ -626,39 +657,114 @@ class ShopifyImporter
         return $v ? (int)$v['id'] : null;
     }
 
+    private function buildOptionSelections(int $productId, array $attributes): array
+    {
+        $options = $this->optionsRepo->getOptionsByProductId($productId);
+        $selections = [];
+
+        foreach ($options as $opt) {
+            $optName = $opt['name'];
+            $optId = (int)$opt['id'];
+
+            if (isset($attributes[$optName])) {
+                $targetLabel = strtolower(trim((string)$attributes[$optName]));
+                foreach ($opt['values'] as $ov) {
+                    if (strtolower(trim((string)$ov['label'])) === $targetLabel || strtolower(trim((string)$ov['value_key'])) === $targetLabel) {
+                        $selections[$optId] = (int)$ov['id'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $selections;
+    }
+
+    private function resolveVariantIdByAttributes(int $productId, array $attributes): ?int
+    {
+        $selections = $this->buildOptionSelections($productId, $attributes);
+        if (!empty($selections)) {
+            try {
+                $vector = $this->optionsRepo->buildCombinationVector($productId, $selections);
+                $vectorHex = $this->optionsRepo->buildCombinationKey($vector);
+                $row = $this->wpdb->get_row($this->wpdb->prepare(
+                    "SELECT id FROM {$this->tableVariants}
+                     WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
+                     LIMIT 1",
+                    $productId,
+                    $vectorHex
+                ), ARRAY_A);
+                if ($row) {
+                    return (int)$row['id'];
+                }
+            } catch (\Throwable $e) {
+                // Fall back to attribute JSON hash check
+            }
+        }
+
+        $attrs = $attributes;
+        ksort($attrs);
+        $attrHex = hash('sha256', json_encode($attrs, JSON_UNESCAPED_UNICODE));
+        $row = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT id FROM {$this->tableVariants}
+             WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
+             LIMIT 1",
+            $productId,
+            $attrHex
+        ), ARRAY_A);
+
+        return $row ? (int)$row['id'] : null;
+    }
+
     private function attachProductImages(int $productId, array $images): void
     {
         $this->wpdb->delete($this->tableProductMedia, ['product_id' => $productId]);
 
         $pos = 0;
         foreach ($images as $img) {
-            $url = esc_url_raw(trim($img['url']));
+            $rawUrl = trim((string)($img['url'] ?? ''));
+            if (!preg_match('#^https?://#i', $rawUrl)) {
+                continue;
+            }
+            $url = esc_url_raw($rawUrl);
             if ($url === '') {
                 continue;
             }
 
-            $asset = $this->assetService->registerAsset($url);
-            $role = ($pos === 0) ? 'featured' : 'gallery';
-            $altOverride = !empty($img['alt']) ? trim($img['alt']) : null;
+            try {
+                $asset = $this->assetService->registerAsset($url);
+                $role = ($pos === 0) ? 'featured' : 'gallery';
+                $altOverride = !empty($img['alt']) ? trim($img['alt']) : null;
 
-            $this->assetService->attachProductImage($productId, (int)$asset['id'], $role, $pos, $altOverride);
-            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-            update_post_meta($attachmentId, '_wc_attachment_source', $url);
-            $pos++;
+                $this->assetService->attachProductImage($productId, (int)$asset['id'], $role, $pos, $altOverride);
+                $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
+                update_post_meta($attachmentId, '_wc_attachment_source', $url);
+                $pos++;
+            } catch (\Throwable $e) {
+                // Skip invalid or unresolvable image URL without aborting product import
+            }
         }
     }
 
     private function attachVariantImage(int $variantId, string $url): void
     {
-        $clean = esc_url_raw(trim($url));
+        $rawUrl = trim($url);
+        if (!preg_match('#^https?://#i', $rawUrl)) {
+            return;
+        }
+        $clean = esc_url_raw($rawUrl);
         if ($clean === '') {
             return;
         }
 
-        $asset = $this->assetService->registerAsset($clean);
-        $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
-        $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-        update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+        try {
+            $asset = $this->assetService->registerAsset($clean);
+            $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
+            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
+            update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+        } catch (\Throwable $e) {
+            // Skip invalid or unresolvable variant image URL without aborting product import
+        }
     }
 
     private function syncShopifyOptions(int $productId, array $options): void
@@ -685,15 +791,29 @@ class ShopifyImporter
 
             $existingVals = $this->optionsRepo->getOptionValues($optId);
             $valLabels = array_map('strtolower', array_column($existingVals, 'label'));
+            $valKeys   = array_map('strtolower', array_column($existingVals, 'value_key'));
 
             $vPos = count($existingVals);
             foreach ($values as $valLabel) {
-                if (!in_array(strtolower($valLabel), $valLabels, true)) {
+                $lowerLabel = strtolower($valLabel);
+                if (!in_array($lowerLabel, $valLabels, true)) {
+                    $baseKey = sanitize_title($valLabel);
+                    if ($baseKey === '') {
+                        $baseKey = 'val-' . ($vPos + 1);
+                    }
+                    $candidateKey = $baseKey;
+                    $suffix = 2;
+                    while (in_array(strtolower($candidateKey), $valKeys, true)) {
+                        $candidateKey = $baseKey . '-' . $suffix;
+                        $suffix++;
+                    }
                     $this->optionsRepo->createOptionValue($optId, [
                         'label'     => $valLabel,
-                        'value_key' => sanitize_title($valLabel),
+                        'value_key' => $candidateKey,
                         'position'  => $vPos++,
                     ]);
+                    $valLabels[] = $lowerLabel;
+                    $valKeys[]   = strtolower($candidateKey);
                 }
             }
             $pos++;
@@ -702,24 +822,7 @@ class ShopifyImporter
 
     private function assignVariantCombinationVector(int $productId, int $variantId, array $attributes): void
     {
-        $options = $this->optionsRepo->getOptionsByProductId($productId);
-        $selections = [];
-
-        foreach ($options as $opt) {
-            $optName = $opt['name'];
-            $optId = (int)$opt['id'];
-
-            if (isset($attributes[$optName])) {
-                $targetLabel = strtolower(trim($attributes[$optName]));
-                foreach ($opt['values'] as $ov) {
-                    if (strtolower($ov['label']) === $targetLabel || strtolower($ov['value_key']) === $targetLabel) {
-                        $selections[$optId] = (int)$ov['id'];
-                        break;
-                    }
-                }
-            }
-        }
-
+        $selections = $this->buildOptionSelections($productId, $attributes);
         if (!empty($selections)) {
             $this->optionsRepo->assignVariantCombination($productId, $variantId, $selections);
         }

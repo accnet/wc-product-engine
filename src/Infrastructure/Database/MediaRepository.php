@@ -197,6 +197,7 @@ class MediaRepository
             }
 
             $this->wpdb->query("COMMIT");
+            \WPE\Compatibility\Gallery\GalleryAdapter::invalidateStaticProductCache($productId);
             return true;
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
@@ -248,6 +249,7 @@ class MediaRepository
             }
 
             $this->wpdb->query("COMMIT");
+            \WPE\Compatibility\Gallery\GalleryAdapter::invalidateStaticProductCache($productId);
             return true;
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");

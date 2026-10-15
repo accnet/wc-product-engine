@@ -157,7 +157,7 @@ class ShopifyBatchImporter
         fclose($handle);
 
         $jobId = wp_generate_uuid4();
-        $now = gmdate('Y-m-d H:i:s.u');
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
 
         $logFilePath = $this->logBaseDir . "/import_{$jobId}.log";
         $initialLog = sprintf(
@@ -378,9 +378,9 @@ class ShopifyBatchImporter
             }
 
             // Image-only row recognition
-            $hasSku = !empty($row['sku']);
+            $hasSku = ($row['sku'] ?? '') !== '';
             $hasPrice = isset($row['price']) && $row['price'] !== '';
-            $hasOptionVal = !empty($row['option1_value']) || !empty($row['option2_value']) || !empty($row['option3_value']);
+            $hasOptionVal = ($row['option1_value'] ?? '') !== '' || ($row['option2_value'] ?? '') !== '' || ($row['option3_value'] ?? '') !== '';
 
             if (!$hasSku && !$hasPrice && !$hasOptionVal) {
                 if ($imgUrl !== '' || !empty($currentGroup['variants'])) {
@@ -393,7 +393,7 @@ class ShopifyBatchImporter
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
 
-                if (!empty($row[$optNameKey])) {
+                if (($row[$optNameKey] ?? '') !== '') {
                     $currentGroup['option_names'][$optIdx] = trim($row[$optNameKey]);
                 }
                 $optName = $currentGroup['option_names'][$optIdx] ?? null;
@@ -402,7 +402,7 @@ class ShopifyBatchImporter
                     if (!isset($currentGroup['options'][$optName])) {
                         $currentGroup['options'][$optName] = [];
                     }
-                    if (!empty($row[$optValKey])) {
+                    if (($row[$optValKey] ?? '') !== '') {
                         $val = trim($row[$optValKey]);
                         if (!in_array($val, $currentGroup['options'][$optName], true)) {
                             $currentGroup['options'][$optName][] = $val;
@@ -420,8 +420,8 @@ class ShopifyBatchImporter
             for ($optIdx = 1; $optIdx <= 3; $optIdx++) {
                 $optNameKey = "option{$optIdx}_name";
                 $optValKey  = "option{$optIdx}_value";
-                $optName = !empty($row[$optNameKey]) ? trim($row[$optNameKey]) : ($currentGroup['option_names'][$optIdx] ?? null);
-                if ($optName !== null && $optName !== '' && !empty($row[$optValKey])) {
+                $optName = ($row[$optNameKey] ?? '') !== '' ? trim($row[$optNameKey]) : ($currentGroup['option_names'][$optIdx] ?? null);
+                if ($optName !== null && $optName !== '' && ($row[$optValKey] ?? '') !== '') {
                     $attributes[$optName] = trim($row[$optValKey]);
                 }
             }
@@ -432,6 +432,9 @@ class ShopifyBatchImporter
                 $manageStock = 1;
                 $stockQuantity = (string)(float)$row['inventory_qty'];
             }
+            $inventoryPolicy = strtolower(trim($row['inventory_policy'] ?? ''));
+            $backorders = ($inventoryPolicy === 'continue') ? 'yes' : 'no';
+            $stockStatus = ($manageStock === 1 && (float)$stockQuantity <= 0 && $backorders === 'no') ? 'outofstock' : 'instock';
 
             $currentGroup['variants'][] = [
                 'sku'              => $row['sku'] !== '' ? trim($row['sku']) : null,
@@ -441,7 +444,8 @@ class ShopifyBatchImporter
                 'weight'           => $weightKg,
                 'manage_stock'     => $manageStock,
                 'stock_quantity'   => $stockQuantity,
-                'stock_status'     => ($manageStock === 1 && (float)$stockQuantity <= 0) ? 'outofstock' : 'instock',
+                'stock_status'     => $stockStatus,
+                'backorders'       => $backorders,
                 'attributes'       => $attributes,
                 'image_url'        => $varImgUrl !== '' ? $varImgUrl : null,
                 'row_number'       => $currentRow,
@@ -457,6 +461,10 @@ class ShopifyBatchImporter
         foreach ($productGroups as $group) {
             $handleKey = $group['handle'];
             $timeStr = gmdate('H:i:s');
+
+            if (count($group['images']) > 1) {
+                usort($group['images'], static fn(array $a, array $b): int => ($a['position'] <=> $b['position']));
+            }
 
             try {
                 $importRes = $this->importSingleProductGroup($group, $config['update_mode'] ?? 'merge');
@@ -474,6 +482,13 @@ class ShopifyBatchImporter
                     count($group['images'])
                 );
                 $batchLogs[] = ['level' => 'success', 'message' => $msg];
+
+                if (!empty($importRes['warnings'])) {
+                    foreach ($importRes['warnings'] as $warnText) {
+                        $wMsg = sprintf("[%s] [WARNING] Handle \"%s\": %s", $timeStr, $handleKey, $warnText);
+                        $batchLogs[] = ['level' => 'warning', 'message' => $wMsg];
+                    }
+                }
             } catch (\Throwable $e) {
                 $errorsCount++;
                 $msg = sprintf("[%s] [ERROR] Failed to import handle \"%s\": %s", $timeStr, $handleKey, $e->getMessage());
@@ -727,9 +742,11 @@ class ShopifyBatchImporter
             $pPayload['sku']            = $v0['sku'];
             $pPayload['regular_price']  = $v0['regular_price'];
             $pPayload['sale_price']     = $v0['sale_price'];
+            $pPayload['weight']         = $v0['weight'] ?? null;
             $pPayload['manage_stock']   = $v0['manage_stock'];
             $pPayload['stock_quantity'] = $v0['stock_quantity'];
             $pPayload['stock_status']   = $v0['stock_status'];
+            $pPayload['backorders']     = $v0['backorders'] ?? 'no';
         }
 
         // Create or update parent product
@@ -741,9 +758,11 @@ class ShopifyBatchImporter
             $productId = (int)$created['id'];
         }
 
+        $warnings = [];
+
         // Attach images
         if (!empty($group['images'])) {
-            $this->attachProductImages($productId, $group['images']);
+            $this->attachProductImages($productId, $group['images'], $warnings);
         }
 
         $variantsCreated = 0;
@@ -752,17 +771,27 @@ class ShopifyBatchImporter
         if ($isVariable) {
             $this->syncShopifyOptions($productId, $group['options']);
 
-            foreach ($group['variants'] as $vData) {
+            foreach ($group['variants'] as $vIdx => $vData) {
+                if (!empty($vData['price_warning'])) {
+                    $warnings[] = "Row {$vData['row_number']}: {$vData['price_warning']}";
+                }
+
                 $vSku = $vData['sku'];
-                $vId = $vSku ? $this->resolveVariantIdBySku($vSku) : null;
+                $vId = ($vSku !== null && $vSku !== '') ? $this->resolveVariantIdBySku($vSku) : null;
+                if ($vId === null && !empty($vData['attributes'])) {
+                    $vId = $this->resolveVariantIdByAttributes($productId, $vData['attributes']);
+                }
 
                 $vPayload = [
                     'sku'            => $vSku,
                     'regular_price'  => $vData['regular_price'],
                     'sale_price'     => $vData['sale_price'],
+                    'weight'         => $vData['weight'] ?? null,
                     'manage_stock'   => $vData['manage_stock'],
                     'stock_quantity' => $vData['stock_quantity'],
                     'stock_status'   => $vData['stock_status'],
+                    'backorders'     => $vData['backorders'] ?? 'no',
+                    'position'       => $vIdx,
                     'attributes'     => $vData['attributes'],
                 ];
 
@@ -772,14 +801,25 @@ class ShopifyBatchImporter
 
                 $this->productRepo->update($productId, ['variations' => [$vPayload]]);
 
-                $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
-                    "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s",
-                    $productId,
-                    $vSku
-                ), ARRAY_A);
+                // Fetch updated/created variant ID without colliding on empty SKU
+                if ($vId !== null) {
+                    $savedVarId = $vId;
+                } elseif ($vSku !== null && $vSku !== '') {
+                    $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                        "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                        $productId,
+                        $vSku
+                    ), ARRAY_A);
+                    $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                } else {
+                    $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                        "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                        $productId
+                    ), ARRAY_A);
+                    $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                }
 
-                if ($savedVariant) {
-                    $savedVarId = (int)$savedVariant['id'];
+                if ($savedVarId > 0) {
                     $variantsCreated++;
 
                     if (!empty($vData['attributes'])) {
@@ -787,7 +827,7 @@ class ShopifyBatchImporter
                     }
 
                     if (!empty($vData['image_url'])) {
-                        $this->attachVariantImage($savedVarId, $vData['image_url']);
+                        $this->attachVariantImage($savedVarId, $vData['image_url'], $vData['row_number'] ?? 0, $warnings);
                     }
                 }
             }
@@ -813,6 +853,7 @@ class ShopifyBatchImporter
             'title'         => $title,
             'type'          => $productType,
             'variant_count' => $variantsCreated,
+            'warnings'      => $warnings,
         ];
     }
 
@@ -860,39 +901,122 @@ class ShopifyBatchImporter
         return $v ? (int)$v['id'] : null;
     }
 
-    private function attachProductImages(int $productId, array $images): void
+    private function buildOptionSelections(int $productId, array $attributes): array
+    {
+        $options = $this->optionsRepo->getOptionsByProductId($productId);
+        $selections = [];
+
+        foreach ($options as $opt) {
+            $optName = $opt['name'];
+            $optId = (int)$opt['id'];
+
+            if (isset($attributes[$optName])) {
+                $targetLabel = strtolower(trim((string)$attributes[$optName]));
+                foreach ($opt['values'] as $ov) {
+                    if (strtolower(trim((string)$ov['label'])) === $targetLabel || strtolower(trim((string)$ov['value_key'])) === $targetLabel) {
+                        $selections[$optId] = (int)$ov['id'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $selections;
+    }
+
+    private function resolveVariantIdByAttributes(int $productId, array $attributes): ?int
+    {
+        $selections = $this->buildOptionSelections($productId, $attributes);
+        if (!empty($selections)) {
+            try {
+                $vector = $this->optionsRepo->buildCombinationVector($productId, $selections);
+                $vectorHex = $this->optionsRepo->buildCombinationKey($vector);
+                $row = $this->wpdb->get_row($this->wpdb->prepare(
+                    "SELECT id FROM {$this->tableVariants}
+                     WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
+                     LIMIT 1",
+                    $productId,
+                    $vectorHex
+                ), ARRAY_A);
+                if ($row) {
+                    return (int)$row['id'];
+                }
+            } catch (\Throwable $e) {
+                // Fall back to attribute JSON hash check
+            }
+        }
+
+        $attrs = $attributes;
+        ksort($attrs);
+        $attrHex = hash('sha256', json_encode($attrs, JSON_UNESCAPED_UNICODE));
+        $row = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT id FROM {$this->tableVariants}
+             WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
+             LIMIT 1",
+            $productId,
+            $attrHex
+        ), ARRAY_A);
+
+        return $row ? (int)$row['id'] : null;
+    }
+
+    private function attachProductImages(int $productId, array $images, array &$warnings = []): void
     {
         $this->wpdb->delete($this->tableProductMedia, ['product_id' => $productId]);
 
         $pos = 0;
         foreach ($images as $img) {
-            $url = esc_url_raw(trim($img['url']));
+            $rawUrl = trim((string)($img['url'] ?? ''));
+            if (!preg_match('#^https?://#i', $rawUrl)) {
+                if ($rawUrl !== '') {
+                    $warnings[] = "Skipped non-HTTP product image value: " . substr($rawUrl, 0, 80);
+                }
+                continue;
+            }
+            $url = esc_url_raw($rawUrl);
             if ($url === '') {
                 continue;
             }
 
-            $asset = $this->assetService->registerAsset($url);
-            $role = ($pos === 0) ? 'featured' : 'gallery';
-            $altOverride = !empty($img['alt']) ? trim($img['alt']) : null;
+            try {
+                $asset = $this->assetService->registerAsset($url);
+                $role = ($pos === 0) ? 'featured' : 'gallery';
+                $altOverride = !empty($img['alt']) ? trim($img['alt']) : null;
 
-            $this->assetService->attachProductImage($productId, (int)$asset['id'], $role, $pos, $altOverride);
-            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-            update_post_meta($attachmentId, '_wc_attachment_source', $url);
-            $pos++;
+                $this->assetService->attachProductImage($productId, (int)$asset['id'], $role, $pos, $altOverride);
+                $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
+                update_post_meta($attachmentId, '_wc_attachment_source', $url);
+                $pos++;
+            } catch (\Throwable $e) {
+                $warnings[] = "Skipped invalid product image URL ({$rawUrl}): " . $e->getMessage();
+            }
         }
     }
 
-    private function attachVariantImage(int $variantId, string $url): void
+    private function attachVariantImage(int $variantId, string $url, int $rowNum = 0, array &$warnings = []): void
     {
-        $clean = esc_url_raw(trim($url));
+        $rawUrl = trim($url);
+        if (!preg_match('#^https?://#i', $rawUrl)) {
+            if ($rawUrl !== '') {
+                $prefix = $rowNum > 0 ? "Row {$rowNum}: " : '';
+                $warnings[] = "{$prefix}Skipped invalid Variant Image value (not an HTTP/HTTPS URL): " . substr(strip_tags($rawUrl), 0, 80);
+            }
+            return;
+        }
+        $clean = esc_url_raw($rawUrl);
         if ($clean === '') {
             return;
         }
 
-        $asset = $this->assetService->registerAsset($clean);
-        $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
-        $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-        update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+        try {
+            $asset = $this->assetService->registerAsset($clean);
+            $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
+            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
+            update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+        } catch (\Throwable $e) {
+            $prefix = $rowNum > 0 ? "Row {$rowNum}: " : '';
+            $warnings[] = "{$prefix}Skipped invalid Variant Image URL ({$rawUrl}): " . $e->getMessage();
+        }
     }
 
     private function syncShopifyOptions(int $productId, array $options): void
@@ -919,15 +1043,29 @@ class ShopifyBatchImporter
 
             $existingVals = $this->optionsRepo->getOptionValues($optId);
             $valLabels = array_map('strtolower', array_column($existingVals, 'label'));
+            $valKeys   = array_map('strtolower', array_column($existingVals, 'value_key'));
 
             $vPos = count($existingVals);
             foreach ($values as $valLabel) {
-                if (!in_array(strtolower($valLabel), $valLabels, true)) {
+                $lowerLabel = strtolower($valLabel);
+                if (!in_array($lowerLabel, $valLabels, true)) {
+                    $baseKey = sanitize_title($valLabel);
+                    if ($baseKey === '') {
+                        $baseKey = 'val-' . ($vPos + 1);
+                    }
+                    $candidateKey = $baseKey;
+                    $suffix = 2;
+                    while (in_array(strtolower($candidateKey), $valKeys, true)) {
+                        $candidateKey = $baseKey . '-' . $suffix;
+                        $suffix++;
+                    }
                     $this->optionsRepo->createOptionValue($optId, [
                         'label'     => $valLabel,
-                        'value_key' => sanitize_title($valLabel),
+                        'value_key' => $candidateKey,
                         'position'  => $vPos++,
                     ]);
+                    $valLabels[] = $lowerLabel;
+                    $valKeys[]   = strtolower($candidateKey);
                 }
             }
             $pos++;
@@ -936,24 +1074,7 @@ class ShopifyBatchImporter
 
     private function assignVariantCombinationVector(int $productId, int $variantId, array $attributes): void
     {
-        $options = $this->optionsRepo->getOptionsByProductId($productId);
-        $selections = [];
-
-        foreach ($options as $opt) {
-            $optName = $opt['name'];
-            $optId = (int)$opt['id'];
-
-            if (isset($attributes[$optName])) {
-                $targetLabel = strtolower(trim($attributes[$optName]));
-                foreach ($opt['values'] as $ov) {
-                    if (strtolower($ov['label']) === $targetLabel || strtolower($ov['value_key']) === $targetLabel) {
-                        $selections[$optId] = (int)$ov['id'];
-                        break;
-                    }
-                }
-            }
-        }
-
+        $selections = $this->buildOptionSelections($productId, $attributes);
         if (!empty($selections)) {
             $this->optionsRepo->assignVariantCombination($productId, $variantId, $selections);
         }

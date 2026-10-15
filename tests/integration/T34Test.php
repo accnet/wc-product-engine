@@ -75,6 +75,7 @@ class T34Test
             $this->testR139_handle_idempotency_and_option_change();
             echo "AC-T34-02 passed: missing versus blank overwrite policy is honored and repeated handles do not duplicate a product.\n";
             $this->testR140_unsupported_shopify_fields();
+            $this->testSkulessMultiVariantImportAndIdempotency();
             echo "All T34 tests passed successfully!\n";
         } finally {
             $this->tearDown();
@@ -412,6 +413,67 @@ class T34Test
         $this->assert($foundLocationLoss, "Multi-location loss must be captured in report");
 
         echo "R140 passed: Unsupported Shopify fields and extra options captured in loss report.\n";
+    }
+
+    /**
+     * Regression test: SKU-less multi-variant product import assigns distinct option combinations
+     * and images to every variant, preserves SQL NULL for empty sale_price, and re-imports idempotently.
+     */
+    public function testSkulessMultiVariantImportAndIdempotency(): void
+    {
+        echo "Testing SKU-less multi-variant import and re-import idempotency...\n";
+
+        $csv = "Handle,Title,Body (HTML),Variant SKU,Variant Price,Variant Compare At Price,Option1 Name,Option1 Value,Option2 Name,Option2 Value,Variant Image\n" .
+            "t34-skuless-tee,T34 SKU-less Tee,<p>Multi-variant no SKU</p>,,20.00,,Size,S,Color,Red,https://cdn.example.com/shopify/tee-red-s.jpg\n" .
+            "t34-skuless-tee,,,,22.00,,Size,M,Color,Red,https://cdn.example.com/shopify/tee-red-m.jpg\n" .
+            "t34-skuless-tee,,,,24.00,30.00,Size,L,Color,Blue,https://cdn.example.com/shopify/tee-blue-l.jpg\n" .
+            "t34-skuless-tee,,,,26.00,,Size,XL,Color,Blue,https://cdn.example.com/shopify/tee-blue-xl.jpg\n";
+
+        $f = tempnam(sys_get_temp_dir(), 'wpe_t34_skuless_') . '.csv';
+        file_put_contents($f, $csv);
+        $this->cleanFiles[] = $f;
+
+        $res1 = $this->importer->importFromCsv($f);
+        $this->assert($res1['status'] === 'completed', "SKU-less multi-variant import must succeed");
+        $this->assert(count($res1['created_products']) === 1, "Must create 1 parent product");
+        $pId = (int)$res1['created_products'][0];
+        $this->cleanProductIds[] = $pId;
+
+        $varRows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT id, regular_price, sale_price, position FROM {$this->wpdb->prefix}wpe_variants WHERE product_id = %d AND deleted_at IS NULL ORDER BY position ASC, id ASC",
+            $pId
+        ), ARRAY_A);
+        $this->assert(count($varRows) === 4, "Must create 4 variations");
+
+        $varsWithValues = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT v.id) FROM {$this->wpdb->prefix}wpe_variants v JOIN {$this->wpdb->prefix}wpe_variant_values vv ON v.id = vv.variant_id WHERE v.product_id = %d",
+            $pId
+        ));
+        $this->assert($varsWithValues === 4, "All 4 SKU-less variants must have assigned option values in wpe_variant_values");
+
+        $varsWithMedia = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(DISTINCT v.id) FROM {$this->wpdb->prefix}wpe_variants v JOIN {$this->wpdb->prefix}wpe_variant_media vm ON v.id = vm.variant_id WHERE v.product_id = %d",
+            $pId
+        ));
+        $this->assert($varsWithMedia === 4, "All 4 SKU-less variants must have assigned variant images in wpe_variant_media");
+
+        // Variants 0, 1, 3 have no compare-at price -> sale_price must be NULL (not 0.000000)
+        $this->assert($varRows[0]['sale_price'] === null, "Variant 0 sale_price must be SQL NULL");
+        $this->assert($varRows[1]['sale_price'] === null, "Variant 1 sale_price must be SQL NULL");
+        $this->assert((float)$varRows[2]['regular_price'] === 30.00 && (float)$varRows[2]['sale_price'] === 24.00, "Variant 2 compare-at mapped to regular=30, sale=24");
+        $this->assert($varRows[3]['sale_price'] === null, "Variant 3 sale_price must be SQL NULL");
+
+        // Re-import the exact same SKU-less CSV and verify idempotency (zero duplicate variants)
+        $res2 = $this->importer->importFromCsv($f);
+        $this->assert($res2['status'] === 'completed', "Second import of SKU-less CSV must succeed");
+        $this->assert(count($res2['created_products']) === 0, "Re-import must not duplicate parent product");
+        $varCountAfter = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->wpdb->prefix}wpe_variants WHERE product_id = %d AND deleted_at IS NULL",
+            $pId
+        ));
+        $this->assert($varCountAfter === 4, "Re-import must update SKU-less variants in-place without duplicating variants");
+
+        echo "SKU-less multi-variant import and idempotency passed.\n";
     }
 }
 

@@ -372,6 +372,13 @@ class LegacyCapture
             ];
         }
 
+        if (($post['post_status'] ?? '') === 'auto-draft') {
+            return [
+                'status' => 'skipped_auto_draft',
+                'id'     => $parentAggregateId,
+            ];
+        }
+
         // Gather metadata
         $meta = $this->loadPostMetaMap($parentAggregateId);
 

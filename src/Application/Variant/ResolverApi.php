@@ -271,13 +271,16 @@ class ResolverApi
 
     /**
      * Serialize variation data matching standard WC_Product_Variable::get_available_variation() structure.
+     * Guarantees price_html is always populated for priced variations even when all variations share the same price.
      */
     public function serializeAvailableVariation(int $variationId, int $parentId): array|false
     {
-        // 1. Fetch variant and parent from WPE tables
-        $sql = "SELECT v.*, p.status AS parent_status
+        // 1. Fetch variant, parent, and inventory from WPE tables
+        $sql = "SELECT v.*, p.status AS parent_status,
+                       i.manage_stock, i.quantity AS stock_qty, i.stock_status, i.backorders
                 FROM {$this->tableVariants} v
                 JOIN {$this->tableProducts} p ON p.id = v.product_id
+                LEFT JOIN {$this->wpdb->prefix}wpe_inventory i ON i.owner_id = COALESCE(v.stock_owner_id, v.id)
                 WHERE v.id = %d AND v.product_id = %d AND v.deleted_at IS NULL LIMIT 1";
         $variant = $this->wpdb->get_row($this->wpdb->prepare($sql, $variationId, $parentId), ARRAY_A);
 
@@ -290,6 +293,10 @@ class ResolverApi
             return false;
         }
 
+        $eval = $this->resolver->evaluateVariantAvailability($parentId, $variant);
+        $resolvedPrice = $eval['resolved_price'];
+        $priceHtml = $this->resolver->formatVariationPriceHtml($parentId, $variant, $resolvedPrice);
+
         // Try WC native product if available
         $variableProduct = wc_get_product($parentId);
         $variationProduct = wc_get_product($variationId);
@@ -297,6 +304,9 @@ class ResolverApi
         if ($variableProduct instanceof WC_Product_Variable && $variationProduct instanceof WC_Product_Variation) {
             $data = $variableProduct->get_available_variation($variationProduct);
             if (is_array($data) && !empty($data)) {
+                if (empty($data['price_html']) && $priceHtml !== '') {
+                    $data['price_html'] = $priceHtml;
+                }
                 return $data;
             }
         }
@@ -318,23 +328,28 @@ class ResolverApi
             $attributes[$attrKey] = $ar['value_key'] ?? '';
         }
 
-        $regPrice = $variant['regular_price'] !== null ? (float)$variant['regular_price'] : 0.0;
-        $salePrice = $variant['sale_price'] !== null ? (float)$variant['sale_price'] : null;
-        $price = $salePrice !== null ? $salePrice : $regPrice;
+        $regPrice = $resolvedPrice['regular'] !== null ? (float)$resolvedPrice['regular'] : 0.0;
+        $activePrice = $resolvedPrice['active_price'] !== null ? (float)$resolvedPrice['active_price'] : 0.0;
+
+        $availabilityHtml = $eval['available']
+            ? '<p class="stock in-stock">' . esc_html__('In stock', 'woocommerce') . '</p>'
+            : '<p class="stock out-of-stock">' . esc_html__('Out of stock', 'woocommerce') . '</p>';
 
         $data = [
             'variation_id'           => $variationId,
             'variation_is_visible'   => true,
             'variation_is_active'    => true,
-            'is_purchasable'         => ($variant['regular_price'] !== null),
-            'display_price'          => (float)$price,
-            'display_regular_price'  => (float)$regPrice,
+            'is_purchasable'         => (bool)$eval['purchasable'],
+            'display_price'          => $activePrice,
+            'display_regular_price'  => $regPrice,
+            'price_html'             => $priceHtml,
             'attributes'             => $attributes,
             'image'                  => $imagePayload,
             'image_id'               => (int)($imagePayload['image_id'] ?? 0),
-            'is_in_stock'            => true,
+            'is_in_stock'            => (bool)$eval['available'],
             'sku'                    => (string)($variant['sku'] ?? ''),
-            'availability_html'      => '<p class="stock in-stock">' . esc_html__('In stock', 'woocommerce') . '</p>',
+            'availability_html'      => $availabilityHtml,
+            'variation_description'  => (string)($variant['description'] ?? ''),
         ];
 
         return apply_filters('woocommerce_available_variation', $data, $variableProduct, $variationProduct);
@@ -361,17 +376,28 @@ class ResolverApi
             ));
 
             $variantView = [
-                'id'             => $varId,
-                'product_id'     => (string)$productId,
-                'version'        => (string)($varVersion ?: '1'),
-                'sku'            => $v['sku'] ? (string)$v['sku'] : null,
-                'selection'      => !empty($selection) ? array_map('strval', $selection) : null,
-                'price'          => $v['price'] !== null ? (string)$v['price'] : null,
-                'display_price'  => (string)($v['display_price'] ?? ''),
-                'stock_owner_id' => $v['stock_owner_id'] !== null ? (string)$v['stock_owner_id'] : null,
-                'available'      => (bool)$v['available'],
-                'purchasable'    => (bool)$v['purchasable'],
-                'media_asset_id' => $v['media_asset_id'] !== null ? (string)$v['media_asset_id'] : null,
+                'id'                    => $varId,
+                'variation_id'          => (int)$varId,
+                'product_id'            => (string)$productId,
+                'version'               => (string)($varVersion ?: '1'),
+                'sku'                   => $v['sku'] ? (string)$v['sku'] : null,
+                'selection'             => !empty($selection) ? array_map('strval', $selection) : null,
+                'price'                 => $v['price'] !== null ? (string)$v['price'] : null,
+                'regular_price'         => isset($v['regular_price']) && $v['regular_price'] !== null ? (string)$v['regular_price'] : null,
+                'sale_price'            => isset($v['sale_price']) && $v['sale_price'] !== null ? (string)$v['sale_price'] : null,
+                'sale_active'           => (bool)($v['sale_active'] ?? false),
+                'display_price'         => (string)($v['display_price'] ?? ''),
+                'price_html'            => (string)($v['price_html'] ?? ''),
+                'stock_owner_id'        => $v['stock_owner_id'] !== null ? (string)$v['stock_owner_id'] : null,
+                'available'             => (bool)$v['available'],
+                'purchasable'           => (bool)$v['purchasable'],
+                'is_in_stock'           => (bool)$v['available'],
+                'is_purchasable'        => (bool)$v['purchasable'],
+                'variation_is_visible'  => true,
+                'variation_is_active'   => true,
+                'variation_description' => (string)($v['description'] ?? ''),
+                'media_asset_id'        => $v['media_asset_id'] !== null ? (string)$v['media_asset_id'] : null,
+                'image'                 => $v['image'] ?? null,
             ];
         }
 
@@ -382,12 +408,16 @@ class ResolverApi
         }
 
         return [
-            'state'            => $rawResult['state'],
-            'request_sequence' => (int)$rawResult['request_sequence'],
-            'product_revision' => (string)$rawResult['product_revision'],
-            'variant'          => $variantView,
-            'allowed_values'   => $formattedAllowed,
-            'reason'           => $rawResult['reason'],
+            'state'             => $rawResult['state'],
+            'request_sequence'  => (int)$rawResult['request_sequence'],
+            'product_revision'  => (string)$rawResult['product_revision'],
+            'variant'           => $variantView,
+            'candidate_image'   => $rawResult['candidate_image'] ?? null,
+            'allowed_values'    => $formattedAllowed,
+            'allowed_details'   => $rawResult['allowed_details'] ?? [],
+            'value_thumbnails'  => $rawResult['value_thumbnails'] ?? [],
+            'lowest_price_html' => (string)($rawResult['lowest_price_html'] ?? ''),
+            'reason'            => $rawResult['reason'],
         ];
     }
 

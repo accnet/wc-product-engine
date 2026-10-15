@@ -32,6 +32,9 @@ final class StorageResolver
     {
         $this->pluginFactory = $pluginFactory ?? static fn (): ?StorageProviderInterface => StoragePluginProvider::fromPlugin();
         $this->enabledReader = $enabledReader ?? static function (): bool {
+            if (!StoragePluginProvider::pluginLoaded()) {
+                return false;
+            }
             $settings = get_option(self::SETTINGS_OPTION, []);
             return is_array($settings) && !empty($settings['enabled']);
         };

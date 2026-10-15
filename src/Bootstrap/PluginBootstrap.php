@@ -11,6 +11,8 @@ class PluginBootstrap
 
     public const OPTION_FLAGS = 'wpe_feature_flags';
     public const OPTION_ROUTING = 'wpe_cohort_routing';
+    public const OPTION_ATTR_DISPLAY = 'wpe_attribute_display_config';
+    public const OPTION_PRODUCT_PAGE_VER = 'wpe_product_page_settings_ver';
 
     public static function instance(): self
     {
@@ -54,15 +56,21 @@ class PluginBootstrap
         $this->registerCapabilities();
         $this->registerDataStores();
         $this->registerRestRoutes();
-        \WPE\Admin\OperationsPage::getInstance()->init();
+        $opsPage = \WPE\Admin\OperationsPage::getInstance();
+        $opsPage->init();
+        remove_action('admin_menu', [$opsPage, 'registerAdminMenu']);
+        remove_action('admin_enqueue_scripts', [$opsPage, 'enqueueAssets']);
         \WPE\Admin\ProductEditor\ProductEditorBridge::getInstance()->init();
 
+        add_action('admin_menu', [$this, 'redirectLegacyOperationsPage'], 1);
         add_action('admin_menu', [$this, 'registerAdminMenu']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
 
         \WPE\Compatibility\Gallery\AttachmentBridge::register();
         \WPE\Compatibility\Gallery\GalleryAdapter::register();
         \WPE\Compatibility\WooDataStore\PostShellBridge::getInstance()->boot();
+        \WPE\Application\Variant\ResolverApi::register();
+        \WPE\Compatibility\StoreApi\SelectorAdapter::register();
     }
 
     public function checkDependencies(): bool
@@ -119,11 +127,19 @@ class PluginBootstrap
     public function loadFlags(): void
     {
         $defaults = [
-            'query_enabled' => false,
-            'media_enabled' => false,
-            'resolver_enabled' => false,
-            'native_writes_enabled' => false,
-            'cohort_mode' => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
+            'variants_ui_enabled'      => true,
+            'query_enabled'            => false,
+            'media_enabled'            => false,
+            'resolver_enabled'         => false,
+            'native_writes_enabled'    => false,
+            'single_price_display'     => false,
+            'show_selected_value'      => false,
+            'show_help_text'           => false,
+            'button_selector'          => false,
+            'color_swatches'           => false,
+            'image_swatches'           => false,
+            'mark_unavailable_options' => false,
+            'cohort_mode'              => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
         ];
 
         $saved = get_option(self::OPTION_FLAGS, []);
@@ -152,6 +168,102 @@ class PluginBootstrap
     {
         $this->flags[$flag] = $value;
         update_option(self::OPTION_FLAGS, $this->flags);
+        $this->bumpProductPageSettingsVersion();
+    }
+
+    /**
+     * Global attribute display configuration keyed by WooCommerce attribute_id or opt_<option_key>.
+     *
+     * @return array<int|string, array{display_type: string, help_text: string, term_colors: array<int|string, string>}>
+     */
+    public function getAttributeDisplayConfig(): array
+    {
+        $raw = get_option(self::OPTION_ATTR_DISPLAY, []);
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($raw as $attrId => $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            if (is_numeric($attrId) && (int)$attrId > 0) {
+                $id = (int)$attrId;
+            } elseif (is_string($attrId) && preg_match('/^opt_[a-z0-9_-]{1,64}$/', $attrId)) {
+                $id = $attrId;
+            } else {
+                continue;
+            }
+            $type = (string)($entry['display_type'] ?? 'auto');
+            if (!in_array($type, ['auto', 'dropdown', 'button', 'color', 'image'], true)) {
+                $type = 'auto';
+            }
+            $helpText = sanitize_text_field((string)($entry['help_text'] ?? ''));
+            $colors = [];
+            if (isset($entry['term_colors']) && is_array($entry['term_colors'])) {
+                foreach ($entry['term_colors'] as $termKey => $hex) {
+                    $hexStr = strtolower(trim((string)$hex));
+                    if (!preg_match('/^#[0-9a-f]{6}$/', $hexStr)) {
+                        continue;
+                    }
+                    if (is_numeric($termKey) && (int)$termKey > 0) {
+                        $colors[(int)$termKey] = $hexStr;
+                    } elseif (is_string($termKey) && preg_match('/^[a-z0-9_-]{1,64}$/', $termKey)) {
+                        $colors[$termKey] = $hexStr;
+                    }
+                }
+            }
+            $normalized[$id] = [
+                'display_type' => $type,
+                'help_text'    => $helpText,
+                'term_colors'  => $colors,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Merge and persist global attribute display configuration.
+     *
+     * @param array<int|string, array{display_type: string, help_text: string, term_colors: array<int|string, string>}> $updates
+     */
+    public function saveAttributeDisplayConfig(array $updates): void
+    {
+        $current = $this->getAttributeDisplayConfig();
+        foreach ($updates as $attrId => $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            if (is_numeric($attrId) && (int)$attrId > 0) {
+                $id = (int)$attrId;
+            } elseif (is_string($attrId) && preg_match('/^opt_[a-z0-9_-]{1,64}$/', $attrId)) {
+                $id = $attrId;
+            } else {
+                continue;
+            }
+            $current[$id] = [
+                'display_type' => (string)($entry['display_type'] ?? 'auto'),
+                'help_text'    => (string)($entry['help_text'] ?? ''),
+                'term_colors'  => is_array($entry['term_colors'] ?? null) ? $entry['term_colors'] : [],
+            ];
+        }
+        update_option(self::OPTION_ATTR_DISPLAY, $current);
+        $this->bumpProductPageSettingsVersion();
+    }
+
+    public function getProductPageSettingsVersion(): int
+    {
+        $ver = (int)get_option(self::OPTION_PRODUCT_PAGE_VER, 1);
+        return $ver > 0 ? $ver : 1;
+    }
+
+    public function bumpProductPageSettingsVersion(): int
+    {
+        $next = $this->getProductPageSettingsVersion() + 1;
+        update_option(self::OPTION_PRODUCT_PAGE_VER, $next);
+        return $next;
     }
 
     /**
@@ -252,15 +364,18 @@ class PluginBootstrap
             'wpe-shopify-import',
             [\WPE\Admin\ShopifyImportPage::class, 'render']
         );
+    }
 
-        add_submenu_page(
-            'wc-product-engine',
-            __('Operations & Monitoring', 'wc-product-engine'),
-            __('Operations & Monitoring', 'wc-product-engine'),
-            'wpe_manage_operations',
-            'wpe-operations',
-            [\WPE\Admin\OperationsPage::getInstance(), 'renderPage']
-        );
+    public function redirectLegacyOperationsPage(): void
+    {
+        if (!is_admin()) {
+            return;
+        }
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash((string)$_GET['page'])) : '';
+        if ($page === 'wpe-operations') {
+            wp_safe_redirect(\WPE\Admin\SettingsPage::tabUrl('operations'));
+            exit;
+        }
     }
 
     public function enqueueAdminAssets(string $hook): void
@@ -283,7 +398,6 @@ class PluginBootstrap
         }
 
         // Settings assets belong to the Settings screen only (the top-level page).
-        // Sibling plugin screens such as Operations also contain 'wc-product-engine' in their hook.
         if ($hook !== 'toplevel_page_wc-product-engine') {
             return;
         }
@@ -306,22 +420,29 @@ class PluginBootstrap
             true
         );
         wp_localize_script('wpe-settings-js', 'wpeAdminConfig', [
-            'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
-            'nonce'   => wp_create_nonce('wp_rest'),
-            'i18n'    => [
+            'restUrl'    => esc_url_raw(rest_url('wpe/v1/admin/')),
+            'opsRestUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
+            'nonce'      => wp_create_nonce('wp_rest'),
+            'canManageOps' => current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce'),
+            'i18n'       => [
                 /* translators: %d: number of changed settings */
-                'unsavedOne'     => __('%d unsaved change', 'wc-product-engine'),
+                'unsavedOne'      => __('%d unsaved change', 'wc-product-engine'),
                 /* translators: %d: number of changed settings */
-                'unsavedMany'    => __('%d unsaved changes', 'wc-product-engine'),
-                'saving'         => __('Saving…', 'wc-product-engine'),
-                'saveLabel'      => __('Save changes', 'wc-product-engine'),
-                'saved'          => __('Settings saved.', 'wc-product-engine'),
-                'saveFailed'     => __('Settings could not be saved.', 'wc-product-engine'),
-                'discarded'      => __('Changes discarded.', 'wc-product-engine'),
-                'rebuilding'     => __('Rebuilding catalog index…', 'wc-product-engine'),
-                'rebuilt'        => __('Catalog index rebuilt.', 'wc-product-engine'),
-                'rebuildFailed'  => __('Rebuild failed.', 'wc-product-engine'),
-                'confirmRebuild' => __('Rebuild the catalog index now?', 'wc-product-engine'),
+                'unsavedMany'     => __('%d unsaved changes', 'wc-product-engine'),
+                'saving'          => __('Saving…', 'wc-product-engine'),
+                'saveLabel'       => __('Save changes', 'wc-product-engine'),
+                'saved'           => __('Settings saved.', 'wc-product-engine'),
+                'saveFailed'      => __('Settings could not be saved.', 'wc-product-engine'),
+                'discarded'       => __('Changes discarded.', 'wc-product-engine'),
+                'rebuilding'      => __('Rebuilding catalog index…', 'wc-product-engine'),
+                'rebuilt'         => __('Catalog index rebuilt.', 'wc-product-engine'),
+                'rebuildFailed'   => __('Rebuild failed.', 'wc-product-engine'),
+                'confirmRebuild'  => __('Rebuild the catalog index now?', 'wc-product-engine'),
+                'opsRunning'      => __('Processing operation: %s…', 'wc-product-engine'),
+                'opsFailed'       => __('Operation failed.', 'wc-product-engine'),
+                'confirmRollback' => __('WARNING: Are you sure you want to initiate an Authority Rollback back to Legacy CPT? Current native catalog data will be reconciled before switching.', 'wc-product-engine'),
+                'resumeLabel'     => __('Resume', 'wc-product-engine'),
+                'noCheckpoints'   => __('No recent background jobs recorded.', 'wc-product-engine'),
             ],
         ]);
     }
@@ -375,11 +496,19 @@ class PluginBootstrap
         // Ensure default flags exist without modifying any existing products
         if (get_option(self::OPTION_FLAGS) === false) {
             update_option(self::OPTION_FLAGS, [
-                'query_enabled' => false,
-                'media_enabled' => false,
-                'resolver_enabled' => false,
-                'native_writes_enabled' => false,
-                'cohort_mode' => 'legacy',
+                'variants_ui_enabled'      => true,
+                'query_enabled'            => false,
+                'media_enabled'            => false,
+                'resolver_enabled'         => false,
+                'native_writes_enabled'    => false,
+                'single_price_display'     => false,
+                'show_selected_value'      => false,
+                'show_help_text'           => false,
+                'button_selector'          => false,
+                'color_swatches'           => false,
+                'image_swatches'           => false,
+                'mark_unavailable_options' => false,
+                'cohort_mode'              => 'legacy',
             ]);
         }
     }

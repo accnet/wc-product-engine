@@ -129,6 +129,7 @@ class T26Test
             $this->testR106_revision_refresh();
             $this->testAC_T26_01_ClassicAjaxAndNoMetaExposure();
             $this->testAC_T26_02_EmptySelectionAndRateLimitWithRetryHint();
+            $this->testP012_resolve_response_and_ajax_price_html_and_thumbnails();
 
             echo "All T26 tests passed successfully!\n";
         } finally {
@@ -551,6 +552,91 @@ class T26Test
         $this->assert(!empty($dataLimited['data']['retry_after']), "Response body must contain retry_after hint (AC-T26-02)");
 
         $this->api->clearRateLimit($clientIp);
+
+        echo " OK\n";
+    }
+
+    /**
+     * P012.4: ResolveResponse and classic AJAX variation payload include price_html, lowest_price_html, allowed_details, and value_thumbnails.
+     */
+    public function testP012_resolve_response_and_ajax_price_html_and_thumbnails(): void
+    {
+        echo " - testP012_resolve_response_and_ajax_price_html_and_thumbnails...";
+
+        $prefix = $this->wpdb->prefix;
+        $parentId = $this->allocator->allocateShell('product');
+        $var1Id   = $this->allocator->allocateShell('product_variation');
+        $var2Id   = $this->allocator->allocateShell('product_variation');
+        $this->cleanProductIds = array_merge($this->cleanProductIds, [$parentId, $var1Id, $var2Id]);
+
+        $this->wpdb->insert("{$prefix}wpe_products", [
+            'id' => $parentId, 'sku' => 'P012-REST-PROD', 'slug' => 'p012-rest-prod-' . $parentId, 'title' => 'P012 REST Product',
+            'type' => 'variable', 'status' => 'publish', 'description' => '', 'short_description' => '',
+            'default_selection' => '{}', 'extra_props' => '{}', 'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+
+        // Both variations share the same regular price ($29.00) except var1 has an active sale ($19.00)
+        $pastDate   = gmdate('Y-m-d H:i:s', time() - 3600);
+        $futureDate = gmdate('Y-m-d H:i:s', time() + 3600);
+
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $var1Id, 'product_id' => $parentId, 'sku' => 'P012-REST-V1', 'regular_price' => '29.000000',
+            'sale_price' => '19.000000', 'sale_from' => $pastDate, 'sale_to' => $futureDate,
+            'position' => 0, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-v1', true), 'description' => 'V1 Desc',
+            'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+        $this->wpdb->insert("{$prefix}wpe_variants", [
+            'id' => $var2Id, 'product_id' => $parentId, 'sku' => 'P012-REST-V2', 'regular_price' => '29.000000',
+            'position' => 1, 'status' => 'publish', 'combination_key' => hash('sha256', 'p012-v2', true), 'description' => 'V2 Desc',
+            'extra_props' => '{}', 'created_at' => current_time('mysql'), 'updated_at' => current_time('mysql'), 'version' => 1
+        ]);
+
+        $opt = $this->optionsRepo->createOption($parentId, ['key' => 'pa_color', 'name' => 'Color', 'position' => 0]);
+        $optId = (int)$opt['id'];
+        $this->cleanOptionIds[] = $optId;
+
+        $valRed  = $this->optionsRepo->createOptionValue($optId, ['value_key' => 'red', 'label' => 'Red']);
+        $valBlue = $this->optionsRepo->createOptionValue($optId, ['value_key' => 'blue', 'label' => 'Blue']);
+        $this->cleanValueIds = array_merge($this->cleanValueIds, [(int)$valRed['id'], (int)$valBlue['id']]);
+
+        $this->optionsRepo->assignVariantCombination($parentId, $var1Id, [$optId => (int)$valRed['id']]);
+        $this->optionsRepo->assignVariantCombination($parentId, $var2Id, [$optId => (int)$valBlue['id']]);
+
+        $assetRed = $this->assetService->registerAsset('https://cdn.example.com/p012/red-shirt.jpg', [
+            'width' => 800, 'height' => 800, 'alt_text' => 'Red Shirt', 'title' => 'Red Shirt'
+        ]);
+        $this->cleanAssetIds[] = (int)$assetRed['id'];
+        $this->wpdb->insert("{$prefix}wpe_variant_media", [
+            'variant_id' => $var1Id, 'asset_id' => (int)$assetRed['id'], 'position' => 0, 'is_primary' => 1
+        ]);
+
+        // 1. REST resolve endpoint check
+        $req = new WP_REST_Request('POST', "/wpe/v1/products/{$parentId}/resolve");
+        $req->set_param('id', $parentId);
+        $req->set_param('selection', [$optId => (int)$valRed['id']]);
+        $req->set_param('quantity', '1');
+        $req->set_param('request_sequence', 12);
+
+        $res = $this->api->resolveEndpoint($req);
+        $data = $res->get_data();
+
+        $this->assert($data['state'] === 'exact', "Must resolve to exact");
+        $this->assert(!empty($data['lowest_price_html']), "lowest_price_html must be populated");
+        $this->assert(str_contains($data['lowest_price_html'], '19.00') && str_contains($data['lowest_price_html'], '29.00'), "lowest_price_html must contain sale 19.00 and regular 29.00");
+        $this->assert(!empty($data['variant']['price_html']), "variant.price_html must be populated");
+        $this->assert($data['variant']['sale_active'] === true, "variant.sale_active must be true");
+        $this->assert($data['variant']['regular_price'] === '29.000000', "variant.regular_price must be 29.000000");
+        $this->assert($data['variant']['sale_price'] === '19.000000', "variant.sale_price must be 19.000000");
+        $this->assert(isset($data['allowed_details'][(string)$optId][(string)$valRed['id']]), "allowed_details must be included");
+        $this->assert(isset($data['value_thumbnails'][(string)$optId][(string)$valRed['id']]), "value_thumbnails must be included");
+        $this->assert(str_contains($data['value_thumbnails'][(string)$optId][(string)$valRed['id']]['src'], 'red-shirt.jpg'), "value_thumbnails for Red must include red-shirt.jpg");
+
+        // 2. Classic AJAX variation payload check
+        $ajaxV2 = $this->api->serializeAvailableVariation($var2Id, $parentId);
+        $this->assert(is_array($ajaxV2), "serializeAvailableVariation must return array");
+        $this->assert(!empty($ajaxV2['price_html']), "serializeAvailableVariation must always populate price_html");
+        $this->assert(str_contains($ajaxV2['price_html'], '29.00'), "price_html must contain 29.00");
 
         echo " OK\n";
     }

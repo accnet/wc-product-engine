@@ -522,6 +522,10 @@ class ProductLifecycle
             wp_cache_delete($childId, 'products');
             wp_cache_delete('wc_product_' . $childId, 'products');
         }
+
+        if (class_exists(\WPE\Compatibility\StoreApi\SelectorAdapter::class)) {
+            \WPE\Compatibility\StoreApi\SelectorAdapter::instance($this->wpdb)->invalidateCache($productId);
+        }
     }
 
     /* -------------------------------------------------------------------------- */

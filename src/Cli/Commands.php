@@ -35,6 +35,7 @@ class Commands
         \WP_CLI::add_command('wpe audit', [self::class, 'audit']);
         \WP_CLI::add_command('wpe rollback', [self::class, 'rollback']);
         \WP_CLI::add_command('wpe export', [self::class, 'export']);
+        \WP_CLI::add_command('wpe media', [self::class, 'media']);
     }
 
     /**
@@ -188,5 +189,51 @@ class Commands
 
         $res = $ops->handleAction('export', $params, 0);
         \WP_CLI::success("Export job dispatched: " . ($res['job_id'] ?? 'unknown'));
+    }
+
+    /**
+     * Per-product media recovery and orphan cleanup commands (P011.11).
+     *
+     * Usage:
+     *   wp wpe media report [--limit=<int>]
+     *   wp wpe media clean-uploads [--limit=<int>]
+     *   wp wpe media delete-file <asset-id>
+     */
+    public static function media(array $args, array $assocArgs): void
+    {
+        $sub = $args[0] ?? 'report';
+        $cleanup = new \WPE\Application\Media\OrphanCleanup();
+        $limit = isset($assocArgs['limit']) ? max(1, (int)$assocArgs['limit']) : 100;
+
+        if ($sub === 'report') {
+            $report = $cleanup->report();
+            \WP_CLI::log(json_encode($report, JSON_PRETTY_PRINT));
+            return;
+        }
+
+        if ($sub === 'clean-uploads') {
+            $res = $cleanup->cleanStaleUploads(null, $limit);
+            \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+            \WP_CLI::success("Cleaned {$res['cleaned']} stale upload intents.");
+            return;
+        }
+
+        if ($sub === 'delete-file') {
+            $assetId = isset($args[1]) ? (int)$args[1] : 0;
+            if ($assetId <= 0) {
+                \WP_CLI::error('Usage: wp wpe media delete-file <asset-id>');
+                return;
+            }
+            try {
+                $res = $cleanup->deleteFile($assetId);
+                \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+                \WP_CLI::success("Deleted managed file for asset {$assetId}.");
+            } catch (\Throwable $e) {
+                \WP_CLI::error($e->getMessage());
+            }
+            return;
+        }
+
+        \WP_CLI::error("Unknown media subcommand '{$sub}'. Use: report, clean-uploads, delete-file.");
     }
 }

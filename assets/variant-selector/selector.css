@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   font-size: 0.95rem;
 }
 
@@ -27,15 +27,36 @@
   margin-left: 0.5rem;
 }
 
+/* Help Text below Attribute Label (§4) */
+.wpe-option-help-text {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #555;
+  margin: 0.15rem 0 0.5rem 0;
+}
+
+.wpe-option-help-text:empty {
+  display: none;
+  margin: 0;
+}
+
+/* Single Price Display: Hide secondary variation price below options (§2) */
+.wpe-single-price-active .woocommerce-variation-price,
+.wpe-single-price-active .single_variation .price {
+  display: none !important;
+}
+
 /* Swatches Group */
 .wpe-swatches {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: center;
+  align-items: stretch;
+  max-width: 100%;
 }
 
-/* Base Swatch Button */
+/* Base Swatch Button & Button Selector (§5) */
 .wpe-swatch {
   position: relative;
   display: inline-flex;
@@ -43,26 +64,29 @@
   justify-content: center;
   min-width: 2.5rem;
   min-height: 2.5rem;
+  max-width: 100%;
   padding: 0.35rem 0.75rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   background-color: #fff;
   color: #222;
   font-size: 0.875rem;
-  line-height: 1.2;
+  line-height: 1.25;
   cursor: pointer;
   text-decoration: none;
+  text-align: center;
+  word-break: break-word;
   transition: all 0.15s ease-in-out;
   user-select: none;
   box-sizing: border-box;
 }
 
-.wpe-swatch:hover:not([aria-disabled="true"]):not(.is-disabled) {
+.wpe-swatch:hover:not([aria-disabled="true"]):not(.is-disabled):not(.is-selected):not([aria-checked="true"]) {
   border-color: #555;
   background-color: #f9f9f9;
 }
 
-/* Selected State */
+/* Selected State (not communicated by color alone) */
 .wpe-swatch[aria-checked="true"],
 .wpe-swatch.is-selected {
   border: 2px solid #0071a1;
@@ -78,40 +102,59 @@
   outline-offset: 2px;
 }
 
-/* Disabled / Impossible Value State */
+/* Disabled / Unavailable Value Base State (§8) */
 .wpe-swatch[aria-disabled="true"],
-.wpe-swatch.is-disabled {
+.wpe-swatch.is-disabled,
+.wpe-swatch.is-unavailable {
   opacity: 0.45;
   cursor: not-allowed;
   border-color: #ddd;
   background-color: #f5f5f5;
-  color: #999;
+  color: #777;
 }
 
-.wpe-swatch[aria-disabled="true"]::after,
-.wpe-swatch.is-disabled::after {
+/* Mark Unavailable Options enabled: diagonal cross-out while keeping text/thumbnail legible (§8) */
+.wpe-swatch.is-marked-unavailable::after,
+.wpe-swatch[aria-disabled="true"]:not(.is-disabled-standard)::after,
+.wpe-swatch.is-disabled:not(.is-disabled-standard)::after {
   content: "";
   position: absolute;
   top: 50%;
-  left: 0;
-  right: 0;
+  left: 3px;
+  right: 3px;
   height: 1.5px;
   background-color: #d63638;
-  transform: rotate(-35deg);
+  transform: rotate(-28deg);
   pointer-events: none;
 }
 
-/* Color Swatch */
+/* Mark Unavailable Options disabled: standard disabled state without extra decoration (§8) */
+.wpe-swatch.is-disabled-standard::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Color Swatch (§6): pure circular swatch with no visible text label next to the circle */
 .wpe-swatch-color {
-  padding: 0.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
+  padding: 3px;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  aspect-ratio: 1 / 1;
+  border-radius: 50% !important;
+  flex: 0 0 2.25rem;
+}
+
+.wpe-swatch-color:not(.wpe-swatch-color-fallback) .wpe-swatch-label {
+  display: none !important;
 }
 
 .wpe-swatch-color[aria-checked="true"],
 .wpe-swatch-color.is-selected {
-  border-radius: 50%;
+  border-radius: 50% !important;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0071a1;
 }
 
 .wpe-swatch-color-bubble {
@@ -119,28 +162,89 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
 }
 
-/* Image Swatch */
+/* Contrasting border so white/light colors remain visible on light backgrounds (§6) */
+.wpe-swatch-color-bubble.is-light-swatch {
+  border: 1.5px solid #787c82;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Color Swatch fallback to named button when hex color code is missing (§6) */
+.wpe-swatch-color.wpe-swatch-color-fallback {
+  width: auto;
+  height: auto;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  aspect-ratio: auto;
+  flex: 0 1 auto;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px !important;
+}
+
+.wpe-swatch-color.wpe-swatch-color-fallback[aria-checked="true"],
+.wpe-swatch-color.wpe-swatch-color-fallback.is-selected {
+  border-radius: 4px !important;
+  background-color: #f0f7fb;
+  box-shadow: 0 0 0 1px #0071a1;
+}
+
+/* Suppress competing duplicate theme option buttons when WPE selector controls the form */
+.variations_form:has(.wpe-swatches, .wpe-select, .wpe-selector-instance-config) .starterkit-live-options,
+.wpe-product-instance .starterkit-live-options {
+  display: none !important;
+}
+
+/* Image Swatch: always displays thumbnail + value label (§7) */
 .wpe-swatch-image {
-  padding: 2px;
-  width: 3rem;
-  height: 3rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  width: auto;
+  min-width: 4.25rem;
+  max-width: 6.75rem;
+  height: auto;
+  border-radius: 6px;
   overflow: hidden;
 }
 
-.wpe-swatch-image img {
-  width: 100%;
-  height: 100%;
+.wpe-swatch-image-wrap,
+.wpe-swatch-image-media {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #f6f7f7;
+}
+
+.wpe-swatch-image img,
+.wpe-swatch-image-thumb {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
-  border-radius: 2px;
+  border-radius: 3px;
   display: block;
 }
 
-/* Screen-Reader Only text (Accessible labels, color not sole signal) */
-.wpe-sr-only {
+.wpe-swatch-image-label {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Screen-Reader Only text & Hidden Native Select (single control per attribute, §9) */
+.wpe-sr-only,
+.wpe-select-hidden {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -216,4 +320,19 @@
 
 .wpe-variant-selector[aria-busy="true"] .wpe-loading-indicator {
   display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .wpe-swatches {
+    gap: 0.4rem;
+  }
+  .wpe-swatch {
+    min-height: 2.35rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8125rem;
+  }
+  .wpe-swatch-image {
+    min-width: 3.75rem;
+    max-width: 5.5rem;
+  }
 }

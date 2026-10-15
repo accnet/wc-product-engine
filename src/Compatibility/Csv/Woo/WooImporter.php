@@ -580,15 +580,25 @@ class WooImporter
 
                         $this->productRepo->update($productId, ['variations' => [$vPayload]]);
 
-                        // Fetch updated/created variant ID
-                        $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
-                            "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s",
-                            $productId,
-                            $vSku
-                        ), ARRAY_A);
+                        // Fetch updated/created variant ID without colliding on empty SKU
+                        if ($vId !== null) {
+                            $savedVariantId = $vId;
+                        } elseif ($vSku !== null && $vSku !== '') {
+                            $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                                $productId,
+                                $vSku
+                            ), ARRAY_A);
+                            $savedVariantId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                        } else {
+                            $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
+                                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+                                $productId
+                            ), ARRAY_A);
+                            $savedVariantId = $savedVariant ? (int)$savedVariant['id'] : 0;
+                        }
 
-                        if ($savedVariant) {
-                            $savedVariantId = (int)$savedVariant['id'];
+                        if ($savedVariantId > 0) {
                             $createdVariants[] = $savedVariantId;
 
                             // Assign option values combination

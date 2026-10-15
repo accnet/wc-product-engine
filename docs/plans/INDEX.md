@@ -11,3 +11,4 @@
 - P009 — Mirror worker epoch follows the authority epoch the mirror reads (OD-14) (done)
 - P010 — Two-block product management UI (done)
 - P011 — Per-product media library and variant image picker (in_progress)
+- P012 — Settings Product Page price display and variant selector (done)

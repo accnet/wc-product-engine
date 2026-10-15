@@ -39,6 +39,8 @@ class MediaLegacyWriterGuardTest
     {
         echo "Running media legacy writer guard tests...\n";
         wp_set_current_user(1);
+        $priorMode = get_option('wpe_editor_mode', '__unset__');
+        update_option('wpe_editor_mode', ProductEditorBridge::MODE_BLOCKS);
         $this->post    = $_POST;
         $this->request = $_REQUEST;
         try {
@@ -52,6 +54,11 @@ class MediaLegacyWriterGuardTest
         } finally {
             $_POST    = $this->post;
             $_REQUEST = $this->request;
+            if ($priorMode === '__unset__' || $priorMode === false) {
+                delete_option('wpe_editor_mode');
+            } else {
+                update_option('wpe_editor_mode', $priorMode);
+            }
             $this->cleanup();
         }
     }

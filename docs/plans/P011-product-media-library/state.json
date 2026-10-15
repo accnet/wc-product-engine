@@ -819,8 +819,48 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "5b69bb992364cc3c8669d60a80c15d6608cfde84f25493e81444b17575bf0f00",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019720810-073ceabb.log",
+          "time": "2026-10-14T23:15:20.811Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "5b69bb992364cc3c8669d60a80c15d6608cfde84f25493e81444b17575bf0f00",
+          "output_sha256": "9289846fbb2992db3c6999472fbed0e9a43fd43b609b617ede08beafdbddf66d",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019730352-da9b8439.log",
+          "time": "2026-10-14T23:15:30.352Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "5b69bb992364cc3c8669d60a80c15d6608cfde84f25493e81444b17575bf0f00",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019730437-7ed9bf99.log",
+          "time": "2026-10-14T23:15:30.437Z"
+        }
+      ],
+      "started_at": "2026-10-14T23:15:20.696Z"
     },
     {
       "id": "P011.10",
@@ -856,8 +896,60 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "f2d6d19697cd71496593c33e6ed24ed0a6fceec42fc7f2992da67b66e905c02f",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019739103-62771e5c.log",
+          "time": "2026-10-14T23:15:39.103Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantImagePickerLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "f2d6d19697cd71496593c33e6ed24ed0a6fceec42fc7f2992da67b66e905c02f",
+          "output_sha256": "61a5fbe4c3ef881db199de940edd4f4faf00b5632fcb56e33199ead8a5154f1d",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019748853-ea314a79.log",
+          "time": "2026-10-14T23:15:48.853Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "f2d6d19697cd71496593c33e6ed24ed0a6fceec42fc7f2992da67b66e905c02f",
+          "output_sha256": "9289846fbb2992db3c6999472fbed0e9a43fd43b609b617ede08beafdbddf66d",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019757014-4701a5c0.log",
+          "time": "2026-10-14T23:15:57.015Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "f2d6d19697cd71496593c33e6ed24ed0a6fceec42fc7f2992da67b66e905c02f",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019757097-b9ae8fea.log",
+          "time": "2026-10-14T23:15:57.097Z"
+        }
+      ],
+      "started_at": "2026-10-14T23:15:39.012Z"
     },
     {
       "id": "P011.11",
@@ -909,8 +1001,72 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "6ad81e4987ebbf364b54e6117baf8e7221b27009dd2986fea1b96d74683c5438",
+          "output_sha256": "3bc71912ec1cda15fdc806d3df698e3d00e2d09ff5936dfbd06c1788abc57167",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019773143-222b3e66.log",
+          "time": "2026-10-14T23:16:13.143Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MediaRecoveryTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "6ad81e4987ebbf364b54e6117baf8e7221b27009dd2986fea1b96d74683c5438",
+          "output_sha256": "4107fd67631da1181802d3ce08080c510972e4a2a532361b93e8af07b2c945f5",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019773758-b2f560ae.log",
+          "time": "2026-10-14T23:16:13.759Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "6ad81e4987ebbf364b54e6117baf8e7221b27009dd2986fea1b96d74683c5438",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019776746-b9ee016d.log",
+          "time": "2026-10-14T23:16:16.746Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "a444407eb68a4d699ac723955c39c20ed2c58174",
+          "content_digest": "6ad81e4987ebbf364b54e6117baf8e7221b27009dd2986fea1b96d74683c5438",
+          "output_sha256": "c3fd71d2411363cf79836baeeac69ebd39e2c3b970ee7247bce6f00dbcf1015c",
+          "output_path": "docs/plans/P011-product-media-library/command-1792019776828-d594e4b3.log",
+          "time": "2026-10-14T23:16:16.829Z"
+        }
+      ],
+      "started_at": "2026-10-14T23:16:13.054Z"
     },
     {
       "id": "P011.12",

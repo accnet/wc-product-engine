@@ -39,6 +39,7 @@ class ProductEditorServiceTest
             $this->testConcurrencyConflictDetection();
             $this->testParentStockGuard();
             $this->testLegacyMirrorProjection();
+            $this->testOptionDisplayTypeHelpTextAndColorSwatches();
             $this->tearDown();
 
             echo "All ProductEditorService tests passed successfully!\n";
@@ -68,6 +69,15 @@ class ProductEditorServiceTest
             if (!empty($variantIds)) {
                 $idList = implode(',', array_map('intval', $variantIds));
                 $this->wpdb->query("DELETE FROM {$prefix}wpe_inventory WHERE owner_id IN ({$idList})");
+            }
+            $optionIds = $this->wpdb->get_col($this->wpdb->prepare(
+                "SELECT id FROM {$prefix}wpe_options WHERE product_id = %d",
+                $id
+            ));
+            if (!empty($optionIds)) {
+                $optList = implode(',', array_map('intval', $optionIds));
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_values WHERE option_id IN ({$optList})");
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_option_values WHERE option_id IN ({$optList})");
             }
             $this->wpdb->delete("{$prefix}wpe_inventory", ['owner_id' => $id]);
             $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $id]);
@@ -356,6 +366,97 @@ class ProductEditorServiceTest
         echo " OK\n";
     }
 
+    public function testOptionDisplayTypeHelpTextAndColorSwatches(): void
+    {
+        echo " - testOptionDisplayTypeHelpTextAndColorSwatches...";
+        $productId = $this->createTestProduct();
+        $initial = $this->service->getProductEditorData($productId);
+        $version = $initial['product']['version'];
+
+        $payload = [
+            'expected_version' => $version,
+            'variation_options' => [
+                [
+                    'name'         => 'Shade',
+                    'position'     => 0,
+                    'display_type' => 'color',
+                    'help_text'    => 'Pick your preferred shade',
+                    'values'       => [
+                        ['label' => 'Pure White', 'position' => 0, 'color' => '#FFFFFF'],
+                        ['label' => 'Obsidian', 'position' => 1, 'color' => '#111827'],
+                        ['label' => 'No Hex Fallback', 'position' => 2, 'color' => ''],
+                    ],
+                ],
+                [
+                    'name'         => 'Fit',
+                    'position'     => 1,
+                    'display_type' => 'button',
+                    'help_text'    => 'Choose your fit (<script>alert(1)</script>)',
+                    'values'       => [
+                        ['label' => 'Regular', 'position' => 0],
+                        ['label' => 'Oversized', 'position' => 1],
+                    ],
+                ],
+            ],
+            'variations' => [
+                [
+                    'combination'   => ['Shade' => 'Pure White', 'Fit' => 'Regular'],
+                    'sku'           => 'TEST-SHADE-WHT-' . uniqid(),
+                    'regular_price' => 30.00,
+                    'status'        => 'publish',
+                ],
+            ],
+        ];
+
+        $res = $this->service->saveProductVariants($productId, $payload);
+        assert($res['success'] === true, 'Saving option UI and color swatches must succeed');
+
+        $reloaded = $this->service->getProductEditorData($productId);
+        $opts = $reloaded['variation_options'];
+        assert(count($opts) === 2, 'Must reload 2 variation options');
+
+        assert($opts[0]['name'] === 'Shade', 'First option must be Shade');
+        assert($opts[0]['display_type'] === 'color', 'Shade display_type must be color');
+        assert($opts[0]['help_text'] === 'Pick your preferred shade', 'Shade help_text must match');
+        assert($opts[0]['values'][0]['color'] === '#ffffff', 'Pure White hex must be normalized to #ffffff');
+        assert($opts[0]['values'][1]['color'] === '#111827', 'Obsidian hex must be #111827');
+        assert($opts[0]['values'][2]['color'] === '', 'Empty hex must remain empty string for button fallback');
+
+        assert($opts[1]['name'] === 'Fit', 'Second option must be Fit');
+        assert($opts[1]['display_type'] === 'button', 'Fit display_type must be button');
+        assert(!str_contains($opts[1]['help_text'], '<script>'), 'Fit help_text must be sanitized');
+
+        // Update existing value color to empty and change display_type to image
+        $payloadUpdate = [
+            'expected_version' => $reloaded['product']['version'],
+            'variation_options' => [
+                [
+                    'id'           => $opts[0]['id'],
+                    'name'         => 'Shade',
+                    'position'     => 0,
+                    'display_type' => 'image',
+                    'help_text'    => '',
+                    'values'       => [
+                        ['id' => $opts[0]['values'][0]['id'], 'label' => 'Pure White', 'position' => 0, 'color' => ''],
+                        ['id' => $opts[0]['values'][1]['id'], 'label' => 'Obsidian', 'position' => 1, 'color' => '#223344'],
+                        ['id' => $opts[0]['values'][2]['id'], 'label' => 'No Hex Fallback', 'position' => 2, 'color' => '#abcdef'],
+                    ],
+                ],
+                $opts[1],
+            ],
+            'variations' => $reloaded['variations'],
+        ];
+        $this->service->saveProductVariants($productId, $payloadUpdate);
+        $reloaded2 = $this->service->getProductEditorData($productId);
+        assert($reloaded2['variation_options'][0]['display_type'] === 'image', 'Updated display_type must be image');
+        assert($reloaded2['variation_options'][0]['help_text'] === '', 'Cleared help_text must be empty');
+        assert($reloaded2['variation_options'][0]['values'][0]['color'] === '', 'Cleared value color must be empty');
+        assert($reloaded2['variation_options'][0]['values'][1]['color'] === '#223344', 'Updated value color must be #223344');
+        assert($reloaded2['variation_options'][0]['values'][2]['color'] === '#abcdef', 'Newly set value color must be #abcdef');
+
+        echo " OK\n";
+    }
+
     public function testLegacyMirrorProjection(): void
     {
         echo " - testLegacyMirrorProjection...";
@@ -371,6 +472,25 @@ class ProductEditorServiceTest
 
         $price = get_post_meta($variantId, '_regular_price', true);
         assert($price !== '', 'Regular price meta should exist in WP postmeta');
+
+        // Verify setting a default_value on option projects _default_attributes to wp_postmeta
+        $opts = $data['variation_options'];
+        $firstValLabel = $opts[0]['values'][0]['label'];
+        $optSlug = sanitize_title($opts[0]['name']);
+        $opts[0]['default_value'] = $firstValLabel;
+        unset($opts[0]['default_value_id']);
+        $varsPayload = array_map(static function (array $v): array {
+            unset($v['inventory_mode']);
+            return $v;
+        }, $data['variations']);
+        $resDef = $this->service->saveProductVariants($productId, [
+            'expected_version'  => $data['product']['version'],
+            'variation_options' => $opts,
+            'variations'        => $varsPayload,
+        ]);
+        assert($resDef['success'] === true, 'Saving default_value on option must succeed');
+        $defAttrs = get_post_meta($productId, '_default_attributes', true);
+        assert(is_array($defAttrs) && ($defAttrs[$optSlug] ?? '') === $firstValLabel, '_default_attributes postmeta must be projected with default value');
 
         echo " OK\n";
     }

@@ -291,10 +291,10 @@ class ProductRepository
             $newVersion = $currentVersion + 1;
 
             // Price validation
-            $regularPrice = isset($data['regular_price'])
+            $regularPrice = array_key_exists('regular_price', $data)
                 ? $this->validatePrice($data['regular_price'], 'regular_price')
                 : $current['regular_price'];
-            $salePrice = isset($data['sale_price'])
+            $salePrice = array_key_exists('sale_price', $data)
                 ? $this->validatePrice($data['sale_price'], 'sale_price')
                 : $current['sale_price'];
 
@@ -781,44 +781,59 @@ class ProductRepository
         }
         $combHex = hash('sha256', $canonicalAttrs);
 
-        // Insert or update variant row
-        $sql = "INSERT INTO {$this->tableVariants}
-                (id, product_id, status, sku, combination_key, active_combination_key, regular_price, sale_price, sale_from, sale_to, tax_class, virtual, downloadable, weight, length, width, height, shipping_class_id, description, stock_owner_id, position, extra_props, version, created_at, updated_at, deleted_at)
-                VALUES (%d, %d, %s, %s, UNHEX(%s), UNHEX(%s), %s, %s, %s, %s, %s, %d, %d, %s, %s, %s, %s, %d, %s, %d, %d, %s, %d, %s, %s, NULL)
-                ON DUPLICATE KEY UPDATE
-                status = VALUES(status), sku = VALUES(sku), combination_key = VALUES(combination_key), active_combination_key = VALUES(active_combination_key),
-                regular_price = VALUES(regular_price), sale_price = VALUES(sale_price), tax_class = VALUES(tax_class),
-                virtual = VALUES(virtual), downloadable = VALUES(downloadable), weight = VALUES(weight), length = VALUES(length),
-                width = VALUES(width), height = VALUES(height), description = VALUES(description), position = VALUES(position),
-                extra_props = VALUES(extra_props), version = VALUES(version), updated_at = VALUES(updated_at), deleted_at = NULL";
+        // Insert or update variant row preserving SQL NULL for nullable fields
+        $variantRowData = [
+            'product_id'        => $productId,
+            'status'            => $status,
+            'sku'               => ($vSku !== null && $vSku !== '') ? $vSku : null,
+            'regular_price'     => $vRegularPrice,
+            'sale_price'        => $vSalePrice,
+            'sale_from'         => $vData['sale_from'] ?? null,
+            'sale_to'           => $vData['sale_to'] ?? null,
+            'tax_class'         => $vData['tax_class'] ?? null,
+            'virtual'           => !empty($vData['virtual']) ? 1 : 0,
+            'downloadable'      => !empty($vData['downloadable']) ? 1 : 0,
+            'weight'            => $vData['weight'] ?? null,
+            'length'            => $vData['length'] ?? null,
+            'width'             => $vData['width'] ?? null,
+            'height'            => $vData['height'] ?? null,
+            'shipping_class_id' => $vData['shipping_class_id'] ?? null,
+            'description'       => $vData['description'] ?? '',
+            'stock_owner_id'    => $variantId,
+            'position'          => (int)($vData['position'] ?? 0),
+            'extra_props'       => json_encode($vData['extra_props'] ?? [], JSON_UNESCAPED_UNICODE),
+            'version'           => $vVersion,
+            'updated_at'        => $now,
+            'deleted_at'        => null,
+        ];
+
+        if ($existing) {
+            $saveVariantRes = $this->wpdb->update(
+                $this->tableVariants,
+                $variantRowData,
+                ['id' => $variantId]
+            );
+        } else {
+            $variantRowData['id'] = $variantId;
+            $variantRowData['combination_key'] = str_repeat("\0", 32);
+            $variantRowData['created_at'] = $now;
+            $saveVariantRes = $this->wpdb->insert(
+                $this->tableVariants,
+                $variantRowData
+            );
+        }
+
+        if ($saveVariantRes === false) {
+            throw new RuntimeException("Failed to save variant row: " . $this->wpdb->last_error);
+        }
 
         $this->wpdb->query($this->wpdb->prepare(
-            $sql,
-            $variantId,
-            $productId,
-            $status,
-            $vSku,
+            "UPDATE {$this->tableVariants}
+             SET combination_key = UNHEX(%s), active_combination_key = UNHEX(%s)
+             WHERE id = %d",
             $combHex,
             $combHex,
-            $vRegularPrice,
-            $vSalePrice,
-            $vData['sale_from'] ?? null,
-            $vData['sale_to'] ?? null,
-            $vData['tax_class'] ?? null,
-            !empty($vData['virtual']) ? 1 : 0,
-            !empty($vData['downloadable']) ? 1 : 0,
-            $vData['weight'] ?? null,
-            $vData['length'] ?? null,
-            $vData['width'] ?? null,
-            $vData['height'] ?? null,
-            $vData['shipping_class_id'] ?? null,
-            $vData['description'] ?? '',
-            $variantId,
-            (int)($vData['position'] ?? 0),
-            json_encode($vData['extra_props'] ?? [], JSON_UNESCAPED_UNICODE),
-            $vVersion,
-            $now,
-            $now
+            $variantId
         ));
 
         // Variant inventory
