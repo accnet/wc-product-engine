@@ -13,4 +13,6 @@
 - P011 — Per-product media library and variant image picker (in_progress)
 - P012 — Settings Product Page price display and variant selector (done)
 - P013 — Architecture hardening: DI, singletons, assets, capabilities (in_progress)
-- P014 — P013 amendment: assets, capabilities, bootstrap cleanup and closeout (in_progress)
+- P014 — P013 amendment: assets, capabilities, bootstrap cleanup and closeout (done)
+- P015 — Shopify CSV import performance (in_progress)
+- P016 — P015 amendment: test DB variable and narrowed D03 (done)

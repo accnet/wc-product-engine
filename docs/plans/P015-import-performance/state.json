@@ -1,0 +1,281 @@
+{
+  "id": "P015",
+  "title": "Shopify CSV import performance",
+  "status": "in_progress",
+  "content_hash": "b08ec96ba98b5f95df803e1de27cab5353a1ca4deed6f41e83b66091974871b2",
+  "tasks": [
+    {
+      "id": "P015.1",
+      "title": "Import benchmark harness on a test_* database and baseline numbers",
+      "depends_on": [],
+      "read_first": [
+        "docs/07-testing.md",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+      ],
+      "files": [
+        "tests/performance/ImportBenchmark.php",
+        "tests/performance/use-test-db.php",
+        "docs/plans/P015-import-performance/plan.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/performance/ImportBenchmark.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/performance/use-test-db.php"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/performance/ImportBenchmark.php"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "ff2e7c0fece1e6c0f867fd5775be8ec79a8db277d15e846df72a4de8916d7a7f",
+          "output_sha256": "8c5d6bd3085403ab49c8ab3556a42ff0f91969876cc921ccec1bb9e5555071d5",
+          "output_path": "docs/plans/P015-import-performance/command-1795127867201-0519cdc1.log",
+          "time": "2026-11-19T22:37:47.201Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/performance/use-test-db.php"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "ff2e7c0fece1e6c0f867fd5775be8ec79a8db277d15e846df72a4de8916d7a7f",
+          "output_sha256": "9601200a14823db455e8e6202d3b1acada03bb09f917143f85629cd9a10ca442",
+          "output_path": "docs/plans/P015-import-performance/command-1795127867288-456af7b4.log",
+          "time": "2026-11-19T22:37:47.289Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "ff2e7c0fece1e6c0f867fd5775be8ec79a8db277d15e846df72a4de8916d7a7f",
+          "output_sha256": "330c9ca9674c1fbd23dd38f8b8e30ed9385ccccaa8d9321741e2af31d0f08bad",
+          "output_path": "docs/plans/P015-import-performance/command-1795127867378-d37b3455.log",
+          "time": "2026-11-19T22:37:47.379Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/performance/ImportBenchmark.php"
+          ],
+          "exit_code": 0,
+          "commit": "bca23d8df684f22aa80220ccda0229e47965904f",
+          "content_digest": "26e775d8e07a9bb51fab359eb222ab61a078a2290b5b7f82e4038cd5ad46e67d",
+          "output_sha256": "8c5d6bd3085403ab49c8ab3556a42ff0f91969876cc921ccec1bb9e5555071d5",
+          "output_path": "docs/plans/P015-import-performance/command-1795129545629-1a0cd927.log",
+          "time": "2026-11-19T23:05:45.629Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/performance/use-test-db.php"
+          ],
+          "exit_code": 0,
+          "commit": "bca23d8df684f22aa80220ccda0229e47965904f",
+          "content_digest": "26e775d8e07a9bb51fab359eb222ab61a078a2290b5b7f82e4038cd5ad46e67d",
+          "output_sha256": "9601200a14823db455e8e6202d3b1acada03bb09f917143f85629cd9a10ca442",
+          "output_path": "docs/plans/P015-import-performance/command-1795129545712-1805fcd3.log",
+          "time": "2026-11-19T23:05:45.712Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "bca23d8df684f22aa80220ccda0229e47965904f",
+          "content_digest": "26e775d8e07a9bb51fab359eb222ab61a078a2290b5b7f82e4038cd5ad46e67d",
+          "output_sha256": "4d954fbd5ece9177ed60f48310802fabdb4892122543bcd03ec9b68b644c5694",
+          "output_path": "docs/plans/P015-import-performance/command-1795129545798-26de5e0b.log",
+          "time": "2026-11-19T23:05:45.798Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:37:43.757Z"
+    },
+    {
+      "id": "P015.2",
+      "title": "Per-request DNS cache and asset lookup before validation",
+      "depends_on": [
+        "P015.1"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Compatibility/Gallery/AssetService.php"
+      ],
+      "files": [
+        "src/Compatibility/Gallery/AssetService.php",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Gallery/AssetService.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P015.3",
+      "title": "Request cache for product options in OptionsRepository",
+      "depends_on": [
+        "P015.2"
+      ],
+      "read_first": [
+        "src/Infrastructure/Database/OptionsRepository.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/OptionsRepository.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/OptionsRepository.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/VariantsRulesTest.php"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P015.4",
+      "title": "One repository write per product and SKU lookup through the registry",
+      "depends_on": [
+        "P015.3"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Infrastructure/Database/ProductRepository.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/ProductRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/VariantsRulesTest.php"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P015.5",
+      "title": "After benchmark, idempotency re-run, notes and report",
+      "depends_on": [
+        "P015.4"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P015-import-performance/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "b08ec96ba98b5f95df803e1de27cab5353a1ca4deed6f41e83b66091974871b2"
+}
