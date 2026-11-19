@@ -710,6 +710,18 @@ class ShopifyBatchImporter
     private function importSingleProductGroup(array $group, string $updateMode): array
     {
         $this->productAssetCache = [];
+        // Options are written only through optionsRepo while a product is imported,
+        // so its per-product read cache stays consistent (P015 D06).
+        $this->optionsRepo->enableOptionsCache();
+        try {
+            return $this->importProductGroup($group, $updateMode);
+        } finally {
+            $this->optionsRepo->disableOptionsCache();
+        }
+    }
+
+    private function importProductGroup(array $group, string $updateMode): array
+    {
         $handle = $group['handle'];
 
         // Determine Product Type: Simple vs Variable

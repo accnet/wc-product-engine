@@ -253,8 +253,79 @@
           "tests/integration/VariantsRulesTest.php"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/OptionsRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "ffedda8ab4c72311a9891d00f7c0bdc0f69d4028",
+          "content_digest": "c4f39c973c45e855ba1a39865ef7a0c1520ce6b5425626a601a98544e7a08239",
+          "output_sha256": "980b8b75a7fd062652aab3664ccb4caf03ad1da40979528a3a993dde4e518a1a",
+          "output_path": "docs/plans/P015-import-performance/command-1795129831498-ebce42fd.log",
+          "time": "2026-11-19T23:10:31.499Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "ffedda8ab4c72311a9891d00f7c0bdc0f69d4028",
+          "content_digest": "c4f39c973c45e855ba1a39865ef7a0c1520ce6b5425626a601a98544e7a08239",
+          "output_sha256": "9a457370f977eab5d5d055b40087b87ea13b179bf81d2566067f4f4446edcd01",
+          "output_path": "docs/plans/P015-import-performance/command-1795129841656-1c9121ec.log",
+          "time": "2026-11-19T23:10:41.657Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "ffedda8ab4c72311a9891d00f7c0bdc0f69d4028",
+          "content_digest": "c4f39c973c45e855ba1a39865ef7a0c1520ce6b5425626a601a98544e7a08239",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P015-import-performance/command-1795129848489-b8c93175.log",
+          "time": "2026-11-19T23:10:48.490Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/VariantsRulesTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "ffedda8ab4c72311a9891d00f7c0bdc0f69d4028",
+          "content_digest": "c4f39c973c45e855ba1a39865ef7a0c1520ce6b5425626a601a98544e7a08239",
+          "output_sha256": "9d09c3557806cb27e527513eeef45d7a5e78dbde433f00f2e9e3c8990055b0ea",
+          "output_path": "docs/plans/P015-import-performance/command-1795129849720-0b270b49.log",
+          "time": "2026-11-19T23:10:49.720Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/VariantsRulesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "ffedda8ab4c72311a9891d00f7c0bdc0f69d4028",
+          "content_digest": "c4f39c973c45e855ba1a39865ef7a0c1520ce6b5425626a601a98544e7a08239",
+          "output_sha256": "59e47027ea754f74275fdfc14bb6148a36541f903e4a62b204869eae826afe6c",
+          "output_path": "docs/plans/P015-import-performance/command-1795129895168-f28027ff.log",
+          "time": "2026-11-19T23:11:35.168Z"
+        }
+      ],
+      "started_at": "2026-11-19T23:08:18.376Z"
     },
     {
       "id": "P015.4",

@@ -36,6 +36,15 @@ class OptionsRepository
     private string $tableVariants;
     private string $tableProducts;
 
+    /**
+     * Opt-in per-product cache for getOptionsByProductId() (P015 D06).
+     * null = disabled (default). Enabled only by callers that write options
+     * exclusively through this repository, e.g. the Shopify batch importer.
+     *
+     * @var array<int, array>|null
+     */
+    private ?array $optionsCache = null;
+
     public function __construct(?\wpdb $wpdb = null)
     {
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
@@ -49,11 +58,33 @@ class OptionsRepository
     }
 
     /**
+     * Start caching getOptionsByProductId() results until disableOptionsCache().
+     * Every option or option-value write through this class clears the cache.
+     */
+    public function enableOptionsCache(): void
+    {
+        $this->optionsCache = [];
+    }
+
+    public function disableOptionsCache(): void
+    {
+        $this->optionsCache = null;
+    }
+
+    private function forgetOptionsCache(): void
+    {
+        if ($this->optionsCache !== null) {
+            $this->optionsCache = [];
+        }
+    }
+
+    /**
      * Create an option for a product.
      * Does NOT generate variants in wpe_variants (R27).
      */
     public function createOption(int $productId, array $data): array
     {
+        $this->forgetOptionsCache();
         $key = sanitize_title($data['key'] ?? $data['name'] ?? '');
         if ($key === '') {
             throw new InvalidArgumentException("Option key or name cannot be empty.");
@@ -124,6 +155,7 @@ class OptionsRepository
      */
     public function updateOption(int $optionId, array $data): array
     {
+        $this->forgetOptionsCache();
         $current = $this->getOptionById($optionId);
         if (!$current) {
             throw new RuntimeException("Option not found: {$optionId}");
@@ -203,6 +235,18 @@ class OptionsRepository
      */
     public function getOptionsByProductId(int $productId): array
     {
+        if ($this->optionsCache !== null && isset($this->optionsCache[$productId])) {
+            return $this->optionsCache[$productId];
+        }
+        $options = $this->loadOptionsByProductId($productId);
+        if ($this->optionsCache !== null) {
+            $this->optionsCache[$productId] = $options;
+        }
+        return $options;
+    }
+
+    private function loadOptionsByProductId(int $productId): array
+    {
         $rows = $this->wpdb->get_results($this->wpdb->prepare(
             "SELECT * FROM {$this->tableOptions} WHERE product_id = %d ORDER BY position ASC, id ASC",
             $productId
@@ -241,6 +285,7 @@ class OptionsRepository
      */
     public function deleteOption(int $optionId): bool
     {
+        $this->forgetOptionsCache();
         $this->wpdb->delete($this->tableOptionValues, ['option_id' => $optionId]);
         $this->wpdb->delete($this->tableVariantValues, ['option_id' => $optionId]);
         $res = $this->wpdb->delete($this->tableOptions, ['id' => $optionId]);
@@ -254,6 +299,7 @@ class OptionsRepository
      */
     public function createOptionValue(int $optionId, array $data): array
     {
+        $this->forgetOptionsCache();
         $label = (string)($data['label'] ?? '');
 
         // Support empty string value_key distinctly from ANY (R26)
@@ -307,6 +353,7 @@ class OptionsRepository
      */
     public function updateOptionValue(int $valueId, array $data): array
     {
+        $this->forgetOptionsCache();
         $current = $this->getOptionValueById($valueId);
         if (!$current) {
             throw new RuntimeException("Option value not found: {$valueId}");
