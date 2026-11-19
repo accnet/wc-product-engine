@@ -765,7 +765,7 @@ class ShopifyBatchImporter
 
         // Create or update parent product
         if ($existingProductId !== null) {
-            $this->productRepo->update($existingProductId, $pPayload);
+            $this->productRepo->update($existingProductId, $pPayload, ['hydrate' => false]);
             $productId = $existingProductId;
         } else {
             $created = $this->productRepo->create($pPayload);
@@ -781,19 +781,29 @@ class ShopifyBatchImporter
 
         $variantsCreated = 0;
 
-        // If variable, sync options & variations
+        // If variable, sync options, then write every variation in one repository
+        // transaction (P015 D04): one version bump, one outbox event, no re-hydration.
         if ($isVariable) {
             $this->syncShopifyOptions($productId, $group['options']);
 
+            $existingByKey = $this->loadActiveVariantKeys($productId);
+            $skuIds = $this->resolveVariantIdsBySku(array_column($group['variants'], 'sku'));
+
+            // Rows that address the same variant (same SKU, else same attributes)
+            // collapse into one payload; the later row wins, as when each row was
+            // written separately.
+            $payloads = [];
+            $rowsByKey = [];
             foreach ($group['variants'] as $vIdx => $vData) {
                 if (!empty($vData['price_warning'])) {
                     $warnings[] = "Row {$vData['row_number']}: {$vData['price_warning']}";
                 }
 
                 $vSku = $vData['sku'];
-                $vId = ($vSku !== null && $vSku !== '') ? $this->resolveVariantIdBySku($vSku) : null;
+                $hasSku = $vSku !== null && $vSku !== '';
+                $vId = $hasSku ? ($skuIds[$vSku] ?? null) : null;
                 if ($vId === null && !empty($vData['attributes'])) {
-                    $vId = $this->resolveVariantIdByAttributes($productId, $vData['attributes']);
+                    $vId = $this->matchVariantByAttributes($productId, $vData['attributes'], $existingByKey);
                 }
 
                 $vPayload = [
@@ -808,41 +818,37 @@ class ShopifyBatchImporter
                     'position'       => $vIdx,
                     'attributes'     => $vData['attributes'],
                 ];
-
                 if ($vId !== null) {
                     $vPayload['id'] = $vId;
                 }
 
-                $this->productRepo->update($productId, ['variations' => [$vPayload]]);
+                $dedupeKey = $hasSku ? 'sku:' . $vSku : 'attr:' . $this->attributeSignature($vData['attributes']);
+                unset($payloads[$dedupeKey], $rowsByKey[$dedupeKey]);
+                $payloads[$dedupeKey] = $vPayload;
+                $rowsByKey[$dedupeKey] = $vData;
+            }
 
-                // Fetch updated/created variant ID without colliding on empty SKU
-                if ($vId !== null) {
-                    $savedVarId = $vId;
-                } elseif ($vSku !== null && $vSku !== '') {
-                    $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
-                        "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND sku = %s AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
-                        $productId,
-                        $vSku
-                    ), ARRAY_A);
-                    $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
-                } else {
-                    $savedVariant = $this->wpdb->get_row($this->wpdb->prepare(
-                        "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
-                        $productId
-                    ), ARRAY_A);
-                    $savedVarId = $savedVariant ? (int)$savedVariant['id'] : 0;
+            $saved = $this->productRepo->update(
+                $productId,
+                ['variations' => array_values($payloads)],
+                ['hydrate' => false]
+            );
+
+            $rows = array_values($rowsByKey);
+            foreach ($saved['variations'] as $i => $savedVariant) {
+                $savedVarId = (int)($savedVariant['id'] ?? 0);
+                $vData = $rows[$i] ?? null;
+                if ($savedVarId <= 0 || $vData === null) {
+                    continue;
+                }
+                $variantsCreated++;
+
+                if (!empty($vData['attributes'])) {
+                    $this->assignVariantCombinationVector($productId, $savedVarId, $vData['attributes']);
                 }
 
-                if ($savedVarId > 0) {
-                    $variantsCreated++;
-
-                    if (!empty($vData['attributes'])) {
-                        $this->assignVariantCombinationVector($productId, $savedVarId, $vData['attributes']);
-                    }
-
-                    if (!empty($vData['image_url'])) {
-                        $this->attachVariantImage($savedVarId, $vData['image_url'], $vData['row_number'] ?? 0, $warnings);
-                    }
+                if (!empty($vData['image_url'])) {
+                    $this->attachVariantImage($savedVarId, $vData['image_url'], $vData['row_number'] ?? 0, $warnings);
                 }
             }
         }
@@ -906,15 +912,6 @@ class ShopifyBatchImporter
         return null;
     }
 
-    private function resolveVariantIdBySku(string $sku): ?int
-    {
-        $v = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT id FROM {$this->tableVariants} WHERE sku = %s AND deleted_at IS NULL",
-            $sku
-        ), ARRAY_A);
-        return $v ? (int)$v['id'] : null;
-    }
-
     private function buildOptionSelections(int $productId, array $attributes): array
     {
         $options = $this->optionsRepo->getOptionsByProductId($productId);
@@ -938,40 +935,110 @@ class ShopifyBatchImporter
         return $selections;
     }
 
-    private function resolveVariantIdByAttributes(int $productId, array $attributes): ?int
+    /**
+     * Active variants of a product keyed by HEX(active_combination_key).
+     *
+     * @return array<string, int>
+     */
+    private function loadActiveVariantKeys(int $productId): array
+    {
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT id, HEX(active_combination_key) AS k FROM {$this->tableVariants}
+             WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key IS NOT NULL",
+            $productId
+        ), ARRAY_A);
+
+        $map = [];
+        foreach ((array)$rows as $r) {
+            $map[strtoupper((string)$r['k'])] = (int)$r['id'];
+        }
+        return $map;
+    }
+
+    /**
+     * Active variation ids for SKUs, in two indexed-or-batched queries.
+     *
+     * Exact SKUs are looked up through wpe_sku_registry (primary key). SKUs not
+     * found there fall back to one batched wpe_variants.sku lookup, which keeps
+     * the column's case-insensitive matching the importer always had (P015 D07).
+     *
+     * @param array<int, string|null> $skus
+     * @return array<string, int> SKU as given => variant id
+     */
+    private function resolveVariantIdsBySku(array $skus): array
+    {
+        $skus = array_values(array_unique(array_filter(
+            array_map(static fn($s) => $s === null ? '' : (string)$s, $skus),
+            static fn(string $s): bool => $s !== ''
+        )));
+        if (empty($skus)) {
+            return [];
+        }
+
+        $found = [];
+        $in = implode(',', array_fill(0, count($skus), '%s'));
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT r.normalized_sku AS sku, r.object_id AS id
+             FROM {$this->tableSkuRegistry} r
+             JOIN {$this->tableVariants} v ON v.id = r.object_id AND v.deleted_at IS NULL
+             WHERE r.object_kind = 'variation' AND r.normalized_sku IN ({$in})",
+            ...$skus
+        ), ARRAY_A);
+        foreach ((array)$rows as $r) {
+            $found[(string)$r['sku']] = (int)$r['id'];
+        }
+
+        $missing = array_values(array_diff($skus, array_keys($found)));
+        if (!empty($missing)) {
+            $in = implode(',', array_fill(0, count($missing), '%s'));
+            $rows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT sku, id FROM {$this->tableVariants} WHERE deleted_at IS NULL AND sku IN ({$in}) ORDER BY id ASC",
+                ...$missing
+            ), ARRAY_A);
+            foreach ((array)$rows as $r) {
+                foreach ($missing as $sku) {
+                    if (!isset($found[$sku]) && mb_strtolower($sku) === mb_strtolower((string)$r['sku'])) {
+                        $found[$sku] = (int)$r['id'];
+                    }
+                }
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Existing variant for an attribute set: by option-vector key, else by the
+     * attribute-hash key a variant gets before its vector is assigned.
+     *
+     * @param array<string, int> $existingByKey From loadActiveVariantKeys().
+     */
+    private function matchVariantByAttributes(int $productId, array $attributes, array $existingByKey): ?int
     {
         $selections = $this->buildOptionSelections($productId, $attributes);
         if (!empty($selections)) {
             try {
                 $vector = $this->optionsRepo->buildCombinationVector($productId, $selections);
-                $vectorHex = $this->optionsRepo->buildCombinationKey($vector);
-                $row = $this->wpdb->get_row($this->wpdb->prepare(
-                    "SELECT id FROM {$this->tableVariants}
-                     WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
-                     LIMIT 1",
-                    $productId,
-                    $vectorHex
-                ), ARRAY_A);
-                if ($row) {
-                    return (int)$row['id'];
+                $vectorHex = strtoupper($this->optionsRepo->buildCombinationKey($vector));
+                if (isset($existingByKey[$vectorHex])) {
+                    return $existingByKey[$vectorHex];
                 }
             } catch (\Throwable $e) {
-                // Fall back to attribute JSON hash check
+                // Fall back to the attribute hash below.
             }
         }
 
-        $attrs = $attributes;
-        ksort($attrs);
-        $attrHex = hash('sha256', json_encode($attrs, JSON_UNESCAPED_UNICODE));
-        $row = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT id FROM {$this->tableVariants}
-             WHERE product_id = %d AND deleted_at IS NULL AND active_combination_key = UNHEX(%s)
-             LIMIT 1",
-            $productId,
-            $attrHex
-        ), ARRAY_A);
+        $attrHex = strtoupper(hash('sha256', $this->attributeSignature($attributes)));
+        return $existingByKey[$attrHex] ?? null;
+    }
 
-        return $row ? (int)$row['id'] : null;
+    /**
+     * Canonical JSON of an attribute set (same encoding ProductRepository hashes).
+     */
+    private function attributeSignature(array $attributes): string
+    {
+        ksort($attributes);
+        return (string)json_encode($attributes, JSON_UNESCAPED_UNICODE);
     }
 
     private function attachProductImages(int $productId, array $images, array &$warnings = []): void

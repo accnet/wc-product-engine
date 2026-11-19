@@ -63,6 +63,8 @@ final class ImportPerformanceTest
             $first = $this->testFirstImportCreatesEveryVariantOnce();
             $this->testReimportIsIdempotent($first);
             $this->testDnsIsResolvedOncePerHost();
+            $this->testDuplicateRowsCollapseLaterRowWins();
+            $this->testSkuMatchKeepsCaseInsensitiveLookup();
             echo "All ImportPerformanceTest tests passed.\n";
         } catch (\Throwable $e) {
             echo 'FAILED: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
@@ -171,7 +173,9 @@ final class ImportPerformanceTest
 
     private function testFirstImportCreatesEveryVariantOnce(): array
     {
+        $this->queries = 0;
         $state = $this->runImport();
+        $importQueries = $this->queries;
         $p = $this->wpdb->prefix;
 
         foreach ($this->products as $handle => $spec) {
@@ -200,6 +204,10 @@ final class ImportPerformanceTest
 
             $shells = (int) $this->wpdb->get_var("SELECT COUNT(*) FROM {$this->wpdb->posts} WHERE post_type = 'product_variation' AND post_parent = {$pid}");
             $this->assert($shells === $expected, "{$handle}: expected {$expected} mirrored variation posts, got {$shells}");
+
+            // P015 D04: one repository write for all variations, not one per variant.
+            $events = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_outbox WHERE aggregate_id = %d", $pid));
+            $this->assert($events <= 2, "{$handle}: expected at most 2 outbox events (create + variations), got {$events}");
         }
 
         $urls = [];
@@ -211,7 +219,9 @@ final class ImportPerformanceTest
         $assets = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_assets WHERE source_url IN ({$placeholders})", ...$urls));
         $this->assert($assets === count($urls), 'Expected one asset per unique URL, got ' . $assets);
 
-        echo "  ✓ first import creates every variant, image and SKU exactly once\n";
+        // Query totals for a fixture this small are dominated by the per-job catalog
+        // rebuild, so throughput is measured by tests/performance/ImportBenchmark.php.
+        echo sprintf("  ✓ first import creates every variant, image and SKU exactly once (%d queries incl. catalog rebuild)\n", $importQueries);
         return $state;
     }
 
@@ -244,6 +254,85 @@ final class ImportPerformanceTest
         $this->assert(!$v['valid'], 'A resolver swap must not reuse the cached public IP (SSRF check).');
 
         echo "  ✓ DNS resolved at most once per host per request; resolver swap clears the cache\n";
+    }
+
+    /**
+     * Two rows for the same attribute set in one product write one variant,
+     * and the later row's values win (same result as row-by-row writes).
+     */
+    private function testDuplicateRowsCollapseLaterRowWins(): void
+    {
+        $handle = "perf-dup-{$this->suffix}";
+        $this->importRows([
+            ['Handle' => $handle, 'Title' => 'Dup', 'Status' => 'active', 'Option1 Name' => 'Size', 'Option1 Value' => 'S', 'Variant Price' => '10.00'],
+            ['Handle' => $handle, 'Option1 Name' => 'Size', 'Option1 Value' => 'M', 'Variant Price' => '11.00'],
+            ['Handle' => $handle, 'Option1 Name' => 'Size', 'Option1 Value' => 'S', 'Variant Price' => '12.00'],
+        ]);
+
+        $p = $this->wpdb->prefix;
+        $pid = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT id FROM {$p}wpe_products WHERE slug = %s AND deleted_at IS NULL", $handle));
+        $prices = $this->wpdb->get_col($this->wpdb->prepare("SELECT regular_price FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL ORDER BY regular_price", $pid));
+        $this->assert(count($prices) === 2, 'Expected 2 variants for 3 rows with one duplicate, got ' . count($prices));
+        $this->assert(abs((float) $prices[1] - 12.0) < 0.001, 'Expected the later duplicate row (12.00) to win, got ' . implode(',', $prices));
+
+        echo "  ✓ duplicate rows collapse into one variant and the later row wins\n";
+    }
+
+    /**
+     * A re-import whose SKU differs only in letter case updates the same
+     * variant, as the old case-insensitive wpe_variants.sku lookup did.
+     */
+    private function testSkuMatchKeepsCaseInsensitiveLookup(): void
+    {
+        $handle = "perf-skucase-{$this->suffix}";
+        $row = ['Handle' => $handle, 'Title' => 'Sku case', 'Status' => 'active', 'Option1 Name' => 'Size', 'Option1 Value' => 'S', 'Variant Price' => '10.00'];
+        $sizeM = ['Handle' => $handle, 'Option1 Name' => 'Size', 'Option1 Value' => 'M', 'Variant Price' => '11.00'];
+
+        $this->importRows([$row + ['Variant SKU' => "CaseSku-{$this->suffix}"], $sizeM + ['Variant SKU' => "CaseSkuM-{$this->suffix}"]]);
+        $p = $this->wpdb->prefix;
+        $pid = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT id FROM {$p}wpe_products WHERE slug = %s AND deleted_at IS NULL", $handle));
+        $before = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare("SELECT id FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL ORDER BY id", $pid)));
+
+        $this->importRows([$row + ['Variant SKU' => strtolower("CaseSku-{$this->suffix}")], $sizeM + ['Variant SKU' => "CaseSkuM-{$this->suffix}"]]);
+        $after = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare("SELECT id FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL ORDER BY id", $pid)));
+
+        $this->assert($after === $before, 'Lower-case SKU re-import changed the variant set: ' . wp_json_encode([$before, $after]));
+        echo "  ✓ SKU matching on re-import stays case-insensitive\n";
+    }
+
+    /**
+     * Import a small CSV built from rows keyed by header name.
+     */
+    private function importRows(array $rows): void
+    {
+        $headers = ['Handle', 'Title', 'Status', 'Option1 Name', 'Option1 Value', 'Variant SKU', 'Variant Price'];
+        $path = trailingslashit(sys_get_temp_dir()) . 'wpe-perf-rows-' . wp_generate_password(6, false) . '.csv';
+        $fh = fopen($path, 'wb');
+        fputcsv($fh, $headers);
+        foreach ($rows as $row) {
+            $line = [];
+            foreach ($headers as $h) {
+                $line[] = (string) ($row[$h] ?? '');
+            }
+            fputcsv($fh, $line);
+        }
+        fclose($fh);
+
+        $saved = $this->csvPath;
+        $this->csvPath = $path;
+        try {
+            $importer = ShopifyBatchImporter::getInstance();
+            $job = $importer->initJob($path, ['original_filename' => basename($path), 'update_mode' => 'merge', 'image_mode' => 'external']);
+            do {
+                $res = $importer->processBatch($job['job_id'], 25);
+            } while (empty($res['completed']));
+            $this->assert((int) $res['errors_count'] === 0, 'Import reported errors: ' . wp_json_encode($res['logs'] ?? []));
+            $this->wpdb->delete("{$this->wpdb->prefix}wpe_jobs", ['id' => $job['job_id']]);
+            @unlink(WP_CONTENT_DIR . "/uploads/wpe-imports/logs/import_{$job['job_id']}.log");
+        } finally {
+            $this->csvPath = $saved;
+            @unlink($path);
+        }
     }
 
     private function tearDown(): void

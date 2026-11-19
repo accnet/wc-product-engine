@@ -372,8 +372,78 @@
           "tests/integration/VariantsRulesTest.php"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "84d3e8f9274cf9d53c9aa340e0210e5c044b24f8",
+          "content_digest": "c732d661640b651c002e1b9f99f95cac6d472f68efc5ac1c2e79db2a3aa770f3",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P015-import-performance/command-1795130108160-e26c71b5.log",
+          "time": "2026-11-19T23:15:08.161Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "84d3e8f9274cf9d53c9aa340e0210e5c044b24f8",
+          "content_digest": "c732d661640b651c002e1b9f99f95cac6d472f68efc5ac1c2e79db2a3aa770f3",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P015-import-performance/command-1795130108244-6a133785.log",
+          "time": "2026-11-19T23:15:08.245Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "84d3e8f9274cf9d53c9aa340e0210e5c044b24f8",
+          "content_digest": "c732d661640b651c002e1b9f99f95cac6d472f68efc5ac1c2e79db2a3aa770f3",
+          "output_sha256": "773bb28ee1f3d95e34a15b310f5779efdc30f798389dbad9b42c118b649b99ac",
+          "output_path": "docs/plans/P015-import-performance/command-1795130126595-50dc37cf.log",
+          "time": "2026-11-19T23:15:26.596Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "84d3e8f9274cf9d53c9aa340e0210e5c044b24f8",
+          "content_digest": "c732d661640b651c002e1b9f99f95cac6d472f68efc5ac1c2e79db2a3aa770f3",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P015-import-performance/command-1795130133501-56593d9a.log",
+          "time": "2026-11-19T23:15:33.502Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/VariantsRulesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "84d3e8f9274cf9d53c9aa340e0210e5c044b24f8",
+          "content_digest": "c732d661640b651c002e1b9f99f95cac6d472f68efc5ac1c2e79db2a3aa770f3",
+          "output_sha256": "59e47027ea754f74275fdfc14bb6148a36541f903e4a62b204869eae826afe6c",
+          "output_path": "docs/plans/P015-import-performance/command-1795130168209-bbb2c09b.log",
+          "time": "2026-11-19T23:16:08.209Z"
+        }
+      ],
+      "started_at": "2026-11-19T23:11:52.802Z"
     },
     {
       "id": "P015.5",

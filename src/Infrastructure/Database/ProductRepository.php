@@ -258,8 +258,19 @@ class ProductRepository
      * @return array Updated canonical product aggregate
      * @throws StaleVersionException (412) on version mismatch
      */
-    public function update(int $productId, array $data): array
+    /**
+     * Update a product aggregate in one transaction.
+     *
+     * Options:
+     * - hydrate (bool, default true): return the full aggregate via getById().
+     *   When false, returns only ['id', 'version', 'variations'] where
+     *   'variations' lists the saved variation rows in input order. Bulk
+     *   writers that do not read the aggregate back use this (P015 D05).
+     */
+    public function update(int $productId, array $data, array $options = []): array
     {
+        $hydrate = $options['hydrate'] ?? true;
+        $savedVariations = [];
         $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
         $epoch = $this->outboxWorker->getCurrentEpoch();
 
@@ -398,7 +409,7 @@ class ProductRepository
             // Update variations if supplied
             if (isset($data['variations']) && is_array($data['variations'])) {
                 foreach ($data['variations'] as $vData) {
-                    $this->saveVariantRow($productId, $vData, false, $claimedSkus, $now, $epoch);
+                    $savedVariations[] = $this->saveVariantRow($productId, $vData, false, $claimedSkus, $now, $epoch);
                 }
             }
 
@@ -438,6 +449,14 @@ class ProductRepository
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
             throw $e;
+        }
+
+        if (!$hydrate) {
+            return [
+                'id'         => (string)$productId,
+                'version'    => $newVersion,
+                'variations' => $savedVariations,
+            ];
         }
 
         return $this->getById($productId);
