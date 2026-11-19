@@ -11,6 +11,7 @@ use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * ShopifyImporter
@@ -25,7 +26,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class ShopifyImporter
 {
-    private static ?ShopifyImporter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -119,14 +121,6 @@ class ShopifyImporter
         $this->optionsRepo      = $optionsRepo ?? new OptionsRepository($this->wpdb);
         $this->assetService     = $assetService ?? new AssetService($this->wpdb);
         $this->attachmentBridge = $attachmentBridge ?? AttachmentBridge::instance($this->wpdb);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

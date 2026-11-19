@@ -6,6 +6,7 @@ namespace WPE\Admin\ProductEditor;
 
 use WP_Post;
 use Throwable;
+use WPE\Support\Singleton;
 
 /**
  * ProductEditorBridge
@@ -136,21 +137,14 @@ class ProductEditorBridge
     /** Mirror statuses that mean the WooCommerce shell is consistent. */
     private const MIRROR_OK = ['mirrored', 'skipped_obsolete_revision'];
 
-    private static ?ProductEditorBridge $instance = null;
+    use Singleton;
+
     private ProductEditorService $service;
     private bool $boxRendered = false;
 
     public function __construct(?ProductEditorService $service = null)
     {
         $this->service = $service ?? ProductEditorService::getInstance();
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     public function init(): void

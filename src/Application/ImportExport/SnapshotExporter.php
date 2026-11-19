@@ -11,6 +11,7 @@ use WP_REST_Response;
 use wpdb;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * SnapshotExporter
@@ -26,7 +27,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class SnapshotExporter
 {
-    private static ?SnapshotExporter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepository;
@@ -89,14 +91,6 @@ class SnapshotExporter
         }
 
         $this->ensureSecureDirectory();
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     public function getExportDir(): string

@@ -8,6 +8,7 @@ use wpdb;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
+use WPE\Support\Singleton;
 
 /**
  * CSV Pipeline Stager, Streaming Parser, and Dry-Run Validator (T29).
@@ -24,7 +25,8 @@ use WP_Error;
  */
 class CsvStager
 {
-    private static ?CsvStager $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private string $tableImportRows;
@@ -98,14 +100,6 @@ class CsvStager
         }
 
         $this->ensureSecureDirectory();
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

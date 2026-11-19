@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use wpdb;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * LegacyMirror
@@ -22,7 +23,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class LegacyMirror
 {
-    private static ?LegacyMirror $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private LegacyCapture $legacyCapture;
@@ -58,14 +60,6 @@ class LegacyMirror
 
         $this->legacyCapture = $legacyCapture ?? LegacyCapture::getInstance();
         $this->productRepo   = $productRepo ?? new ProductRepository($this->wpdb);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

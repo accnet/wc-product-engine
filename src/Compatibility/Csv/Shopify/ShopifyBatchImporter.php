@@ -13,6 +13,7 @@ use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * ShopifyBatchImporter
@@ -28,7 +29,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class ShopifyBatchImporter
 {
-    private static ?ShopifyBatchImporter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -87,14 +89,6 @@ class ShopifyBatchImporter
         if (!is_dir($this->logBaseDir)) {
             wp_mkdir_p($this->logBaseDir);
         }
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

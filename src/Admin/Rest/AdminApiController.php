@@ -12,6 +12,7 @@ use WPE\Bootstrap\PluginBootstrap;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter;
 use WPE\Application\ImportExport\CsvStager;
+use WPE\Support\Singleton;
 
 /**
  * AdminApiController
@@ -24,17 +25,10 @@ use WPE\Application\ImportExport\CsvStager;
  */
 class AdminApiController
 {
-    private static ?AdminApiController $instance = null;
+    use Singleton;
+
     private ShopifyBatchImporter $batchImporter;
     private CsvStager $csvStager;
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
 
     public function __construct(
         ?ShopifyBatchImporter $batchImporter = null,

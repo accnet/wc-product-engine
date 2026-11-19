@@ -10,6 +10,7 @@ use WPE\Application\Migration\LegacyCapture;
 use WPE\Application\Migration\BackfillRunner;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Application\ImportExport\SnapshotExporter;
+use WPE\Support\Singleton;
 
 /**
  * Class OperationsPage
@@ -27,7 +28,8 @@ use WPE\Application\ImportExport\SnapshotExporter;
  */
 class OperationsPage
 {
-    private static ?OperationsPage $instance = null;
+    use Singleton;
+
     private \wpdb $wpdb;
     private LegacyMirror $mirror;
     private LegacyCapture $capture;
@@ -42,14 +44,6 @@ class OperationsPage
     private string $tableJobs;
     private string $tableAudit;
     private string $tableControl;
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
 
     public function __construct(?\wpdb $wpdb = null)
     {

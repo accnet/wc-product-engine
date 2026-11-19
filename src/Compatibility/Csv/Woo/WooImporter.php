@@ -14,6 +14,7 @@ use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * WooImporter
@@ -28,7 +29,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class WooImporter
 {
-    private static ?WooImporter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -85,14 +87,6 @@ class WooImporter
         $this->attachmentBridge = $attachmentBridge ?? AttachmentBridge::instance($this->wpdb);
         $this->csvStager        = $csvStager ?? CsvStager::getInstance();
         $this->committer        = $committer ?? new ImportCommitter($this->wpdb, $this->productRepo, $this->optionsRepo, null, $this->csvStager);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     public function getImageMode(): string

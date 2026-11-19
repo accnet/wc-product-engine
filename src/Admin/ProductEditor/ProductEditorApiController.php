@@ -10,6 +10,7 @@ use WP_Error;
 use Throwable;
 use InvalidArgumentException;
 use WPE\Application\Media\UploadRejectedException;
+use WPE\Support\Singleton;
 
 /**
  * ProductEditorApiController
@@ -23,20 +24,13 @@ use WPE\Application\Media\UploadRejectedException;
  */
 class ProductEditorApiController
 {
-    private static ?ProductEditorApiController $instance = null;
+    use Singleton;
+
     private ProductEditorService $service;
 
     public function __construct(?ProductEditorService $service = null)
     {
         $this->service = $service ?? ProductEditorService::getInstance();
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     public function registerRoutes(): void

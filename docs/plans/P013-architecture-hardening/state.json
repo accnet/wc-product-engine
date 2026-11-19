@@ -303,8 +303,95 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "01c75afd3acaacfdb77f092bee6ed37660e806f4",
+          "content_digest": "f0c446909d1e890de623004160210a573632506590c841535627e704b0d507ec",
+          "output_sha256": "5ba8ee66a8ead0ec584a00974c61cc786facc15cea951f278a45934d8b473a5f",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127462412-7a019cf2.log",
+          "time": "2026-11-19T22:31:02.413Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "01c75afd3acaacfdb77f092bee6ed37660e806f4",
+          "content_digest": "f0c446909d1e890de623004160210a573632506590c841535627e704b0d507ec",
+          "output_sha256": "194d44edbf229a68fbcda27820a6ca9e67c1101c33cd42f022f38e131073a6e6",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127463785-69a61f81.log",
+          "time": "2026-11-19T22:31:03.785Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T41Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "01c75afd3acaacfdb77f092bee6ed37660e806f4",
+          "content_digest": "f0c446909d1e890de623004160210a573632506590c841535627e704b0d507ec",
+          "output_sha256": "611fff3353ba4a03c94b4929743e32f41269d8d3cabe94a78cc265375346347b",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127465892-73d5a751.log",
+          "time": "2026-11-19T22:31:05.892Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T29Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "01c75afd3acaacfdb77f092bee6ed37660e806f4",
+          "content_digest": "f0c446909d1e890de623004160210a573632506590c841535627e704b0d507ec",
+          "output_sha256": "c912b6165d21bc67208c4728aa09ad15c3740908792119046b91ee7b7a2764d2",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127468131-040fb37d.log",
+          "time": "2026-11-19T22:31:08.132Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "01c75afd3acaacfdb77f092bee6ed37660e806f4",
+          "content_digest": "f0c446909d1e890de623004160210a573632506590c841535627e704b0d507ec",
+          "output_sha256": "6a01e8fcdf46dac06225c0b07545fa450b60b7d7804ba1806013efbe78089768",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127468233-3657ad28.log",
+          "time": "2026-11-19T22:31:08.233Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:30:53.652Z"
     },
     {
       "id": "P013.4",

@@ -10,6 +10,7 @@ use wpdb;
 use WPE\Infrastructure\Database\ProductRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Compatibility\Gallery\AssetService;
+use WPE\Support\Singleton;
 
 /**
  * LegacyCapture
@@ -24,7 +25,8 @@ use WPE\Compatibility\Gallery\AssetService;
  */
 class LegacyCapture
 {
-    private static ?LegacyCapture $instance = null;
+    use Singleton;
+
 
     private static int $syncDepth = 0;
     private static string $currentOrigin = '';
@@ -67,14 +69,6 @@ class LegacyCapture
         $this->productRepo  = $productRepo ?? new ProductRepository($this->wpdb);
         $this->optionsRepo  = $optionsRepo ?? new OptionsRepository($this->wpdb);
         $this->assetService = $assetService ?? new AssetService($this->wpdb);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

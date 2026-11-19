@@ -8,6 +8,7 @@ use wpdb;
 use WC_Order;
 use WC_Order_Item_Product;
 use WPE\Infrastructure\Database\OutboxWorker;
+use WPE\Support\Singleton;
 
 /**
  * Inventory Bridge & Stock Manager for native authority products.
@@ -23,7 +24,8 @@ use WPE\Infrastructure\Database\OutboxWorker;
  */
 class InventoryBridge
 {
-    private static ?InventoryBridge $instance = null;
+    use Singleton;
+
     private static bool $booted = false;
 
     private wpdb $wpdb;
@@ -48,14 +50,6 @@ class InventoryBridge
         $this->tableVariants    = $prefix . 'wpe_variants';
         $this->tableProducts    = $prefix . 'wpe_products';
         $this->tableOutbox      = $prefix . 'wpe_outbox';
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

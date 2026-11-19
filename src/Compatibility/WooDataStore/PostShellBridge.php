@@ -7,6 +7,7 @@ namespace WPE\Compatibility\WooDataStore;
 use wpdb;
 use WC_Product;
 use WPE\Compatibility\WordPress\PostIdAllocator;
+use WPE\Support\Singleton;
 
 /**
  * Post Shell, Factory, Taxonomy, and Permalink Bridge.
@@ -21,7 +22,8 @@ use WPE\Compatibility\WordPress\PostIdAllocator;
  */
 class PostShellBridge
 {
-    private static ?PostShellBridge $instance = null;
+    use Singleton;
+
     private static bool $booted = false;
 
     private wpdb $wpdb;
@@ -40,14 +42,6 @@ class PostShellBridge
         $this->tableProducts = $prefix . 'wpe_products';
         $this->tableVariants = $prefix . 'wpe_variants';
         $this->tableMeta     = $prefix . 'wpe_meta';
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

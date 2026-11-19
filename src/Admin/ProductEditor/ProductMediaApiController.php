@@ -16,6 +16,7 @@ use WPE\Application\Media\UploadRejectedException;
 use WPE\Compatibility\Gallery\AssetService;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Infrastructure\Database\UploadItemRepository;
+use WPE\Support\Singleton;
 
 /**
  * REST routes of the per-product image library (docs/04 §7, contracts/api/endpoints.json):
@@ -37,7 +38,8 @@ final class ProductMediaApiController
     private const RATE_WRITE_PER_MINUTE  = 120;
     private const IDEMPOTENCY_TTL        = DAY_IN_SECONDS;
 
-    private static ?self $instance = null;
+    use Singleton;
+
 
     private ?ProductMediaLibrary $library;
     private ?ManagedUploadService $uploader;
@@ -60,14 +62,6 @@ final class ProductMediaApiController
         $this->assets   = $assets;
         $this->media    = $media;
         $this->cleanup  = $cleanup;
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /* ---------------------------------------------------------------------- */

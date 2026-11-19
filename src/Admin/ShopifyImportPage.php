@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WPE\Admin;
 
 use WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter;
+use WPE\Support\Singleton;
 
 /**
  * ShopifyImportPage
@@ -17,16 +18,9 @@ use WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter;
  */
 class ShopifyImportPage
 {
-    private static ?ShopifyImportPage $instance = null;
-    private \wpdb $wpdb;
+    use Singleton;
 
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+    private \wpdb $wpdb;
 
     public function __construct(?\wpdb $wpdb = null)
     {

@@ -19,6 +19,7 @@ use WPE\Application\Variant\EffectivePriceResolver;
 use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Compatibility\WordPress\PostIdAllocator;
+use WPE\Support\Singleton;
 
 class ConcurrencyConflictException extends RuntimeException
 {
@@ -48,7 +49,8 @@ class ConcurrencyConflictException extends RuntimeException
  */
 class ProductEditorService
 {
-    private static ?ProductEditorService $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -102,14 +104,6 @@ class ProductEditorService
         $this->mediaRepo        = $mediaRepo ?? new MediaRepository($this->wpdb);
         $this->assetService     = $assetService ?? new AssetService($this->wpdb);
         $this->attachmentBridge = $attachmentBridge ?? AttachmentBridge::instance($this->wpdb);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

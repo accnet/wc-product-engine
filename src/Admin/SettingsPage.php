@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WPE\Admin;
 
 use WPE\Bootstrap\PluginBootstrap;
+use WPE\Support\Singleton;
 
 /**
  * SettingsPage
@@ -26,16 +27,9 @@ class SettingsPage
     public const PAGE_SLUG = 'wc-product-engine';
     public const TABS = ['overview', 'features', 'product-page', 'operations', 'maintenance', 'advanced'];
 
-    private static ?SettingsPage $instance = null;
-    private \wpdb $wpdb;
+    use Singleton;
 
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+    private \wpdb $wpdb;
 
     public function __construct(?\wpdb $wpdb = null)
     {

@@ -11,6 +11,7 @@ use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\AttachmentBridge;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
+use WPE\Support\Singleton;
 
 /**
  * WooExporter
@@ -25,7 +26,8 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class WooExporter
 {
-    private static ?WooExporter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -92,14 +94,6 @@ class WooExporter
         }
 
         $this->ensureDirectory($this->exportDir);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     private function ensureDirectory(string $dir): void

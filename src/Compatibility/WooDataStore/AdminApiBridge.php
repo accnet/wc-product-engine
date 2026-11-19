@@ -13,6 +13,7 @@ use WC_Admin_Duplicate_Product;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
+use WPE\Support\Singleton;
 
 /**
  * Admin, REST v3, and Store API Bridge for native authority products.
@@ -26,7 +27,8 @@ use WP_Error;
  */
 class AdminApiBridge
 {
-    private static ?AdminApiBridge $instance = null;
+    use Singleton;
+
     private static bool $booted = false;
 
     private wpdb $wpdb;
@@ -51,14 +53,6 @@ class AdminApiBridge
         $this->tableInventory   = $prefix . 'wpe_inventory';
         $this->tableSkuRegistry = $prefix . 'wpe_sku_registry';
         $this->tableMeta        = $prefix . 'wpe_meta';
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**

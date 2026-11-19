@@ -10,6 +10,7 @@ use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\OutboxWorker;
 use RuntimeException;
 use InvalidArgumentException;
+use WPE\Support\Singleton;
 
 /**
  * CSV Import Committer, Chunk Checkpointer, and Crash/Resume Worker (T30).
@@ -24,7 +25,8 @@ use InvalidArgumentException;
  */
 class ImportCommitter
 {
-    private static ?ImportCommitter $instance = null;
+    use Singleton;
+
 
     private wpdb $wpdb;
     private ProductRepository $productRepo;
@@ -60,14 +62,6 @@ class ImportCommitter
         $this->productRepo  = $productRepo  ?? new ProductRepository($this->wpdb, null, $this->outboxWorker);
         $this->optionsRepo  = $optionsRepo  ?? new OptionsRepository($this->wpdb);
         $this->csvStager    = $csvStager    ?? new CsvStager($this->wpdb);
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
     }
 
     /**
