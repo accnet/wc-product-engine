@@ -1,0 +1,66 @@
+{
+  "id": "P016",
+  "title": "P015 amendment: test DB variable and narrowed D03",
+  "status": "done",
+  "content_hash": "6a2c99e3f73782a2686b3315c4c725c7c37f273a7900f0cf10c9478d07af724c",
+  "tasks": [
+    {
+      "id": "P016.1",
+      "title": "Register the benchmark test DB variable and record the narrowed P015 D03",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P015-import-performance/plan.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P016-p015-amendment/plan.md",
+        "docs/plans/P016-p015-amendment/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "eb632d5516397c1b6a00f3d42a65a344e5223470d17223f6006c08bb4de24d78",
+          "output_sha256": "5caf4e5caf205ba3022f793380c955c057bbeaad07233a7a56af3a8fee9e1a30",
+          "output_path": "docs/plans/P016-p015-amendment/command-1795128432616-2da4e5a3.log",
+          "time": "2026-11-19T22:47:12.616Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "eb632d5516397c1b6a00f3d42a65a344e5223470d17223f6006c08bb4de24d78",
+          "output_sha256": "4d954fbd5ece9177ed60f48310802fabdb4892122543bcd03ec9b68b644c5694",
+          "output_path": "docs/plans/P016-p015-amendment/command-1795128432701-26c7d070.log",
+          "time": "2026-11-19T22:47:12.702Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:46:44.864Z"
+    }
+  ],
+  "approved_hash": "6a2c99e3f73782a2686b3315c4c725c7c37f273a7900f0cf10c9478d07af724c",
+  "report_hash": "8e98af8740d13c4d85ded67d5f719bc10c85a56abcc5db12b039871541cb39f5"
+}
