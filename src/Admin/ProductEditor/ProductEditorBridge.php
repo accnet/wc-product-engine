@@ -7,6 +7,7 @@ namespace WPE\Admin\ProductEditor;
 use WP_Post;
 use Throwable;
 use WPE\Support\Singleton;
+use WPE\Support\Assets;
 
 /**
  * ProductEditorBridge
@@ -680,25 +681,18 @@ class ProductEditorBridge
         // Ensure WordPress native Media Library dependencies are available
         wp_enqueue_media();
 
-        $pluginBaseUrl = plugins_url('', dirname(__DIR__, 2));
-
-        $cssPath = dirname(__DIR__, 2) . '/assets/admin/product-editor.css';
-        $jsPath  = dirname(__DIR__, 2) . '/assets/admin/product-editor.js';
-        $cssVer  = file_exists($cssPath) ? (string) filemtime($cssPath) : '1.4.0';
-        $jsVer   = file_exists($jsPath) ? (string) filemtime($jsPath) : '1.4.0';
-
         wp_enqueue_style(
             'wpe-product-editor-css',
-            $pluginBaseUrl . '/assets/admin/product-editor.css',
+            Assets::url('assets/admin/product-editor.css'),
             [],
-            $cssVer
+            Assets::version('assets/admin/product-editor.css')
         );
 
         wp_enqueue_script(
             'wpe-product-editor-js',
-            $pluginBaseUrl . '/assets/admin/product-editor.js',
+            Assets::url('assets/admin/product-editor.js'),
             ['jquery', 'wp-util'],
-            $jsVer,
+            Assets::version('assets/admin/product-editor.js'),
             true
         );
 

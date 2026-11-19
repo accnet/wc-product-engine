@@ -13,6 +13,7 @@ use WPE\Compatibility\Gallery\AssetService;
 use WPE\Compatibility\Gallery\GalleryAdapter;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
+use WPE\Support\Assets;
 
 /**
  * Variant Selector UI, Swatches, Single Price Display, and Asynchronous Store API / Classic Adapter.
@@ -262,21 +263,18 @@ class SelectorAdapter
             return;
         }
 
-        $pluginUrl = defined('WPE_PLUGIN_FILE') ? plugin_dir_url(WPE_PLUGIN_FILE) : '';
-        $version = defined('WPE_VERSION') ? WPE_VERSION : '1.1.0';
-
         wp_enqueue_style(
             'wpe-variant-selector',
-            $pluginUrl . 'assets/variant-selector/selector.css',
+            Assets::url('assets/variant-selector/selector.css'),
             [],
-            $version
+            Assets::version('assets/variant-selector/selector.css')
         );
 
         wp_enqueue_script(
             'wpe-variant-selector',
-            $pluginUrl . 'assets/variant-selector/selector.js',
+            Assets::url('assets/variant-selector/selector.js'),
             [],
-            $version,
+            Assets::version('assets/variant-selector/selector.js'),
             true
         );
 

@@ -246,11 +246,16 @@ class ResolverApi
             wp_die();
         }
 
-        // Extract attributes from POST data
+        // Extract attributes from POST data. Only scalar values are selections; cleaned the same
+        // way WooCommerce's own get_variation handler cleans them.
         $selection = [];
         foreach ($_POST as $key => $val) {
-            if (str_starts_with($key, 'attribute_') && $val !== '') {
-                $selection[$key] = wp_unslash($val);
+            if (!is_string($key) || !str_starts_with($key, 'attribute_') || !is_scalar($val)) {
+                continue;
+            }
+            $clean = wc_clean(wp_unslash((string)$val));
+            if ($clean !== '') {
+                $selection[$key] = $clean;
             }
         }
 

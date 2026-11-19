@@ -11,6 +11,8 @@ use WPE\Application\Migration\BackfillRunner;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Application\ImportExport\SnapshotExporter;
 use WPE\Support\Singleton;
+use WPE\Support\Assets;
+use WPE\Support\Capabilities;
 
 /**
  * Class OperationsPage
@@ -78,7 +80,7 @@ class OperationsPage
             'woocommerce',
             __('Product Engine Operations', 'wc-product-engine'),
             __('Engine Operations', 'wc-product-engine'),
-            'wpe_manage_operations',
+            Capabilities::MANAGE_OPERATIONS,
             'wpe-operations',
             [$this, 'renderPage']
         );
@@ -90,14 +92,19 @@ class OperationsPage
             return;
         }
 
-        $jsUrl = plugins_url('assets/operations/operations.js', dirname(__DIR__, 1));
-        wp_enqueue_script('wpe-operations-js', $jsUrl, ['jquery'], '1.1.0', true);
+        wp_enqueue_script(
+            'wpe-operations-js',
+            Assets::url('assets/operations/operations.js'),
+            ['jquery'],
+            Assets::version('assets/operations/operations.js'),
+            true
+        );
 
         // Sanitize localization: zero filesystem paths or private secrets (AC-T41-02)
         wp_localize_script('wpe-operations-js', 'wpeOpsConfig', [
             'restUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
             'nonce'   => wp_create_nonce('wp_rest'),
-            'canManage' => current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce'),
+            'canManage' => Capabilities::canManageOperations(),
         ]);
     }
 
@@ -118,7 +125,7 @@ class OperationsPage
 
     public function checkPermission(): bool
     {
-        return current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce');
+        return Capabilities::canManageOperations();
     }
 
     public function restGetHealth(\WP_REST_Request $request): \WP_REST_Response

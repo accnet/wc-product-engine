@@ -2,6 +2,10 @@
 
 namespace WPE\Bootstrap;
 
+use WPE\Admin\OperationsPage;
+use WPE\Support\Assets;
+use WPE\Support\Capabilities;
+
 class PluginBootstrap
 {
     private static ?PluginBootstrap $instance = null;
@@ -13,6 +17,23 @@ class PluginBootstrap
     public const OPTION_ROUTING = 'wpe_cohort_routing';
     public const OPTION_ATTR_DISPLAY = 'wpe_attribute_display_config';
     public const OPTION_PRODUCT_PAGE_VER = 'wpe_product_page_settings_ver';
+
+    /** Feature flag defaults: native features off, legacy authority (AC-T02-01). */
+    public const DEFAULT_FLAGS = [
+        'variants_ui_enabled'      => true,
+        'query_enabled'            => false,
+        'media_enabled'            => false,
+        'resolver_enabled'         => false,
+        'native_writes_enabled'    => false,
+        'single_price_display'     => false,
+        'show_selected_value'      => false,
+        'show_help_text'           => false,
+        'button_selector'          => false,
+        'color_swatches'           => false,
+        'image_swatches'           => false,
+        'mark_unavailable_options' => false,
+        'cohort_mode'              => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
+    ];
 
     public static function instance(): self
     {
@@ -56,10 +77,6 @@ class PluginBootstrap
         $this->registerCapabilities();
         $this->registerDataStores();
         $this->registerRestRoutes();
-        $opsPage = \WPE\Admin\OperationsPage::getInstance();
-        $opsPage->init();
-        remove_action('admin_menu', [$opsPage, 'registerAdminMenu']);
-        remove_action('admin_enqueue_scripts', [$opsPage, 'enqueueAssets']);
         \WPE\Admin\ProductEditor\ProductEditorBridge::getInstance()->init();
 
         add_action('admin_menu', [$this, 'redirectLegacyOperationsPage'], 1);
@@ -126,28 +143,12 @@ class PluginBootstrap
 
     public function loadFlags(): void
     {
-        $defaults = [
-            'variants_ui_enabled'      => true,
-            'query_enabled'            => false,
-            'media_enabled'            => false,
-            'resolver_enabled'         => false,
-            'native_writes_enabled'    => false,
-            'single_price_display'     => false,
-            'show_selected_value'      => false,
-            'show_help_text'           => false,
-            'button_selector'          => false,
-            'color_swatches'           => false,
-            'image_swatches'           => false,
-            'mark_unavailable_options' => false,
-            'cohort_mode'              => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
-        ];
-
         $saved = get_option(self::OPTION_FLAGS, []);
         if (!is_array($saved)) {
             $saved = [];
         }
 
-        $this->flags = array_merge($defaults, $saved);
+        $this->flags = array_merge(self::DEFAULT_FLAGS, $saved);
     }
 
     public function getFlags(): array
@@ -188,11 +189,8 @@ class PluginBootstrap
             if (!is_array($entry)) {
                 continue;
             }
-            if (is_numeric($attrId) && (int)$attrId > 0) {
-                $id = (int)$attrId;
-            } elseif (is_string($attrId) && preg_match('/^opt_[a-z0-9_-]{1,64}$/', $attrId)) {
-                $id = $attrId;
-            } else {
+            $id = self::normalizeAttributeKey($attrId);
+            if ($id === null) {
                 continue;
             }
             $type = (string)($entry['display_type'] ?? 'auto');
@@ -236,11 +234,8 @@ class PluginBootstrap
             if (!is_array($entry)) {
                 continue;
             }
-            if (is_numeric($attrId) && (int)$attrId > 0) {
-                $id = (int)$attrId;
-            } elseif (is_string($attrId) && preg_match('/^opt_[a-z0-9_-]{1,64}$/', $attrId)) {
-                $id = $attrId;
-            } else {
+            $id = self::normalizeAttributeKey($attrId);
+            if ($id === null) {
                 continue;
             }
             $current[$id] = [
@@ -251,6 +246,20 @@ class PluginBootstrap
         }
         update_option(self::OPTION_ATTR_DISPLAY, $current);
         $this->bumpProductPageSettingsVersion();
+    }
+
+    /**
+     * Attribute display keys are a WooCommerce attribute_id (int > 0) or opt_<option_key>.
+     */
+    private static function normalizeAttributeKey(int|string $attrId): int|string|null
+    {
+        if (is_numeric($attrId) && (int)$attrId > 0) {
+            return (int)$attrId;
+        }
+        if (is_string($attrId) && preg_match('/^opt_[a-z0-9_-]{1,64}$/', $attrId)) {
+            return $attrId;
+        }
+        return null;
     }
 
     public function getProductPageSettingsVersion(): int
@@ -302,15 +311,9 @@ class PluginBootstrap
 
     public function registerCapabilities(): void
     {
-        $caps = [
-            'wpe_import_products',
-            'wpe_export_products',
-            'wpe_manage_operations',
-        ];
-
         $role = get_role('administrator');
         if ($role) {
-            foreach ($caps as $cap) {
+            foreach (Capabilities::ALL as $cap) {
                 if (!$role->has_cap($cap)) {
                     $role->add_cap($cap);
                 }
@@ -360,7 +363,7 @@ class PluginBootstrap
             'wc-product-engine',
             __('Shopify CSV Import', 'wc-product-engine'),
             __('Shopify CSV Import', 'wc-product-engine'),
-            'wpe_import_products',
+            Capabilities::IMPORT_PRODUCTS,
             'wpe-shopify-import',
             [\WPE\Admin\ShopifyImportPage::class, 'render']
         );
@@ -384,12 +387,16 @@ class PluginBootstrap
             return;
         }
 
-        $cssUrl = plugins_url('assets/admin/admin.css', dirname(__DIR__, 1));
-        wp_enqueue_style('wpe-admin-css', $cssUrl, [], '1.2.0');
+        wp_enqueue_style('wpe-admin-css', Assets::url('assets/admin/admin.css'), [], Assets::version('assets/admin/admin.css'));
 
         if (strpos($hook, 'wpe-shopify-import') !== false) {
-            $jsUrl = plugins_url('assets/admin/shopify-import.js', dirname(__DIR__, 1));
-            wp_enqueue_script('wpe-shopify-import-js', $jsUrl, ['jquery'], '1.2.0', true);
+            wp_enqueue_script(
+                'wpe-shopify-import-js',
+                Assets::url('assets/admin/shopify-import.js'),
+                ['jquery'],
+                Assets::version('assets/admin/shopify-import.js'),
+                true
+            );
             wp_localize_script('wpe-shopify-import-js', 'wpeImportConfig', [
                 'restUrl' => esc_url_raw(rest_url('wpe/v1/admin/')),
                 'nonce'   => wp_create_nonce('wp_rest'),
@@ -402,28 +409,24 @@ class PluginBootstrap
             return;
         }
 
-        $assetDir = WPE_PLUGIN_DIR . 'assets/admin/';
-        $cssVer = (string)(@filemtime($assetDir . 'settings.css') ?: '1.2.0');
-        $jsVer = (string)(@filemtime($assetDir . 'settings.js') ?: '1.2.0');
-
         wp_enqueue_style(
             'wpe-settings-css',
-            plugins_url('assets/admin/settings.css', dirname(__DIR__, 1)),
+            Assets::url('assets/admin/settings.css'),
             ['wpe-admin-css'],
-            $cssVer
+            Assets::version('assets/admin/settings.css')
         );
         wp_enqueue_script(
             'wpe-settings-js',
-            plugins_url('assets/admin/settings.js', dirname(__DIR__, 1)),
+            Assets::url('assets/admin/settings.js'),
             ['jquery'],
-            $jsVer,
+            Assets::version('assets/admin/settings.js'),
             true
         );
         wp_localize_script('wpe-settings-js', 'wpeAdminConfig', [
             'restUrl'    => esc_url_raw(rest_url('wpe/v1/admin/')),
             'opsRestUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
             'nonce'      => wp_create_nonce('wp_rest'),
-            'canManageOps' => current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce'),
+            'canManageOps' => Capabilities::canManageOperations(),
             'i18n'       => [
                 /* translators: %d: number of changed settings */
                 'unsavedOne'      => __('%d unsaved change', 'wc-product-engine'),
@@ -453,10 +456,11 @@ class PluginBootstrap
             register_rest_route('wpe/v1', '/status', [
                 'methods' => 'GET',
                 'callback' => [$this, 'getRestStatus'],
-                'permission_callback' => function () {
-                    return current_user_can('manage_woocommerce') || current_user_can('wpe_manage_operations');
-                },
+                'permission_callback' => [Capabilities::class, 'canManageOperations'],
             ]);
+            // Operations UI lives in Settings -> Operations; only its REST routes are needed,
+            // so the page and its migration services are built on REST requests only.
+            OperationsPage::getInstance()->registerRestRoutes();
             \WPE\Application\ImportExport\CsvStager::getInstance()->registerRestRoutes();
             \WPE\Admin\Rest\AdminApiController::getInstance()->registerRoutes();
             \WPE\Admin\ProductEditor\ProductEditorApiController::getInstance()->registerRoutes();
@@ -495,21 +499,7 @@ class PluginBootstrap
 
         // Ensure default flags exist without modifying any existing products
         if (get_option(self::OPTION_FLAGS) === false) {
-            update_option(self::OPTION_FLAGS, [
-                'variants_ui_enabled'      => true,
-                'query_enabled'            => false,
-                'media_enabled'            => false,
-                'resolver_enabled'         => false,
-                'native_writes_enabled'    => false,
-                'single_price_display'     => false,
-                'show_selected_value'      => false,
-                'show_help_text'           => false,
-                'button_selector'          => false,
-                'color_swatches'           => false,
-                'image_swatches'           => false,
-                'mark_unavailable_options' => false,
-                'cohort_mode'              => 'legacy',
-            ]);
+            update_option(self::OPTION_FLAGS, self::DEFAULT_FLAGS);
         }
     }
 

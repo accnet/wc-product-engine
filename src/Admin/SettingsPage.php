@@ -6,6 +6,7 @@ namespace WPE\Admin;
 
 use WPE\Bootstrap\PluginBootstrap;
 use WPE\Support\Singleton;
+use WPE\Support\Capabilities;
 
 /**
  * SettingsPage
@@ -261,7 +262,7 @@ class SettingsPage
         $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? 'legacy'));
         $epoch = $health['authority_epoch'] ?? null;
         $counts = $health['counts'] ?? [];
-        $canOps = current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce');
+        $canOps = Capabilities::canManageOperations();
         ?>
         <section class="wpe-panel" aria-labelledby="wpe-h-status">
             <div class="wpe-statusbar <?php echo esc_attr($statusClass); ?>">
@@ -729,7 +730,7 @@ class SettingsPage
         $projLag = (int)($health['projection_lag']['pending_projections'] ?? 0);
         $starvation = $health['worker_starvation'] ?? ['alert' => false, 'starved_job_id' => null, 'threshold_sec' => 120];
         $checkpoints = is_array($health['checkpoints'] ?? null) ? $health['checkpoints'] : [];
-        $canOps = current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce');
+        $canOps = Capabilities::canManageOperations();
         ?>
         <section class="wpe-panel" id="wpe-operations-panel" aria-labelledby="wpe-h-ops">
             <div id="wpe-health-banner" class="wpe-statusbar <?php echo esc_attr($statusClass); ?>">
@@ -907,7 +908,7 @@ class SettingsPage
 
     private function renderMaintenance(): void
     {
-        $canOps = current_user_can('wpe_manage_operations') || current_user_can('manage_woocommerce');
+        $canOps = Capabilities::canManageOperations();
         ?>
         <section class="wpe-panel" aria-labelledby="wpe-h-maint">
             <div class="wpe-card">

@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Không có câu hỏi mở. Các câu hỏi OD-12, OD-13 và OD-14 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Một câu hỏi mở: OD-16 (mục 4). Các câu hỏi OD-12, OD-13 và OD-14 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -29,3 +29,15 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-15 | P011 Per-product media library (A1–A5 & P011.12 gate) | answered | 04 §7, 09 §10 | A1: Tự động dùng Local Storage khi plugin S3 (`images-space`) chưa active và dùng S3 khi plugin active; A2: Ẩn hộp ảnh gốc của WP (`postimagediv`, `woocommerce-product-images`) trên sản phẩm Simple/Variable và thay bằng hộp Product Media (`#wpe_product_media`); A3: Upload trực tiếp trong Variant Image Picker tự động thêm vào thư viện sản phẩm và gán cho biến thể trong 1 bước; A4: Khi xóa ảnh sản phẩm, hiện Impact Preview và cho phép xóa luôn file vật lý (`DELETE /admin/assets/{id}/file`) nếu ảnh không còn nơi nào dùng; A5: Hỗ trợ cả kéo-thả nhiều file từ máy tính và thêm qua URL CDN ngoài. P011.12 (`StorageLiveRoundTripTest.php`) giữ trạng thái gated chờ môi trường cài đặt/kích hoạt plugin `images-space` S3 thật. |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47, P011.12.
+
+## 4. Câu hỏi mở
+
+### OD-16 — P013.4 — T02Test fail vì trạng thái site, không vì code
+
+- Status: open (default đã áp dụng).
+- Doc section: 06 T02; `docs/plans/P013-architecture-hardening/plan.md` §5.
+- Commit: P013.4 code nằm trong commit P014.1.
+- Context: DoD của P013.4 gồm `tests/integration/T02Test.php`. Test này fail cả ở baseline trước P013 (`Flag query_enabled must be false by default`, `Cohort conflict was not deterministic…`) vì option `wpe_feature_flags` thật của site đang bật `query_enabled`, `media_enabled`, `resolver_enabled`, `native_writes_enabled`, `single_price_display`, `show_selected_value`, `show_help_text`. Sau P013.4, T02Test cho đúng các dòng FAIL như baseline.
+- Default đã thử: không đổi flag của site (đó là cấu hình của người dùng), không nới test. Block P013.4, chuyển phần việc sang amendment plan P014 với DoD dùng `T15Test` (hooks/lifecycle, pass ở baseline) thay `T02Test`.
+- Blocker và impact: P013 không close được (P013.4 blocked, P013.5 phụ thuộc). Không ảnh hưởng runtime.
+- Proposed resolution: nếu muốn T02 làm bằng chứng, chạy `node scripts/test-runtime.mjs T02` trên bản site có flag mặc định, hoặc xác nhận chấp nhận P014 thay P013.4/P013.5.

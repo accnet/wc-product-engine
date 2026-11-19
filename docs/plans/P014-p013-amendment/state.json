@@ -1,0 +1,226 @@
+{
+  "id": "P014",
+  "title": "P013 amendment: assets, capabilities, bootstrap cleanup and closeout",
+  "status": "in_progress",
+  "content_hash": "fe206fc3284a8b9e189b9118638d6ccc87bedfdcb48f7258ae9d0e307f0606eb",
+  "tasks": [
+    {
+      "id": "P014.1",
+      "title": "F3-F8: Assets and Capabilities helpers, bootstrap cleanup, get_variation input hardening",
+      "depends_on": [],
+      "read_first": [
+        "docs/audits/P013-architecture-audit.md",
+        "docs/plans/P013-architecture-hardening/plan.md"
+      ],
+      "files": [
+        "src/Support/Assets.php",
+        "src/Support/Capabilities.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Application/Variant/ResolverApi.php",
+        "docs/QUESTIONS.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T15Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T26Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T41Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T15Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "e67f7dc5e512665acd392993932055a9171e5aaecbe18b91c2f6e5b8c285c583",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127652709-6529b3b9.log",
+          "time": "2026-11-19T22:34:12.710Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T26Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "7c848c4cd726aa79e7d351305a14327d4ef50d0812c3d69c7a3ad040500eb3ee",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127654122-85adf548.log",
+          "time": "2026-11-19T22:34:14.123Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T41Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "611fff3353ba4a03c94b4929743e32f41269d8d3cabe94a78cc265375346347b",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127656125-655b4de7.log",
+          "time": "2026-11-19T22:34:16.126Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "194d44edbf229a68fbcda27820a6ca9e67c1101c33cd42f022f38e131073a6e6",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127657510-c72c3ce2.log",
+          "time": "2026-11-19T22:34:17.511Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127659462-8bd790fa.log",
+          "time": "2026-11-19T22:34:19.462Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
+          "content_digest": "dd42ed7c70a33b145a7c0ad26eade4b20a31ed9eb6cade80439195e5a5d005b6",
+          "output_sha256": "8dbd0cee675f520cb7ef321b3fadd07488824598f6e850bc7cdd52f7c7ec378e",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795127659555-fef689bd.log",
+          "time": "2026-11-19T22:34:19.555Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:34:11.200Z"
+    },
+    {
+      "id": "P014.2",
+      "title": "Full regression, P013/P014 report and closeout",
+      "depends_on": [
+        "P014.1"
+      ],
+      "read_first": [
+        "docs/07-testing.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P014-p013-amendment/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "fe206fc3284a8b9e189b9118638d6ccc87bedfdcb48f7258ae9d0e307f0606eb"
+}
