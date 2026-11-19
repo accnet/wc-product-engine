@@ -76,7 +76,6 @@ class CsvStager
         int $maxRows = 1000000,
         int $batchSize = 250
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

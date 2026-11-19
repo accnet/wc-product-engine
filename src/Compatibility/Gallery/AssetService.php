@@ -410,7 +410,6 @@ class AssetService
         ?MediaRepository $mediaRepo = null,
         ?UrlValidator $validator = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->mediaRepo = $mediaRepo ?? new MediaRepository($this->wpdb);
         $this->validator = $validator ?? new UrlValidator();

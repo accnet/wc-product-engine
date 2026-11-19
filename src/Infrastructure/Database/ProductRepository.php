@@ -52,7 +52,6 @@ class ProductRepository
 
     public function __construct(?\wpdb $wpdb = null, ?PostIdAllocator $postIdAllocator = null, ?OutboxWorker $outboxWorker = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->postIdAllocator = $postIdAllocator ?? new PostIdAllocator($this->wpdb);
         $this->outboxWorker = $outboxWorker ?? new OutboxWorker($this->wpdb);

@@ -133,8 +133,113 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/unit/T07Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "62933d61990bdc2f0068005869d3932e73ee1abc9dece88b6dcd48be1b5b7b89",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127414068-176f8210.log",
+          "time": "2026-11-19T22:30:14.068Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T16Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "155b82dd0bd0f2015e2ff1c0df42537585580b3639edb6bb7cc5c45420689c66",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127419721-b0dfa708.log",
+          "time": "2026-11-19T22:30:19.721Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T25Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "ca09f7d68b86cd0bddbc6a7ac1bb3a588c0e8b77186c2769f676aaba1d11e9fc",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127421191-686acca3.log",
+          "time": "2026-11-19T22:30:21.191Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MediaRecoveryTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "4107fd67631da1181802d3ce08080c510972e4a2a532361b93e8af07b2c945f5",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127422561-e255b9f3.log",
+          "time": "2026-11-19T22:30:22.561Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorSaveTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "a2e1d1a66bfd92eafb0f1046583961de33005ca4cb40838f5375c359a28e056f",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127432691-24207a68.log",
+          "time": "2026-11-19T22:30:32.691Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "28fa1ee070dfeef75b11c0379cd3150d459471ad",
+          "content_digest": "b90890b3df7f0db2aa897923125ea58b369509bb2326cab74ef5c348f4e457a4",
+          "output_sha256": "fc91e8066fd2715d8eb83af96d7e810b00741d6f69a654efbad13418f0c7347d",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127432791-6456e747.log",
+          "time": "2026-11-19T22:30:32.791Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:30:05.153Z"
     },
     {
       "id": "P013.3",

@@ -65,7 +65,6 @@ class SelectorAdapter
         ?VariantResolver $resolver = null,
         ?SettingsRegistry $settingsRegistry = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->optionsRepo = $optionsRepo ?? new OptionsRepository($this->wpdb);
         $this->galleryAdapter = $galleryAdapter;

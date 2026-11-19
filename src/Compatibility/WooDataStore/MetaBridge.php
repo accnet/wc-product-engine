@@ -83,7 +83,6 @@ class MetaBridge
 
     public function __construct(?wpdb $wpdb = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->prodRepo = new ProductRepository($this->wpdb);
         $this->mediaRepo = new MediaRepository($this->wpdb, new MetaIdAllocator($this->wpdb));

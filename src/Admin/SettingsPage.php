@@ -39,7 +39,6 @@ class SettingsPage
 
     public function __construct(?\wpdb $wpdb = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
     }
 

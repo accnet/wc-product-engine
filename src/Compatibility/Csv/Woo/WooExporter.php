@@ -65,7 +65,6 @@ class WooExporter
         ?AttachmentBridge $attachmentBridge = null,
         ?string $customExportDir = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

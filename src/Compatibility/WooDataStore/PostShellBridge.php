@@ -33,7 +33,6 @@ class PostShellBridge
 
     public function __construct(?wpdb $wpdb = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->idAllocator = new PostIdAllocator($this->wpdb);
 

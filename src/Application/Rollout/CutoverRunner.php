@@ -53,7 +53,6 @@ class CutoverRunner
         ?LegacyMirror $mirror = null,
         ?LegacyCapture $capture = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->gates = $gates ?? new ReadinessGates($this->wpdb);
         $this->capture = $capture ?? new LegacyCapture($this->wpdb);

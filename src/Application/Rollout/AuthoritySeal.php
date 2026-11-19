@@ -62,7 +62,6 @@ class AuthoritySeal
         ?InventoryBridge $inventoryBridge = null,
         ?ReadinessGates $gates = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->prodRepo = $prodRepo ?? new ProductRepository($this->wpdb);
         $this->inventoryBridge = $inventoryBridge ?? new InventoryBridge($this->wpdb);

@@ -48,7 +48,6 @@ class ReadinessGates
 
     public function __construct(?\wpdb $wpdb = null, ?string $evidenceBaseDir = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->evidenceBaseDir = $evidenceBaseDir ?? dirname(__DIR__, 3) . '/docs/evidence';
 

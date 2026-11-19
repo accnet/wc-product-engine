@@ -33,7 +33,6 @@ class CatalogAdapters
 
     public function __construct(?\wpdb $wpdb = null, ?CatalogQuery $queryCompiler = null, bool $strictMode = true)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->queryCompiler = $queryCompiler ?? new CatalogQuery($this->wpdb);
         $this->projector = new CatalogProjector($this->wpdb);

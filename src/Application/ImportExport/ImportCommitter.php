@@ -46,7 +46,6 @@ class ImportCommitter
         ?OutboxWorker $outboxWorker = null,
         ?CsvStager $csvStager = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

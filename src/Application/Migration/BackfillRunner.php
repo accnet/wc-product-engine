@@ -39,7 +39,6 @@ class BackfillRunner
         ?LegacyCapture $legacyCapture = null,
         ?ProductRepository $productRepo = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

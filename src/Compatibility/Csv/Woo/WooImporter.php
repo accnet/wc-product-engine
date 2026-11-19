@@ -68,7 +68,6 @@ class WooImporter
         ?CsvStager $csvStager = null,
         ?ImportCommitter $committer = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

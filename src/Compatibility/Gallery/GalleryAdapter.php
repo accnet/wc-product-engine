@@ -54,7 +54,6 @@ class GalleryAdapter
         ?AttachmentBridge $bridge = null,
         ?MediaRepository $mediaRepo = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->mediaRepo = $mediaRepo ?? new MediaRepository($this->wpdb);
         $this->assetService = $assetService ?? new AssetService($this->wpdb, $this->mediaRepo);

@@ -33,7 +33,6 @@ class CatalogQuery
 
     public function __construct(?\wpdb $wpdb = null, ?CatalogProjector $projector = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->projector = $projector ?? new CatalogProjector($this->wpdb);
 

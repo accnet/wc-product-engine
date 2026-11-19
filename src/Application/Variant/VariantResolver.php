@@ -43,7 +43,6 @@ class VariantResolver
         ?OptionsRepository $optionsRepo = null,
         ?AssetService $assetService = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->optionsRepo = $optionsRepo ?? new OptionsRepository($this->wpdb);
         $this->assetService = $assetService ?? new AssetService($this->wpdb, new MediaRepository($this->wpdb));

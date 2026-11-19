@@ -52,7 +52,6 @@ class LegacyCapture
         ?OptionsRepository $optionsRepo = null,
         ?AssetService $assetService = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

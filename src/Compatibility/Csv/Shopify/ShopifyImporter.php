@@ -100,7 +100,6 @@ class ShopifyImporter
         ?AssetService $assetService = null,
         ?AttachmentBridge $attachmentBridge = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

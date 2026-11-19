@@ -156,7 +156,6 @@ class ShopifyExporter
         ?AssetService $assetService = null,
         ?string $customExportDir = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

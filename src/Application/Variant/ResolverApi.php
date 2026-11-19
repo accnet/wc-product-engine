@@ -44,7 +44,6 @@ class ResolverApi
         ?VariantResolver $resolver = null,
         ?GalleryAdapter $galleryAdapter = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->resolver = $resolver ?? new VariantResolver($this->wpdb);
         $this->galleryAdapter = $galleryAdapter ?? GalleryAdapter::instance($this->wpdb);

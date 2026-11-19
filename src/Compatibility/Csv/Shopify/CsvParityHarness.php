@@ -44,7 +44,6 @@ class CsvParityHarness
         ?ShopifyExporter $shopifyExporter = null,
         ?ShopifyImporter $shopifyImporter = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
 
         $this->productRepo     = $productRepo ?? new ProductRepository($this->wpdb);

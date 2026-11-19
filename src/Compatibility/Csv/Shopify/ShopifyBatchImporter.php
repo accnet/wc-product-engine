@@ -60,7 +60,6 @@ class ShopifyBatchImporter
         ?AttachmentBridge $attachmentBridge = null,
         ?ShopifyImporter $shopifyImporter = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $prefix = $this->wpdb->prefix;
 

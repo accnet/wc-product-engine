@@ -38,7 +38,6 @@ class InventoryBridge
 
     public function __construct(?wpdb $wpdb = null)
     {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->outboxWorker = new OutboxWorker($this->wpdb);
 

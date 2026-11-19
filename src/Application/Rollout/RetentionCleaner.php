@@ -62,7 +62,6 @@ class RetentionCleaner
         ?RollbackRunner $rollbackRunner = null,
         ?LegacyMirror $mirror = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
 
         $prefix = $this->wpdb->prefix;

@@ -14,8 +14,7 @@ class SchemaMigrator
 
     public function __construct(?\wpdb $wpdb = null, ?string $schemaFile = null)
     {
-        global $wpdb;
-        $this->wpdb = $wpdb;
+        $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->schemaFile = $schemaFile ?? dirname(__DIR__, 3) . '/contracts/database/schema.sql';
     }
 

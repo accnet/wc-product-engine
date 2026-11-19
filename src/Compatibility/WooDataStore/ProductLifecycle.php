@@ -53,7 +53,6 @@ class ProductLifecycle
         ?PostShellBridge $shellBridge = null,
         ?\wpdb $wpdb = null
     ) {
-        global $wpdb;
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
         $this->prodRepo = $prodRepo ?? new ProductRepository();
         $this->shellBridge = $shellBridge ?? new PostShellBridge();

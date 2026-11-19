@@ -38,8 +38,7 @@ class RollbackRunner
 
     public function __construct(?\wpdb $wpdb = null, ?LegacyMirror $mirror = null, ?LegacyCapture $capture = null)
     {
-        global $wpdb;
-        $this->wpdb = $wpdb;
+        $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
 
         $prefix = $this->wpdb->prefix;
         $this->tableProducts        = "{$prefix}wpe_products";
