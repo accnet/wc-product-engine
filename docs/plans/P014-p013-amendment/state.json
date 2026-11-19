@@ -1,7 +1,7 @@
 {
   "id": "P014",
   "title": "P013 amendment: assets, capabilities, bootstrap cleanup and closeout",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "fe206fc3284a8b9e189b9118638d6ccc87bedfdcb48f7258ae9d0e307f0606eb",
   "tasks": [
     {
@@ -218,9 +218,90 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "b0749e19c4c36d6931d6d2254cbfe7789fca3e72f963ac4dbbccfedbba4062f9",
+          "output_sha256": "9e6f5b3d3970e19c9842f2e5a97a9d9e566f7ff3e7301cf7d50e1138e146c4ee",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128333729-75bf7e9c.log",
+          "time": "2026-11-19T22:45:33.729Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "b0749e19c4c36d6931d6d2254cbfe7789fca3e72f963ac4dbbccfedbba4062f9",
+          "output_sha256": "802baac3f51dba537df614ff8b4d72c43a9623fd2e0ca1fab882bbed1d9a0620",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128333828-1d146e36.log",
+          "time": "2026-11-19T22:45:33.828Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "b0749e19c4c36d6931d6d2254cbfe7789fca3e72f963ac4dbbccfedbba4062f9",
+          "output_sha256": "330c9ca9674c1fbd23dd38f8b8e30ed9385ccccaa8d9321741e2af31d0f08bad",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128333916-6531ae1b.log",
+          "time": "2026-11-19T22:45:33.917Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "c423408554a61f214b6553359abac1e0a68cbb3e723de5d253bf841f671cc8d4",
+          "output_sha256": "5caf4e5caf205ba3022f793380c955c057bbeaad07233a7a56af3a8fee9e1a30",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128426197-4bb2091b.log",
+          "time": "2026-11-19T22:47:06.197Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "c423408554a61f214b6553359abac1e0a68cbb3e723de5d253bf841f671cc8d4",
+          "output_sha256": "ea716c0c66a04504a6743b42b60a22ad1075676a8a6c7a5539b6dde538d93630",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128426296-e40e2e7f.log",
+          "time": "2026-11-19T22:47:06.296Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "308e2cd615e7526799fd13e0bcd098327470a715",
+          "content_digest": "c423408554a61f214b6553359abac1e0a68cbb3e723de5d253bf841f671cc8d4",
+          "output_sha256": "4d954fbd5ece9177ed60f48310802fabdb4892122543bcd03ec9b68b644c5694",
+          "output_path": "docs/plans/P014-p013-amendment/command-1795128426386-ff0ca921.log",
+          "time": "2026-11-19T22:47:06.387Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:45:33.634Z"
     }
   ],
-  "approved_hash": "fe206fc3284a8b9e189b9118638d6ccc87bedfdcb48f7258ae9d0e307f0606eb"
+  "approved_hash": "fe206fc3284a8b9e189b9118638d6ccc87bedfdcb48f7258ae9d0e307f0606eb",
+  "report_hash": "511a1f7f4acb29b0521a40d124dadb2d901ee96ce32bbb7905c19d617fe8c805"
 }
