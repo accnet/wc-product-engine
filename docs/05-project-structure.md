@@ -14,6 +14,9 @@ Files trong danh sách là destinations đã hoặc sẽ được task tạo; tr
 | Compatibility | Application + WP/WC host interfaces | Thay Core files |
 | Http/Admin/CLI | Application services | Raw writes bypass epoch/CAS |
 | Assets JS | DTO/contracts public | Secret/config/DB writes |
+| Support (`src/Support`) | WP/WC host functions only | Business rules, DB writes, other `WPE` layers |
+
+Support chứa helper WordPress-native dùng chung (singleton accessor, asset URL/version, capability rule); mọi layer trừ Domain được dùng (P013 D01).
 
 ## 3. File tree manifest
 

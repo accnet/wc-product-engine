@@ -1,0 +1,320 @@
+{
+  "id": "P013",
+  "title": "Architecture hardening: DI, singletons, assets, capabilities",
+  "status": "in_progress",
+  "content_hash": "72130d57435f76286774d7e80eb7502d16b4542b1081d84bd414bff699a57558",
+  "tasks": [
+    {
+      "id": "P013.1",
+      "title": "Audit, Support layer contract and notes",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/05-project-structure.md",
+        "docs/audits/P013-architecture-audit.md"
+      ],
+      "files": [
+        "docs/05-project-structure.md",
+        "docs/NOTES.md",
+        "docs/audits/P013-architecture-audit.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "0e1f082e461ac8798d38acbba5e5715e10ae6acc",
+          "content_digest": "2d15079b95b50c2c78bbcda80c8834385f03da6ca31c3b5ba62cdf164bbe7e2d",
+          "output_sha256": "e45c4ae1305212ef15e69551c8215b754bca100183552e85e1b0071c4de22f39",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127232679-7cc8ce82.log",
+          "time": "2026-11-19T22:27:12.679Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "0e1f082e461ac8798d38acbba5e5715e10ae6acc",
+          "content_digest": "2d15079b95b50c2c78bbcda80c8834385f03da6ca31c3b5ba62cdf164bbe7e2d",
+          "output_sha256": "d64993d06f9d5ea373c5b9151ea49672211598a8617c016b26f02b805015de6b",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795127232784-62ef6ad4.log",
+          "time": "2026-11-19T22:27:12.784Z"
+        }
+      ],
+      "started_at": "2026-11-19T22:27:12.572Z"
+    },
+    {
+      "id": "P013.2",
+      "title": "F1: constructor-injected wpdb is honoured in every class",
+      "depends_on": [
+        "P013.1"
+      ],
+      "read_first": [
+        "docs/audits/P013-architecture-audit.md"
+      ],
+      "files": [
+        "src/Application",
+        "src/Compatibility",
+        "src/Admin",
+        "src/Infrastructure"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/unit/T07Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T16Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T25Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaRecoveryTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorSaveTest.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P013.3",
+      "title": "F2: Support\\Singleton trait replaces 21 getInstance copies",
+      "depends_on": [
+        "P013.2"
+      ],
+      "read_first": [
+        "docs/audits/P013-architecture-audit.md"
+      ],
+      "files": [
+        "src/Support/Singleton.php",
+        "src/Application",
+        "src/Compatibility",
+        "src/Admin"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductEditorBridgeTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T41Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T29Test.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P013.4",
+      "title": "F3-F8: Assets and Capabilities helpers, bootstrap cleanup, get_variation input hardening",
+      "depends_on": [
+        "P013.3"
+      ],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/audits/P013-architecture-audit.md"
+      ],
+      "files": [
+        "src/Support/Assets.php",
+        "src/Support/Capabilities.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Admin/ProductEditor/ProductEditorBridge.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Application/Variant/ResolverApi.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T02Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T26Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/T41Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P013.5",
+      "title": "Full regression, report and closeout",
+      "depends_on": [
+        "P013.4"
+      ],
+      "read_first": [
+        "docs/07-testing.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P013-architecture-hardening/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "72130d57435f76286774d7e80eb7502d16b4542b1081d84bd414bff699a57558"
+}
