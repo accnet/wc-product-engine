@@ -156,8 +156,64 @@
           "tests/integration/ShopifyBatchImporterTest.php"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Gallery/AssetService.php"
+          ],
+          "exit_code": 0,
+          "commit": "e22879c578660dfb2f05500d21376e91f21b5b6d",
+          "content_digest": "43be0a51b83829947047a6f77ec3e7e2b002f2a9172e8cf850024b0cafd18eb3",
+          "output_sha256": "e0bf61343d39d02e3cbd7c3399ad8ec60fc74f3e015eac7f04ec6263f2b25f5d",
+          "output_path": "docs/plans/P015-import-performance/command-1795129630768-1c7b7f7c.log",
+          "time": "2026-11-19T23:07:10.769Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "e22879c578660dfb2f05500d21376e91f21b5b6d",
+          "content_digest": "43be0a51b83829947047a6f77ec3e7e2b002f2a9172e8cf850024b0cafd18eb3",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P015-import-performance/command-1795129630862-0a6041cd.log",
+          "time": "2026-11-19T23:07:10.863Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "e22879c578660dfb2f05500d21376e91f21b5b6d",
+          "content_digest": "43be0a51b83829947047a6f77ec3e7e2b002f2a9172e8cf850024b0cafd18eb3",
+          "output_sha256": "9a457370f977eab5d5d055b40087b87ea13b179bf81d2566067f4f4446edcd01",
+          "output_path": "docs/plans/P015-import-performance/command-1795129638454-a3faedb3.log",
+          "time": "2026-11-19T23:07:18.454Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "e22879c578660dfb2f05500d21376e91f21b5b6d",
+          "content_digest": "43be0a51b83829947047a6f77ec3e7e2b002f2a9172e8cf850024b0cafd18eb3",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P015-import-performance/command-1795129643597-d7795237.log",
+          "time": "2026-11-19T23:07:23.597Z"
+        }
+      ],
+      "started_at": "2026-11-19T23:06:05.829Z"
     },
     {
       "id": "P015.3",

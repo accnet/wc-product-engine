@@ -39,6 +39,14 @@ class ShopifyBatchImporter
     private AttachmentBridge $attachmentBridge;
     private ShopifyImporter $shopifyImporter;
 
+    /**
+     * Image URL => [asset_id, attachment_id] for the product being imported.
+     * Reset per product (P015 D03 as narrowed by P016 D02).
+     *
+     * @var array<string, array{asset_id: int, attachment_id: int}>
+     */
+    private array $productAssetCache = [];
+
     private string $tableProducts;
     private string $tableVariants;
     private string $tableInventory;
@@ -701,6 +709,7 @@ class ShopifyBatchImporter
      */
     private function importSingleProductGroup(array $group, string $updateMode): array
     {
+        $this->productAssetCache = [];
         $handle = $group['handle'];
 
         // Determine Product Type: Simple vs Variable
@@ -972,13 +981,12 @@ class ShopifyBatchImporter
             }
 
             try {
-                $asset = $this->assetService->registerAsset($url);
+                $assetId = $this->resolveProductAsset($url);
                 $role = ($pos === 0) ? 'featured' : 'gallery';
                 $altOverride = !empty($img['alt']) ? trim($img['alt']) : null;
 
-                $this->assetService->attachProductImage($productId, (int)$asset['id'], $role, $pos, $altOverride);
-                $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-                update_post_meta($attachmentId, '_wc_attachment_source', $url);
+                $this->assetService->attachProductImage($productId, $assetId, $role, $pos, $altOverride);
+                $this->ensureProductAttachment($url);
                 $pos++;
             } catch (\Throwable $e) {
                 $warnings[] = "Skipped invalid product image URL ({$rawUrl}): " . $e->getMessage();
@@ -1002,14 +1010,40 @@ class ShopifyBatchImporter
         }
 
         try {
-            $asset = $this->assetService->registerAsset($clean);
-            $this->assetService->attachVariantImage($variantId, (int)$asset['id'], 0, true);
-            $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId((int)$asset['id']);
-            update_post_meta($attachmentId, '_wc_attachment_source', $clean);
+            $assetId = $this->resolveProductAsset($clean);
+            $this->assetService->attachVariantImage($variantId, $assetId, 0, true);
+            $this->ensureProductAttachment($clean);
         } catch (\Throwable $e) {
             $prefix = $rowNum > 0 ? "Row {$rowNum}: " : '';
             $warnings[] = "{$prefix}Skipped invalid Variant Image URL ({$rawUrl}): " . $e->getMessage();
         }
+    }
+
+    /**
+     * Asset id for an image URL, registering it on first use within this product.
+     */
+    private function resolveProductAsset(string $url): int
+    {
+        if (!isset($this->productAssetCache[$url])) {
+            $asset = $this->assetService->registerAsset($url);
+            $this->productAssetCache[$url] = ['asset_id' => (int)$asset['id'], 'attachment_id' => 0];
+        }
+        return $this->productAssetCache[$url]['asset_id'];
+    }
+
+    /**
+     * Make sure the URL's asset has its WordPress attachment and source meta,
+     * once per URL within this product.
+     */
+    private function ensureProductAttachment(string $url): void
+    {
+        if (!empty($this->productAssetCache[$url]['attachment_id'])) {
+            return;
+        }
+        $assetId = $this->resolveProductAsset($url);
+        $attachmentId = $this->attachmentBridge->getOrCreateAttachmentId($assetId);
+        update_post_meta($attachmentId, '_wc_attachment_source', $url);
+        $this->productAssetCache[$url]['attachment_id'] = $attachmentId;
     }
 
     private function syncShopifyOptions(int $productId, array $options): void

@@ -161,6 +161,15 @@ class UrlValidator
     /** @var callable|null */
     private static $dnsResolver = null;
 
+    /**
+     * Seconds a successful host lookup is reused within one PHP process.
+     * Keeps long-running CLI workers from holding stale answers.
+     */
+    private const DNS_CACHE_TTL = 60;
+
+    /** @var array<string, array{ips: string[], at: float}> Host => resolved IPs (P015 D02). */
+    private static array $dnsCache = [];
+
     public function __construct(bool $allowHttp = false)
     {
         $this->allowHttp = $allowHttp;
@@ -169,6 +178,8 @@ class UrlValidator
     public static function setDnsResolver(?callable $resolver): void
     {
         self::$dnsResolver = $resolver;
+        // A different resolver must never be answered from the previous one's cache.
+        self::$dnsCache = [];
     }
 
     /**
@@ -249,13 +260,37 @@ class UrlValidator
 
     /**
      * Resolves IPv4 and IPv6 addresses for a hostname.
+     *
+     * Successful answers are cached per host for DNS_CACHE_TTL seconds in this
+     * process; failures are not cached. Callers still check every returned IP
+     * against private/reserved ranges on each validation (R83).
      */
     public function resolveHostIps(string $host): array
     {
-        if (self::$dnsResolver !== null) {
-            return call_user_func(self::$dnsResolver, $host);
+        $key = strtolower($host);
+        $now = microtime(true);
+        if (isset(self::$dnsCache[$key]) && ($now - self::$dnsCache[$key]['at']) < self::DNS_CACHE_TTL) {
+            return self::$dnsCache[$key]['ips'];
         }
 
+        $ips = self::$dnsResolver !== null
+            ? (array) call_user_func(self::$dnsResolver, $host)
+            : $this->lookupHostIps($host);
+
+        if (!empty($ips)) {
+            self::$dnsCache[$key] = ['ips' => $ips, 'at' => $now];
+        } else {
+            unset(self::$dnsCache[$key]);
+        }
+
+        return $ips;
+    }
+
+    /**
+     * Uncached system DNS lookup (A and AAAA records).
+     */
+    private function lookupHostIps(string $host): array
+    {
         $ips = [];
 
         // IPv4 resolution
