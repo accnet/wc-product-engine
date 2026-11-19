@@ -1,7 +1,7 @@
 {
   "id": "P015",
   "title": "Shopify CSV import performance",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "b08ec96ba98b5f95df803e1de27cab5353a1ca4deed6f41e83b66091974871b2",
   "tasks": [
     {
@@ -470,9 +470,64 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "4f2afe73251ccba50c9a5b6b5b4e957bb82dde02",
+          "content_digest": "be7b6445cc28d89a3c360c1844a8106c82915e7d48dc4a2e02e2a505f9a59cc6",
+          "output_sha256": "fe1bbcd69673e1c5aeb647d9ac0719cfb6dad11c67edf135a2edab3ca00acb71",
+          "output_path": "docs/plans/P015-import-performance/command-1795130453192-c4ec1e26.log",
+          "time": "2026-11-19T23:20:53.192Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "4f2afe73251ccba50c9a5b6b5b4e957bb82dde02",
+          "content_digest": "be7b6445cc28d89a3c360c1844a8106c82915e7d48dc4a2e02e2a505f9a59cc6",
+          "output_sha256": "4d954fbd5ece9177ed60f48310802fabdb4892122543bcd03ec9b68b644c5694",
+          "output_path": "docs/plans/P015-import-performance/command-1795130453281-45688ddc.log",
+          "time": "2026-11-19T23:20:53.281Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "4f2afe73251ccba50c9a5b6b5b4e957bb82dde02",
+          "content_digest": "6cfde99143847dc31cbd1f9d031237717260112cb5f99a3afe3cea333257421c",
+          "output_sha256": "5caf4e5caf205ba3022f793380c955c057bbeaad07233a7a56af3a8fee9e1a30",
+          "output_path": "docs/plans/P015-import-performance/command-1795130458313-a8eb8c9e.log",
+          "time": "2026-11-19T23:20:58.314Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "4f2afe73251ccba50c9a5b6b5b4e957bb82dde02",
+          "content_digest": "6cfde99143847dc31cbd1f9d031237717260112cb5f99a3afe3cea333257421c",
+          "output_sha256": "4d954fbd5ece9177ed60f48310802fabdb4892122543bcd03ec9b68b644c5694",
+          "output_path": "docs/plans/P015-import-performance/command-1795130458402-241c3f60.log",
+          "time": "2026-11-19T23:20:58.402Z"
+        }
+      ],
+      "started_at": "2026-11-19T23:18:26.804Z"
     }
   ],
-  "approved_hash": "b08ec96ba98b5f95df803e1de27cab5353a1ca4deed6f41e83b66091974871b2"
+  "approved_hash": "b08ec96ba98b5f95df803e1de27cab5353a1ca4deed6f41e83b66091974871b2",
+  "report_hash": "9643f94fbeb319047e5e70ecadd3e7799e0555c40cd1159cff4795702b96ae5d"
 }
