@@ -13,4 +13,4 @@ Status: in_progress
 - [x] P011.9 — Product library block UI: grid, upload states and retry, URL add, featured, order, alt, impact dialog, draft (done)
 - [x] P011.10 — Variant picker drawer: product images only, selection mark, one, selected rows or option group, count preview, add image (done)
 - [x] P011.11 — Orphan cleanup job, explicit file delete, provider switch regression, CLI report, closeout docs (done)
-- [ ] P011.12 — Gated live storage round trip: real upload, verify, delete test object (todo)
+- [ ] P011.12 — Gated live storage round trip: real upload, verify, delete test object (blocked)

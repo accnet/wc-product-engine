@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Không còn câu hỏi mở trong giai đoạn P013. Các câu hỏi OD-12…OD-18 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Một câu hỏi mở: OD-19 (mục 4, chặn P011.12). Các câu hỏi OD-12…OD-18 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -35,4 +35,14 @@ Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-sco
 
 ## 4. Câu hỏi mở
 
-Không có câu hỏi mở.
+### OD-19 — P011.12 — Plugin object storage `images-space` chưa được cài/kích hoạt trên `site1.localhost`
+
+- Status: open (P011.12 ở trạng thái `blocked`).
+- Doc section: 10 §5; `docs/plans/P011-product-media-library/plan.md` §3 D02, §5 P011.12.
+- Commit: test `tests/integration/StorageLiveRoundTripTest.php` đã được viết và chạy fail-closed trong commit P011.12.
+- Context: P011.1–P011.11 đã hoàn tất (`done`). Chỉ còn P011.12 yêu cầu chạy round-trip thật với object storage mặc định (upload ảnh PNG nhỏ, xác minh tồn tại và đúng kích thước trên remote, đọc lại qua URL đã lưu kiểm SHA-256, xóa object và các dòng DB thử nghiệm) và bắt buộc **fail (không skip, không fallback về local storage)** khi plugin storage không nạp được hoặc chưa cấu hình.
+- Default đã thử: kiểm tra `/var/www/site1.localhost/wp-content/plugins/` và `wp plugin list` (không có plugin `images-space`, cũng không có mu-plugin), kiểm tra `wp option list` (không có option `images_space_settings`). Chạy `node scripts/plan.mjs run P011.12 -- php -d zend.assertions=1 -d assert.exception=1 /usr/local/bin/wp eval-file tests/integration/StorageLiveRoundTripTest.php` trả về exit 1: `FAILED: Object storage plugin is not installed or loaded (ImagesSpace\Application\Settings / ImagesSpace\Storage\AdapterFactory missing). Live round trip cannot be skipped.` Không chuyển sang LocalStorageProvider để giả pass.
+- Blocker và impact: P011.12 không thể pass và P011 chưa thể `close` (`in_progress`, 11/12 task `done`, P011.12 `blocked`). Không ảnh hưởng runtime: media library hiện hoạt động bình thường trên local storage theo OD-15 A1.
+- Proposed resolution:
+  - Phương án A: cài đặt, kích hoạt và cấu hình plugin `images-space` (S3/Spaces/MinIO thật) trên `site1.localhost`, sau đó chạy lại `P011.12` (`StorageLiveRoundTripTest.php`) để chứng nhận round-trip thật và đóng P011.
+  - Phương án B: nếu môi trường này không dùng S3 thật, xác nhận miễn chứng nhận S3 live round-trip và ủy quyền tạo amendment plan đóng P011 ở phạm vi local + fake provider (ghi rõ không phải chứng nhận S3).

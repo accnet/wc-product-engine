@@ -1103,8 +1103,41 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "blocked",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "171ff6f8302bb8c0e96d5dfbae8775bbcc6d92db",
+          "content_digest": "b9adc184ddcf0b14dc998202686922ca0c4356e86b57c02b486950da0e91d888",
+          "output_sha256": "1b7a17f71308bb6feab2b0a430e1a6aeede1f478a712bad18277ef0aea558887",
+          "output_path": "docs/plans/P011-product-media-library/command-1795165967932-3581648d.log",
+          "time": "2026-11-20T09:12:47.933Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/StorageLiveRoundTripTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "171ff6f8302bb8c0e96d5dfbae8775bbcc6d92db",
+          "content_digest": "b9adc184ddcf0b14dc998202686922ca0c4356e86b57c02b486950da0e91d888",
+          "output_sha256": "582f3d2c0b7f13f5c98f89b69d9924b8004dd65c7232dc0602ef9fb6bbb9b8a5",
+          "output_path": "docs/plans/P011-product-media-library/command-1795165969374-f1ca0eee.log",
+          "time": "2026-11-20T09:12:49.374Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:12:47.832Z"
     }
   ],
   "approved_hash": "0805a5eeffba8af3c815a04d00c18c3fb513ad2b4ecae4ee374ec6b92f200153"
