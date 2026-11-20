@@ -248,6 +248,10 @@ class ProductEditorContractTest
             }
             $this->wpdb->delete("{$prefix}wpe_inventory", ['owner_id' => $id]);
             $this->wpdb->delete("{$prefix}wpe_variants", ['product_id' => $id]);
+            // Option values and variant values first: orphans keep their option_id, and the next option created
+            // with MAX(id)+1 collides with them on uniq_option_value_key.
+            $this->wpdb->query($this->wpdb->prepare("DELETE vv FROM {$prefix}wpe_variant_values vv JOIN {$prefix}wpe_options o ON o.id = vv.option_id WHERE o.product_id = %d", $id));
+            $this->wpdb->query($this->wpdb->prepare("DELETE ov FROM {$prefix}wpe_option_values ov JOIN {$prefix}wpe_options o ON o.id = ov.option_id WHERE o.product_id = %d", $id));
             $this->wpdb->delete("{$prefix}wpe_options", ['product_id' => $id]);
             $this->wpdb->delete("{$prefix}wpe_products", ['id' => $id]);
             wp_delete_post($id, true);
