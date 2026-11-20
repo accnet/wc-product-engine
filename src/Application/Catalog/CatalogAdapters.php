@@ -25,6 +25,17 @@ class CatalogAdapters
 {
     public const MAX_PAGE_DEPTH = 100;
     public const DEFAULT_PER_PAGE = 48;
+    /** Largest page the index serves; larger or unbounded requests are left to WP_Query (audit LOG-01). */
+    public const MAX_PER_PAGE = 100;
+
+    /** WP_Query vars the catalog index cannot express; a non-empty value falls back to core. */
+    private const UNSUPPORTED_QUERY_VARS = [
+        'author', 'author_name', 'author__in', 'author__not_in',
+        'date_query', 'year', 'monthnum', 'day', 'w', 'm', 'hour', 'minute', 'second',
+        'post_parent', 'post_parent__in', 'post_parent__not_in',
+        'post_name__in', 'name__in', 'meta_key', 'meta_value', 'meta_compare',
+        'perm', 'has_password', 'post_password', 'comment_count',
+    ];
 
     private \wpdb $wpdb;
     private CatalogQuery $queryCompiler;
@@ -69,16 +80,45 @@ class CatalogAdapters
     {
         $unsupported = [];
 
-        // Check for unsupported meta queries (unindexed custom postmeta)
+        // meta_query is never translated by adaptWcQueryArgs(), so any clause would be silently
+        // dropped (R78, audit LOG-01). Name the keys for diagnostics, then fall back to core.
         if (!empty($queryVars['meta_query']) && is_array($queryVars['meta_query'])) {
-            $allowedMetaKeys = ['_price', '_regular_price', '_sale_price', '_sku', '_stock_status', '_featured', '_visibility'];
-            foreach ($queryVars['meta_query'] as $clause) {
-                if (is_array($clause) && isset($clause['key'])) {
-                    if (!in_array($clause['key'], $allowedMetaKeys, true)) {
-                        $unsupported[] = "Unsupported meta_query key: '{$clause['key']}'";
-                    }
+            $keys = [];
+            array_walk_recursive($queryVars['meta_query'], static function ($value, $key) use (&$keys): void {
+                if ($key === 'key' && is_scalar($value)) {
+                    $keys[] = (string)$value;
                 }
+            });
+            $unsupported[] = $keys === []
+                ? 'Unsupported meta_query'
+                : "Unsupported meta_query key: '" . implode("', '", array_unique($keys)) . "'";
+        }
+
+        // Query vars the catalog index cannot express (audit LOG-01).
+        foreach (self::UNSUPPORTED_QUERY_VARS as $var) {
+            if (!empty($queryVars[$var])) {
+                $unsupported[] = "Unsupported query var: '{$var}'";
             }
+        }
+
+        // Unbounded or oversized result sets are not archive pages: posts_per_page -1 used to come
+        // back as 48 rows and anything above 100 was cut to 100 (audit LOG-01).
+        $perPage = $queryVars['posts_per_page'] ?? ($queryVars['limit'] ?? null);
+        if (!empty($queryVars['nopaging']) || (is_numeric($perPage) && ((int)$perPage < 0 || (int)$perPage > self::MAX_PER_PAGE))) {
+            $unsupported[] = 'Unsupported page size: ' . (!empty($queryVars['nopaging']) ? 'nopaging' : (string)$perPage);
+        }
+
+        if ($this->mapOrderby($queryVars) === null) {
+            $orderby = $queryVars['orderby'] ?? '';
+            $unsupported[] = 'Unsupported orderby: ' . (is_scalar($orderby) ? "'{$orderby}'" : wp_json_encode($orderby))
+                . ' ' . strtoupper((string)($queryVars['order'] ?? ''));
+        }
+
+        // WooCommerce applies the archive price filter from $_GET in posts_clauses on the main query
+        // (WC_Query::price_filter_post_clauses), so it never appears in query vars and would be
+        // dropped here. handlePostsPreQuery() marks it (audit LOG-01).
+        if (!empty($queryVars['wpe_wc_price_filter'])) {
+            $unsupported[] = 'Unsupported WooCommerce price filter (min_price/max_price)';
         }
 
         // Check for unsupported raw SQL clauses
@@ -94,10 +134,11 @@ class CatalogAdapters
             $unsupported[] = 'Unsupported explicit post__not_in filter';
         }
 
-        // Check for unsupported post status
+        // Only published products are served from the index. 'any' used to become the literal filter
+        // status = 'any' (0 rows), and only the first of several statuses was applied (audit LOG-01).
         if (isset($queryVars['post_status']) && $queryVars['post_status'] !== '') {
             $statuses = (array)$queryVars['post_status'];
-            $allowedStatuses = ['publish', 'draft', 'trash', 'any'];
+            $allowedStatuses = ['publish'];
             foreach ($statuses as $st) {
                 if ($st !== '' && !in_array($st, $allowedStatuses, true)) {
                     $unsupported[] = "Unsupported post_status: '{$st}'";
@@ -200,6 +241,56 @@ class CatalogAdapters
     /* -------------------------------------------------------------------------- */
     /* WooCommerce Query Arguments Adapter (R76)                                  */
     /* -------------------------------------------------------------------------- */
+
+    /**
+     * Catalog sort for the query's orderby/order, or null when the index cannot reproduce it.
+     *
+     * Before audit LOG-01 every unknown orderby (rand, relevance, post__in, 'date ID',
+     * meta_value on any key...) was served as price ascending.
+     */
+    private function mapOrderby(array $queryVars): ?string
+    {
+        $orderby = $queryVars['orderby'] ?? '';
+        if (!is_string($orderby)) {
+            return null; // array form: multiple sort keys
+        }
+        $orderby = trim($orderby);
+        $order = strtoupper(trim((string)($queryVars['order'] ?? '')));
+        $asc = $order === 'ASC';
+
+        if ($orderby === '') {
+            // WP_Query orders a search by relevance and anything else by date DESC.
+            return !empty($queryVars['s']) ? null : ($asc ? 'date_asc' : 'date_desc');
+        }
+
+        switch ($orderby) {
+            case 'price':
+                return $asc ? 'price_asc' : 'price_desc';
+            case 'meta_value_num':
+            case 'meta_value':
+                return ($queryVars['meta_key'] ?? '') === '_price' ? ($asc ? 'price_asc' : 'price_desc') : null;
+            case 'date':
+            case 'date ID':
+            case 'post_date':
+            case 'ID':
+            case 'id':
+                return $asc ? 'date_asc' : 'date_desc';
+            // The index sorts these one way only; WP_Query's default order is DESC.
+            case 'popularity':
+            case 'total_sales':
+                return $asc ? null : 'popularity';
+            case 'rating':
+                return $asc ? null : 'rating';
+            case 'menu_order':
+            case 'menu_order title':
+                return $asc ? 'menu_order' : null;
+            case 'title':
+            case 'post_title':
+                return $asc ? 'title_asc' : null;
+            default:
+                return null;
+        }
+    }
 
     /**
      * Translates WooCommerce query arguments into CatalogQuery parameters.
@@ -311,40 +402,8 @@ class CatalogAdapters
             $adapted['search'] = (string)$queryVars['sku'];
         }
 
-        // 11. Sorting / Orderby
-        $orderby = $queryVars['orderby'] ?? 'date';
-        $order = strtoupper($queryVars['order'] ?? 'DESC');
-
-        switch ($orderby) {
-            case 'price':
-            case 'meta_value_num':
-                $adapted['sort'] = $order === 'ASC' ? 'price_asc' : 'price_desc';
-                break;
-            case 'date':
-                $adapted['sort'] = $order === 'ASC' ? 'date_asc' : 'date_desc';
-                break;
-            case 'popularity':
-            case 'total_sales':
-                $adapted['sort'] = 'popularity';
-                break;
-            case 'rating':
-                $adapted['sort'] = 'rating';
-                break;
-            case 'menu_order':
-            case 'menu_order title':
-                $adapted['sort'] = 'menu_order';
-                break;
-            case 'title':
-                $adapted['sort'] = 'title_asc';
-                break;
-            case 'ID':
-            case 'id':
-                $adapted['sort'] = $order === 'ASC' ? 'date_asc' : 'date_desc';
-                break;
-            default:
-                $adapted['sort'] = 'price_asc';
-                break;
-        }
+        // 11. Sorting / Orderby (unsupported values never reach here: evaluateQuerySupport() rejects them)
+        $adapted['sort'] = $this->mapOrderby($queryVars) ?? 'date_desc';
 
         // 12. Pagination (limit, page, offset)
         $limit = isset($queryVars['limit']) ? (int)$queryVars['limit'] : null;
@@ -466,7 +525,23 @@ class CatalogAdapters
             return null;
         }
 
+        // Only the storefront product archive (WooCommerce's product query or the main query) is
+        // served from the index. Secondary queries from themes, widgets, sitemaps, other plugins
+        // and the WC REST API keep WP_Query semantics (audit LOG-01).
+        if (!$query->get('wc_query') && !$query->is_main_query()) {
+            return null;
+        }
+
+        // 'id=>parent' is answered by core; decide before running any engine query.
+        if ((string)$query->get('fields') === 'id=>parent') {
+            return null;
+        }
+
         $queryVars = $query->query_vars;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter state, as in WC_Query
+        if ($query->is_main_query() && (isset($_GET['min_price']) || isset($_GET['max_price']))) {
+            $queryVars['wpe_wc_price_filter'] = true;
+        }
 
         // Single-product lookups (/product/<slug>/, ?p=<id>) load a single post shell, not a catalog archive
         if (
@@ -512,12 +587,8 @@ class CatalogAdapters
             return [];
         }
 
-        $fields = (string)$query->get('fields');
-        if ($fields === 'ids') {
+        if ((string)$query->get('fields') === 'ids') {
             return $result['ids'];
-        }
-        if ($fields === 'id=>parent') {
-            return null;
         }
 
         // Prime post caches and return WP_Post instances
