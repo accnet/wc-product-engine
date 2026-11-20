@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { contentDigest, sha256, runtimeEnvironment, finalizeEvidence } from './evidence-lib.mjs';
+import { contentDigest, sha256, runtimeEnvironment, finalizeEvidence, WP_PATH } from './evidence-lib.mjs';
 import { beginIsolation, finishIsolation, isolationProblems } from './test-isolation.mjs';
 
 const root = process.cwd();
@@ -68,7 +68,7 @@ function runT01() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -157,7 +157,7 @@ function runT02() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -357,7 +357,7 @@ function runT04() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -447,7 +447,7 @@ function runT05() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -550,7 +550,7 @@ function runT09() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -654,7 +654,7 @@ function runT06() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -959,7 +959,7 @@ function runT10() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1062,7 +1062,7 @@ function runT11() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1159,7 +1159,7 @@ function runT12() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1276,7 +1276,7 @@ function runT13() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1373,7 +1373,7 @@ function runT14() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1470,7 +1470,7 @@ function runT15() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1495,7 +1495,7 @@ function runT15() {
     environment: runtimeEnvironment(),
     commands: [
       {
-        argv: ['wp', '--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile],
+        argv: ['wp', `--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile],
         display: 'npm run test:task -- T15',
         exit_code: 0,
         output_path: outputPath,
@@ -1572,7 +1572,7 @@ function runT16() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1597,7 +1597,7 @@ function runT16() {
     environment: runtimeEnvironment(),
     commands: [
       {
-        argv: ['wp', '--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile],
+        argv: ['wp', `--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile],
         display: 'npm run test:task -- T16',
         exit_code: 0,
         output_path: outputPath,
@@ -1674,7 +1674,7 @@ function runT17() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1771,7 +1771,7 @@ function runT18() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1862,7 +1862,7 @@ function runT19() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -1965,7 +1965,7 @@ function runT20() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2062,7 +2062,7 @@ function runT21() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2159,7 +2159,7 @@ function runT22() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2256,7 +2256,7 @@ function runT23() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2353,7 +2353,7 @@ function runT24() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2450,7 +2450,7 @@ function runT25() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2547,7 +2547,7 @@ function runT26() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2644,7 +2644,7 @@ function runT27() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2741,7 +2741,7 @@ function runT28() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2838,7 +2838,7 @@ function runT29() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -2942,7 +2942,7 @@ function runT30() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3039,7 +3039,7 @@ function runT31() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3136,7 +3136,7 @@ function runT32() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3233,7 +3233,7 @@ function runT33() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3330,7 +3330,7 @@ function runT34() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3434,7 +3434,7 @@ function runT35() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3531,7 +3531,7 @@ function runT36() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3628,7 +3628,7 @@ function runT37() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3725,7 +3725,7 @@ function runT38() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3822,7 +3822,7 @@ function runT39() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -3919,7 +3919,7 @@ function runT40() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4022,7 +4022,7 @@ function runT41() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4119,7 +4119,7 @@ function runT44() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4222,7 +4222,7 @@ function runT47() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4332,7 +4332,7 @@ function runT48() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4436,7 +4436,7 @@ function runT42() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4539,7 +4539,7 @@ function runT43() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4636,7 +4636,7 @@ function runT45() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4733,7 +4733,7 @@ function runT49() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });
@@ -4830,7 +4830,7 @@ function runT46() {
   const fullOutputPath = path.join(root, outputPath);
 
   const wpCmd = 'wp';
-  const wpArgs = ['--path=/var/www/site1.localhost', '--allow-root', 'eval-file', testFile];
+  const wpArgs = [`--path=${WP_PATH}`, '--allow-root', 'eval-file', testFile];
 
   console.log(`Executing: ${wpCmd} ${wpArgs.join(' ')}`);
   const proc = spawnSync(wpCmd, wpArgs, { encoding: 'utf8' });

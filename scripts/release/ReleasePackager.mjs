@@ -87,11 +87,14 @@ export function buildReleasePackage() {
   const zipStat = fs.statSync(zipPath);
 
   // Verify WordPress Core and WooCommerce checksums
-  const wpCoreChecksum = spawnSync('wp', ['--path=/var/www/site1.localhost', '--allow-root', 'core', 'verify-checksums'], { encoding: 'utf8' });
+  const wpPath = `--path=${process.env.WPE_WP_PATH || '/var/www/site1.localhost'}`;
+  const wpCoreChecksum = spawnSync('wp', [wpPath, '--allow-root', 'core', 'verify-checksums'], { encoding: 'utf8' });
   const coreVerified = wpCoreChecksum.status === 0;
 
-  const wcChecksum = spawnSync('wp', ['--path=/var/www/site1.localhost', '--allow-root', 'plugin', 'verify-checksums', 'woocommerce'], { encoding: 'utf8' });
+  const wcChecksum = spawnSync('wp', [wpPath, '--allow-root', 'plugin', 'verify-checksums', 'woocommerce'], { encoding: 'utf8' });
   const wcVerified = wcChecksum.status === 0;
+
+  const lockEnv = JSON.parse(fs.readFileSync(path.join(root, 'contracts/compatibility/baseline-lock.json'), 'utf8')).environment ?? {};
 
   const manifest = {
     package: 'wc-product-engine',
@@ -110,12 +113,13 @@ export function buildReleasePackage() {
       database: 'MariaDB >= 11.4',
       os: 'Linux (Ubuntu 22.04+)',
     },
+    // The certified target is the pinned runtime (contracts/compatibility/baseline-lock.json), not a copy of it.
     certified_target: {
-      wordpress: '7.1.3',
-      woocommerce: '11.2.1',
-      php: '8.3.31',
-      database: '11.8.6-MariaDB-ubu2204',
-      theme: 'calora',
+      wordpress: lockEnv.wordpress?.version,
+      woocommerce: lockEnv.woocommerce?.version,
+      php: lockEnv.php?.version,
+      database: lockEnv.database?.version,
+      theme: lockEnv.theme?.name,
     },
     verification_status: {
       wordpress_core_checksums: coreVerified ? 'passed' : 'failed',

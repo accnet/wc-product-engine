@@ -1,0 +1,317 @@
+{
+  "id": "P020",
+  "title": "Re-certify on WordPress 7.1.5 / WooCommerce 11.3.0",
+  "status": "in_progress",
+  "content_hash": "fe1281341ba91ce46355e2b822d33b3993c060fe05a80716f3f35d128a8a17f9",
+  "tasks": [
+    {
+      "id": "P020.1",
+      "title": "Harness honours WPE_WP_PATH; version targets read from pins",
+      "depends_on": [],
+      "read_first": [
+        "docs/evidence/README.md",
+        "docs/07-testing.md"
+      ],
+      "files": [
+        "scripts/evidence-lib.mjs",
+        "scripts/test-runtime.mjs",
+        "scripts/test-isolation.mjs",
+        "scripts/release/ReleasePackager.mjs",
+        "tests/unit/T07Test.php",
+        "tests/integration/T08Test.php",
+        "tests/integration/T48Test.php",
+        "tests/integration/T49Test.php"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "scripts/evidence-lib.mjs"
+        ],
+        [
+          "node",
+          "--check",
+          "scripts/test-runtime.mjs"
+        ],
+        [
+          "node",
+          "--check",
+          "scripts/test-isolation.mjs"
+        ],
+        [
+          "node",
+          "--check",
+          "scripts/release/ReleasePackager.mjs"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/unit/T07Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T08Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T48Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T49Test.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "scripts/evidence-lib.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822060-2850516d.log",
+          "time": "2026-11-20T07:30:22.060Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "scripts/test-runtime.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822134-42d83519.log",
+          "time": "2026-11-20T07:30:22.135Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "scripts/test-isolation.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822225-85f1f163.log",
+          "time": "2026-11-20T07:30:22.226Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "scripts/release/ReleasePackager.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822296-91a5b7b2.log",
+          "time": "2026-11-20T07:30:22.297Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/unit/T07Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "931775e92c4f65ec488af04d0260a5ab1b4007d93313a7f40b6b6ede8d50221a",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822398-26c4ca56.log",
+          "time": "2026-11-20T07:30:22.399Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T08Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "13fe0508c4cd124183cb80e37e086fc39cd128e5191def1aaf8bc5634463ea16",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822496-b8c19fef.log",
+          "time": "2026-11-20T07:30:22.496Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T48Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "00310cb0dc2b9999e8c131cd1eae6244fc71296b09b699fcbdd5add1ed44c457",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822584-905cc06c.log",
+          "time": "2026-11-20T07:30:22.585Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T49Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "f5df4b35ae2195cf1bd1c50d1c6f6cef7b98392e66c752328629ef71f4e74ef6",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822671-d756138b.log",
+          "time": "2026-11-20T07:30:22.672Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "0f6e0f9857424706e48ed5c0a4ff9aada5f8b2bf",
+          "content_digest": "95fa056a7205cb5959ae995867a916edae0640fad9bfa2688dd89f21562a2854",
+          "output_sha256": "06bb5de5918a6ed4408ed661f3dc17189c80d0719ea202af59417be6ac8db588",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795159822770-809c45cb.log",
+          "time": "2026-11-20T07:30:22.771Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:29:17.509Z"
+    },
+    {
+      "id": "P020.2",
+      "title": "T02Test independent of live flags and catalog categories",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md"
+      ],
+      "files": [
+        "tests/integration/T02Test.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/T02Test.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P020.3",
+      "title": "Re-pin contracts and docs to WP 7.1.5 / WC 11.3.0 / PHP 8.3.36 / MariaDB 11.8.9",
+      "depends_on": [
+        "P020.1"
+      ],
+      "read_first": [
+        "docs/01-architecture-and-stack.md"
+      ],
+      "files": [
+        "contracts/compatibility/pins.json",
+        "contracts/compatibility/baseline-lock.json",
+        "contracts/compatibility/matrix.json",
+        "contracts/compatibility/wc-props-mapping.json",
+        "docs/01-architecture-and-stack.md",
+        "docs/PROGRESS.md",
+        "README.md",
+        "docs/QUESTIONS.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P020.4",
+      "title": "Re-run T01-T49 evidence on the isolated root",
+      "depends_on": [
+        "P020.1",
+        "P020.2",
+        "P020.3"
+      ],
+      "read_first": [
+        "docs/evidence/README.md"
+      ],
+      "files": [
+        "docs/evidence/rerun-summary.json"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P020.5",
+      "title": "Report, notes and closeout",
+      "depends_on": [
+        "P020.4"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P020-wp715-recertification/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "fe1281341ba91ce46355e2b822d33b3993c060fe05a80716f3f35d128a8a17f9"
+}

@@ -55,7 +55,8 @@ export function beginIsolation(taskId){
  if(residueTotal(before)>0)throw new Error(`Residue gate: ${residueTotal(before)} junk rows already present ${JSON.stringify(residueSummary(before))}. Run: node scripts/test-isolation.mjs cleanup-residue --backup <file> --apply`);
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'wpe-isolation-'));
  const file=path.join(dir,`${taskId}.sql`);snapshot(file);
- return {taskId,dir,file,counts_before:rowCounts(),residue_before:residueSummary(before),restored:false};
+ const database=must(wp(['eval','echo DB_NAME;']),'db name').stdout.trim();
+ return {taskId,dir,file,database,counts_before:rowCounts(),residue_before:residueSummary(before),restored:false};
 }
 export function finishIsolation(state){
  if(state.restored)return state.record;
@@ -68,6 +69,8 @@ export function finishIsolation(state){
  const residue=diffCounts(state.counts_before,counts_after_restore);
  state.record={
   mechanism:'wp db export before the test, wp db import after the test',
+  wp_root:WP_PATH,
+  database:state.database,
   restored:true,
   counts_before:state.counts_before,
   counts_after_test,

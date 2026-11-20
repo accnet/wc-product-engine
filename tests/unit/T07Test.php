@@ -8,7 +8,8 @@
  */
 
 if (!defined('ABSPATH')) {
-    $wp_load = '/var/www/site1.localhost/wp-load.php';
+    // Run directly with php: WPE_WP_PATH selects the WordPress root (an isolated test root), default site1.localhost.
+    $wp_load = rtrim(getenv('WPE_WP_PATH') ?: '/var/www/site1.localhost', '/') . '/wp-load.php';
     if (file_exists($wp_load)) {
         require_once $wp_load;
     } else {

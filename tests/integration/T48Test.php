@@ -625,7 +625,7 @@ class T48Test
         echo "Testing R198 (no_core_file_changes)...\n";
 
         // 1. Verify WordPress Core files
-        $coreDirs = ['/var/www/site1.localhost/wp-includes', '/var/www/site1.localhost/wp-admin'];
+        $coreDirs = [ABSPATH . 'wp-includes', ABSPATH . 'wp-admin'];
         foreach ($coreDirs as $dir) {
             if (!is_dir($dir)) {
                 throw new \RuntimeException("WordPress core directory {$dir} does not exist!");
@@ -634,7 +634,7 @@ class T48Test
 
         // Check if wp core verify-checksums is clean via WP-CLI
         $proc = proc_open(
-            'wp --path=/var/www/site1.localhost --allow-root core verify-checksums',
+            'wp --path=' . escapeshellarg(ABSPATH) . ' --allow-root core verify-checksums',
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes
         );
@@ -649,7 +649,7 @@ class T48Test
         }
 
         // 2. Verify WooCommerce Core directory exists and is pristine
-        $wcDir = '/var/www/site1.localhost/wp-content/plugins/woocommerce';
+        $wcDir = WP_PLUGIN_DIR . '/woocommerce';
         if (!is_dir($wcDir)) {
             throw new \RuntimeException("WooCommerce directory {$wcDir} not found");
         }

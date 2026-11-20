@@ -1,7 +1,8 @@
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {spawnSync} from 'node:child_process';
 export const sha256=s=>crypto.createHash('sha256').update(s).digest('hex');
 function walk(dir){return fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]):[];}
-const WP_PATH=process.env.WPE_WP_PATH||'/var/www/site1.localhost';
+// WordPress root the runtime and tests run against; an isolated test root can be selected with WPE_WP_PATH.
+export const WP_PATH=process.env.WPE_WP_PATH||'/var/www/site1.localhost';
 // The registry `status` field is lifecycle metadata (revalidation_pending -> verified); it must not invalidate the evidence it describes.
 function digestBytes(rel,full){
  if(rel==='contracts/regression-requirements.json'){try{const j=JSON.parse(fs.readFileSync(full,'utf8'));for(const r of j.requirements??[])delete r.status;return Buffer.from(JSON.stringify(j));}catch{}}

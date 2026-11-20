@@ -223,14 +223,14 @@ class T49Test
         echo "Testing R201 (core_checksum)...\n";
 
         // 1. Verify WordPress core checksums
-        exec('wp --path=/var/www/site1.localhost --allow-root core verify-checksums 2>&1', $wpOut, $wpCode);
+        exec('wp --path=' . escapeshellarg(ABSPATH) . ' --allow-root core verify-checksums 2>&1', $wpOut, $wpCode);
         if ($wpCode !== 0) {
             throw new \RuntimeException("WordPress core checksums failed: " . implode("\n", $wpOut));
         }
         echo "  ✓ WordPress core checksums: 100% verified against official release\n";
 
         // 2. Verify WooCommerce checksums
-        exec('wp --path=/var/www/site1.localhost --allow-root plugin verify-checksums woocommerce 2>&1', $wcOut, $wcCode);
+        exec('wp --path=' . escapeshellarg(ABSPATH) . ' --allow-root plugin verify-checksums woocommerce 2>&1', $wcOut, $wcCode);
         if ($wcCode !== 0) {
             throw new \RuntimeException("WooCommerce checksums failed: " . implode("\n", $wcOut));
         }
@@ -366,7 +366,10 @@ class T49Test
         $manifest = json_decode((string)file_get_contents($manifestPath), true);
 
         $target = $manifest['certified_target'] ?? [];
-        if (($target['wordpress'] ?? '') !== '7.1.3' || ($target['woocommerce'] ?? '') !== '11.2.1') {
+        $pins = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/contracts/compatibility/pins.json'), true);
+        $pinned = $pins['versions'] ?? [];
+        if (($target['wordpress'] ?? '') !== ($pinned['wordpress'] ?? null) || ($target['woocommerce'] ?? '') !== ($pinned['woocommerce'] ?? null)
+            || ($target['wordpress'] ?? '') !== get_bloginfo('version') || ($target['woocommerce'] ?? '') !== WC()->version) {
             throw new \RuntimeException("Certified target in manifest does not match target environment!");
         }
 
