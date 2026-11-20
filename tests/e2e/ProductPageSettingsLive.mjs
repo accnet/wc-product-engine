@@ -228,6 +228,14 @@ foreach ($varMediaMap as $idx => $aId) {
     }
 }
 
+// Since F07 (c11a85b) storefront page views only show assets that already have an attachment;
+// the editor and importers create it on save. This fixture writes media rows directly, so create
+// the attachments here, in WP-CLI, for this fixture's assets only.
+$bridge = \\WPE\\Compatibility\\Gallery\\AttachmentBridge::instance();
+foreach ([$parentAssetId, $assetClassicBlackM, $assetClassicBlackL, $assetModernWhiteL] as $aId) {
+    $bridge->getOrCreateAttachmentId((int)$aId);
+}
+
 echo 'JSON:' . wp_json_encode([
     'product_id'  => $productId,
     'title'       => $title,
@@ -279,6 +287,10 @@ if ($productId > 0) {
     $wpdb->query("DELETE FROM {$prefix}wpe_variant_media WHERE variant_id IN ({$in})");
     $wpdb->query("DELETE FROM {$prefix}wpe_variants WHERE id IN ({$in}) OR product_id = {$productId}");
     $wpdb->query("DELETE FROM {$prefix}wpe_products WHERE id IN ({$in})");
+    $attIds = $wpdb->get_col($wpdb->prepare("SELECT attachment_id FROM {$prefix}wpe_assets WHERE source_url LIKE %s AND attachment_id > 0", "https://cdn.example.com/p012-live/{$productId}/%"));
+    foreach ($attIds as $attId) {
+        wp_delete_attachment((int)$attId, true);
+    }
     $wpdb->query($wpdb->prepare("DELETE FROM {$prefix}wpe_assets WHERE source_url LIKE %s", "https://cdn.example.com/p012-live/{$productId}/%"));
 }
 echo 'CLEANED';
