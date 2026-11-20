@@ -18,3 +18,4 @@
 - P016 — P015 amendment: test DB variable and narrowed D03 (done)
 - P017 — Batched legacy meta writes and skip unchanged products on import (done)
 - P018 — P017 amendment: register WPE_VERSION (done)
+- P019 — Incremental catalog projection on import and missing SKU column fix (in_progress)

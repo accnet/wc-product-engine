@@ -1,0 +1,254 @@
+{
+  "id": "P019",
+  "title": "Incremental catalog projection on import and missing SKU column fix",
+  "status": "in_progress",
+  "content_hash": "f3ee7373f000e7bd1250e70a748fab81d1ae6229d9f20eeed5de3f97ad2b387d",
+  "tasks": [
+    {
+      "id": "P019.1",
+      "title": "Batched inventory read and facet insert in CatalogProjector with identical output",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Application/Catalog/CatalogProjector.php"
+      ],
+      "files": [
+        "src/Application/Catalog/CatalogProjector.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Catalog/CatalogProjector.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T16Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T17Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T18Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T19Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T20Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T47Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/EffectivePriceResolverTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Catalog/CatalogProjector.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "b6e0fd0e6c912feda4dacefc865dbef97c58d5cca92da3ffb8fb63a19788bacd",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159403355-9fddfed7.log",
+          "time": "2026-11-20T07:23:23.356Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T16Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "17eb9cfbe8f5639b4546ea4a2d78940e9482d0367d432d02e62600a8eb9281d6",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159410324-83dd912c.log",
+          "time": "2026-11-20T07:23:30.324Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T17Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "3e8191aaf36bc56c603a2291cc71af19bc3d3fcbc59518744e8857507865ae07",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159412132-67b3e9d5.log",
+          "time": "2026-11-20T07:23:32.132Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T18Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "707a0e12dc98528bf73203fa330fd3ed0e4ca3f0c2b85a02325592c9f5277724",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159413749-a35bde3c.log",
+          "time": "2026-11-20T07:23:33.750Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T19Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "15136fd55287f2b7885cb07f8e472e533365c535875fa3fc1e18ed49f961f290",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159415390-e9753b70.log",
+          "time": "2026-11-20T07:23:35.391Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T20Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "27493b483f7e547fbb4c36632fa168cd8c2d6ecf9b895883cafe77a55136de1d",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159416798-8f1a3876.log",
+          "time": "2026-11-20T07:23:36.798Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T47Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "43f757bbe0b7050d7053226ccf6bce17e47ffaebb0d066d20fcead4371ae3252",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159418492-4e008434.log",
+          "time": "2026-11-20T07:23:38.493Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/EffectivePriceResolverTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "837e19f83125120eb303a808fa1ac06b909a8f20",
+          "content_digest": "bc49b8951804a83e826b32e78f9e8d19c3c315562b187eab9e20c58709698a7e",
+          "output_sha256": "ec796c2ea56639d0a7b49b22bee1474f67f382607a82e2ae7ba442b9d1a79d7b",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159419890-d9af84a3.log",
+          "time": "2026-11-20T07:23:39.891Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:22:31.255Z"
+    },
+    {
+      "id": "P019.2",
+      "title": "Project imported products into the active generation and accept a missing SKU column",
+      "depends_on": [
+        "P019.1"
+      ],
+      "read_first": [
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T16Test.php"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P019.3",
+      "title": "Benchmark after P019, notes and report",
+      "depends_on": [
+        "P019.2"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P019-import-catalog-incremental/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "f3ee7373f000e7bd1250e70a748fab81d1ae6229d9f20eeed5de3f97ad2b387d"
+}

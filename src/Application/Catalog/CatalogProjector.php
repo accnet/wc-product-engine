@@ -238,14 +238,21 @@ class CatalogProjector
                 $anyOnSale = false;
                 $minNextChange = null;
 
+                // One inventory read for every stock owner of the product (P019 D03).
+                $invByOwner = [];
+                $ownerIds = array_values(array_unique(array_map(static fn(array $row): int => (int)$row['stock_owner_id'], $variants)));
+                foreach ((array)$this->wpdb->get_results(
+                    "SELECT * FROM {$this->tableInventory} WHERE owner_id IN (" . implode(',', $ownerIds) . ")",
+                    ARRAY_A
+                ) as $invRow) {
+                    $invByOwner[(int)$invRow['owner_id']] = $invRow;
+                }
+
                 foreach ($variants as $v) {
                     $vid = (int)$v['id'];
                     $stockOwnerId = (int)$v['stock_owner_id'];
 
-                    $vInv = $this->wpdb->get_row($this->wpdb->prepare(
-                        "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
-                        $stockOwnerId
-                    ), ARRAY_A);
+                    $vInv = $invByOwner[$stockOwnerId] ?? null;
 
                     $vManage = !empty($vInv['manage_stock']);
                     $vQty = $vInv && $vInv['quantity'] !== null ? (float)$vInv['quantity'] : 0.0;
@@ -399,25 +406,31 @@ class CatalogProjector
             }
         }
 
-        // Insert unique facets
+        // Insert unique facets in multi-row statements (P019 D03). IGNORE skips
+        // only a conflicting row, as the former per-row inserts did.
         $insertedKeys = [];
+        $facetRows = [];
         foreach ($facets as $f) {
             $dedupKey = $gen . ':' . $productId . ':' . $f['variant_id'] . ':' . $f['facet_key'] . ':' . $f['value_key'];
             if (isset($insertedKeys[$dedupKey])) {
                 continue;
             }
             $insertedKeys[$dedupKey] = true;
+            $facetRows[] = $f;
+        }
 
-            $this->wpdb->insert(
-                $this->tableCatalogFacets,
-                [
-                    'generation' => $gen,
-                    'product_id' => $productId,
-                    'variant_id' => $f['variant_id'],
-                    'facet_key'  => $f['facet_key'],
-                    'value_key'  => $f['value_key'],
-                ]
-            );
+        foreach (array_chunk($facetRows, 500) as $chunk) {
+            $placeholders = [];
+            $values = [];
+            foreach ($chunk as $f) {
+                $placeholders[] = '(%d, %d, %d, %s, %s)';
+                array_push($values, $gen, $productId, (int)$f['variant_id'], (string)$f['facet_key'], (string)$f['value_key']);
+            }
+            $this->wpdb->query($this->wpdb->prepare(
+                "INSERT IGNORE INTO {$this->tableCatalogFacets} (generation, product_id, variant_id, facet_key, value_key) VALUES "
+                    . implode(', ', $placeholders),
+                ...$values
+            ));
         }
 
         return true;
