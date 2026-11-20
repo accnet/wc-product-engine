@@ -829,6 +829,7 @@ input.wpe-option-name-input:focus {
 
 .wpe-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     background: #ffffff;
     font-size: 13px;
@@ -1218,21 +1219,15 @@ select.wpe-editable-input {
 
 /* 9. Fullscreen Modal Overlay */
 .wpe-fullscreen-overlay {
+    /* Covers the whole viewport (P022.3): no dependency on admin bar height, menu width,
+     * folded menu or RTL. Above the admin bar (99999), below the drawer, modals and the
+     * WordPress media modal (160000). */
     position: fixed;
-    top: 32px;
-    left: 160px;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: var(--wpe-p-color-bg);
-    z-index: 99990;
+    z-index: 100010;
     display: flex;
     flex-direction: column;
-}
-
-@media screen and (max-width: 960px) {
-    .wpe-fullscreen-overlay {
-        left: 0;
-    }
 }
 
 .wpe-fullscreen-container {
@@ -1402,9 +1397,10 @@ select.wpe-editable-input {
     justify-content: space-between;
     gap: 24px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-    z-index: 99999;
-    min-width: 440px;
-    max-width: 90vw;
+    z-index: 100020;
+    min-width: min(440px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
     animation: wpeSaveBarSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2437,4 +2433,61 @@ select.wpe-editable-input {
         transition: none !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* Save bar on small screens (P022.3): full width, wraps, sits closer to the edge. */
+@media (max-width: 782px) {
+    .wpe-sticky-savebar {
+        min-width: 0;
+        width: calc(100vw - 24px);
+        bottom: 12px;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 10px 14px;
+    }
+}
+
+/* Variants matrix (P022.3): the select and actions columns stay visible while the table
+ * scrolls sideways in a narrow meta box. Sticky cells need an opaque background. */
+.wpe-table thead th:first-child,
+.wpe-table .wpe-variant-row > td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.wpe-table thead th:last-child,
+.wpe-table .wpe-variant-row > td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    box-shadow: inset 1px 0 0 var(--wpe-p-color-border-subdued);
+}
+
+.wpe-table .wpe-variant-row > td:first-child,
+.wpe-table .wpe-variant-row > td:last-child {
+    background: #ffffff;
+}
+
+.wpe-table .wpe-variant-row:hover > td:first-child,
+.wpe-table .wpe-variant-row:hover > td:last-child {
+    background: var(--wpe-p-color-surface-hover);
+}
+
+.wpe-table .wpe-variant-row.selected > td:first-child,
+.wpe-table .wpe-variant-row.selected > td:last-child {
+    background: #f4f8fe;
+}
+
+/* Toasts (P022.3): close button on the dark surface. */
+.wpe-toast .wpe-icon-close {
+    width: 24px;
+    height: 24px;
+    margin-left: 4px;
+    color: #ffffff;
+}
+
+.wpe-toast .wpe-icon-close:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
 }

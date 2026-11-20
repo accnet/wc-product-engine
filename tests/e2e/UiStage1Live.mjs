@@ -358,6 +358,108 @@ const sections = {
         });
         check('Settings text inputs have a border of at least 3:1', settingsBorder >= 3, String(settingsBorder));
     },
+
+    /** R-01, R-02, L-01, N-01: save bar, fullscreen, matrix columns and toasts across viewports. */
+    async layout(page, fx) {
+        const sizes = [[360, 740], [768, 1000], [1024, 768], [1440, 900]];
+        const barProblems = [];
+        const fullProblems = [];
+        const actionProblems = [];
+        for (const [w, h] of sizes) {
+            await page.setViewportSize({ width: w, height: h });
+            await openEditor(page, fx);
+
+            // Matrix: the row actions are inside the visible part of the table without scrolling sideways.
+            const actions = await page.evaluate((app) => {
+                const box = document.querySelector(`${app} .wpe-table-container`).getBoundingClientRect();
+                const btn = document.querySelector(`${app} .wpe-variant-row .wpe-btn-delete-variant`).getBoundingClientRect();
+                const check = document.querySelector(`${app} .wpe-variant-row .wpe-row-select`).getBoundingClientRect();
+                return { inView: btn.left >= box.left - 1 && btn.right <= box.right + 1, checkInView: check.left >= box.left - 1, box: [Math.round(box.left), Math.round(box.right)], btn: [Math.round(btn.left), Math.round(btn.right)] };
+            }, APP);
+            if (!actions.inView || !actions.checkInView) actionProblems.push(`${w}px ${JSON.stringify(actions)}`);
+            // Scrolled fully to the right, the select column still shows.
+            const afterScroll = await page.evaluate((app) => {
+                const c = document.querySelector(`${app} .wpe-table-container`);
+                c.scrollLeft = c.scrollWidth;
+                const box = c.getBoundingClientRect();
+                const check = document.querySelector(`${app} .wpe-variant-row .wpe-row-select`).getBoundingClientRect();
+                const btn = document.querySelector(`${app} .wpe-variant-row .wpe-btn-delete-variant`).getBoundingClientRect();
+                return check.left >= box.left - 1 && btn.right <= box.right + 1;
+            }, APP);
+            if (!afterScroll) actionProblems.push(`${w}px after horizontal scroll`);
+
+            // Save bar: appears on a change and stays inside the viewport with its buttons visible.
+            const sku = page.locator(`${APP} .wpe-inline-sku`).first();
+            await sku.fill('P022-LAYOUT-' + w);
+            await sku.dispatchEvent('input');
+            await page.waitForSelector(`${APP} .wpe-sticky-savebar`, { state: 'visible', timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(300);
+            const bar = await page.evaluate((app) => {
+                const el = document.querySelector(`${app} .wpe-sticky-savebar`);
+                if (!el) return null;
+                const r = el.getBoundingClientRect();
+                const btns = [...el.querySelectorAll('button')].map((b) => b.getBoundingClientRect());
+                return { left: r.left, right: r.right, vw: document.documentElement.clientWidth, buttonsIn: btns.every((b) => b.left >= 0 && b.right <= document.documentElement.clientWidth) };
+            }, APP);
+            if (!bar || bar.left < 0 || bar.right > bar.vw || !bar.buttonsIn) barProblems.push(`${w}px ${JSON.stringify(bar)}`);
+            await shot(page, `layout-${w}-matrix.png`);
+
+            // Fullscreen editor covers the viewport and its header is not hidden behind the admin bar.
+            for (const folded of [false, true]) {
+                if (w < 960 && folded) continue;
+                await page.evaluate((f) => document.body.classList.toggle('folded', f), folded);
+                await page.locator(`${APP} .wpe-btn-open-fullscreen`).first().click();
+                await page.waitForSelector('#wpe-fullscreen-modal-overlay', { state: 'visible', timeout: 5000 });
+                await page.waitForTimeout(250);
+                const fs = await page.evaluate(() => {
+                    const o = document.getElementById('wpe-fullscreen-modal-overlay').getBoundingClientRect();
+                    const close = document.querySelector('#wpe-fullscreen-modal-overlay .wpe-btn-close-fullscreen');
+                    const cr = close.getBoundingClientRect();
+                    const hit = document.elementFromPoint(cr.left + cr.width / 2, cr.top + cr.height / 2);
+                    return { x: o.left, y: o.top, w: o.width, h: o.height, vw: document.documentElement.clientWidth, vh: window.innerHeight, closeOnTop: !!hit && close.contains(hit) };
+                });
+                const ok = Math.abs(fs.x) < 1 && Math.abs(fs.y) < 1 && Math.abs(fs.w - fs.vw) < 2 && Math.abs(fs.h - fs.vh) < 2 && fs.closeOnTop;
+                if (!ok) fullProblems.push(`${w}px folded=${folded} ${JSON.stringify(fs)}`);
+                if (!folded) await shot(page, `layout-${w}-fullscreen.png`);
+                await page.keyboard.press('Escape');
+                await page.waitForSelector('#wpe-fullscreen-modal-overlay', { state: 'hidden', timeout: 5000 });
+            }
+            await page.evaluate(() => document.body.classList.remove('folded'));
+        }
+        check('Matrix select and actions columns stay visible at 360/768/1024/1440 px, also when scrolled sideways', actionProblems.length === 0, actionProblems.join(' | '));
+        check('Save bar stays inside the viewport with all buttons visible at 360/768/1024/1440 px', barProblems.length === 0, barProblems.join(' | '));
+        check('Fullscreen editor covers the viewport and its close button is not covered (menu open and folded, mobile admin bar)', fullProblems.length === 0, fullProblems.join(' | '));
+
+        // Toasts: warning hides by itself, error stays until closed, both are announced.
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await openEditor(page, fx);
+        await page.route((url) => /wpe(\/|%2F)v1(\/|%2F)admin(\/|%2F)assets/.test(url.href), (route) => {
+            if (route.request().method() === 'POST') {
+                return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ code: 'p022_forced', message: 'P022 forced error' }) });
+            }
+            return route.continue();
+        });
+        const addUrl = page.locator('.wpe-btn-add-media-url:visible').first();
+        await addUrl.click();
+        await page.waitForSelector('.wpe-toast.warning', { timeout: 5000 });
+        const warnAnnounced = await page.waitForFunction(() => (document.getElementById('wpe-live-polite') || {}).textContent === 'Please enter a valid HTTPS image URL.', null, { timeout: 2000 }).then(() => true).catch(() => false);
+        await page.waitForTimeout(5800);
+        const warnGone = (await page.locator('.wpe-toast.warning').count()) === 0;
+        check('Warning toast is announced politely and hides by itself after about 5 s', warnAnnounced && warnGone, `announced=${warnAnnounced} gone=${warnGone}`);
+
+        await page.locator('.wpe-media-ext-url-input:visible').first().fill('https://93.184.216.34/p022-forced.jpg');
+        await addUrl.click();
+        await page.waitForSelector('.wpe-toast.error', { timeout: 5000 });
+        const errAnnounced = await page.waitForFunction(() => (document.getElementById('wpe-live-assertive') || {}).textContent === 'P022 forced error', null, { timeout: 2000 }).then(() => true).catch(() => false);
+        await page.waitForTimeout(6500);
+        const errStays = (await page.locator('.wpe-toast.error').count()) === 1;
+        const closeName = await page.locator('.wpe-toast.error .wpe-toast__close').getAttribute('aria-label');
+        await page.locator('.wpe-toast.error .wpe-toast__close').focus();
+        await page.keyboard.press('Enter');
+        const errClosed = (await page.locator('.wpe-toast').count()) === 0;
+        check('Error toast is announced assertively, stays after 6 s and closes with its "Close" button', errAnnounced && errStays && closeName === 'Close' && errClosed, `announced=${errAnnounced} stays=${errStays} name=${closeName} closed=${errClosed}`);
+        await page.unroute(() => true).catch(() => {});
+    },
 };
 
 // ---------------------------------------------------------------- runner

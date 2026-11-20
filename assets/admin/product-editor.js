@@ -635,11 +635,41 @@
         }, 0);
     }
 
+    /**
+     * Screen-reader announcements go through two regions that exist before any message
+     * (P022.3): polite for success/warning, assertive for errors.
+     */
+    function announce(message, assertive) {
+        let $region = $(assertive ? '#wpe-live-assertive' : '#wpe-live-polite');
+        if (!$region.length) {
+            $('body').append('<div id="wpe-live-polite" class="screen-reader-text" role="status" aria-live="polite"></div>'
+                + '<div id="wpe-live-assertive" class="screen-reader-text" role="alert" aria-live="assertive"></div>');
+            $region = $(assertive ? '#wpe-live-assertive' : '#wpe-live-polite');
+        }
+        $region.text('');
+        setTimeout(() => $region.text(message), 50);
+    }
+
+    /**
+     * Visual toast. Errors stay until closed; success and warning hide after 5 s and pause
+     * while hovered or focused (P022.3, WCAG 2.2.1).
+     */
     function showToast(message, type = 'success') {
         $('.wpe-toast').remove();
-        const $toast = $(`<div class="wpe-toast ${type}" role="status"><span class="dashicons dashicons-${type === 'success' ? 'yes' : 'warning'}"></span><span>${escapeHtml(message)}</span></div>`);
+        const isError = type === 'error';
+        const icon = type === 'success' ? 'yes' : (isError ? 'dismiss' : 'warning');
+        const $toast = $(`<div class="wpe-toast ${type}"><span class="dashicons dashicons-${icon}" aria-hidden="true"></span><span class="wpe-toast__text">${escapeHtml(message)}</span>${closeButtonHtml('wpe-toast__close')}</div>`);
         $('body').append($toast);
-        setTimeout(() => $toast.fadeOut(motionMs(300), function () { $(this).remove(); }), 3500);
+        announce(message, isError);
+        $toast.find('.wpe-toast__close').on('click', () => $toast.remove());
+        if (isError) return;
+        let timer = null;
+        const arm = () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $toast.fadeOut(motionMs(300), function () { $(this).remove(); }), 5000);
+        };
+        $toast.on('mouseenter focusin', () => clearTimeout(timer)).on('mouseleave focusout', arm);
+        arm();
     }
 
     function escapeHtml(str) {
@@ -3561,13 +3591,13 @@
                             <tr>
                                 <th style="width:28px;"><input type="checkbox" class="wpe-check-all-page" ${allPageSelected ? 'checked' : ''} aria-label="Select all variants on this page" /></th>
                                 <th style="width:44px;">Image</th>
-                                <th style="min-width:120px;">Combination</th>
+                                <th style="width:180px;">Combination</th>
                                 <th style="width:120px;">SKU</th>
                                 ${hasCommonPrice ? '<th style="width:100px;">Price Mode</th>' : ''}
                                 <th style="width:110px;">Regular (${config.currencySymbol})</th>
                                 <th style="width:110px;">Sale (${config.currencySymbol})</th>
-                                <th style="width:120px;">Stock</th>
-                                <th style="width:72px; text-align:right;">Actions</th>
+                                <th style="width:200px;">Stock</th>
+                                <th style="width:84px; text-align:right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -5589,6 +5619,8 @@
                 return config.i18n.unsavedWarning;
             }
         });
+
+        announce('', false);
 
         // Keyboard handling for the topmost layer (Escape, focus trap). Capture phase so it runs before WP handlers.
         document.addEventListener('keydown', function (e) {

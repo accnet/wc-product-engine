@@ -287,8 +287,72 @@
           "tests/e2e/ProductInfoBlockLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "eee5103b7fe519fc3e796429b0f4ad130165bad0",
+          "content_digest": "3e74f1164305ecd71b0577f1fd81010bbe013a10c4b8ca0f92a060b56fa94bb0",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162830874-a305a304.log",
+          "time": "2026-11-20T08:20:30.875Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "layout"
+          ],
+          "exit_code": 0,
+          "commit": "eee5103b7fe519fc3e796429b0f4ad130165bad0",
+          "content_digest": "3e74f1164305ecd71b0577f1fd81010bbe013a10c4b8ca0f92a060b56fa94bb0",
+          "output_sha256": "101c9b11cb4ffa006443e3de4ce3cba4a93f3ddca081e9cf3e62026ed8b77454",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162861339-30450a64.log",
+          "time": "2026-11-20T08:21:01.340Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "eee5103b7fe519fc3e796429b0f4ad130165bad0",
+          "content_digest": "3e74f1164305ecd71b0577f1fd81010bbe013a10c4b8ca0f92a060b56fa94bb0",
+          "output_sha256": "1f7fc6b9e90ee508d3c083738bd5c136b497f5ab1b83d459ba719b69d2832cd2",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162900984-de207dfd.log",
+          "time": "2026-11-20T08:21:40.985Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/TwoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "eee5103b7fe519fc3e796429b0f4ad130165bad0",
+          "content_digest": "3e74f1164305ecd71b0577f1fd81010bbe013a10c4b8ca0f92a060b56fa94bb0",
+          "output_sha256": "74975446bcab4318281a31a78476305b51f3e0fccfe4686fd61d49f09f095ba1",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162931739-b44735af.log",
+          "time": "2026-11-20T08:22:11.740Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductInfoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "eee5103b7fe519fc3e796429b0f4ad130165bad0",
+          "content_digest": "3e74f1164305ecd71b0577f1fd81010bbe013a10c4b8ca0f92a060b56fa94bb0",
+          "output_sha256": "a0be1747252dc81111e185c6d6506287ea9d7faf5c187143112ee865ab693b00",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162960691-73274415.log",
+          "time": "2026-11-20T08:22:40.692Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:17:06.127Z"
     },
     {
       "id": "P022.4",
