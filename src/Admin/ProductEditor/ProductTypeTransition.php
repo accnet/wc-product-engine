@@ -312,7 +312,7 @@ final class ProductTypeTransition
 
             // Release the SKUs of the tombstoned variations, then register the product under the receiver SKU.
             if ($report['tombstoned']) {
-                $list = implode(',', $report['tombstoned']);
+                $list = \WPE\Support\Sql::intList($report['tombstoned']);
                 $this->wpdb->query("DELETE FROM {$this->tableSkuRegistry} WHERE object_id IN ({$list})");
             }
             if ($report['sku'] !== null) {

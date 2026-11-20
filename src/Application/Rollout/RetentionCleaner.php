@@ -471,7 +471,7 @@ class RetentionCleaner
         if (empty($productIds)) {
             return [];
         }
-        $in = implode(',', $productIds);
+        $in = \WPE\Support\Sql::intList($productIds);
         $have = array_map('intval', $this->wpdb->get_col(
             "SELECT id FROM {$this->tableProducts} WHERE id IN ({$in}) AND deleted_at IS NULL"
         ));
@@ -509,7 +509,7 @@ class RetentionCleaner
         if (!empty($missing)) {
             $blockers[] = ['code' => 'R207', 'message' => 'No native row for product(s) ' . implode(',', $missing) . '; legacy data is the only copy.'];
         }
-        $in = implode(',', $productIds);
+        $in = \WPE\Support\Sql::intList($productIds);
         $sealedIds = array_map('intval', $this->wpdb->get_col(
             "SELECT object_id FROM {$this->tableObjectState} WHERE object_id IN ({$in}) AND authority = 'full_native' AND tombstone = 0"
         ));

@@ -520,7 +520,7 @@ class LegacyMirror
             if (!empty($noThumbVarIds)) {
                 $this->wpdb->query(
                     "DELETE FROM {$this->wpdb->postmeta}
-                     WHERE meta_key = '_thumbnail_id' AND post_id IN (" . implode(',', $noThumbVarIds) . ")"
+                     WHERE meta_key = '_thumbnail_id' AND post_id IN (" . \WPE\Support\Sql::intList($noThumbVarIds) . ")"
                 );
             }
 

@@ -422,7 +422,7 @@ class VariantResolver
             return ['variants' => $variants, 'variant_values' => []];
         }
 
-        $idList = implode(',', $varIds);
+        $idList = \WPE\Support\Sql::intList($varIds);
         $sqlVals = "SELECT vv.variant_id, vv.option_id, vv.value_id, vv.is_any
                     FROM {$this->tableVariantValues} vv
                     WHERE vv.variant_id IN ({$idList})";
