@@ -229,13 +229,17 @@ class ResolverApi
      */
     public function handleWcAjaxGetVariation(): void
     {
-        ob_start();
+        $productId = absint($_POST['product_id'] ?? 0);
 
-        if (empty($_POST['product_id'])) {
-            wp_die();
+        // Only answer for variable products the engine manages. For any other product (not migrated,
+        // created through the WooCommerce REST API or another plugin) return without output so
+        // WooCommerce's own get_variation handler at priority 10 answers (audit F03).
+        if ($productId <= 0 || !$this->isManagedVariableProduct($productId)) {
+            return;
         }
 
-        $productId = absint($_POST['product_id']);
+        ob_start();
+
         $product = wc_get_product($productId);
 
         if (!$product || !$product->is_type('variable')) {
@@ -271,6 +275,25 @@ class ResolverApi
         $variationData = $this->serializeAvailableVariation($variationId, $productId);
 
         wp_send_json($variationData);
+    }
+
+    /**
+     * Whether the classic get_variation request for this product should be answered by the engine.
+     */
+    private function isManagedVariableProduct(int $productId): bool
+    {
+        $managed = (bool)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT 1 FROM {$this->tableProducts} WHERE id = %d AND type = 'variable' AND deleted_at IS NULL LIMIT 1",
+            $productId
+        ));
+
+        /**
+         * Whether the engine answers ?wc-ajax=get_variation for this product instead of WooCommerce.
+         *
+         * @param bool $managed    True when the product is a variable product in the engine tables.
+         * @param int  $productId  Product ID from the request.
+         */
+        return (bool)apply_filters('wpe_handle_wc_ajax_get_variation', $managed, $productId);
     }
 
     /**
