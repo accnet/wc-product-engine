@@ -181,8 +181,131 @@
           "--strict"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "f054ab4fb1f96d4eea7a11363a3ad383a80db8743d1c6516f9eec4badf1d5b63",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157497057-d2cfe0fc.log",
+          "time": "2026-11-20T06:51:37.057Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "f054ab4fb1f96d4eea7a11363a3ad383a80db8743d1c6516f9eec4badf1d5b63",
+          "output_sha256": "9e29b75f6a5983eac00dab22095cc000ac5a7e15c9d2290dc468732d53fa2c91",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157541722-a1b034cb.log",
+          "time": "2026-11-20T06:52:21.722Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "f054ab4fb1f96d4eea7a11363a3ad383a80db8743d1c6516f9eec4badf1d5b63",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157550896-ffd8fade.log",
+          "time": "2026-11-20T06:52:30.896Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "f054ab4fb1f96d4eea7a11363a3ad383a80db8743d1c6516f9eec4badf1d5b63",
+          "output_sha256": "2ebd513c100ee5f3b60690013cde13112291827a84a6d06c21f8b3d7fd49c752",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157551002-3b326168.log",
+          "time": "2026-11-20T06:52:31.003Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "df3bd0a99f6baca567d4ba89208c1058553c8310",
+          "content_digest": "e0681b8adbdd4eb9f5bec2151ecbb0b7e0b6d56f362d7aa35e3272bc0380242c",
+          "output_sha256": "91f79d61f5127ff85f1764dbf136a1f6d53932419224786c3e8a7a448647f6dd",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157587800-e1bab76a.log",
+          "time": "2026-11-20T06:53:07.800Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "df3bd0a99f6baca567d4ba89208c1058553c8310",
+          "content_digest": "e0681b8adbdd4eb9f5bec2151ecbb0b7e0b6d56f362d7aa35e3272bc0380242c",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157593862-e925d53b.log",
+          "time": "2026-11-20T06:53:13.863Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "df3bd0a99f6baca567d4ba89208c1058553c8310",
+          "content_digest": "e0681b8adbdd4eb9f5bec2151ecbb0b7e0b6d56f362d7aa35e3272bc0380242c",
+          "output_sha256": "00c0e132d3f1e051b25bc4b8ebe5d5edd0adc9b92c6e25069ddbf3dd6853d411",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157638428-340306aa.log",
+          "time": "2026-11-20T06:53:58.429Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "df3bd0a99f6baca567d4ba89208c1058553c8310",
+          "content_digest": "e0681b8adbdd4eb9f5bec2151ecbb0b7e0b6d56f362d7aa35e3272bc0380242c",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157647531-a11f0177.log",
+          "time": "2026-11-20T06:54:07.531Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "df3bd0a99f6baca567d4ba89208c1058553c8310",
+          "content_digest": "e0681b8adbdd4eb9f5bec2151ecbb0b7e0b6d56f362d7aa35e3272bc0380242c",
+          "output_sha256": "91f79d61f5127ff85f1764dbf136a1f6d53932419224786c3e8a7a448647f6dd",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157647628-cee06210.log",
+          "time": "2026-11-20T06:54:07.628Z"
+        }
+      ],
+      "started_at": "2026-11-20T06:45:51.827Z"
     },
     {
       "id": "P017.3",

@@ -42,7 +42,7 @@ Upload private → sniff format/encoding/delimiter → stage streaming → norma
 
 Identity precedence phải theo dialect/version, không chung một rule mơ hồ. Native IDs không bao giờ bị file import cấp tùy ý. External source ID dùng `external_ids`; idempotent theo file hash + row/group + command payload. Duplicate SKU phát lỗi, không gộp hai variations vô tình. Missing column = keep; empty column = quy tắc dialect, report rõ clear/default; parser giữ phân biệt hai trạng thái.
 
-Có hai update mode: `merge` không xóa variation thiếu trong file; `replace_variants` explicit, có dry-run list removals và vẫn tombstone ID được order tham chiếu. File đổi option value không tự đổi variation ID native nếu có identity mapping xác minh; export Shopify không cam kết Shopify giữ ID.
+Có hai update mode: `merge` không xóa variation thiếu trong file; `replace_variants` explicit, có dry-run list removals và vẫn tombstone ID được order tham chiếu. File đổi option value không tự đổi variation ID native nếu có identity mapping xác minh; export Shopify không cam kết Shopify giữ ID. Import lại Shopify CSV bỏ qua sản phẩm có input giống lần import sạch gần nhất và native state không đổi từ đó (sửa tay, đổi tồn kho hoặc import khác đều làm import lại); job config `skip_unchanged=false` ghi lại mọi sản phẩm.
 
 Export mặc định strict: trường không đại diện được → job report + không phát file thành công giả. `lossy=true` phát file kèm loss report. Engine snapshot manifest chứa ID/version/hash + canonical payload cần xuất, không chỉ ID; stream từ staging để export không trộn revisions. Snapshot capture bounded per aggregate, khai báo thời gian snapshot start/end; không giả định entire catalog point-in-time nếu không có DB snapshot chuyên dụng.
 

@@ -187,6 +187,7 @@ class ShopifyBatchImporter
             'update_mode'        => $options['update_mode'] ?? 'merge',
             'image_mode'         => $options['image_mode'] ?? 'external',
             'batch_size'         => (int)($options['batch_size'] ?? 25),
+            'skip_unchanged'     => (bool)($options['skip_unchanged'] ?? true),
             'log_file'           => $logFilePath,
         ];
 
@@ -511,6 +512,9 @@ class ShopifyBatchImporter
         $batchProductCount = 0;
         $batchVariantCount = 0;
         $groupsAttempted   = 0;
+        $batchSkippedCount = 0;
+        // Jobs created before P017 have no flag; they keep importing every product.
+        $skipUnchanged     = !empty($config['skip_unchanged']);
 
         foreach ($productGroups as $group) {
             // Time budget: stop at a product boundary and resume from this
@@ -532,10 +536,35 @@ class ShopifyBatchImporter
                 usort($group['images'], static fn(array $a, array $b): int => ($a['position'] <=> $b['position']));
             }
 
+            $fingerprint = $this->productFingerprint($group, $config);
+
+            if ($skipUnchanged) {
+                try {
+                    $unchanged = $this->findUnchangedProduct($group, $fingerprint);
+                } catch (\Throwable $e) {
+                    $unchanged = null;
+                }
+                if ($unchanged !== null) {
+                    $batchProductCount++;
+                    $batchSkippedCount++;
+                    $batchVariantCount += $unchanged['variant_count'];
+                    $batchLogs[] = ['level' => 'info', 'message' => sprintf(
+                        '[%s] [SKIP] Unchanged product #%d "%s" (Handle: %s, Variants: %d)',
+                        $timeStr,
+                        $unchanged['product_id'],
+                        $unchanged['title'],
+                        $handleKey,
+                        $unchanged['variant_count']
+                    )];
+                    continue;
+                }
+            }
+
             try {
                 $importRes = $this->importSingleProductGroup($group, $config['update_mode'] ?? 'merge');
                 $batchProductCount++;
                 $batchVariantCount += $importRes['variant_count'];
+                $this->recordImportFingerprint($importRes, $fingerprint);
 
                 $msg = sprintf(
                     "[%s] [SUCCESS] Imported product #%d \"%s\" (Handle: %s, Type: %s, Variants: %d, Images: %d)",
@@ -570,6 +599,7 @@ class ShopifyBatchImporter
 
         $productsProcessed += $batchProductCount;
         $variantsProcessed += $batchVariantCount;
+        $productsSkipped    = (int)($counts['products_skipped'] ?? 0) + $batchSkippedCount;
 
         // Update checkpoint & counts in database
         $checkpoint['byte_offset']        = $byteOffset;
@@ -582,6 +612,7 @@ class ShopifyBatchImporter
         $counts['products_processed'] = $productsProcessed;
         $counts['variants_processed'] = $variantsProcessed;
         $counts['errors']             = $errorsCount;
+        $counts['products_skipped']   = $productsSkipped;
 
         $newStatus = $eof ? 'completed' : 'in_progress';
         $now = gmdate('Y-m-d H:i:s.u');
@@ -595,11 +626,13 @@ class ShopifyBatchImporter
                 "[%s] [INFO] Total Products Imported: %d\n" .
                 "[%s] [INFO] Total Variations Created: %d\n" .
                 "[%s] [INFO] Total Errors: %d\n" .
+                "[%s] [INFO] Unchanged Products Skipped: %d\n" .
                 "[%s] [INFO] Rebuilding Catalog Index Generation...\n",
                 $endTimeStr,
                 $endTimeStr, $productsProcessed,
                 $endTimeStr, $variantsProcessed,
                 $endTimeStr, $errorsCount,
+                $endTimeStr, $productsSkipped,
                 $endTimeStr
             );
             $batchLogs[] = ['level' => 'info', 'message' => $completionMsg];
@@ -639,6 +672,8 @@ class ShopifyBatchImporter
             'job_id'             => $jobId,
             'batch_products'     => $batchProductCount,
             'batch_variants'     => $batchVariantCount,
+            'batch_skipped'      => $batchSkippedCount,
+            'products_skipped'   => $productsSkipped,
             'products_processed' => $productsProcessed,
             'variants_processed' => $variantsProcessed,
             'errors_count'       => $errorsCount,
@@ -919,6 +954,7 @@ class ShopifyBatchImporter
         }
 
         // Mirror canonical state to legacy WooCommerce tables
+        $mirrored = false;
         try {
             $state = $this->wpdb->get_row($this->wpdb->prepare(
                 "SELECT native_revision, native_applied, epoch FROM {$this->tableObjectState} WHERE object_id = %d",
@@ -928,7 +964,8 @@ class ShopifyBatchImporter
             // Carry the authority epoch the mirror reads: the object state epoch when a row exists, otherwise the
             // global authority epoch (the value its epoch fence compares against), never a literal or another counter.
             $workerEpoch = \WPE\Application\Migration\LegacyMirror::getInstance()->getAggregateEpoch($productId);
-            LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+            $mirrorRes = LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
+            $mirrored = ($mirrorRes['status'] ?? '') === 'mirrored';
         } catch (\Throwable $mE) {
             // Non-fatal legacy mirror catch
         }
@@ -939,7 +976,143 @@ class ShopifyBatchImporter
             'type'          => $productType,
             'variant_count' => $variantsCreated,
             'warnings'      => $warnings,
+            'mirrored'      => $mirrored,
         ];
+    }
+
+    /** Bump when the CSV-to-product mapping changes so stored fingerprints never match (P017 D03). */
+    private const FINGERPRINT_FORMAT = 1;
+
+    /** wpe_control key prefix for per-product import fingerprints (P017 D05). */
+    private const FINGERPRINT_KEY_PREFIX = 'shopify_import_fp:';
+
+    /**
+     * Hash of everything the import of one product group depends on: the parsed
+     * rows without file positions, the job's modes and the importer version.
+     */
+    private function productFingerprint(array $group, array $config): string
+    {
+        unset($group['start_offset'], $group['start_row']);
+        foreach ($group['variants'] as $i => $variant) {
+            unset($group['variants'][$i]['row_number']);
+        }
+
+        return hash('sha256', (string)wp_json_encode([
+            'format'      => self::FINGERPRINT_FORMAT,
+            'plugin'      => defined('WPE_VERSION') ? (string)WPE_VERSION : '',
+            'update_mode' => (string)($config['update_mode'] ?? 'merge'),
+            'image_mode'  => (string)($config['image_mode'] ?? 'external'),
+            'group'       => $group,
+        ]));
+    }
+
+    /**
+     * Digest of every native row an import writes for this product: the product,
+     * its variants (tombstones included), inventory, options and values, variant
+     * values, product and variant media, terms and meta. Any later edit, stock
+     * change or other import changes it, so the next import of the same file
+     * rewrites the product instead of skipping it (P017 D04).
+     */
+    private function nativeStateDigest(int $productId): string
+    {
+        $p = $this->wpdb->prefix;
+        $variantIds = "SELECT id FROM {$this->tableVariants} WHERE product_id = %d";
+        $optionIds  = "SELECT id FROM {$this->tableOptions} WHERE product_id = %d";
+        $reads = [
+            "SELECT * FROM {$this->tableProducts} WHERE id = %d",
+            "SELECT * FROM {$this->tableVariants} WHERE product_id = %d ORDER BY id",
+            "SELECT * FROM {$this->tableInventory} WHERE owner_id IN (SELECT %d UNION {$variantIds}) ORDER BY owner_id",
+            "SELECT * FROM {$this->tableOptions} WHERE product_id = %d ORDER BY id",
+            "SELECT * FROM {$this->tableOptionValues} WHERE option_id IN ({$optionIds}) ORDER BY id",
+            "SELECT * FROM {$this->tableVariantValues} WHERE variant_id IN ({$variantIds}) ORDER BY variant_id, option_id",
+            "SELECT * FROM {$this->tableProductMedia} WHERE product_id = %d ORDER BY role, position, asset_id",
+            "SELECT * FROM {$this->tableVariantMedia} WHERE variant_id IN ({$variantIds}) ORDER BY variant_id, asset_id",
+            "SELECT * FROM {$p}wpe_product_terms WHERE product_id = %d ORDER BY term_taxonomy_id",
+            "SELECT * FROM {$p}wpe_meta WHERE object_id = %d ORDER BY meta_id",
+        ];
+
+        $state = [];
+        foreach ($reads as $sql) {
+            $args = array_fill(0, substr_count($sql, '%d'), $productId);
+            $state[] = $this->wpdb->get_results($this->wpdb->prepare($sql, ...$args), ARRAY_A);
+        }
+
+        return hash('sha256', (string)wp_json_encode($state));
+    }
+
+    /**
+     * Return the stored import of this group when it can be skipped: same
+     * fingerprint, native state untouched since, and no pending mirror (P017 D04).
+     */
+    private function findUnchangedProduct(array $group, string $fingerprint): ?array
+    {
+        $productId = $this->resolveProductByHandleOrSku($group['handle'], $group['variants']);
+        if ($productId === null) {
+            return null;
+        }
+
+        $stored = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT value FROM {$this->wpdb->prefix}wpe_control WHERE `key` = %s",
+            self::FINGERPRINT_KEY_PREFIX . $productId
+        ));
+        $record = is_string($stored) ? json_decode($stored, true) : null;
+        if (!is_array($record) || !hash_equals((string)($record['hash'] ?? ''), $fingerprint)) {
+            return null;
+        }
+
+        $row = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT p.deleted_at, s.native_revision, s.native_applied
+             FROM {$this->tableProducts} p
+             LEFT JOIN {$this->tableObjectState} s ON s.object_id = p.id
+             WHERE p.id = %d",
+            $productId
+        ), ARRAY_A);
+        if (!$row || $row['deleted_at'] !== null || $row['native_revision'] === null
+            || (int)$row['native_applied'] < (int)$row['native_revision']
+        ) {
+            return null;
+        }
+
+        if (!hash_equals((string)($record['state'] ?? ''), $this->nativeStateDigest($productId))) {
+            return null;
+        }
+
+        return [
+            'product_id'    => $productId,
+            'title'         => (string)($record['title'] ?? ''),
+            'variant_count' => (int)($record['variant_count'] ?? 0),
+        ];
+    }
+
+    /**
+     * Store the fingerprint after a clean import (written and mirrored, no
+     * warnings); otherwise drop any older one so the product is retried (P017 D05).
+     */
+    private function recordImportFingerprint(array $importRes, string $fingerprint): void
+    {
+        $productId = (int)($importRes['product_id'] ?? 0);
+        if ($productId <= 0) {
+            return;
+        }
+        $key = self::FINGERPRINT_KEY_PREFIX . $productId;
+
+        if (empty($importRes['mirrored']) || !empty($importRes['warnings'])) {
+            $this->wpdb->delete("{$this->wpdb->prefix}wpe_control", ['key' => $key]);
+            return;
+        }
+
+        $this->wpdb->replace("{$this->wpdb->prefix}wpe_control", [
+            'key'        => $key,
+            'value'      => (string)wp_json_encode([
+                'hash'          => $fingerprint,
+                'state'         => $this->nativeStateDigest($productId),
+                'variant_count' => (int)$importRes['variant_count'],
+                'type'          => (string)$importRes['type'],
+                'title'         => (string)$importRes['title'],
+            ]),
+            'version'    => 1,
+            'updated_at' => gmdate('Y-m-d H:i:s.u'),
+        ]);
     }
 
     private function mapStatus(string $rawStatus): string

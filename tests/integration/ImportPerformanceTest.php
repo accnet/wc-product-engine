@@ -24,6 +24,7 @@ final class ImportPerformanceTest
     private string $csvPath = '';
     private int $dnsLookups = 0;
     private int $queries = 0;
+    private array $lastResult = [];
 
     /** @var array<string, array{options: array<string, string[]>, skus: bool, images: string[], variantImages: string[]}> */
     private array $products;
@@ -66,6 +67,7 @@ final class ImportPerformanceTest
             $this->testDuplicateRowsCollapseLaterRowWins();
             $this->testSkuMatchKeepsCaseInsensitiveLookup();
             $this->testMirrorBatchedMetaKeepsRowSemantics($first);
+            $this->testUnchangedProductsAreSkipped($first);
             echo "All ImportPerformanceTest tests passed.\n";
         } catch (\Throwable $e) {
             echo 'FAILED: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
@@ -140,10 +142,10 @@ final class ImportPerformanceTest
     }
 
     /** @return array<string, array{product_id: int, variant_ids: int[]}> */
-    private function runImport(): array
+    private function runImport(array $options = []): array
     {
         $importer = ShopifyBatchImporter::getInstance();
-        $job = $importer->initJob($this->csvPath, ['original_filename' => basename($this->csvPath), 'update_mode' => 'merge', 'image_mode' => 'external']);
+        $job = $importer->initJob($this->csvPath, $options + ['original_filename' => basename($this->csvPath), 'update_mode' => 'merge', 'image_mode' => 'external']);
         $guard = 0;
         do {
             $res = $importer->processBatch($job['job_id'], 25);
@@ -153,6 +155,7 @@ final class ImportPerformanceTest
         } while (empty($res['completed']));
 
         $this->assert((int) $res['errors_count'] === 0, 'Import reported errors: ' . wp_json_encode($res['logs'] ?? []));
+        $this->lastResult = $res;
         $this->wpdb->delete("{$this->wpdb->prefix}wpe_jobs", ['id' => $job['job_id']]);
         @unlink(WP_CONTENT_DIR . "/uploads/wpe-imports/logs/import_{$job['job_id']}.log");
 
@@ -253,6 +256,12 @@ final class ImportPerformanceTest
         UrlValidator::setDnsResolver(static fn (string $host): array => ['10.0.0.5']);
         $v = (new UrlValidator())->validateUrl('https://cdn.example.com/private.jpg');
         $this->assert(!$v['valid'], 'A resolver swap must not reuse the cached public IP (SSRF check).');
+
+        // Later tests import images again: put the public resolver back.
+        UrlValidator::setDnsResolver(function (string $host): array {
+            $this->dnsLookups++;
+            return ['93.184.215.14'];
+        });
 
         echo "  ✓ DNS resolved at most once per host per request; resolver swap clears the cache\n";
     }
@@ -370,6 +379,75 @@ final class ImportPerformanceTest
         $this->wpdb->delete($pm, ['meta_id' => $dupId]);
 
         echo sprintf("  ✓ batched mirror: no writes when unchanged, repairs changed/missing keys, first-row semantics (%d queries for %d variations)\n", $mirrorQueries, count($vids));
+    }
+
+    /**
+     * P017 D04-D07: a re-import of an unchanged file skips every product without
+     * writing; a native change (stock sale) or a changed row re-imports only
+     * that product; skip_unchanged=false imports everything.
+     */
+    private function testUnchangedProductsAreSkipped(array $first): void
+    {
+        $p = $this->wpdb->prefix;
+        $handles = array_keys($this->products);
+        $pids = array_map(static fn ($h) => $first[$h]['product_id'], $handles);
+        $in = implode(',', $pids);
+        $outbox = fn (): int => (int) $this->wpdb->get_var("SELECT COUNT(*) FROM {$p}wpe_outbox WHERE aggregate_id IN ({$in})");
+        $versions = fn (): array => array_map('intval', $this->wpdb->get_col("SELECT version FROM {$p}wpe_products WHERE id IN ({$in}) ORDER BY id"));
+
+        // A clean import with skipping off records the fingerprints.
+        $this->runImport(['skip_unchanged' => false]);
+        $this->assert((int) ($this->lastResult['products_skipped'] ?? -1) === 0, 'skip_unchanged=false skipped products.');
+
+        $outboxBefore = $outbox();
+        $versionsBefore = $versions();
+        $this->queries = 0;
+        $this->runImport();
+        $skipQueries = $this->queries;
+        $this->assert((int) $this->lastResult['products_skipped'] === count($handles), 'Expected every unchanged product skipped, got ' . (int) $this->lastResult['products_skipped']);
+        $this->assert((int) $this->lastResult['products_processed'] === count($handles), 'Skipped products must still count as processed.');
+        $expectedVariants = array_sum(array_map(static fn ($spec) => array_product(array_map('count', $spec['options'])), $this->products));
+        $this->assert((int) $this->lastResult['variants_processed'] === $expectedVariants, 'Skipped products must report their variant count.');
+        $this->assert($outbox() === $outboxBefore, 'A skipped product wrote outbox events.');
+        $this->assert($versions() === $versionsBefore, 'A skipped product changed version.');
+
+        // Stock sold after the import: that product is re-imported and its CSV stock restored.
+        $soldVariant = $first[$handles[0]]['variant_ids'][0];
+        $csvQty = (float) $this->wpdb->get_var($this->wpdb->prepare("SELECT quantity FROM {$p}wpe_inventory WHERE owner_id = %d", $soldVariant));
+        $this->wpdb->query($this->wpdb->prepare("UPDATE {$p}wpe_inventory SET quantity = quantity - 1, version = version + 1 WHERE owner_id = %d", $soldVariant));
+        $this->runImport();
+        $this->assert((int) $this->lastResult['products_skipped'] === count($handles) - 1, 'Expected only the product with a stock change re-imported.');
+        $qty = (float) $this->wpdb->get_var($this->wpdb->prepare("SELECT quantity FROM {$p}wpe_inventory WHERE owner_id = %d", $soldVariant));
+        $this->assert(abs($qty - $csvQty) < 0.001, "Re-import did not restore CSV stock {$csvQty}, got {$qty}.");
+
+        // skip_unchanged=false writes every product again.
+        $outboxBefore = $outbox();
+        $this->runImport(['skip_unchanged' => false]);
+        $this->assert((int) $this->lastResult['products_skipped'] === 0, 'skip_unchanged=false skipped products.');
+        $this->assert($outbox() > $outboxBefore, 'skip_unchanged=false did not write products.');
+
+        // A changed row re-imports its product only.
+        $rows = array_map('str_getcsv', file($this->csvPath, FILE_IGNORE_NEW_LINES));
+        $header = $rows[0];
+        $priceCol = array_search('Variant Price', $header, true);
+        $handleCol = array_search('Handle', $header, true);
+        foreach ($rows as $i => $r) {
+            if ($i > 0 && $r[$handleCol] === $handles[1]) {
+                $rows[$i][$priceCol] = '99.00';
+                break;
+            }
+        }
+        $fh = fopen($this->csvPath, 'wb');
+        foreach ($rows as $r) {
+            fputcsv($fh, $r);
+        }
+        fclose($fh);
+        $this->runImport();
+        $this->assert((int) $this->lastResult['products_skipped'] === count($handles) - 1, 'Expected only the product with a changed row re-imported.');
+        $has99 = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL AND regular_price = 99", $first[$handles[1]]['product_id']));
+        $this->assert($has99 === 1, 'Changed price was not imported.');
+
+        echo sprintf("  ✓ unchanged products skipped (%d queries for an all-skipped job incl. catalog rebuild); stock change, changed row and skip_unchanged=false re-import\n", $skipQueries);
     }
 
     /**
