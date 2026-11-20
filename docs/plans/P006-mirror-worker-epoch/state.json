@@ -1,7 +1,7 @@
 {
   "id": "P006",
   "title": "Mirror worker epoch fallback for products without object state",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "4a227da66df69a5eef38eb6471d68a7c7d4bd9e2f4854309f363da2e1369cb1c",
   "tasks": [
     {
@@ -178,10 +178,104 @@
           "check"
         ]
       ],
-      "status": "blocked",
-      "runs": [],
-      "started_at": "2026-10-13T05:43:21.471Z"
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "1b7a17f71308bb6feab2b0a430e1a6aeede1f478a712bad18277ef0aea558887",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166201911-e4e681e2.log",
+          "time": "2026-11-20T09:16:41.912Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "b571adf1f8112d7c3ff923fe963e29d3c378797dc62e4d7327eef09ba15096fe",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166204577-4456ba19.log",
+          "time": "2026-11-20T09:16:44.577Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorE2ETest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "d47a86a6deb789d969de657d11c8818d2db924af4169c2d22a745e7c93979665",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166208216-0332f099.log",
+          "time": "2026-11-20T09:16:48.216Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "01275881c7728ce2c374581e30ba038fb668a2a48b50bee667a0085b7f9fa6ad",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166209798-7d6cac20.log",
+          "time": "2026-11-20T09:16:49.798Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "1f7fc6b9e90ee508d3c083738bd5c136b497f5ab1b83d459ba719b69d2832cd2",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166247102-ce8d572b.log",
+          "time": "2026-11-20T09:17:27.103Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "7c76736daf6f957ec28c6402e22da48620139e2f",
+          "content_digest": "283ea3f1a66508f81fa8d3fcab5cf2b3315a92a692fd0d45de08e13988798eae",
+          "output_sha256": "8c9373ec23f8b1ff2ec058ff44619bed8dcb0fed3869cc997e4e50e742ababbe",
+          "output_path": "docs/plans/P006-mirror-worker-epoch/command-1795166247210-4a88b5cb.log",
+          "time": "2026-11-20T09:17:27.211Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:16:24.269Z"
     }
   ],
-  "approved_hash": "4a227da66df69a5eef38eb6471d68a7c7d4bd9e2f4854309f363da2e1369cb1c"
+  "approved_hash": "4a227da66df69a5eef38eb6471d68a7c7d4bd9e2f4854309f363da2e1369cb1c",
+  "report_hash": "89de0a7bd8f6fb904d8a02d6012c69df436c94221c91a452ea6e26fe3d6f4ff9"
 }
