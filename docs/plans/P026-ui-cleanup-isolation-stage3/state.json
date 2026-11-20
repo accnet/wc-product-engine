@@ -1,7 +1,7 @@
 {
   "id": "P026",
   "title": "UI stage 3: native buttons, !important removal, dead CSS and theme isolation",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "ec8826d04e1ee83bb303cc875c3dbda88195b16309f5a1137c1e3c559d44aa9d",
   "tasks": [
     {
@@ -367,9 +367,194 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage3Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170000323-02f9acd0.log",
+          "time": "2026-11-20T10:20:00.323Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "ee20fd797190d1d17f9d9e6cabb27b199b6af9af78052242f8674c6818e078ce",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170000422-6018160c.log",
+          "time": "2026-11-20T10:20:00.422Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "9a9a9e85b8ee3190ad61102743c9bf911c81acd5760d48cbd7c964319a5192f8",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170000522-b566739b.log",
+          "time": "2026-11-20T10:20:00.522Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "2441da2f1646cacb56406f7906c044a2d39f2b3d732e584f1cc258bfb55165e7",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170000619-d3cef254.log",
+          "time": "2026-11-20T10:20:00.619Z"
+        },
+        {
+          "argv": [
+            "npx",
+            "--no-install",
+            "playwright",
+            "test",
+            "--config=playwright.config.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "6470a8443369061b267e24b146c6375391e1b8d89dee0d02ca49545fe73bab8a",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170006975-ea17b51a.log",
+          "time": "2026-11-20T10:20:06.975Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage3Live.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "a83a55879b493f473c5f596fe38ff22ef10537bdfd30832cff8536820ac674a2",
+          "output_sha256": "cb41486a1789bf7b023461cd6bdd86c211122d41054941113f123f14fa126b5b",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170018605-35bd1c40.log",
+          "time": "2026-11-20T10:20:18.606Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage3Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170057049-140a897c.log",
+          "time": "2026-11-20T10:20:57.050Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "ee20fd797190d1d17f9d9e6cabb27b199b6af9af78052242f8674c6818e078ce",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170057152-8a024a29.log",
+          "time": "2026-11-20T10:20:57.153Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "a456e08984c0003a65d5f7dcc81472747cc867eb961204876779b5d2ef5c3609",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170057258-76d75383.log",
+          "time": "2026-11-20T10:20:57.259Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "2441da2f1646cacb56406f7906c044a2d39f2b3d732e584f1cc258bfb55165e7",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170057355-bb6a3d8d.log",
+          "time": "2026-11-20T10:20:57.355Z"
+        },
+        {
+          "argv": [
+            "npx",
+            "--no-install",
+            "playwright",
+            "test",
+            "--config=playwright.config.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "b268443a788da30bb27f3cd19cfb10fe44bab15082faabc0b9befcbfb47c51e0",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170063803-5392e412.log",
+          "time": "2026-11-20T10:21:03.804Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage3Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "6178048d6099cb775bec12244b724d4442c9103631d8d16288fb67bffc2bf1c4",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170077557-36cec446.log",
+          "time": "2026-11-20T10:21:17.557Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170121619-463ab2ed.log",
+          "time": "2026-11-20T10:22:01.619Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3e7524a2d570f8e7ae49a08d268f8b9540dda05",
+          "content_digest": "6c79275c3e2f4dfba8f3738b9336c95c6a450beaa702679a0e214933a8ec4b6a",
+          "output_sha256": "3746d401186270c981b2de1e4d03cfef6cbad8009c4aa32c005dfd115ef32e19",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795170132295-5ea9b2a5.log",
+          "time": "2026-11-20T10:22:12.296Z"
+        }
+      ],
+      "started_at": "2026-11-20T10:18:21.253Z"
     }
   ],
-  "approved_hash": "ec8826d04e1ee83bb303cc875c3dbda88195b16309f5a1137c1e3c559d44aa9d"
+  "approved_hash": "ec8826d04e1ee83bb303cc875c3dbda88195b16309f5a1137c1e3c559d44aa9d",
+  "report_hash": "6fb7d2b8400b9b1a12c8e422a302e8a103368aa0657439f468c33788e1828262"
 }
