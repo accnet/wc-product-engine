@@ -103,7 +103,7 @@ class ShopifyImportPage
                                     <strong><?php echo esc_html__('Or direct file path on server:', 'wc-product-engine'); ?></strong>
                                 </label>
                                 <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                    <input type="text" id="wpe-server-path-input" class="large-text" placeholder="/path/to/theme-performance-shop-product-data.csv" value="/mnt/c/Users/tuttn/Downloads/theme-performance-shop-product-data.csv">
+                                    <input type="text" id="wpe-server-path-input" class="large-text" placeholder="/path/to/theme-performance-shop-product-data.csv" value="">
                                     <button type="button" id="wpe-use-server-file-btn" class="button button-secondary">
                                         <?php echo esc_html__('Validate File', 'wc-product-engine'); ?>
                                     </button>

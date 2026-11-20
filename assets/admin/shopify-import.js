@@ -99,8 +99,18 @@
         }
 
         // Dropzone interactions
-        dropzone.on('click', function () {
-            fileInput.trigger('click');
+        // The file input lives inside the dropzone, so its programmatic click
+        // bubbles back to the dropzone. Without these guards the handler
+        // re-triggers itself and the browser refuses to open the file picker.
+        dropzone.on('click', function (e) {
+            if (e.target === fileInput[0]) {
+                return;
+            }
+            fileInput[0].click();
+        });
+
+        fileInput.on('click', function (e) {
+            e.stopPropagation();
         });
 
         dropzone.on('dragover dragenter', function (e) {
@@ -126,6 +136,8 @@
             if (this.files.length > 0) {
                 handleFileUpload(this.files[0]);
             }
+            // Allow re-selecting the same file to fire change again.
+            this.value = '';
         });
 
         // Server path check button
@@ -363,6 +375,12 @@
                 statusDesc.text('Process cancelled by operator.');
                 pauseBtn.hide();
                 resumeBtn.hide();
+                return;
+            }
+
+            // Server says another worker still holds this job: back off.
+            if (res.busy) {
+                setTimeout(processNextBatch, 3000);
                 return;
             }
 

@@ -74,6 +74,7 @@ class PluginBootstrap
             return;
         }
 
+        self::ensureSchema();
         $this->registerCapabilities();
         $this->registerDataStores();
         $this->registerRestRoutes();
@@ -497,9 +498,31 @@ class PluginBootstrap
         $instance->loadFlags();
         $instance->registerCapabilities();
 
+        // Expand-only schema install: creates missing wpe_* tables. Does not
+        // touch products or authority (AC-T02-01).
+        self::ensureSchema();
+
         // Ensure default flags exist without modifying any existing products
         if (get_option(self::OPTION_FLAGS) === false) {
             update_option(self::OPTION_FLAGS, self::DEFAULT_FLAGS);
+        }
+    }
+
+    /**
+     * Create missing wpe_* tables when the stored schema version is behind.
+     * Runs on activation and on load, so sites that were already active
+     * (or updated without re-activation) still get their tables.
+     */
+    public static function ensureSchema(): void
+    {
+        $installed = (int) get_option(\WPE\Infrastructure\Database\SchemaMigrator::OPTION_SCHEMA_VERSION, 0);
+        if ($installed >= \WPE\Infrastructure\Database\SchemaMigrator::SCHEMA_VERSION) {
+            return;
+        }
+
+        $result = (new \WPE\Infrastructure\Database\SchemaMigrator())->migrate();
+        if (empty($result['success']) && function_exists('error_log')) {
+            error_log('[wc-product-engine] Schema migration failed: ' . ($result['error'] ?? 'unknown error'));
         }
     }
 

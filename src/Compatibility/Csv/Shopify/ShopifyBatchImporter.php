@@ -207,7 +207,7 @@ class ShopifyBatchImporter
             'errors'              => 0,
         ];
 
-        $this->wpdb->insert($this->tableJobs, [
+        $inserted = $this->wpdb->insert($this->tableJobs, [
             'id'               => $jobId,
             'kind'             => 'shopify_import',
             'status'           => 'pending',
@@ -218,6 +218,13 @@ class ShopifyBatchImporter
             'created_at'       => $now,
             'updated_at'       => $now,
         ]);
+
+        if ($inserted === false) {
+            throw new RuntimeException(
+                'Failed to create import job: ' . ($this->wpdb->last_error ?: 'unknown database error'),
+                500
+            );
+        }
 
         return [
             'job_id'            => $jobId,
@@ -261,6 +268,49 @@ class ShopifyBatchImporter
                 'completed' => false,
             ];
         }
+
+        // One batch per job at a time. A browser retry after a gateway timeout
+        // must not re-run a batch that is still executing on another worker.
+        $lockName = 'wpe_import_' . $jobId;
+        if ((int)$this->wpdb->get_var($this->wpdb->prepare('SELECT GET_LOCK(%s, 0)', $lockName)) !== 1) {
+            $busyCounts = json_decode((string)$job['counts'], true) ?? [];
+            $busySize   = (int)($busyCounts['file_size'] ?? 0);
+            $busyOffset = (int)($busyCounts['bytes_processed'] ?? 0);
+            return [
+                'status'             => 'in_progress',
+                'busy'               => true,
+                'completed'          => false,
+                'percent'            => $busySize > 0 ? min(100.0, round(($busyOffset / $busySize) * 100, 1)) : 0.0,
+                'job_id'             => $jobId,
+                'products_processed' => (int)($busyCounts['products_processed'] ?? 0),
+                'variants_processed' => (int)($busyCounts['variants_processed'] ?? 0),
+                'errors_count'       => (int)($busyCounts['errors'] ?? 0),
+                'logs'               => [[
+                    'level'   => 'info',
+                    'message' => '[SYSTEM] Previous batch is still running on the server, waiting...',
+                ]],
+            ];
+        }
+
+        try {
+            return $this->runLockedBatch($jobId, $job, $batchSize);
+        } finally {
+            $this->wpdb->query($this->wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lockName));
+        }
+    }
+
+    /**
+     * Max seconds of product writes per request; keeps each batch well under
+     * the web server's gateway timeout regardless of variants per product.
+     */
+    private const BATCH_TIME_BUDGET_SECONDS = 25;
+
+    private function runLockedBatch(string $jobId, array $job, int $batchSize): array
+    {
+        $batchStartedAt = microtime(true);
+
+        // Re-read under the lock: another worker may have advanced the checkpoint.
+        $job = $this->getJob($jobId) ?? $job;
 
         $config     = json_decode((string)$job['config'], true) ?? [];
         $checkpoint = json_decode((string)$job['checkpoint'], true) ?? [];
@@ -344,6 +394,8 @@ class ShopifyBatchImporter
             // Initialize or append to current product group
             if ($currentGroup === null) {
                 $currentGroup = [
+                    'start_offset'        => $lineStartOffset,
+                    'start_row'           => $currentRow - 1,
                     'handle'              => $rowHandle,
                     'title'               => $row['title'] ?? '',
                     'description'         => $row['description'] ?? '',
@@ -458,8 +510,21 @@ class ShopifyBatchImporter
         // Process collected product aggregates
         $batchProductCount = 0;
         $batchVariantCount = 0;
+        $groupsAttempted   = 0;
 
         foreach ($productGroups as $group) {
+            // Time budget: stop at a product boundary and resume from this
+            // group's first line next request. Always import at least one.
+            if ($groupsAttempted > 0
+                && (microtime(true) - $batchStartedAt) >= self::BATCH_TIME_BUDGET_SECONDS
+            ) {
+                $byteOffset = (int)$group['start_offset'];
+                $currentRow = (int)$group['start_row'];
+                $eof = false;
+                break;
+            }
+            $groupsAttempted++;
+
             $handleKey = $group['handle'];
             $timeStr = gmdate('H:i:s');
 
