@@ -425,8 +425,83 @@
           "tests/e2e/ProductInfoBlockLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168072339-fa33a060.log",
+          "time": "2026-11-20T09:47:52.340Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168116254-faa7131b.log",
+          "time": "2026-11-20T09:48:36.255Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "de79f37cb301bf12f8c95f276edddf2cf1b6909bf5b768618033d411ed431409",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168150810-7a6cb1a4.log",
+          "time": "2026-11-20T09:49:10.810Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantImagePickerLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "61a5fbe4c3ef881db199de940edd4f4faf00b5632fcb56e33199ead8a5154f1d",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168165865-e36f9c07.log",
+          "time": "2026-11-20T09:49:25.865Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/TwoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "3cd90c3fc3c02944b91ed6dc94a120c1293309303c92756e92fd2a4a407ed935",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168193935-5d778866.log",
+          "time": "2026-11-20T09:49:53.935Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductInfoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "ee00a94dacf6e0e9e6daae9e036e983021fda4b3",
+          "content_digest": "e29de27e2048decf734147558d046266f3a7a645a5c57aedd180f60befdf3dfd",
+          "output_sha256": "9891533af0a0ddd5e2073c46d25431fc8b9e5a9d6b051a5fcf2b13b0b1109515",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168219638-cdb6b5db.log",
+          "time": "2026-11-20T09:50:19.639Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:38:25.016Z"
     },
     {
       "id": "P025.4",

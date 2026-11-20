@@ -1063,14 +1063,14 @@
         if (!queue || queue.length === 0) return '';
         return `<div class="wpe-upload-queue-list">` + queue.map(item => `
             <div class="wpe-upload-queue-item ${item.status === 'error' ? 'is-error' : ''}" data-queue-id="${escapeHtml(item.id)}">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div class="wpe-inline-row">
                     ${item.status === 'uploading'
-                        ? '<span class="spinner is-active" style="float:none; margin:0;"></span>'
-                        : '<span class="dashicons dashicons-warning" style="color:#dc2626;"></span>'}
+                        ? '<span class="spinner is-active wpe-spinner-inline"></span>'
+                        : '<span class="dashicons dashicons-warning wpe-icon-critical"></span>'}
                     <strong>${escapeHtml(item.fileName)}</strong>
                     <span>${item.status === 'uploading' ? 'Uploading...' : escapeHtml(item.errorMessage || 'Upload failed')}</span>
                 </div>
-                <div style="display:flex; gap:6px;">
+                <div class="wpe-inline-row wpe-inline-row--tight">
                     ${item.status === 'error' ? `
                         <button type="button" class="button button-small wpe-btn-retry-upload" data-queue-id="${escapeHtml(item.id)}">Retry</button>
                         <button type="button" class="button button-small wpe-btn-dismiss-upload" data-queue-id="${escapeHtml(item.id)}">Dismiss</button>
@@ -1111,10 +1111,10 @@
         let cardsHtml = '';
         if (orderedAssets.length === 0) {
             cardsHtml = `
-                <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
-                    <span class="dashicons dashicons-format-gallery" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; font-size:28px; width:28px; height:28px; line-height:1; color:#94a3b8; margin-bottom:6px;"></span>
-                    <div style="font-weight:600; color:#334155;">No images in this product's media library yet</div>
-                    <div style="font-size:12px; margin-top:2px;">Upload images from your computer or add via external CDN URL below. Images belong exclusively to this product.</div>
+                <div class="wpe-media-empty">
+                    <span class="dashicons dashicons-format-gallery wpe-media-empty-icon" aria-hidden="true"></span>
+                    <div class="wpe-media-empty-title">No images in this product's media library yet</div>
+                    <div class="wpe-media-empty-desc">Upload images from your computer or add via external CDN URL below. Images belong exclusively to this product.</div>
                 </div>
             `;
         } else if (orderedAssets.length <= INLINE_MEDIA_MAX_SLOTS) {
@@ -1150,12 +1150,12 @@
                 <div class="wpe-section wpe-section--flat">
                     <div class="wpe-section-header">
                         <div class="wpe-section-title-wrap">
-                            <span class="dashicons dashicons-images-alt2" style="color:#008060;"></span>
+                            <span class="dashicons dashicons-images-alt2 wpe-icon-brand"></span>
                             <h4 class="wpe-section-title">Product Media Library</h4>
                             <span class="wpe-section-count">${orderedAssets.length}</span>
                             <span class="wpe-section-subtitle">(Product-scoped &bull; Max 2 rows inline &bull; First image is Featured)</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="wpe-inline-row">
                             ${orderedAssets.length > 0 ? `
                                 <button type="button" class="button wpe-btn-open-full-media">
                                     <span class="dashicons dashicons-grid-view"></span> ${escapeHtml(viewAllLabel)} (${orderedAssets.length})
@@ -1178,18 +1178,18 @@
                         </div>
 
                         <div class="wpe-media-upload-zone ${isCompactDropzone ? 'wpe-media-upload-zone--compact' : ''} wpe-media-dropzone" id="wpe-media-dropzone">
-                            <input type="file" id="wpe-media-file-input" class="wpe-media-file-input" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
-                            <span class="dashicons dashicons-cloud-upload" style="font-size:${isCompactDropzone ? '20px' : '24px'}; width:${isCompactDropzone ? '20px' : '24px'}; height:${isCompactDropzone ? '20px' : '24px'}; color:#2563eb;"></span>
+                            <input type="file" id="wpe-media-file-input" class="wpe-media-file-input wpe-hidden" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+                            <span class="dashicons dashicons-cloud-upload wpe-media-dropzone-icon${isCompactDropzone ? ' wpe-media-dropzone-icon--compact' : ''}"></span>
                             <div>
-                                <span style="font-weight:600; font-size:12.5px; color:#1e293b;">Drop product images here or click to browse</span>
-                                <span style="font-size:11.5px; color:#64748b; margin-left:6px;">(JPG, PNG, WebP, GIF, AVIF &bull; Product-isolated library)</span>
+                                <span class="wpe-media-dropzone-title">Drop product images here or click to browse</span>
+                                <span class="wpe-media-dropzone-hint">(JPG, PNG, WebP, GIF, AVIF &bull; Product-isolated library)</span>
                             </div>
                         </div>
 
                         <div class="wpe-media-url-bar">
-                            <span class="dashicons dashicons-admin-links" style="color:#64748b;"></span>
+                            <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
                             <input type="url" id="wpe-media-ext-url" class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
-                            <input type="text" id="wpe-media-ext-alt" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" style="max-width:190px;" />
+                            <input type="text" id="wpe-media-ext-alt" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
                             <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
                         </div>
                     </div>
@@ -1219,12 +1219,12 @@
             <div class="wpe-modal-backdrop" id="wpe-product-media-full-modal">
                 <div class="wpe-modal-dialog wpe-modal-dialog-xl">
                     <div class="wpe-modal-header">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="dashicons dashicons-images-alt2" style="color:#008060;"></span>
+                        <div class="wpe-inline-row">
+                            <span class="dashicons dashicons-images-alt2 wpe-icon-brand"></span>
                             <h4 class="wpe-modal-title">Product Media Library &mdash; All Images (<span id="wpe-full-media-count">${orderedAssets.length}</span>)</h4>
-                            <span style="font-size:12px; color:#64748b;">(Drag &amp; drop to reorder &bull; First image is Featured)</span>
+                            <span class="wpe-text-muted-sm">(Drag &amp; drop to reorder &bull; First image is Featured)</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="wpe-inline-row">
                             <button type="button" class="button wpe-btn-trigger-media-upload">
                                 <span class="dashicons dashicons-upload"></span> Upload Images
                             </button>
@@ -1252,9 +1252,9 @@
         let allCardsHtml = '';
         if (orderedAssets.length === 0) {
             allCardsHtml = `
-                <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
-                    <span class="dashicons dashicons-format-gallery" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; font-size:28px; width:28px; height:28px; line-height:1; color:#94a3b8; margin-bottom:6px;"></span>
-                    <div style="font-weight:600; color:#334155;">No images in this product's media library yet</div>
+                <div class="wpe-media-empty">
+                    <span class="dashicons dashicons-format-gallery wpe-media-empty-icon" aria-hidden="true"></span>
+                    <div class="wpe-media-empty-title">No images in this product's media library yet</div>
                 </div>
             `;
         } else {
@@ -1271,22 +1271,22 @@
                 ${allCardsHtml}
             </div>
             <div class="wpe-media-upload-zone wpe-media-upload-zone--compact wpe-media-dropzone">
-                <input type="file" class="wpe-media-file-input" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
-                <span class="dashicons dashicons-cloud-upload" style="font-size:20px; width:20px; height:20px; color:#2563eb;"></span>
-                <div style="font-weight:600; font-size:12.5px; color:#1e293b;">Drop product images here or click to upload more</div>
+                <input type="file" class="wpe-media-file-input wpe-hidden" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
+                <span class="dashicons dashicons-cloud-upload wpe-media-dropzone-icon wpe-media-dropzone-icon--compact"></span>
+                <div class="wpe-media-dropzone-title">Drop product images here or click to upload more</div>
             </div>
             <div class="wpe-media-url-bar">
-                <span class="dashicons dashicons-admin-links" style="color:#64748b;"></span>
+                <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
                 <input type="url" class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
-                <input type="text" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" style="max-width:190px;" />
+                <input type="text" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
                 <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
             </div>
         `);
 
         $modal.find('#wpe-product-media-full-footer').html(`
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <span style="font-size:12px; color:#64748b;">Showing all ${orderedAssets.length} product images</span>
-                <div style="display:flex; gap:8px;">
+            <div class="wpe-media-modal-footer-inner">
+                <span class="wpe-text-muted-sm">Showing all ${orderedAssets.length} product images</span>
+                <div class="wpe-inline-row">
                     ${wpeVariantStore.isDirty ? `
                         <button type="button" class="button button-primary wpe-btn-save-media-direct">
                             <span class="dashicons dashicons-saved"></span> Save Media
@@ -1610,8 +1610,8 @@
                         ${closeButtonHtml('wpe-btn-close-modal')}
                     </div>
                     <div class="wpe-modal-body" id="wpe-media-unlink-body">
-                        <div style="text-align:center; padding:20px;">
-                            <span class="spinner is-active" style="float:none;"></span>
+                        <div class="wpe-modal-loading">
+                            <span class="spinner is-active wpe-spinner-inline"></span>
                             <p>Checking image usage across product &amp; variations...</p>
                         </div>
                     </div>
@@ -1649,23 +1649,23 @@
                     `).join('');
 
                     impactHtml = `
-                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px 14px; margin-bottom:14px; color:#92400e;">
-                            <div style="font-weight:600; margin-bottom:4px;">Impact Preview: This image is currently in use</div>
+                        <div class="wpe-impact-banner wpe-impact-banner--warn">
+                            <div class="wpe-impact-banner-title">Impact Preview: This image is currently in use</div>
                             <div>Assigned as: ${rolesText.join(' and ')}. Choose how to resolve before removing:</div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                        <div class="wpe-stack-md wpe-mb-3">
                             ${otherAssets.length > 0 ? `
-                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500;">
+                                <label class="wpe-check-label wpe-check-label--strong">
                                     <input type="radio" name="wpe_unlink_mode" value="replace" checked />
                                     <span>Replace with another image from this product:</span>
                                 </label>
-                                <div style="padding-left:24px;">
-                                    <select id="wpe-unlink-replacement-select" style="width:100%;">
+                                <div class="wpe-pl-6">
+                                    <select id="wpe-unlink-replacement-select" class="wpe-full-width">
                                         ${replaceOptions}
                                     </select>
                                 </div>
                             ` : ''}
-                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500;">
+                            <label class="wpe-check-label wpe-check-label--strong">
                                 <input type="radio" name="wpe_unlink_mode" value="fallback" ${otherAssets.length === 0 ? 'checked' : ''} />
                                 <span>Clear assignment and fall back to no image / parent product image</span>
                             </label>
@@ -1673,15 +1673,15 @@
                     `;
                 } else {
                     impactHtml = `
-                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 14px; margin-bottom:14px; color:#166534;">
+                        <div class="wpe-impact-banner wpe-impact-banner--ok">
                             This gallery image is not used as Featured or by any variations and can be safely removed.
                         </div>
                     `;
                 }
 
                 const deleteFileHtml = asset.origin === 'managed' ? `
-                    <div style="padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500; color:#1e293b;">
+                    <div class="wpe-unlink-delete-box">
+                        <label class="wpe-check-label wpe-check-label--strong">
                             <input type="checkbox" id="wpe-unlink-delete-file" checked />
                             <span>Also delete physical file from storage (${escapeHtml(getOriginBadgeLabel(asset))}) if no other references remain</span>
                         </label>
@@ -1689,11 +1689,11 @@
                 ` : '';
 
                 $('#wpe-media-unlink-body').html(`
-                    <div style="display:flex; gap:14px; align-items:center; margin-bottom:14px;">
-                        <img src="${escapeHtml(asset.url)}" alt="" style="width:68px; height:68px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0;" />
+                    <div class="wpe-unlink-asset-row">
+                        <img src="${escapeHtml(asset.url)}" alt="" class="wpe-unlink-asset-thumb" />
                         <div>
-                            <div style="font-weight:600; font-size:14px;">Asset #${asset.asset_id} (${escapeHtml(getOriginBadgeLabel(asset))})</div>
-                            <div style="font-size:12px; color:#64748b; word-break:break-all;">${escapeHtml(asset.url)}</div>
+                            <div class="wpe-unlink-asset-title">Asset #${asset.asset_id} (${escapeHtml(getOriginBadgeLabel(asset))})</div>
+                            <div class="wpe-unlink-asset-url">${escapeHtml(asset.url)}</div>
                         </div>
                     </div>
                     ${impactHtml}
@@ -1860,71 +1860,71 @@
                     </div>
                     <div class="wpe-modal-body">
                         <!-- Assignment Scope Bar -->
-                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                                    <span style="font-weight:600; font-size:12px; color:#334155;">Assign To:</span>
+                        <div class="wpe-picker-scope-bar">
+                            <div class="wpe-inline-row wpe-inline-row--between wpe-inline-row--wrap">
+                                <div class="wpe-inline-row wpe-inline-row--md wpe-inline-row--wrap">
+                                    <span class="wpe-picker-scope-label">Assign To:</span>
                                     ${singleVariant ? `
-                                        <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                                        <label class="wpe-check-label wpe-check-label--compact">
                                             <input type="radio" name="wpe_picker_scope" value="single" ${mode === 'single' ? 'checked' : ''} />
                                             <span>Variant #${singleVariant.id} (${escapeHtml(singleVariant.sku || Object.values(singleVariant.attributes || singleVariant.combination || {}).join(' / '))})</span>
                                         </label>
                                     ` : ''}
                                     ${wpeVariantStore.selection.size > 0 || mode === 'bulk' ? `
-                                        <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                                        <label class="wpe-check-label wpe-check-label--compact">
                                             <input type="radio" name="wpe_picker_scope" value="bulk" ${mode === 'bulk' ? 'checked' : ''} />
                                             <span>Selected Variants (${wpeVariantStore.selection.size})</span>
                                         </label>
                                     ` : ''}
                                     ${options.length > 0 ? `
-                                        <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                                        <label class="wpe-check-label wpe-check-label--compact">
                                             <input type="radio" name="wpe_picker_scope" value="option" ${mode === 'option' ? 'checked' : ''} />
                                             <span>Option Value Group</span>
                                         </label>
                                     ` : ''}
                                 </div>
-                                <div id="wpe-picker-scope-preview" style="font-size:12px; font-weight:600; color:#1d4ed8;"></div>
+                                <div id="wpe-picker-scope-preview" class="wpe-picker-scope-preview"></div>
                             </div>
 
-                            <div id="wpe-picker-option-controls" style="display:${mode === 'option' ? 'flex' : 'none'}; gap:10px; margin-top:10px; align-items:center;">
-                                <select id="wpe-picker-group-opt" style="min-width:160px;">${optSelectHtml}</select>
-                                <select id="wpe-picker-group-val" style="min-width:180px;"></select>
+                            <div id="wpe-picker-option-controls" class="wpe-picker-option-controls${mode === 'option' ? '' : ' wpe-hidden'}">
+                                <select id="wpe-picker-group-opt" class="wpe-picker-group-opt">${optSelectHtml}</select>
+                                <select id="wpe-picker-group-val" class="wpe-picker-group-val"></select>
                             </div>
                         </div>
 
                         <!-- Product Images Grid -->
-                        <div style="margin-bottom:14px;">
-                            <div style="font-weight:600; font-size:12px; color:#334155; margin-bottom:8px;">
+                        <div class="wpe-mb-3">
+                            <div class="wpe-picker-section-title">
                                 Select an image from this product's library (<span id="wpe-picker-lib-count">${orderedAssets.length}</span> available):
                             </div>
                             <div id="wpe-picker-grid-wrap"></div>
                         </div>
 
                         <!-- In-Picker Upload & External URL (auto-links to product and assigns in 1 step) -->
-                        <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:12px 14px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+                        <div class="wpe-picker-upload-box">
+                            <div class="wpe-inline-row wpe-inline-row--between wpe-inline-row--wrap wpe-mb-2">
                                 <div>
-                                    <strong style="font-size:12.5px; color:#1e293b;">Or upload a new image directly for this variant</strong>
-                                    <div style="font-size:11.5px; color:#64748b;">Automatically adds to this product's media library and assigns to the target variation(s) in 1 step.</div>
+                                    <strong class="wpe-picker-upload-title">Or upload a new image directly for this variant</strong>
+                                    <div class="wpe-picker-upload-desc">Automatically adds to this product's media library and assigns to the target variation(s) in 1 step.</div>
                                 </div>
                                 <div>
-                                    <input type="file" id="wpe-picker-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
+                                    <input type="file" id="wpe-picker-file-input" class="wpe-hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" />
                                     <button type="button" class="button wpe-btn-picker-upload-file">
                                         <span class="dashicons dashicons-upload" aria-hidden="true"></span> Upload &amp; Assign
                                     </button>
                                 </div>
                             </div>
-                            <div class="wpe-media-url-bar" style="padding:6px 8px; background:#ffffff;">
+                            <div class="wpe-media-url-bar wpe-picker-url-bar">
                                 <input type="url" id="wpe-picker-ext-url" placeholder="Or paste HTTPS image URL to add &amp; assign..." />
                                 <button type="button" class="button button-small wpe-btn-picker-add-url">Add URL &amp; Assign</button>
                             </div>
                         </div>
                     </div>
-                    <div class="wpe-modal-footer" style="justify-content:space-between;">
+                    <div class="wpe-modal-footer wpe-modal-footer--between">
                         <div>
                             <button type="button" class="button button-link-delete wpe-btn-picker-clear-image">Remove Assigned Image</button>
                         </div>
-                        <div style="display:flex; gap:8px;">
+                        <div class="wpe-inline-row">
                             <button type="button" class="button wpe-btn-close-modal">Cancel</button>
                             <button type="button" class="button button-primary wpe-btn-confirm-variant-picker" ${!selectedAssetId ? 'disabled' : ''}>Assign Selected Image</button>
                         </div>
@@ -1997,7 +1997,7 @@
             $('#wpe-picker-lib-count').text(assets.length);
             if (assets.length === 0) {
                 $('#wpe-picker-grid-wrap').html(`
-                    <div style="padding:24px; text-align:center; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; color:#64748b;">
+                    <div class="wpe-picker-empty">
                         This product has no images yet. Use <strong>Upload &amp; Assign</strong> below to upload an image directly!
                     </div>
                 `);
@@ -2068,7 +2068,7 @@
         // Scope radio switch
         $('#wpe-variant-image-picker-modal input[name="wpe_picker_scope"]').on('change', function () {
             mode = $(this).val();
-            $('#wpe-picker-option-controls').toggle(mode === 'option');
+            $('#wpe-picker-option-controls').toggleClass('wpe-hidden', mode !== 'option');
             updateScopePreview();
         });
 
@@ -2253,21 +2253,21 @@
                             <strong>Lưu ý:</strong> Đang có <strong>${count}</strong> biến thể sử dụng mức giá chung này ($${escapeHtml(cp.regular_price || '0')}${cp.sale_price ? ' / $' + escapeHtml(cp.sale_price) : ''}).
                             Vui lòng chọn phương án xử lý giá cho các biến thể bị ảnh hưởng trước khi xóa.
                         </div>
-                        <div style="max-height: 160px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 14px;">
-                            <table class="wp-list-table widefat fixed striped">
+                        <div class="wpe-dialog-table-wrap">
+                            <table class="wp-list-table widefat fixed striped wpe-dialog-table">
                                 <thead>
                                     <tr>
-                                        <th style="padding:6px 10px;">Biến thể</th>
-                                        <th style="padding:6px 10px;">SKU</th>
-                                        <th style="padding:6px 10px;">Giá đang dùng</th>
+                                        <th>Biến thể</th>
+                                        <th>SKU</th>
+                                        <th>Giá đang dùng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${sharedVariants.map(v => `
                                         <tr>
-                                            <td style="padding:6px 10px;"><strong>${escapeHtml(getVariantLabel(v))}</strong></td>
-                                            <td style="padding:6px 10px;">${escapeHtml(v.sku || '—')}</td>
-                                            <td style="padding:6px 10px;">$${escapeHtml(cp.regular_price || '')}${cp.sale_price ? ' / $' + escapeHtml(cp.sale_price) : ''}</td>
+                                            <td><strong>${escapeHtml(getVariantLabel(v))}</strong></td>
+                                            <td>${escapeHtml(v.sku || '—')}</td>
+                                            <td>$${escapeHtml(cp.regular_price || '')}${cp.sale_price ? ' / $' + escapeHtml(cp.sale_price) : ''}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -2333,14 +2333,14 @@
                         ${closeButtonHtml('wpe-modal-close wpe-btn-cancel-modal')}
                     </div>
                     <div class="wpe-modal-body">
-                        <div class="wpe-dialog-warning-banner" style="background:#eff6ff; border-left-color:#3b82f6; color:#1e40af;">
+                        <div class="wpe-dialog-warning-banner wpe-dialog-warning-banner--info">
                             Sản phẩm sẽ được cấu hình thành <strong>Sản phẩm có biến thể (Variable)</strong> khi tạo các tổ hợp biến thể.
                         </div>
-                        <div id="wpe-simple-to-variable-preview" style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:13px;">
+                        <div id="wpe-simple-to-variable-preview" class="wpe-dialog-preview-box">
                             ${regPrice ? `<div><strong>Giá bán chung:</strong> Giá hiện tại ($${escapeHtml(regPrice)}${salePrice ? ' / Sale $' + escapeHtml(salePrice) : ''}) sẽ được đề xuất làm giá chung cho các biến thể.</div>` : '<div>Chưa có giá bán trực tiếp. Biến thể có thể dùng giá riêng hoặc thiết lập giá chung sau.</div>'}
-                            <div style="margin-top:6px;"><strong>SKU và Tồn kho:</strong> Mã SKU sản phẩm cha và kho sản phẩm tiếp tục được lưu giữ.</div>
+                            <div class="wpe-mt-1-5"><strong>SKU và Tồn kho:</strong> Mã SKU sản phẩm cha và kho sản phẩm tiếp tục được lưu giữ.</div>
                         </div>
-                        <div class="wpe-form-row" style="margin-top:14px;">
+                        <div class="wpe-form-row wpe-mt-3">
                             <label for="wpe-first-option-name"><strong>Tên tùy chọn biến thể đầu tiên:</strong></label>
                             <input type="text" id="wpe-first-option-name" class="wpe-input" value="Size" placeholder="e.g. Size, Color, Style" />
                         </div>
@@ -2420,11 +2420,11 @@
                                     `).join('')}
                                 </select>
                             </div>
-                            <div id="wpe-receiver-preview-box" style="margin-top:12px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:13px;">
+                            <div id="wpe-receiver-preview-box" class="wpe-dialog-preview-box">
                             </div>
                             ${vars.length > 1 ? `
-                                <div style="margin-top:14px;">
-                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                <div class="wpe-mt-3">
+                                    <label class="wpe-check-label">
                                         <input type="checkbox" id="wpe-confirm-tombstone-check" checked />
                                         <span>Tôi hiểu và xác nhận gỡ bỏ ${vars.length - 1} biến thể còn lại.</span>
                                     </label>
@@ -2527,7 +2527,7 @@
                     <div class="wpe-ref-header">
                         <span class="wpe-ref-badge">Giá tham chiếu / Reference Price</span>
                     </div>
-                    <div class="wpe-ref-help" style="margin:0 0 12px 0;">
+                    <div class="wpe-ref-help wpe-ref-help--flush">
                         Chưa có biến thể nào được tạo để tham chiếu giá.
                     </div>
                     <button type="button" class="button button-secondary wpe-btn-set-common-price">
@@ -2568,8 +2568,8 @@
                     <span class="wpe-ref-source">Giá tham chiếu từ biến thể ${escapeHtml(ref.label)}</span>
                 </div>
                 <div class="wpe-ref-amount">
-                    ${saleFormatted ? `<span style="text-decoration:line-through; color:#64748b; font-size:18px; margin-right:8px;">${regFormatted}</span><span>${saleFormatted}</span>` : `<span>${regFormatted}</span>`}
-                    ${ref.sale_active ? '<span class="wpe-ref-badge" style="background:#fee2e2; color:#b91c1c; margin-left:8px;">Sale</span>' : ''}
+                    ${saleFormatted ? `<span class="wpe-ref-price-strike">${regFormatted}</span><span>${saleFormatted}</span>` : `<span>${regFormatted}</span>`}
+                    ${ref.sale_active ? '<span class="wpe-ref-badge wpe-ref-badge-sale">Sale</span>' : ''}
                 </div>
                 <div class="wpe-ref-help">
                     Giá tham chiếu chỉ phục vụ hiển thị tại block này, không tự ghi thành giá chung hoặc phân phối sang các biến thể khác. Mỗi biến thể tiếp tục sử dụng giá riêng đã lưu.
@@ -2590,9 +2590,9 @@
         return `
             <div class="wpe-common-price-card">
                 <div class="wpe-common-price-header">
-                    <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="wpe-inline-row">
                         <span class="wpe-common-badge">Giá chung / Common Price</span>
-                        <span style="font-size:13px; color:#166534; font-weight:500;">Áp dụng cho các biến thể ở chế độ "Dùng giá chung"</span>
+                        <span class="wpe-common-price-sub">Áp dụng cho các biến thể ở chế độ "Dùng giá chung"</span>
                     </div>
                     <button type="button" class="button-link-delete wpe-btn-remove-common-price" title="Xóa cấu hình giá chung">
                         <span class="dashicons dashicons-trash" aria-hidden="true"></span> Xóa giá chung
@@ -2608,7 +2608,7 @@
                         <input type="text" class="wpe-input wpe-common-sale-price" value="${escapeHtml(formatNumberForInput(cpSale))}" placeholder="0.00" />
                     </div>
                 </div>
-                <div class="wpe-form-grid-2" style="margin-top:8px;">
+                <div class="wpe-form-grid-2 wpe-mt-2">
                     <div class="wpe-form-row">
                         <label>Lịch sale từ ngày</label>
                         <input type="date" class="wpe-input wpe-common-sale-from" value="${escapeHtml(formatDateForInput(cpFrom))}" />
@@ -2618,7 +2618,7 @@
                         <input type="date" class="wpe-input wpe-common-sale-to" value="${escapeHtml(formatDateForInput(cpTo))}" />
                     </div>
                 </div>
-                <div class="wpe-field-desc" style="margin-top:8px;">
+                <div class="wpe-field-desc wpe-mt-2">
                     Biến thể mới sẽ mặc định dùng giá chung này nếu chưa cấu hình giá riêng.
                 </div>
             </div>
@@ -2638,7 +2638,7 @@
                     <input type="text" id="wpe-info-sale-price" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.sale_price))}" placeholder="0.00" />
                 </div>
             </div>
-            <div class="wpe-form-grid-2" style="margin-top:8px;">
+            <div class="wpe-form-grid-2 wpe-mt-2">
                 <div class="wpe-form-row">
                     <label for="wpe-info-sale-from">Lên lịch sale từ ngày</label>
                     <input type="date" id="wpe-info-sale-from" class="wpe-input" value="${escapeHtml(formatDateForInput(prod.sale_from))}" />
@@ -2668,16 +2668,16 @@
                     ${isVar ? 'SKU cấp sản phẩm cha. Phân biệt rõ với mã SKU riêng của từng biến thể.' : 'Mã định danh sản phẩm độc nhất cho quản lý kho và đơn hàng.'}
                 </span>
             </div>
-            <div class="wpe-form-row" style="margin-top:14px;">
-                <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+            <div class="wpe-form-row wpe-mt-3">
+                <label class="wpe-check-label wpe-check-label--inline">
                     <input type="checkbox" id="wpe-info-manage-stock" ${manageStock ? 'checked' : ''} />
                     <span><strong>Quản lý tồn kho cấp sản phẩm</strong> ${isVar ? '(Tồn kho chung)' : ''}</span>
                 </label>
-                <span class="wpe-field-desc" style="margin-left:24px;">
+                <span class="wpe-field-desc wpe-ml-6">
                     ${isVar ? 'Khi bật, sản phẩm quản lý số lượng tồn kho chung thay vì quản lý theo từng biến thể riêng lẻ.' : 'Theo dõi số lượng hàng tồn kho cho sản phẩm này.'}
                 </span>
             </div>
-            <div id="wpe-info-stock-fields" style="margin-top:12px; padding-left:24px; display:${manageStock ? 'block' : 'none'};">
+            <div id="wpe-info-stock-fields" class="wpe-info-stock-sub${manageStock ? '' : ' wpe-hidden'}">
                 <div class="wpe-form-grid-2">
                     <div class="wpe-form-row">
                         <label for="wpe-info-stock-quantity">Số lượng tồn kho</label>
@@ -2693,9 +2693,9 @@
                     </div>
                 </div>
             </div>
-            <div id="wpe-info-stock-status-field" class="wpe-form-row" style="margin-top:12px; padding-left:24px; display:${manageStock ? 'none' : 'block'};">
+            <div id="wpe-info-stock-status-field" class="wpe-form-row wpe-info-stock-sub${manageStock ? ' wpe-hidden' : ''}">
                 <label for="wpe-info-stock-status">Trạng thái kho</label>
-                <select id="wpe-info-stock-status" class="wpe-select" style="max-width:260px;">
+                <select id="wpe-info-stock-status" class="wpe-select wpe-info-stock-status-select">
                     <option value="instock" ${stockStatus === 'instock' ? 'selected' : ''}>Còn hàng (In stock)</option>
                     <option value="outofstock" ${stockStatus === 'outofstock' ? 'selected' : ''}>Hết hàng (Out of stock)</option>
                     <option value="onbackorder" ${stockStatus === 'onbackorder' ? 'selected' : ''}>Chờ hàng (On backorder)</option>
@@ -2721,7 +2721,7 @@
                     <input type="text" id="wpe-info-width" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.width))}" placeholder="0" />
                 </div>
             </div>
-            <div class="wpe-form-row" style="margin-top:8px; max-width:33%;">
+            <div class="wpe-form-row wpe-info-height-row">
                 <label for="wpe-info-height">Cao (cm)</label>
                 <input type="text" id="wpe-info-height" class="wpe-input" value="${escapeHtml(formatNumberForInput(prod.height))}" placeholder="0" />
             </div>
@@ -2736,17 +2736,17 @@
         let rowsHtml = '';
 
         if (attrs.length === 0) {
-            rowsHtml = `<div style="color:#64748b; font-style:italic; padding:6px 0;">No descriptive specs added (e.g. Material, Brand, Care Instructions).</div>`;
+            rowsHtml = `<div class="wpe-muted-empty">No descriptive specs added (e.g. Material, Brand, Care Instructions).</div>`;
         } else {
             attrs.forEach((attr, idx) => {
                 const valStr = Array.isArray(attr.values)
                     ? attr.values.map(v => typeof v === 'object' ? v.label : v).join(', ')
                     : (attr.value || '');
                 rowsHtml += `
-                    <div class="wpe-desc-attr-row" data-attr-idx="${idx}" style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-                        <input type="text" class="wpe-desc-attr-name" value="${escapeHtml(attr.name || '')}" placeholder="Attribute Name (e.g. Material)" style="width:220px;" />
-                        <input type="text" class="wpe-desc-attr-values" value="${escapeHtml(valStr)}" placeholder="Values separated by comma (e.g. 100% Cotton, Ring-spun)" style="flex:1;" />
-                        <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#475569;">
+                    <div class="wpe-desc-attr-row" data-attr-idx="${idx}">
+                        <input type="text" class="wpe-desc-attr-name" value="${escapeHtml(attr.name || '')}" placeholder="Attribute Name (e.g. Material)" />
+                        <input type="text" class="wpe-desc-attr-values" value="${escapeHtml(valStr)}" placeholder="Values separated by comma (e.g. 100% Cotton, Ring-spun)" />
+                        <label class="wpe-desc-attr-vis">
                             <input type="checkbox" class="wpe-desc-attr-visible" ${attr.visible !== 0 && attr.visible !== false ? 'checked' : ''} />
                             Visible
                         </label>
@@ -2762,7 +2762,7 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-tag" style="color:#2563eb;"></span>
+                        <span class="dashicons dashicons-tag wpe-icon-accent"></span>
                         <h4 class="wpe-section-title">Descriptive Attributes</h4>
                         <span class="wpe-section-count">${attrs.length}</span>
                     </div>
@@ -2782,7 +2782,7 @@
 
         return `
             <div class="wpe-info-wrap">
-                <div class="wpe-top-bar" style="margin-bottom:0;">
+                <div class="wpe-top-bar wpe-top-bar--flush">
                     <div class="wpe-top-title-area">
                         <span class="wpe-badge-type">${isVar ? 'Sản phẩm có biến thể (Variable)' : 'Sản phẩm đơn giản (Simple)'}</span>
                         <span class="wpe-dirty-badge ${wpeVariantStore.isDirty ? 'dirty' : 'clean'}">
@@ -2799,7 +2799,7 @@
 
                 <div class="wpe-info-section">
                     <h4 class="wpe-info-section-title">
-                        <span class="dashicons dashicons-money-alt" style="color:#16a34a;"></span>
+                        <span class="dashicons dashicons-money-alt wpe-icon-success"></span>
                         ${isVar ? 'Giá chung & Giá tham chiếu' : 'Giá bán'}
                     </h4>
                     ${isVar ? (wpeVariantStore.commonPrice !== null ? renderCommonPriceCard() : renderReferencePriceCard()) : renderSimplePricing()}
@@ -2807,7 +2807,7 @@
 
                 <div class="wpe-info-section">
                     <h4 class="wpe-info-section-title">
-                        <span class="dashicons dashicons-archive" style="color:#d97706;"></span>
+                        <span class="dashicons dashicons-archive wpe-icon-warning"></span>
                         Mã sản phẩm & Quản lý tồn kho
                     </h4>
                     ${renderProductInventory()}
@@ -2815,13 +2815,13 @@
 
                 <div class="wpe-info-section">
                     <h4 class="wpe-info-section-title">
-                        <span class="dashicons dashicons-car" style="color:#0284c7;"></span>
+                        <span class="dashicons dashicons-car wpe-icon-sky"></span>
                         Trọng lượng & Kích thước
                     </h4>
                     ${renderProductShipping()}
                 </div>
 
-                <div class="wpe-info-section" style="padding:0; border:none; background:transparent;">
+                <div class="wpe-info-section wpe-info-section--plain">
                     ${renderSectionA()}
                 </div>
             </div>
@@ -2936,8 +2936,8 @@
             if (!wpeVariantStore.product.stock) wpeVariantStore.product.stock = {};
             wpeVariantStore.product.stock.manage_stock = isChecked ? 1 : 0;
             wpeVariantStore.product.parent_stock = Object.assign({}, wpeVariantStore.product.stock);
-            $container.find('#wpe-info-stock-fields').toggle(isChecked);
-            $container.find('#wpe-info-stock-status-field').toggle(!isChecked);
+            $container.find('#wpe-info-stock-fields').toggleClass('wpe-hidden', !isChecked);
+            $container.find('#wpe-info-stock-status-field').toggleClass('wpe-hidden', isChecked);
             wpeVariantStore.markDirty();
         });
 
@@ -3187,7 +3187,7 @@
                     </button>
                 </div>
 
-                <div class="wpe-fullscreen-tab-body" style="padding-top:16px;">
+                <div class="wpe-fullscreen-tab-body">
                     ${tabBodyHtml}
                 </div>
 
@@ -3219,7 +3219,7 @@
                     <div class="wpe-section">
                         <div class="wpe-section-header">
                             <div class="wpe-section-title-wrap">
-                                <span class="dashicons dashicons-format-gallery" style="color:#2563eb;"></span>
+                                <span class="dashicons dashicons-format-gallery wpe-icon-accent"></span>
                                 <h4 class="wpe-section-title">Product Media Library (${assets.length})</h4>
                             </div>
                         </div>
@@ -3366,7 +3366,7 @@
         let cardsHtml = '';
 
         if (options.length === 0) {
-            cardsHtml = `<div style="color:#64748b; font-style:italic; padding:8px 0;">No variation options configured yet (Color, Size...). Click "Add Option" to begin.</div>`;
+            cardsHtml = `<div class="wpe-muted-empty wpe-muted-empty--lg">No variation options configured yet (Color, Size...). Click "Add Option" to begin.</div>`;
         } else {
             options.forEach((opt, idx) => {
                 const rawValues = opt.values || [];
@@ -3404,18 +3404,18 @@
                 cardsHtml += `
                     <div class="wpe-option-card" data-idx="${idx}">
                         <div class="wpe-option-card-header">
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <div class="wpe-inline-row wpe-inline-row--wrap">
                                 <div class="wpe-option-reorder-btns">
                                     <button type="button" class="button wpe-btn-move-option wpe-btn-move-option-up" data-opt-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Move option up">&uarr;</button>
                                     <button type="button" class="button wpe-btn-move-option wpe-btn-move-option-down" data-opt-idx="${idx}" ${idx === options.length - 1 ? 'disabled' : ''} title="Move option down">&darr;</button>
                                 </div>
                                 <input type="text" class="wpe-option-name-input" value="${escapeHtml(opt.name)}" placeholder="Option name (e.g. Size, Color)" />
-                                <span style="font-size:12px; color:#64748b; font-weight:500;">(${rawValues.length} values)</span>
+                                <span class="wpe-option-count-label">(${rawValues.length} values)</span>
                             </div>
-                            <div class="wpe-option-card-actions" style="display:flex; align-items:center; gap:10px;">
-                                <label style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#475569;">
+                            <div class="wpe-option-card-actions">
+                                <label class="wpe-option-default-label">
                                     <span>Default:</span>
-                                    <select class="wpe-option-default-value-select" data-opt-idx="${idx}" style="font-size:12px; min-height:28px;">
+                                    <select class="wpe-option-default-value-select" data-opt-idx="${idx}">
                                         ${defaultOptionsHtml}
                                     </select>
                                 </label>
@@ -3430,9 +3430,9 @@
 
                         <!-- Bulk paste values box -->
                         <div class="wpe-bulk-paste-box">
-                            <p style="margin:0 0 6px 0; font-size:11px; color:#475569;">Paste values separated by commas, tabs, or new lines:</p>
+                            <p class="wpe-bulk-paste-hint">Paste values separated by commas, tabs, or new lines:</p>
                             <textarea rows="2" placeholder="Red, Blue, Green, Yellow..."></textarea>
-                            <div style="margin-top:8px; display:flex; justify-content:flex-end; gap:8px;">
+                            <div class="wpe-bulk-paste-actions">
                                 <button type="button" class="button button-small wpe-btn-cancel-bulk-paste">Close</button>
                                 <button type="button" class="button button-small button-primary wpe-btn-apply-bulk-paste">Add Values</button>
                             </div>
@@ -3456,12 +3456,12 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-admin-settings" style="color:#2563eb;"></span>
+                        <span class="dashicons dashicons-admin-settings wpe-icon-accent"></span>
                         <h4 class="wpe-section-title">Variation Options</h4>
                         <span class="wpe-section-count">${options.length}</span>
                     </div>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <select class="wpe-add-taxonomy-select" style="max-width:220px; font-size:12px;">
+                    <div class="wpe-inline-row">
+                        <select class="wpe-add-taxonomy-select">
                             ${taxonomyOptions}
                         </select>
                         <button type="button" class="button wpe-btn-add-option">
@@ -3532,11 +3532,11 @@
             <div class="wpe-section">
                 <div class="wpe-section-header">
                     <div class="wpe-section-title-wrap">
-                        <span class="dashicons dashicons-grid-view" style="color:#2563eb;"></span>
+                        <span class="dashicons dashicons-grid-view wpe-icon-accent"></span>
                         <h4 class="wpe-section-title">Variations Matrix</h4>
                         <span class="wpe-section-count">${variations.length}</span>
                     </div>
-                    <div style="display:flex; gap:8px;">
+                    <div class="wpe-inline-row">
                         <button type="button" class="button wpe-btn-add-single-variant" title="Add a single custom variation">
                             <span class="dashicons dashicons-plus-alt2"></span> Add Variant
                         </button>
@@ -3577,7 +3577,7 @@
                 <div class="wpe-selection-bar ${selectedCount > 0 ? 'active' : ''}">
                     <div>
                         <strong>${selectedCount}</strong> variants selected
-                        <button type="button" class="button-link wpe-btn-select-all-filtered" style="margin-left:8px;">Select all ${totalItems} filtered results</button>
+                        <button type="button" class="button-link wpe-btn-select-all-filtered wpe-ml-2">Select all ${totalItems} filtered results</button>
                     </div>
                     <div class="wpe-selection-actions">
                         <button type="button" class="button button-small wpe-btn-bulk-assign-media wpe-btn-bulk-set-image">Assign Media</button>
@@ -3591,15 +3591,15 @@
                     <table class="wpe-table">
                         <thead>
                             <tr>
-                                <th style="width:28px;"><input type="checkbox" class="wpe-check-all-page" ${allPageSelected ? 'checked' : ''} aria-label="Select all variants on this page" /></th>
-                                <th style="width:44px;">Image</th>
-                                <th style="width:180px;">Combination</th>
-                                <th style="width:120px;">SKU</th>
-                                ${hasCommonPrice ? '<th style="width:100px;">Price Mode</th>' : ''}
-                                <th style="width:110px;">Regular (${config.currencySymbol})</th>
-                                <th style="width:110px;">Sale (${config.currencySymbol})</th>
-                                <th style="width:200px;">Stock</th>
-                                <th style="width:84px; text-align:right;">Actions</th>
+                                <th class="wpe-col-check"><input type="checkbox" class="wpe-check-all-page" ${allPageSelected ? 'checked' : ''} aria-label="Select all variants on this page" /></th>
+                                <th class="wpe-col-image">Image</th>
+                                <th class="wpe-col-combo">Combination</th>
+                                <th class="wpe-col-sku">SKU</th>
+                                ${hasCommonPrice ? '<th class="wpe-col-price-mode">Price Mode</th>' : ''}
+                                <th class="wpe-col-price">Regular (${config.currencySymbol})</th>
+                                <th class="wpe-col-price">Sale (${config.currencySymbol})</th>
+                                <th class="wpe-col-stock">Stock</th>
+                                <th class="wpe-col-actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3615,7 +3615,7 @@
                     </div>
                     <div class="wpe-pagination-controls">
                         <button type="button" class="button button-small wpe-page-prev" ${filters.page <= 1 ? 'disabled' : ''}>&laquo; Prev</button>
-                        <span style="margin:0 8px; font-weight:500;">Page ${filters.page} / ${totalPages}</span>
+                        <span class="wpe-pagination-page">Page ${filters.page} / ${totalPages}</span>
                         <button type="button" class="button button-small wpe-page-next" ${filters.page >= totalPages ? 'disabled' : ''}>Next &raquo;</button>
                     </div>
                 </div>
@@ -3630,7 +3630,7 @@
         const hasCommonPrice = wpeVariantStore.commonPrice !== null && typeof wpeVariantStore.commonPrice === 'object';
         const colSpan = hasCommonPrice ? 9 : 8;
         if (variations.length === 0) {
-            return `<tr><td colspan="${colSpan}" style="text-align:center; padding:36px; color:#64748b;">No matching variants found.</td></tr>`;
+            return `<tr><td colspan="${colSpan}" class="wpe-table-empty-cell">No matching variants found.</td></tr>`;
         }
 
         let html = '';
@@ -3669,7 +3669,7 @@
                                         <span class="dashicons dashicons-arrow-${isGroupCollapsed ? 'right' : 'down'}-alt2" aria-hidden="true"></span>
                                     </button>
                                     <strong>${escapeHtml(groupBy)}: ${escapeHtml(groupVal)}</strong>
-                                    <span style="font-size:12px; color:#64748b; font-weight:500;">(${groupMembers.length} variants)</span>
+                                    <span class="wpe-option-count-label">(${groupMembers.length} variants)</span>
                                 </div>
                                 <div>
                                     <button type="button" class="button button-small wpe-btn-group-inline-media" data-group-opt="${escapeHtml(groupBy)}" data-group-val="${escapeHtml(groupVal)}">
@@ -3711,7 +3711,7 @@
                     <td>
                         <div class="wpe-media-slot-wrap">
                             <button type="button" class="wpe-media-slot wpe-row-thumb-btn" data-id="${v.id}" title="Choose image" aria-label="Choose image for ${rowName}">
-                                ${v.image_url ? `<img src="${escapeHtml(v.image_url)}" alt="" />` : '<span class="dashicons dashicons-format-image" aria-hidden="true" style="color:#94a3b8;"></span>'}
+                                ${v.image_url ? `<img src="${escapeHtml(v.image_url)}" alt="" />` : '<span class="dashicons dashicons-format-image wpe-icon-subtle" aria-hidden="true"></span>'}
                             </button>
                             ${v.image_url ? `<button type="button" class="wpe-media-remove" title="Unlink image" aria-label="Remove image from ${rowName}"><span aria-hidden="true">&times;</span></button>` : ''}
                         </div>
@@ -3722,7 +3722,7 @@
                     </td>
                     ${hasCommonPrice ? `
                     <td>
-                        <select class="wpe-editable-input wpe-pricing-mode-select" style="font-size:11px; padding:2px 4px;" aria-label="Price mode, ${rowName}">
+                        <select class="wpe-editable-input wpe-pricing-mode-select" aria-label="Price mode, ${rowName}">
                             <option value="shared" ${isSharedPrice ? 'selected' : ''}>Shared</option>
                             <option value="own" ${!isSharedPrice ? 'selected' : ''}>Own</option>
                         </select>
@@ -3745,7 +3745,7 @@
                         `}
                         </div>
                     </td>
-                    <td style="text-align:right;">
+                    <td class="wpe-text-right">
                         <div class="wpe-row-actions">
                             <button type="button" class="button button-small wpe-btn-open-drawer" title="Edit details" aria-label="Edit details, ${rowName}">
                                 <span class="dashicons dashicons-edit" aria-hidden="true"></span>
@@ -3783,9 +3783,9 @@
             <div class="wpe-drawer-header">
                 <div>
                     <h4 class="wpe-drawer-title">Variant Details #${variant.id}</h4>
-                    <div style="margin-top:6px;">${badgesHtml}</div>
+                    <div class="wpe-mt-1-5">${badgesHtml}</div>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div class="wpe-inline-row">
                     <div class="wpe-drawer-nav">
                         <button type="button" class="button wpe-btn-drawer-nav wpe-btn-drawer-prev" data-current-id="${variant.id}" data-target-id="${prevVariant ? prevVariant.id : ''}" ${!prevVariant ? 'disabled' : ''} title="Previous variant">&lsaquo; Prev</button>
                         <button type="button" class="button wpe-btn-drawer-nav wpe-btn-drawer-next" data-current-id="${variant.id}" data-target-id="${nextVariant ? nextVariant.id : ''}" ${!nextVariant ? 'disabled' : ''} title="Next variant">Next &rsaquo;</button>
@@ -3797,19 +3797,19 @@
                 <!-- Variant Image (Product-scoped) -->
                 <div class="wpe-drawer-section">
                     <h5 class="wpe-drawer-section-title">Variant Image</h5>
-                    <div style="display:flex; align-items:center; gap:14px;">
-                        <div style="width:68px; height:68px; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                    <div class="wpe-drawer-image-row">
+                        <div class="wpe-drawer-image-box">
                             ${variant.image_url
-                                ? `<img src="${escapeHtml(variant.image_url)}" alt="" style="width:100%; height:100%; object-fit:cover;" />`
-                                : '<span class="dashicons dashicons-format-image" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; color:#94a3b8; font-size:24px; width:24px; height:24px; line-height:1;"></span>'}
+                                ? `<img src="${escapeHtml(variant.image_url)}" alt="" class="wpe-drawer-image-img" />`
+                                : '<span class="dashicons dashicons-format-image wpe-drawer-image-placeholder" aria-hidden="true"></span>'}
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:6px;">
-                            <div style="font-size:12px; color:#475569;">
+                        <div class="wpe-drawer-image-meta">
+                            <div class="wpe-drawer-image-hint">
                                 ${variant.image_url
                                     ? `Assigned from Product Media Library${variant.image_asset_id ? ' (Asset #' + variant.image_asset_id + ')' : ''}`
                                     : 'Using parent product image (no variant-specific image assigned)'}
                             </div>
-                            <div style="display:flex; gap:8px;">
+                            <div class="wpe-inline-row">
                                 <button type="button" class="button button-small wpe-btn-drawer-pick-image" data-variant-id="${variant.id}">
                                     <span class="dashicons dashicons-images-alt2" aria-hidden="true"></span> Choose Product Image
                                 </button>
@@ -3847,13 +3847,13 @@
                 <!-- Inventory -->
                 <div class="wpe-drawer-section">
                     <h5 class="wpe-drawer-section-title">Inventory Management</h5>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                    <div class="wpe-mb-2-5">
+                        <label class="wpe-check-label wpe-check-label--inline-sm">
                             <input type="checkbox" id="wpe-drawer-manage-stock" ${variant.manage_stock ? 'checked' : ''} />
                             Track stock quantity individually for this variant
                         </label>
                     </div>
-                    <div class="wpe-form-row" id="wpe-drawer-stock-fields" style="${!variant.manage_stock ? 'display:none;' : ''}">
+                    <div class="wpe-form-row${!variant.manage_stock ? ' wpe-hidden' : ''}" id="wpe-drawer-stock-fields">
                         <div class="wpe-form-group">
                             <label>Stock Quantity</label>
                             <input type="number" step="any" id="wpe-drawer-stock-qty" value="${escapeHtml(variant.stock_quantity !== null ? variant.stock_quantity : '')}" />
@@ -3967,7 +3967,7 @@
                 return `<option value="${escapeHtml(label)}" ${sel}>${escapeHtml(label)}</option>`;
             }).join('');
             return `
-                <div class="wpe-form-group" style="min-width:140px;">
+                <div class="wpe-form-group wpe-add-var-opt-group">
                     <label>${escapeHtml(opt.name)}</label>
                     <select class="wpe-add-var-opt-select" data-opt-name="${escapeHtml(opt.name)}">${valsHtml}</select>
                 </div>
@@ -3986,13 +3986,13 @@
                         ${closeButtonHtml('wpe-btn-close-modal')}
                     </div>
                     <div class="wpe-modal-body">
-                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+                        <div class="wpe-add-var-opts-row">
                             ${optionSelectsHtml}
                         </div>
-                        <div id="wpe-add-var-dup-warning" style="display:none; margin-bottom:12px; padding:8px 12px; border-radius:6px; background:#fef2f2; color:#b91c1c; font-size:12px; font-weight:500;">
+                        <div id="wpe-add-var-dup-warning" class="wpe-add-var-dup-warning wpe-hidden">
                             This combination already exists in the matrix.
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="wpe-add-var-grid">
                             <div class="wpe-form-group">
                                 <label>SKU</label>
                                 <input type="text" id="wpe-add-var-sku" placeholder="Auto or custom SKU" />
@@ -4027,7 +4027,7 @@
             });
             const key = options.map(o => `${o.name}:${combo[o.name] || ''}`).join('|');
             const isDup = existingKeys.has(key);
-            $('#wpe-add-var-dup-warning').toggle(isDup);
+            $('#wpe-add-var-dup-warning').toggleClass('wpe-hidden', !isDup);
             $('#wpe-add-variant-modal .wpe-btn-confirm-add-variant').prop('disabled', isDup);
 
             const $sku = $('#wpe-add-var-sku');
@@ -4061,8 +4061,8 @@
                         ${closeButtonHtml('wpe-btn-close-modal')}
                     </div>
                     <div class="wpe-modal-body" id="wpe-generator-body">
-                        <div style="text-align:center; padding:30px;">
-                            <span class="spinner is-active" style="float:none;"></span>
+                        <div class="wpe-modal-loading wpe-modal-loading--lg">
+                            <span class="spinner is-active wpe-spinner-inline"></span>
                             <p>Analyzing potential combinations...</p>
                         </div>
                     </div>
@@ -4078,7 +4078,7 @@
         api.previewGenerator(wpeVariantStore.variationOptions)
             .done(function (res) {
                 if (!res.success) {
-                    $('#wpe-generator-body').html(`<p style="color:#ef4444;">Error generating combinations: ${escapeHtml(res.message)}</p>`);
+                    $('#wpe-generator-body').html(`<p class="wpe-text-error">Error generating combinations: ${escapeHtml(res.message)}</p>`);
                     return;
                 }
 
@@ -4090,10 +4090,10 @@
                 newCombos.forEach((nc, idx) => {
                     const badgeText = Object.entries(nc.combination || nc.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(' / ');
                     listHtml += `
-                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+                        <label class="wpe-gen-row">
                             <input type="checkbox" class="wpe-gen-check" checked data-idx="${idx}" />
                             <strong>${escapeHtml(badgeText)}</strong>
-                            <span style="font-size:11px; color:#059669; margin-left:8px; font-weight:600;">[New]</span>
+                            <span class="wpe-gen-tag-new">[New]</span>
                         </label>
                     `;
                 });
@@ -4101,10 +4101,10 @@
                 existingCombos.forEach((ec) => {
                     const badgeText = Object.entries(ec.combination || ec.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(' / ');
                     listHtml += `
-                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; color:#64748b;">
+                        <label class="wpe-gen-row wpe-gen-row--existing">
                             <input type="checkbox" checked disabled />
                             <span>${escapeHtml(badgeText)}</span>
-                            <span style="font-size:11px; margin-left:8px;">[Existing - SKU: ${escapeHtml(ec.sku || '')}]</span>
+                            <span class="wpe-gen-tag-existing">[Existing - SKU: ${escapeHtml(ec.sku || '')}]</span>
                         </label>
                     `;
                 });
@@ -4123,7 +4123,7 @@
                     if (groupsHtml) {
                         quickFilterBarHtml = `
                             <div class="wpe-gen-filter-bar">
-                                <span style="font-size:11px; color:#64748b; font-weight:600;">Quick toggle by attribute value:</span>
+                                <span class="wpe-gen-filter-label">Quick toggle by attribute value:</span>
                                 ${groupsHtml}
                             </div>
                         `;
@@ -4135,39 +4135,39 @@
                 const defaultSkuPrefix = rawParentSku ? (rawParentSku.endsWith('-') ? rawParentSku : `${rawParentSku}-`) : '';
 
                 const bodyHtml = `
-                    <div style="background:#eff6ff; padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:12px; color:#1e40af;">
+                    <div class="wpe-gen-summary-banner">
                         Total Potential: <strong>${result.total_possible || result.total_potential}</strong> |
                         Existing: <strong>${result.total_existing}</strong> |
                         Available to Create: <strong>${result.total_new}</strong>
                     </div>
 
-                    <div style="display:flex; gap:14px; margin-bottom:16px; background:#f8fafc; padding:12px 14px; border-radius:6px; border:1px solid #e2e8f0;">
-                        <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600; color:#475569;">Default Regular Price (${config.currencySymbol}):</label>
-                            <input type="number" step="any" id="wpe-gen-def-price" value="${escapeHtml(defaultPriceVal)}" placeholder="0.00" style="width:100%; font-size:12px; margin-top:4px;" />
+                    <div class="wpe-gen-defaults-bar">
+                        <div class="wpe-flex-1">
+                            <label class="wpe-gen-default-label">Default Regular Price (${config.currencySymbol}):</label>
+                            <input type="number" step="any" id="wpe-gen-def-price" class="wpe-gen-default-input" value="${escapeHtml(defaultPriceVal)}" placeholder="0.00" />
                         </div>
-                        <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600; color:#475569;">SKU Prefix:</label>
-                            <input type="text" id="wpe-gen-def-sku" value="${escapeHtml(defaultSkuPrefix)}" placeholder="SKU-" style="width:100%; font-size:12px; margin-top:4px;" />
+                        <div class="wpe-flex-1">
+                            <label class="wpe-gen-default-label">SKU Prefix:</label>
+                            <input type="text" id="wpe-gen-def-sku" class="wpe-gen-default-input" value="${escapeHtml(defaultSkuPrefix)}" placeholder="SKU-" />
                         </div>
-                        <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:600; color:#475569;">Initial Stock Quantity:</label>
-                            <input type="number" step="any" id="wpe-gen-def-stock" placeholder="10" style="width:100%; font-size:12px; margin-top:4px;" />
+                        <div class="wpe-flex-1">
+                            <label class="wpe-gen-default-label">Initial Stock Quantity:</label>
+                            <input type="number" step="any" id="wpe-gen-def-stock" class="wpe-gen-default-input" placeholder="10" />
                         </div>
                     </div>
 
                     ${quickFilterBarHtml}
 
-                    <div style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600; font-size:12px; color:#0f172a;">Select combinations to create:</span>
+                    <div class="wpe-gen-list-header">
+                        <span class="wpe-gen-list-title">Select combinations to create:</span>
                         <div>
-                            <button type="button" class="button-link wpe-btn-gen-select-all" style="font-size:12px;">Select All</button> |
-                            <button type="button" class="button-link wpe-btn-gen-unselect-all" style="font-size:12px;">Deselect All</button>
+                            <button type="button" class="button-link wpe-btn-gen-select-all wpe-gen-select-btn">Select All</button> |
+                            <button type="button" class="button-link wpe-btn-gen-unselect-all wpe-gen-select-btn">Deselect All</button>
                         </div>
                     </div>
 
-                    <div style="max-height:280px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
-                        ${listHtml || '<div style="padding:24px; text-align:center; color:#64748b;">No new combinations available to generate.</div>'}
+                    <div class="wpe-gen-list-box">
+                        ${listHtml || '<div class="wpe-gen-empty">No new combinations available to generate.</div>'}
                     </div>
                 `;
 
@@ -4177,7 +4177,7 @@
                 updateGeneratorButtonState();
             })
             .fail(function () {
-                $('#wpe-generator-body').html(`<p style="color:#ef4444;">Server connection error.</p>`);
+                $('#wpe-generator-body').html(`<p class="wpe-text-error">Server connection error.</p>`);
             });
     }
 
@@ -4196,9 +4196,9 @@
                         ${closeButtonHtml('wpe-btn-close-modal')}
                     </div>
                     <div class="wpe-modal-body" id="wpe-bulk-body">
-                        <div style="margin-bottom:14px;">
-                            <label style="font-weight:600; display:block; margin-bottom:6px;">Select field to update:</label>
-                            <select id="wpe-bulk-field" style="width:100%;">
+                        <div class="wpe-mb-3">
+                            <label class="wpe-bulk-label">Select field to update:</label>
+                            <select id="wpe-bulk-field" class="wpe-full-width">
                                 <option value="regular_price">Regular Price</option>
                                 <option value="sale_price">Sale Price</option>
                                 <option value="manage_stock">Stock Management</option>
@@ -4207,7 +4207,7 @@
                             </select>
                         </div>
 
-                        <div id="wpe-bulk-field-controls" style="margin-bottom:14px;">
+                        <div id="wpe-bulk-field-controls" class="wpe-mb-3">
                             <!-- Field specific inputs injected here -->
                         </div>
 
@@ -4215,7 +4215,7 @@
                             <span class="dashicons dashicons-visibility" aria-hidden="true"></span> Preview Changes
                         </button>
 
-                        <div id="wpe-bulk-diff-preview" style="margin-top:14px; max-height:220px; overflow-y:auto; display:none;">
+                        <div id="wpe-bulk-diff-preview" class="wpe-bulk-diff-preview wpe-hidden">
                             <!-- Diff table will be rendered here -->
                         </div>
                     </div>
@@ -4235,8 +4235,8 @@
         if (field === 'regular_price' || field === 'sale_price') {
             const clearOpt = field === 'sale_price' ? `<option value="clear">Clear sale price (remove discount)</option>` : '';
             html = `
-                <div style="display:flex; gap:10px;">
-                    <select id="wpe-bulk-price-type" style="width:220px;">
+                <div class="wpe-bulk-price-row">
+                    <select id="wpe-bulk-price-type" class="wpe-bulk-price-type">
                         <option value="fixed">Set fixed price</option>
                         <option value="increase_fixed">Increase by amount</option>
                         <option value="decrease_fixed">Decrease by amount</option>
@@ -4244,25 +4244,25 @@
                         <option value="decrease_percent">Decrease by percentage (%)</option>
                         ${clearOpt}
                     </select>
-                    <input type="number" step="any" id="wpe-bulk-price-val" placeholder="Enter value" style="flex:1;" />
+                    <input type="number" step="any" id="wpe-bulk-price-val" class="wpe-flex-1" placeholder="Enter value" />
                 </div>
             `;
         } else if (field === 'manage_stock') {
             html = `
-                <select id="wpe-bulk-manage-stock-val" style="width:100%;">
+                <select id="wpe-bulk-manage-stock-val" class="wpe-full-width">
                     <option value="1">Enable individual stock tracking</option>
                     <option value="0">Disable (Use shared parent stock)</option>
                 </select>
             `;
         } else if (field === 'stock_quantity') {
-            html = `<input type="number" step="any" id="wpe-bulk-stock-qty-val" placeholder="Enter quantity" style="width:100%;" />`;
+            html = `<input type="number" step="any" id="wpe-bulk-stock-qty-val" class="wpe-full-width" placeholder="Enter quantity" />`;
         } else if (field === 'sku_prefix') {
             const rawParentSku = ($('#_sku').val() || wpeVariantStore.product.sku || '').trim();
             const defPrefix = rawParentSku ? (rawParentSku.endsWith('-') ? rawParentSku : `${rawParentSku}-`) : 'SKU-';
             html = `
                 <div>
-                    <input type="text" id="wpe-bulk-sku-prefix-val" value="${escapeHtml(defPrefix)}" placeholder="e.g. TEE-" style="width:100%;" />
-                    <small style="display:block; margin-top:4px; color:#64748b;">Generates SKU as <code>{PREFIX}{OPTION_VALUES}</code> (e.g. <code>${escapeHtml(defPrefix)}S-BLACK</code>).</small>
+                    <input type="text" id="wpe-bulk-sku-prefix-val" class="wpe-full-width" value="${escapeHtml(defPrefix)}" placeholder="e.g. TEE-" />
+                    <small class="wpe-bulk-hint">Generates SKU as <code>{PREFIX}{OPTION_VALUES}</code> (e.g. <code>${escapeHtml(defPrefix)}S-BLACK</code>).</small>
                 </div>
             `;
         }
@@ -5051,10 +5051,16 @@
 
         // Drawer manage stock checkbox toggle
         $(document).on('change', '#wpe-drawer-manage-stock', function () {
+            const $fields = $('#wpe-drawer-stock-fields');
             if ($(this).is(':checked')) {
-                $('#wpe-drawer-stock-fields').slideDown(motionMs(150));
+                if ($fields.hasClass('wpe-hidden')) {
+                    $fields.removeClass('wpe-hidden').hide();
+                }
+                $fields.slideDown(motionMs(150));
             } else {
-                $('#wpe-drawer-stock-fields').slideUp(motionMs(150));
+                $fields.slideUp(motionMs(150), function () {
+                    $fields.addClass('wpe-hidden').css('display', '');
+                });
             }
         });
 
@@ -5470,7 +5476,11 @@
                         </tr>
                     `;
                 });
-                $('#wpe-bulk-diff-preview').html(`
+                const $bulkPreview = $('#wpe-bulk-diff-preview');
+                if ($bulkPreview.hasClass('wpe-hidden')) {
+                    $bulkPreview.removeClass('wpe-hidden').hide();
+                }
+                $bulkPreview.html(`
                     <table class="wpe-diff-table">
                         <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
@@ -5491,7 +5501,11 @@
                         </tr>
                     `;
                 });
-                $('#wpe-bulk-diff-preview').html(`
+                const $bulkPreview = $('#wpe-bulk-diff-preview');
+                if ($bulkPreview.hasClass('wpe-hidden')) {
+                    $bulkPreview.removeClass('wpe-hidden').hide();
+                }
+                $bulkPreview.html(`
                     <table class="wpe-diff-table">
                         <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
@@ -5539,7 +5553,11 @@
                                 <tbody>${rowsHtml}</tbody>
                             </table>
                         `;
-                        $('#wpe-bulk-diff-preview').html(tableHtml).slideDown(motionMs(150));
+                        const $bulkPreview = $('#wpe-bulk-diff-preview');
+                        if ($bulkPreview.hasClass('wpe-hidden')) {
+                            $bulkPreview.removeClass('wpe-hidden').hide();
+                        }
+                        $bulkPreview.html(tableHtml).slideDown(motionMs(150));
                     }
                 })
                 .fail(function () {
@@ -5922,9 +5940,9 @@
         wpeVariantStore.isLoading = false;
         wpeVariantStore.loadFailed = true;
         const errHtml = `
-            <div class="notice notice-error inline" style="margin:12px;">
+            <div class="notice notice-error inline wpe-load-error-notice">
                 <p>Unable to load editor data: ${escapeHtml(reason)}
-                <button type="button" class="button wpe-btn-retry-load" style="margin-left:8px;">Retry</button></p>
+                <button type="button" class="button wpe-btn-retry-load wpe-ml-2">Retry</button></p>
             </div>
         `;
         if ($('#wpe-product-editor-inline-app').length) $('#wpe-product-editor-inline-app').html(errHtml);
