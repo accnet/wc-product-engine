@@ -1,27 +1,40 @@
 {
-  "generated_at": "2026-11-20T08:26:42.759Z",
+  "generated_at": "2026-11-20T10:27:19.342Z",
   "mode": "run_and_verify",
-  "base_commit": "ec977f7e56360eee1ccf8635ce994eaca75f9344",
+  "base_commit": "7c057eb33828b37e1516bd6438d7e5ff0630fbdd",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.0",
     "php": "8.3.36",
     "database": "11.8.9-MariaDB"
   },
-  "tasks": 1,
-  "passed": 0,
-  "failed": [
-    "T49"
-  ],
+  "tasks": 3,
+  "passed": 3,
+  "failed": [],
   "results": [
     {
-      "task": "T49",
-      "title": "Release packaging, docs và staged delivery",
+      "task": "T02",
+      "title": "Plugin bootstrap và feature flags",
+      "run_exit": 0,
+      "run_seconds": 17,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T27",
+      "title": "Selector UI, swatches và asynchronous behavior",
       "run_exit": 0,
       "run_seconds": 20,
-      "verify_exit": 1,
-      "verify_tail": "T45: requirement R181 has no verifiable output anchor\nT45: requirement R182 has no verifiable output anchor\nT45: requirement R183 has no verifiable output anchor\nT45: requirement R184 has no verifiable output anchor\nT45: acceptance AC-T45-01 anchor not in output\nT45: acceptance AC-T45-02 anchor not in output",
-      "ok": false
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T41",
+      "title": "Operations UI, health và CLI",
+      "run_exit": 0,
+      "run_seconds": 14,
+      "verify_exit": 0,
+      "ok": true
     }
   ]
 }
