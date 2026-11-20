@@ -1,7 +1,7 @@
 {
   "id": "P013",
   "title": "Architecture hardening: DI, singletons, assets, capabilities",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "72130d57435f76286774d7e80eb7502d16b4542b1081d84bd414bff699a57558",
   "tasks": [
     {
@@ -609,9 +609,51 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "171ff6f8302bb8c0e96d5dfbae8775bbcc6d92db",
+          "content_digest": "807032f46183bc47f2aa4f0b3219c36fbb968693f3b5202aad65c614725bca86",
+          "output_sha256": "1b7a17f71308bb6feab2b0a430e1a6aeede1f478a712bad18277ef0aea558887",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795166119273-11b02802.log",
+          "time": "2026-11-20T09:15:19.273Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "171ff6f8302bb8c0e96d5dfbae8775bbcc6d92db",
+          "content_digest": "807032f46183bc47f2aa4f0b3219c36fbb968693f3b5202aad65c614725bca86",
+          "output_sha256": "9e66dec9319fe3ef73e7e52679badbd532715c32a5246c715ce241fd13448fe7",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795166119383-fbe13943.log",
+          "time": "2026-11-20T09:15:19.383Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "171ff6f8302bb8c0e96d5dfbae8775bbcc6d92db",
+          "content_digest": "807032f46183bc47f2aa4f0b3219c36fbb968693f3b5202aad65c614725bca86",
+          "output_sha256": "8c9373ec23f8b1ff2ec058ff44619bed8dcb0fed3869cc997e4e50e742ababbe",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795166119479-528a41cf.log",
+          "time": "2026-11-20T09:15:19.479Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:10:24.177Z"
     }
   ],
-  "approved_hash": "72130d57435f76286774d7e80eb7502d16b4542b1081d84bd414bff699a57558"
+  "approved_hash": "72130d57435f76286774d7e80eb7502d16b4542b1081d84bd414bff699a57558",
+  "report_hash": "ac542f1b0dccba4c1c14c66567253d2cd6be225a4dcff0e7c4b8645a38775297"
 }
