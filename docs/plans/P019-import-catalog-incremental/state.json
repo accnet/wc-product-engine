@@ -1,7 +1,7 @@
 {
   "id": "P019",
   "title": "Incremental catalog projection on import and missing SKU column fix",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "f3ee7373f000e7bd1250e70a748fab81d1ae6229d9f20eeed5de3f97ad2b387d",
   "tasks": [
     {
@@ -303,9 +303,38 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "08dbf29aea7ee9c1c5d54899492d6b7c80bf92ff",
+          "content_digest": "147e49823644f5024208ab98787a4735e1d1748da45ca443cf524cfd0f3a1b61",
+          "output_sha256": "4f59799bc6a9bc41ff33e2291af5cbd1f05e2d265af1042464faac29b4f569f7",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159612705-0a48165b.log",
+          "time": "2026-11-20T07:26:52.706Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "08dbf29aea7ee9c1c5d54899492d6b7c80bf92ff",
+          "content_digest": "147e49823644f5024208ab98787a4735e1d1748da45ca443cf524cfd0f3a1b61",
+          "output_sha256": "7127589d8bbcc94f7e52551a1b7cde2711f1c2b3879316320c8addb6e01e455b",
+          "output_path": "docs/plans/P019-import-catalog-incremental/command-1795159612792-00ef5bd4.log",
+          "time": "2026-11-20T07:26:52.793Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:25:04.700Z"
     }
   ],
-  "approved_hash": "f3ee7373f000e7bd1250e70a748fab81d1ae6229d9f20eeed5de3f97ad2b387d"
+  "approved_hash": "f3ee7373f000e7bd1250e70a748fab81d1ae6229d9f20eeed5de3f97ad2b387d",
+  "report_hash": "91f1387cbc69801c1e7a1bf7897bfc620441e6e7f3856a0c16d405116fa63b13"
 }
