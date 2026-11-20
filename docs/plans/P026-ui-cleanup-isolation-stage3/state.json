@@ -144,8 +144,70 @@
           "tests/e2e/VariantImagePickerLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "781d4435d5cc8f1c94c341f61efdcfb0c6566481",
+          "content_digest": "ea6375f95657116ee0f74b4b33f579455bfff5e82faa7b50572154096226a2c9",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169598760-ac655727.log",
+          "time": "2026-11-20T10:13:18.760Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "781d4435d5cc8f1c94c341f61efdcfb0c6566481",
+          "content_digest": "ea6375f95657116ee0f74b4b33f579455bfff5e82faa7b50572154096226a2c9",
+          "output_sha256": "3746d401186270c981b2de1e4d03cfef6cbad8009c4aa32c005dfd115ef32e19",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169609241-1985bd89.log",
+          "time": "2026-11-20T10:13:29.242Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "781d4435d5cc8f1c94c341f61efdcfb0c6566481",
+          "content_digest": "ea6375f95657116ee0f74b4b33f579455bfff5e82faa7b50572154096226a2c9",
+          "output_sha256": "1f7fc6b9e90ee508d3c083738bd5c136b497f5ab1b83d459ba719b69d2832cd2",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169645338-232ebb63.log",
+          "time": "2026-11-20T10:14:05.339Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductInfoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "781d4435d5cc8f1c94c341f61efdcfb0c6566481",
+          "content_digest": "ea6375f95657116ee0f74b4b33f579455bfff5e82faa7b50572154096226a2c9",
+          "output_sha256": "7f85f260fd7f16db4e81ed55d43c571deb5c9c37e98df49e88f95539fb5ba448",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169670327-c504ea3e.log",
+          "time": "2026-11-20T10:14:30.327Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantImagePickerLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "781d4435d5cc8f1c94c341f61efdcfb0c6566481",
+          "content_digest": "ea6375f95657116ee0f74b4b33f579455bfff5e82faa7b50572154096226a2c9",
+          "output_sha256": "61a5fbe4c3ef881db199de940edd4f4faf00b5632fcb56e33199ead8a5154f1d",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169684927-478bad1c.log",
+          "time": "2026-11-20T10:14:44.927Z"
+        }
+      ],
+      "started_at": "2026-11-20T10:07:24.742Z"
     },
     {
       "id": "P026.3",

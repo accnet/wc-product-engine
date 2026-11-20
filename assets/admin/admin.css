@@ -38,9 +38,9 @@
     color: var(--wpe-wp-blue, #2271b1);
 }
 
-#wpe-dropzone.dragover {
-    border-color: var(--wpe-wp-blue, #2271b1) !important;
-    background-color: var(--wpe-surface-info, #f0f6fc) !important;
+.wpe-import-wrap #wpe-dropzone.dragover {
+    border-color: var(--wpe-wp-blue, #2271b1);
+    background-color: var(--wpe-surface-info, #f0f6fc);
 }
 
 /* Buttons & Dashicons alignment (overrides WP 7.x buttons.css line-height offsets) */

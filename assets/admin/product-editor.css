@@ -236,185 +236,161 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     flex-shrink: 0;
 }
 
-/* Global Button Polish (Shopify Polaris style) */
-.wpe-editor-wrap .button,
-.wpe-info-wrap .button,
-.wpe-fullscreen-container .button,
-.wpe-drawer-container .button,
-.wpe-modal-dialog .button {
-    border-radius: var(--wpe-p-border-radius-base) !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    padding: 6px 14px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    line-height: 20px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    cursor: pointer !important;
-    transition: all 0.15s ease-in-out !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    background: #ffffff !important;
-    color: var(--wpe-p-color-text) !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
-    text-shadow: none !important;
-    box-sizing: border-box !important;
+/* Global Button Alignment (scoped cleanly over .wp-core-ui .button) */
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button {
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    height: 36px;
+    min-height: 36px;
+    line-height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    border: 1px solid var(--wpe-p-color-border-control);
+    background: var(--wpe-surface);
+    color: var(--wpe-p-color-text);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    text-shadow: none;
+    box-sizing: border-box;
 }
 
-.wpe-editor-wrap .button .dashicons,
-.wpe-info-wrap .button .dashicons,
-.wpe-fullscreen-container .button .dashicons,
-.wpe-drawer-container .button .dashicons,
-.wpe-modal-dialog .button .dashicons,
-.wpe-btn-delete-option .dashicons,
-.wpe-btn-delete-desc-attr .dashicons,
-.wpe-btn-delete-variant .dashicons,
-.wpe-btn-media-unlink .dashicons,
-.wpe-btn-remove-common-price .dashicons,
-.wpe-dirty-badge .dashicons,
-.wpe-section-title-wrap .dashicons,
-.wpe-info-section-title .dashicons,
-.wpe-ref-unpriced-warning .dashicons,
-.wpe-group-collapse-btn .dashicons,
-.wpe-tab-btn .dashicons,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(
+    .button,
+    .wpe-btn-delete-option,
+    .wpe-btn-delete-desc-attr,
+    .wpe-btn-delete-variant,
+    .wpe-btn-media-unlink,
+    .wpe-btn-remove-common-price,
+    .wpe-dirty-badge,
+    .wpe-section-title-wrap,
+    .wpe-info-section-title,
+    .wpe-ref-unpriced-warning,
+    .wpe-group-collapse-btn,
+    .wpe-tab-btn
+) .dashicons,
 #wpe-box-fullscreen .dashicons {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 16px !important;
-    height: 16px !important;
-    font-size: 16px !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    vertical-align: middle !important;
-    flex-shrink: 0 !important;
-}
-
-.wpe-editor-wrap .button:hover,
-.wpe-info-wrap .button:hover,
-.wpe-fullscreen-container .button:hover,
-.wpe-drawer-container .button:hover,
-.wpe-modal-dialog .button:hover {
-    background: var(--wpe-p-color-surface-hover) !important;
-    border-color: var(--wpe-p-color-border-hover) !important;
-    color: var(--wpe-p-color-text) !important;
-}
-
-.wpe-editor-wrap .button:disabled,
-.wpe-info-wrap .button:disabled,
-.wpe-fullscreen-container .button:disabled,
-.wpe-drawer-container .button:disabled,
-.wpe-modal-dialog .button:disabled {
-    opacity: 0.55 !important;
-    cursor: not-allowed !important;
-    box-shadow: none !important;
-}
-
-/* Primary Button (Shopify Dark / Polaris Black) */
-.wpe-editor-wrap .button.button-primary,
-.wpe-info-wrap .button.button-primary,
-.wpe-fullscreen-container .button.button-primary,
-.wpe-drawer-container .button.button-primary,
-.wpe-modal-dialog .button.button-primary,
-.wpe-btn-apply-generator,
-.wpe-btn-save-drawer {
-    background: var(--wpe-p-color-primary) !important;
-    border-color: var(--wpe-p-color-primary) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) !important;
-}
-
-.wpe-editor-wrap .button.button-primary:hover,
-.wpe-info-wrap .button.button-primary:hover,
-.wpe-fullscreen-container .button.button-primary:hover,
-.wpe-drawer-container .button.button-primary:hover,
-.wpe-modal-dialog .button.button-primary:hover,
-.wpe-btn-apply-generator:hover,
-.wpe-btn-save-drawer:hover {
-    background: var(--wpe-p-color-primary-hover) !important;
-    border-color: var(--wpe-p-color-primary-hover) !important;
-    color: #ffffff !important;
-}
-
-/* Brand Button (Shopify Green) */
-.wpe-btn-save-api {
-    background: var(--wpe-p-color-brand) !important;
-    border-color: var(--wpe-p-color-brand) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-}
-
-.wpe-btn-save-api:hover:not(:disabled) {
-    background: var(--wpe-p-color-brand-hover) !important;
-    border-color: var(--wpe-p-color-brand-hover) !important;
-    color: #ffffff !important;
-}
-
-.wpe-editor-wrap .button-small,
-.wpe-info-wrap .button-small,
-.wpe-fullscreen-container .button-small {
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 2px 10px !important;
-    font-size: 12px !important;
-}
-
-.wpe-btn-delete-option,
-.wpe-btn-delete-desc-attr,
-.wpe-btn-delete-variant,
-.wpe-btn-media-unlink,
-.wpe-btn-remove-common-price {
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    box-shadow: none !important;
-    color: var(--wpe-p-color-text-subdued) !important;
-    cursor: pointer !important;
-    padding: 4px 6px !important;
-    border-radius: var(--wpe-p-border-radius-sm) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 5px !important;
-    line-height: 1.2 !important;
-    font-size: 12.5px !important;
-    font-weight: 500 !important;
-    transition: background 0.15s, color 0.15s, border-color 0.15s !important;
-    text-decoration: none !important;
-}
-
-.wpe-btn-delete-option:hover,
-.wpe-btn-delete-desc-attr:hover,
-.wpe-btn-delete-variant:hover,
-.wpe-btn-media-unlink:hover,
-.wpe-btn-remove-common-price:hover {
-    color: var(--wpe-p-color-critical) !important;
-    background: var(--wpe-p-color-critical-subdued) !important;
-    border-color: #fecaca !important;
-}
-
-.wpe-btn-delete-desc-attr {
-    width: 30px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
     flex-shrink: 0;
 }
 
-.wpe-btn-media-unlink {
-    width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 0 !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button:hover {
+    background: var(--wpe-p-color-surface-hover);
+    border-color: var(--wpe-p-color-border-hover);
+    color: var(--wpe-p-color-text);
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Primary Button */
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button.button-primary,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-apply-generator,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-save-drawer {
+    background: var(--wpe-p-color-primary);
+    border-color: var(--wpe-p-color-primary);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button.button-primary:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-apply-generator:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-save-drawer:hover {
+    background: var(--wpe-p-color-primary-hover);
+    border-color: var(--wpe-p-color-primary-hover);
+    color: #ffffff;
+}
+
+/* Brand Button */
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-save-api {
+    background: var(--wpe-p-color-brand);
+    border-color: var(--wpe-p-color-brand);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-save-api:hover:not(:disabled) {
+    background: var(--wpe-p-color-brand-hover);
+    border-color: var(--wpe-p-color-brand-hover);
+    color: #ffffff;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container) .button.button-small {
+    height: 30px;
+    min-height: 30px;
+    padding: 2px 10px;
+    font-size: 12px;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-option,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-desc-attr,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-variant,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-media-unlink,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-remove-common-price {
+    background: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    color: var(--wpe-p-color-text-subdued);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: var(--wpe-p-border-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1.2;
+    font-size: 12.5px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    text-decoration: none;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-option:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-desc-attr:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-delete-variant:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-media-unlink:hover,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-remove-common-price:hover {
+    color: var(--wpe-p-color-critical);
+    background: var(--wpe-p-color-critical-subdued);
+    border-color: #fecaca;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-delete-desc-attr {
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
     flex-shrink: 0;
 }
 
-.wpe-btn-remove-common-price {
-    color: #b91c1c !important;
-    padding: 5px 10px !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-media-unlink {
+    width: 26px;
+    height: 26px;
+    min-height: 26px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-remove-common-price {
+    color: var(--wpe-critical-text);
+    padding: 5px 10px;
 }
 
 /* 3. Top Action & Status Bar */
@@ -483,11 +459,11 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     margin-bottom: 0;
 }
 
-.wpe-section--flat {
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    margin-bottom: 0 !important;
+.wpe-section.wpe-section--flat {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    margin-bottom: 0;
 }
 
 .wpe-section:hover {
@@ -603,14 +579,15 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     color: var(--wpe-p-color-critical);
 }
 
-.wpe-chip-input {
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    outline: none !important;
-    padding: 4px 6px !important;
-    margin: 0 !important;
-    font-size: 13px !important;
+body.wp-admin .wpe-chips-container input[type="text"].wpe-chip-input,
+body.wp-admin .wpe-chips-container input.wpe-chip-input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+    padding: 4px 6px;
+    margin: 0;
+    font-size: 13px;
     min-width: 150px;
     flex-grow: 1;
     color: var(--wpe-p-color-text);
@@ -713,47 +690,47 @@ input.wpe-option-name-input:focus {
     flex-wrap: wrap;
 }
 
-.wpe-search-input {
-    width: 180px !important;
-    min-width: 160px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 4px 10px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: var(--wpe-p-border-radius-base) !important;
-    font-size: 12.5px !important;
-    background: #ffffff !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
+body.wp-admin .wpe-matrix-toolbar input.wpe-search-input {
+    width: 180px;
+    min-width: 160px;
+    height: 34px;
+    min-height: 34px;
+    padding: 4px 10px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 12.5px;
+    background: var(--wpe-surface);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
     transition: all 0.15s ease;
 }
 
-.wpe-search-input:focus {
-    border-color: var(--wpe-p-color-interactive) !important;
-    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
-    outline: none !important;
+body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
-.wpe-filter-select {
-    width: auto !important;
-    max-width: 150px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 4px 24px 4px 8px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: var(--wpe-p-border-radius-base) !important;
-    font-size: 12.5px !important;
-    line-height: 1.4 !important;
-    background-color: #ffffff !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
+.wp-core-ui .wpe-matrix-toolbar select.wpe-filter-select {
+    width: auto;
+    max-width: 150px;
+    height: 34px;
+    min-height: 34px;
+    padding: 4px 24px 4px 8px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 12.5px;
+    line-height: 1.4;
+    background-color: var(--wpe-surface);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
     transition: all 0.15s ease;
 }
 
-.wpe-filter-select:focus {
-    border-color: var(--wpe-p-color-interactive) !important;
-    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
-    outline: none !important;
+.wp-core-ui .wpe-matrix-toolbar select.wpe-filter-select:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-toolbar-right {
@@ -763,11 +740,11 @@ input.wpe-option-name-input:focus {
     flex-shrink: 0;
 }
 
-.wpe-toolbar-right .button {
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 4px 10px !important;
-    font-size: 12.5px !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-toolbar-right .button {
+    height: 34px;
+    min-height: 34px;
+    padding: 4px 10px;
+    font-size: 12.5px;
 }
 
 /* Contextual Selection Action Bar */
@@ -946,57 +923,61 @@ input.wpe-option-name-input:focus {
     color: var(--wpe-p-color-text);
 }
 
-/* Inline Editable Table Inputs & Selects (Shopify Polaris Table Controls) */
-.wpe-editable-input {
+/* Inline Editable Table Inputs & Selects */
+body.wp-admin .wpe-table .wpe-editable-input,
+.wp-core-ui .wpe-table select.wpe-editable-input {
     width: 100%;
-    height: 32px !important;
-    min-height: 32px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    background-color: #ffffff !important;
-    box-shadow: none !important;
-    padding: 4px 8px !important;
-    font-size: 13px !important;
-    line-height: 1.4 !important;
-    border-radius: var(--wpe-p-border-radius-sm) !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
+    height: 32px;
+    min-height: 32px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    background-color: var(--wpe-surface);
+    box-shadow: none;
+    padding: 4px 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    border-radius: var(--wpe-p-border-radius-sm);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.wpe-inline-sku {
-    min-width: 78px !important;
+body.wp-admin .wpe-table .wpe-inline-sku {
+    min-width: 78px;
 }
 
-.wpe-inline-reg-price,
-.wpe-inline-sale-price {
-    min-width: 68px !important;
+body.wp-admin .wpe-table .wpe-inline-reg-price,
+body.wp-admin .wpe-table .wpe-inline-sale-price {
+    min-width: 68px;
 }
 
-select.wpe-editable-input {
-    padding: 4px 22px 4px 6px !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
+.wp-core-ui .wpe-table select.wpe-editable-input {
+    padding: 4px 22px 4px 6px;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
 }
 
-.wpe-editable-input:hover:not(:disabled) {
-    border-color: var(--wpe-p-color-text-subdued) !important;
-    background-color: #ffffff !important;
+body.wp-admin .wpe-table .wpe-editable-input:hover:not(:disabled),
+.wp-core-ui .wpe-table select.wpe-editable-input:hover:not(:disabled) {
+    border-color: var(--wpe-p-color-text-subdued);
+    background-color: var(--wpe-surface);
 }
 
-.wpe-editable-input:focus {
-    border-color: var(--wpe-p-color-interactive) !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
-    outline: none !important;
+body.wp-admin .wpe-table .wpe-editable-input:focus,
+.wp-core-ui .wpe-table select.wpe-editable-input:focus {
+    border-color: var(--wpe-p-color-interactive);
+    background-color: var(--wpe-surface);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
-.wpe-editable-input[readonly],
-.wpe-editable-input:disabled {
-    background-color: #f8fafc !important;
-    color: var(--wpe-p-color-text-subdued) !important;
+body.wp-admin .wpe-table .wpe-editable-input[readonly],
+body.wp-admin .wpe-table .wpe-editable-input:disabled,
+.wp-core-ui .wpe-table select.wpe-editable-input:disabled {
+    background-color: var(--wpe-surface-subdued);
+    color: var(--wpe-p-color-text-subdued);
     cursor: not-allowed;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--wpe-border-subdued);
 }
 
 /* Stock Cell & Status Badges */
@@ -1007,8 +988,8 @@ select.wpe-editable-input {
     white-space: nowrap;
 }
 
-.wpe-inline-stock-qty {
-    width: 68px !important;
+body.wp-admin .wpe-table input.wpe-inline-stock-qty {
+    width: 68px;
     flex-shrink: 0;
 }
 
@@ -1048,21 +1029,21 @@ select.wpe-editable-input {
     white-space: nowrap;
 }
 
-.wpe-row-actions .wpe-btn-open-drawer,
-.wpe-row-actions .wpe-btn-delete-variant {
-    width: 30px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 0 !important;
-    border-radius: 6px !important;
+.wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-open-drawer,
+.wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-delete-variant {
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border-radius: var(--wpe-radius-sm);
 }
 
-.wpe-row-actions .wpe-btn-delete-variant {
-    border: 1px solid transparent !important;
+.wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-delete-variant {
+    border: 1px solid transparent;
 }
 
-.wpe-row-actions .wpe-btn-delete-variant:hover {
-    border-color: #fecaca !important;
+.wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-delete-variant:hover {
+    border-color: #fecaca;
 }
 
 /* Pagination Bar */
@@ -1438,50 +1419,51 @@ select.wpe-editable-input {
     gap: 10px;
 }
 
-.wpe-sticky-btn-discard {
-    background: transparent !important;
-    border: none !important;
-    color: #e3e3e3 !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-    padding: 6px 12px !important;
-    border-radius: 6px !important;
-    transition: background 0.15s !important;
+.wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-discard {
+    background: transparent;
+    border: none;
+    color: #e3e3e3;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--wpe-radius-sm);
+    transition: background 0.15s;
 }
 
-.wpe-sticky-btn-discard:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #ffffff !important;
+.wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-discard:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
 
-.wpe-sticky-btn-save {
-    background: var(--wpe-p-color-brand) !important;
-    color: #ffffff !important;
-    border: none !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    padding: 7px 16px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    transition: background 0.15s !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) !important;
+.wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-save {
+    background: var(--wpe-p-color-brand);
+    color: #ffffff;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 16px;
+    border-radius: var(--wpe-radius-md);
+    cursor: pointer;
+    transition: background 0.15s;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
-.wpe-sticky-btn-save:hover {
-    background: var(--wpe-p-color-brand-hover) !important;
+.wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-save:hover {
+    background: var(--wpe-p-color-brand-hover);
 }
 
-.wpe-add-taxonomy-select {
-    height: 36px !important;
-    min-height: 36px !important;
-    padding: 4px 28px 4px 10px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: var(--wpe-p-border-radius-base) !important;
-    font-size: 13px !important;
-    line-height: 1.4 !important;
-    background-color: #ffffff !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) select.wpe-add-taxonomy-select {
+    height: 36px;
+    min-height: 36px;
+    padding: 4px 28px 4px 10px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 13px;
+    line-height: 1.4;
+    background-color: var(--wpe-surface);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
+    max-width: 220px;
 }
 
 /* 13. UX Enhancements: Reordering, Interactive Stock & Group Controls */
@@ -1491,26 +1473,22 @@ select.wpe-editable-input {
     gap: 2px;
 }
 
-.wpe-editor-wrap .button.wpe-btn-move-option,
-.wpe-fullscreen-container .button.wpe-btn-move-option,
-.wpe-btn-move-option {
-    width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-    border: 1px solid transparent !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    color: #64748b !important;
-    border-radius: 4px !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-move-option {
+    width: 26px;
+    height: 26px;
+    min-height: 26px;
+    padding: 0;
+    line-height: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    box-shadow: none;
+    color: var(--wpe-text-muted);
+    border-radius: var(--wpe-radius-xs);
 }
 
-.wpe-editor-wrap .button.wpe-btn-move-option:hover:not(:disabled),
-.wpe-fullscreen-container .button.wpe-btn-move-option:hover:not(:disabled),
-.wpe-btn-move-option:hover:not(:disabled) {
-    background: #e2e8f0 !important;
-    color: #0f172a !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-move-option:hover:not(:disabled) {
+    background: var(--wpe-border-subdued);
+    color: var(--wpe-text);
 }
 
 .wpe-chip-move {
@@ -1549,24 +1527,24 @@ select.wpe-editable-input {
     color: #1d4ed8;
 }
 
-.wpe-btn-revert-shared-stock {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 20px !important;
-    height: 20px !important;
-    background: transparent !important;
-    border: none !important;
-    color: #475569 !important;
-    cursor: pointer !important;
-    padding: 0 !important;
-    font-size: 14px !important;
-    line-height: 1 !important;
-    box-shadow: none !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-revert-shared-stock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    color: var(--wpe-text-subdued);
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1;
+    box-shadow: none;
 }
 
-.wpe-btn-revert-shared-stock:hover {
-    color: var(--wpe-p-color-critical) !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-revert-shared-stock:hover {
+    color: var(--wpe-p-color-critical);
 }
 
 .wpe-group-row-inner {
@@ -1639,15 +1617,15 @@ select.wpe-editable-input {
     color: #1d4ed8;
 }
 
-.wpe-btn-bulk-delete {
-    color: var(--wpe-p-color-critical) !important;
-    border-color: #fca5a5 !important;
-    background: #fff5f5 !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-selection-bar .button.wpe-btn-bulk-delete {
+    color: var(--wpe-p-color-critical);
+    border-color: #fca5a5;
+    background: #fff5f5;
 }
 
-.wpe-btn-bulk-delete:hover {
-    background: #fee2e2 !important;
-    border-color: var(--wpe-p-color-critical) !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-selection-bar .button.wpe-btn-bulk-delete:hover {
+    background: var(--wpe-critical-bg);
+    border-color: var(--wpe-p-color-critical);
 }
 
 /* 14. Per-Product Media Library & Variant Image Picker (P011) */
@@ -1903,23 +1881,23 @@ select.wpe-editable-input {
     background: #ffffff;
 }
 
-.wpe-media-alt-input {
+body.wp-admin .wpe-media-card-body input.wpe-media-alt-input {
     width: 100%;
-    font-size: 11.5px !important;
-    padding: 4px 7px !important;
-    min-height: 26px !important;
-    height: 26px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: 5px !important;
-    background: #f8fafc !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
+    font-size: 11.5px;
+    padding: 4px 7px;
+    min-height: 26px;
+    height: 26px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: 5px;
+    background: var(--wpe-surface-subdued);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
 }
 
-.wpe-media-alt-input:focus {
-    background: #ffffff !important;
-    border-color: var(--wpe-p-color-interactive) !important;
-    outline: none !important;
+body.wp-admin .wpe-media-card-body input.wpe-media-alt-input:focus {
+    background: var(--wpe-surface);
+    border-color: var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-media-card-footer {
@@ -1935,17 +1913,14 @@ select.wpe-editable-input {
     gap: 2px;
 }
 
-.wpe-editor-wrap .button.wpe-btn-media-move,
-.wpe-fullscreen-container .button.wpe-btn-media-move,
-.wpe-modal-dialog .button.wpe-btn-media-move,
-.wpe-btn-media-move {
-    width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-    font-size: 14px !important;
-    border-radius: 4px !important;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-media-move {
+    width: 26px;
+    height: 26px;
+    min-height: 26px;
+    padding: 0;
+    line-height: 1;
+    font-size: 14px;
+    border-radius: var(--wpe-radius-xs);
 }
 
 .wpe-media-upload-zone {
@@ -2005,17 +1980,17 @@ select.wpe-editable-input {
     flex-shrink: 0;
 }
 
-.wpe-media-url-bar input[type="url"],
-.wpe-media-url-bar input[type="text"] {
+body.wp-admin .wpe-media-url-bar input[type="url"],
+body.wp-admin .wpe-media-url-bar input[type="text"] {
     flex: 1;
     min-width: 180px;
-    height: 32px !important;
-    min-height: 32px !important;
-    font-size: 12.5px !important;
-    padding: 4px 10px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: 6px !important;
-    background: #ffffff !important;
+    height: 32px;
+    min-height: 32px;
+    font-size: 12.5px;
+    padding: 4px 10px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-radius-sm);
+    background: var(--wpe-surface);
 }
 
 .wpe-upload-queue-list {
@@ -2141,12 +2116,11 @@ select.wpe-editable-input {
     gap: 6px;
 }
 
-.wpe-drawer-container .button.wpe-btn-drawer-nav,
-.wpe-btn-drawer-nav {
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 0 10px !important;
-    font-size: 12px !important;
+.wp-core-ui .wpe-drawer-container :is(button, .button).wpe-btn-drawer-nav {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
 }
 
 /* 15. Product Information Block & Transition Modals */
@@ -2189,28 +2163,28 @@ select.wpe-editable-input {
     color: var(--wpe-p-color-text-subdued);
 }
 
-.wpe-field input[type="text"],
-.wpe-field input[type="number"],
-.wpe-field input[type="date"],
-.wpe-field select {
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field input[type="text"],
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field input[type="number"],
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field input[type="date"],
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field select {
     width: 100%;
-    height: 36px !important;
-    min-height: 36px !important;
-    padding: 6px 10px !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
-    border-radius: var(--wpe-p-border-radius-base) !important;
-    font-size: 13px !important;
-    background: #ffffff !important;
-    color: var(--wpe-p-color-text) !important;
-    box-sizing: border-box !important;
-    box-shadow: none !important;
+    height: 36px;
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 1px solid var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-base);
+    font-size: 13px;
+    background: var(--wpe-surface);
+    color: var(--wpe-p-color-text);
+    box-sizing: border-box;
+    box-shadow: none;
 }
 
-.wpe-field input:focus,
-.wpe-field select:focus {
-    border-color: var(--wpe-p-color-interactive) !important;
-    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive) !important;
-    outline: none !important;
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field input:focus,
+.wp-core-ui :is(.wpe-info-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-field select:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 /* Reference Price Card (Variable Product) */
@@ -2308,25 +2282,25 @@ select.wpe-editable-input {
     background: #ffffff;
 }
 
-.wpe-tab-btn {
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 2px solid transparent !important;
-    border-radius: 0 !important;
-    padding: 10px 14px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: var(--wpe-p-color-text-subdued) !important;
-    cursor: pointer !important;
-    box-shadow: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
+.wp-core-ui .wpe-modal-nav :is(button, .button).wpe-tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wpe-p-color-text-subdued);
+    cursor: pointer;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.wpe-tab-btn.active {
-    color: var(--wpe-p-color-interactive) !important;
-    border-bottom-color: var(--wpe-p-color-interactive) !important;
+.wp-core-ui .wpe-modal-nav :is(button, .button).wpe-tab-btn.active {
+    color: var(--wpe-p-color-interactive);
+    border-bottom-color: var(--wpe-p-color-interactive);
 }
 
 .wpe-badge-type {
@@ -2341,9 +2315,11 @@ select.wpe-editable-input {
     color: #0369a1;
 }
 
-.wpe-pricing-mode-select {
-    width: auto !important;
-    min-width: 82px !important;
+.wp-core-ui .wpe-table select.wpe-editable-input.wpe-pricing-mode-select {
+    width: auto;
+    min-width: 82px;
+    font-size: 11px;
+    padding: 2px 4px;
 }
 
 /* Transition & Removal Dialog Helpers */
@@ -2936,10 +2912,6 @@ select.wpe-editable-input {
     gap: var(--wpe-space-2);
 }
 
-.wpe-add-taxonomy-select {
-    max-width: 220px;
-}
-
 .wpe-col-check { width: 28px; }
 .wpe-col-image { width: 44px; }
 .wpe-col-combo { width: 180px; }
@@ -2962,11 +2934,6 @@ select.wpe-editable-input {
     text-align: center;
     padding: 36px;
     color: var(--wpe-text-muted);
-}
-
-select.wpe-editable-input.wpe-pricing-mode-select {
-    font-size: 11px;
-    padding: 2px 4px;
 }
 
 /* Variant Drawer Image & Controls */
