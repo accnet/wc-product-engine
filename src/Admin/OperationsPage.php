@@ -145,7 +145,7 @@ class OperationsPage
         } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'status'  => 'error',
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'operations action', __('The operation failed.', 'wc-product-engine')),
             ], 400);
         }
     }

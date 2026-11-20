@@ -1077,7 +1077,7 @@ class CsvStager
             return new WP_REST_Response(['code' => 'invalid_request', 'message' => $e->getMessage()], 400);
         } catch (\RuntimeException $e) {
             $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
-            return new WP_REST_Response(['code' => 'import_error', 'message' => $e->getMessage()], $code);
+            return new WP_REST_Response(['code' => 'import_error', 'message' => \WPE\Support\RestErrors::safeMessage($e, 'import create', __('The import could not be created.', 'wc-product-engine'))], $code);
         }
     }
 

@@ -109,7 +109,7 @@ class ShopifyBatchImporter
     public function initJob(string $filePath, array $options = []): array
     {
         if (!file_exists($filePath) || !is_readable($filePath)) {
-            throw new InvalidArgumentException("File not found or unreadable: {$filePath}");
+            throw new InvalidArgumentException("File not found or unreadable: " . basename($filePath));
         }
 
         $fileSize = filesize($filePath);
@@ -323,7 +323,7 @@ class ShopifyBatchImporter
         $logFile    = $config['log_file'] ?? '';
 
         if (!file_exists($filePath) || !is_readable($filePath)) {
-            throw new RuntimeException("CSV source file not accessible: {$filePath}", 404);
+            throw new RuntimeException("CSV source file not accessible: " . basename($filePath), 404);
         }
 
         $byteOffset        = (int)($checkpoint['byte_offset'] ?? 0);

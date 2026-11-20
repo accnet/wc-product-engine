@@ -153,7 +153,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -193,7 +193,7 @@ class ProductEditorApiController
             return new WP_REST_Response([
                 'success' => false,
                 'code'    => 'server_error',
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 500);
         }
     }
@@ -216,7 +216,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -245,7 +245,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -275,7 +275,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -310,7 +310,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -332,7 +332,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -366,7 +366,7 @@ class ProductEditorApiController
         } catch (Throwable $e) {
             return new WP_REST_Response([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'product editor api', __('The request could not be completed.', 'wc-product-engine')),
             ], 400);
         }
     }

@@ -653,7 +653,7 @@ class CatalogQuery
         } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'      => 'index_unavailable',
-                'message'   => 'Catalog index query error: ' . $e->getMessage(),
+                'message'   => \WPE\Support\RestErrors::safeMessage($e, 'catalog query', __('The catalog index could not be queried.', 'wc-product-engine')),
                 'details'   => [],
                 'retryable' => true,
             ], 500);

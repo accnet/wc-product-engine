@@ -646,7 +646,7 @@ class SnapshotExporter
         } catch (InvalidArgumentException $e) {
             return new WP_REST_Response(['code' => 'invalid_request', 'message' => $e->getMessage()], 400);
         } catch (\Throwable $e) {
-            return new WP_REST_Response(['code' => 'export_error', 'message' => $e->getMessage()], 500);
+            return new WP_REST_Response(['code' => 'export_error', 'message' => \WPE\Support\RestErrors::safeMessage($e, 'export create', __('The export could not be created.', 'wc-product-engine'))], 500);
         }
     }
 
@@ -670,7 +670,7 @@ class SnapshotExporter
             return new WP_REST_Response(['code' => 'invalid_request', 'message' => $e->getMessage()], 400);
         } catch (RuntimeException $e) {
             $status = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
-            return new WP_REST_Response(['code' => 'download_error', 'message' => $e->getMessage()], $status);
+            return new WP_REST_Response(['code' => 'download_error', 'message' => \WPE\Support\RestErrors::safeMessage($e, 'export download', __('The export could not be downloaded.', 'wc-product-engine'))], $status);
         }
     }
 

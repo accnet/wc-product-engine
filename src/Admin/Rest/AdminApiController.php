@@ -233,7 +233,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Failed to rebuild Catalog Index: ' . $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'rebuild index', __('Failed to rebuild the catalog index.', 'wc-product-engine')),
             ], 500);
         }
     }
@@ -273,7 +273,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'csv upload', __('The file could not be uploaded.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -334,7 +334,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Failed to initialize import job: ' . $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'import init', __('Failed to initialize the import job.', 'wc-product-engine')),
             ], 400);
         }
     }
@@ -358,7 +358,7 @@ class AdminApiController
         } catch (\Throwable $e) {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'Batch processing error: ' . $e->getMessage(),
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'import batch', __('The import batch failed.', 'wc-product-engine')),
             ], 500);
         }
     }
