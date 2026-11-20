@@ -36,6 +36,7 @@ class ResolverApi
     private string $tableVariants;
 
     // Rate limiting configuration
+    private const RATE_LIMIT_GROUP = 'wpe_rate_limit';
     private int $rateLimitMax = 60; // Max requests per window
     private int $rateLimitWindow = 60; // Window in seconds
 
@@ -113,13 +114,14 @@ class ResolverApi
 
         // 1. Rate Limiting Check (R105, AC-T26-02)
         $clientIp = $this->getClientIp();
-        if (!$this->checkRateLimit($clientIp, $this->rateLimitMax, $this->rateLimitWindow)) {
+        $limit = $this->rateLimitSettings();
+        if (!$this->checkRateLimit($clientIp, $limit['max'], $limit['window'])) {
             $response = new WP_REST_Response([
                 'code'    => 'rate_limited',
-                'message' => sprintf('Too many requests. Please retry after %d seconds.', $this->rateLimitWindow),
-                'data'    => ['status' => 429, 'retry_after' => $this->rateLimitWindow],
+                'message' => sprintf('Too many requests. Please retry after %d seconds.', $limit['window']),
+                'data'    => ['status' => 429, 'retry_after' => $limit['window']],
             ], 429);
-            $response->header('Retry-After', (string)$this->rateLimitWindow);
+            $response->header('Retry-After', (string)$limit['window']);
             return $response;
         }
 
@@ -449,23 +451,39 @@ class ResolverApi
     }
 
     /**
-     * Rate limiter using WordPress transients (R105, AC-T26-02).
+     * Fixed-window rate limiter (R105, AC-T26-02): at most $maxRequests per client per window.
+     *
+     * With a persistent object cache (Redis/Memcached) the counter is an atomic wp_cache_incr(), so
+     * it never writes wp_options and concurrent requests cannot lose increments. Without one it
+     * falls back to a transient that keeps the window's original expiry instead of extending it on
+     * every request. A $maxRequests of 0 or less disables the limit (audit F09).
      */
     public function checkRateLimit(string $clientKey, int $maxRequests = 60, int $windowSeconds = 60): bool
     {
-        $transientKey = 'wpe_rl_' . md5($clientKey);
-        $count = (int)get_transient($transientKey);
+        if ($maxRequests <= 0) {
+            return true;
+        }
+        $windowSeconds = max(1, $windowSeconds);
+        $key = 'wpe_rl_' . md5($clientKey);
 
-        if ($count >= $maxRequests) {
+        if (wp_using_ext_object_cache()) {
+            wp_cache_add($key, 0, self::RATE_LIMIT_GROUP, $windowSeconds);
+            $count = wp_cache_incr($key, 1, self::RATE_LIMIT_GROUP);
+            if ($count !== false) {
+                return (int)$count <= $maxRequests;
+            }
+        }
+
+        $now = time();
+        $state = get_transient($key);
+        if (!is_array($state) || (int)($state['reset'] ?? 0) <= $now) {
+            $state = ['count' => 0, 'reset' => $now + $windowSeconds];
+        }
+        if ((int)$state['count'] >= $maxRequests) {
             return false;
         }
-
-        if ($count === 0) {
-            set_transient($transientKey, 1, $windowSeconds);
-        } else {
-            // Increment count preserving remaining TTL
-            set_transient($transientKey, $count + 1, $windowSeconds);
-        }
+        $state['count'] = (int)$state['count'] + 1;
+        set_transient($key, $state, max(1, (int)$state['reset'] - $now));
 
         return true;
     }
@@ -475,18 +493,67 @@ class ResolverApi
      */
     public function clearRateLimit(string $clientKey): void
     {
-        $transientKey = 'wpe_rl_' . md5($clientKey);
-        delete_transient($transientKey);
+        $key = 'wpe_rl_' . md5($clientKey);
+        wp_cache_delete($key, self::RATE_LIMIT_GROUP);
+        delete_transient($key);
     }
 
     /**
-     * Retrieve client IP address securely.
+     * Requests allowed per client and window, filterable for sites behind a CDN or with heavy selectors.
+     *
+     * @return array{max:int, window:int}
+     */
+    private function rateLimitSettings(): array
+    {
+        /**
+         * Rate limit of the public resolve endpoint.
+         *
+         * @param array{max:int, window:int} $settings max requests per window (0 disables), window in seconds.
+         */
+        $settings = (array)apply_filters('wpe_resolver_rate_limit', [
+            'max'    => $this->rateLimitMax,
+            'window' => $this->rateLimitWindow,
+        ]);
+        return [
+            'max'    => (int)($settings['max'] ?? $this->rateLimitMax),
+            'window' => max(1, (int)($settings['window'] ?? $this->rateLimitWindow)),
+        ];
+    }
+
+    /**
+     * The client address used as the rate-limit key.
+     *
+     * Behind a CDN or reverse proxy REMOTE_ADDR is the proxy, so every shopper would share one
+     * bucket. Define WPE_TRUSTED_PROXY_HEADER (for example 'HTTP_CF_CONNECTING_IP' or
+     * 'HTTP_X_FORWARDED_FOR') only when the proxy overwrites that header; the first valid address in
+     * it is used. The wpe_resolver_client_ip filter can supply the address instead.
      */
     private function getClientIp(): string
     {
-        if (!empty($_SERVER['REMOTE_ADDR'])) {
-            return filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP) ?: '127.0.0.1';
+        $remote = isset($_SERVER['REMOTE_ADDR']) ? (string)filter_var(wp_unslash($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP) : '';
+        $ip = $remote;
+
+        if (defined('WPE_TRUSTED_PROXY_HEADER') && is_string(WPE_TRUSTED_PROXY_HEADER)) {
+            $header = WPE_TRUSTED_PROXY_HEADER;
+            if (isset($_SERVER[$header]) && is_string($_SERVER[$header])) {
+                foreach (explode(',', wp_unslash($_SERVER[$header])) as $candidate) {
+                    $valid = filter_var(trim($candidate), FILTER_VALIDATE_IP);
+                    if ($valid !== false) {
+                        $ip = (string)$valid;
+                        break;
+                    }
+                }
+            }
         }
-        return '127.0.0.1';
+
+        /**
+         * Client address used for the resolve endpoint rate limit.
+         *
+         * @param string $ip     Address from WPE_TRUSTED_PROXY_HEADER when configured, else REMOTE_ADDR.
+         * @param string $remote REMOTE_ADDR as validated.
+         */
+        $ip = (string)apply_filters('wpe_resolver_client_ip', $ip, $remote);
+
+        return $ip !== '' ? $ip : '127.0.0.1';
     }
 }
