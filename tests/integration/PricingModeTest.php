@@ -370,6 +370,11 @@ class PricingModeTest
             $this->wpdb->query("DELETE FROM {$prefix}wpe_inventory WHERE owner_id IN ({$list})");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_sku_registry WHERE object_id IN ({$list})");
             $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_media WHERE variant_id IN ({$list})");
+            // Without this the variation authority rows outlive their variants (orphans in health counts).
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_object_state WHERE object_id IN ({$list})");
+        }
+        if ($this->productIds) {
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_object_state WHERE object_id IN (" . implode(',', array_map('intval', $this->productIds)) . ")");
         }
         foreach ($this->productIds as $id) {
             $this->wpdb->delete("{$prefix}wpe_inventory", ['owner_id' => $id]);
