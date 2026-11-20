@@ -1,0 +1,324 @@
+{
+  "id": "P022",
+  "title": "UI stage 1: keyboard, focus, contrast and responsive fixes",
+  "status": "in_progress",
+  "content_hash": "8f9f15ae9c58d8b9c8f20dc9c214996039dad4219848ae9400920290ca040157",
+  "tasks": [
+    {
+      "id": "P022.1",
+      "title": "Keyboard-operable controls and accessible names in the product editor",
+      "depends_on": [],
+      "read_first": [
+        "docs/09-ui.md",
+        "assets/admin/product-editor.js"
+      ],
+      "files": [
+        "assets/admin/product-editor.js",
+        "assets/admin/product-editor.css",
+        "tests/e2e/UiStage1Live.mjs"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "assets/admin/product-editor.js"
+        ],
+        [
+          "node",
+          "--check",
+          "tests/e2e/UiStage1Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs",
+          "keyboard"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantImagePickerLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductMediaLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/TwoBlockLive.mjs"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161710449-c5778d2f.log",
+          "time": "2026-11-20T08:01:50.449Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161710525-01ee3729.log",
+          "time": "2026-11-20T08:01:50.525Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "keyboard"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "8117f618e4384951e73ac858ec17b164d1cab2bec15bc966e1935a8b8da22539",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161725765-a4975419.log",
+          "time": "2026-11-20T08:02:05.766Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantImagePickerLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "61a5fbe4c3ef881db199de940edd4f4faf00b5632fcb56e33199ead8a5154f1d",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161742241-0847629a.log",
+          "time": "2026-11-20T08:02:22.241Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "de79f37cb301bf12f8c95f276edddf2cf1b6909bf5b768618033d411ed431409",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161772710-939cd8ed.log",
+          "time": "2026-11-20T08:02:52.710Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/TwoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
+          "content_digest": "aa03486504e19ded770e8e03cede614be6cceb47e42419b2ec7c2dab9df87f26",
+          "output_sha256": "6f0e7e52e378c34af3e934afb7f9f45be6f668777d04cb11398462f903bc759f",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795161808448-16bdeb64.log",
+          "time": "2026-11-20T08:03:28.449Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:56:44.038Z"
+    },
+    {
+      "id": "P022.2",
+      "title": "Focus ring, contrast and reduced motion in admin styles",
+      "depends_on": [
+        "P022.1"
+      ],
+      "read_first": [
+        "assets/admin/product-editor.css",
+        "assets/admin/settings.css"
+      ],
+      "files": [
+        "assets/admin/product-editor.css",
+        "assets/admin/product-editor.js",
+        "assets/admin/settings.css",
+        "assets/admin/admin.css",
+        "tests/e2e/UiStage1Live.mjs"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "assets/admin/product-editor.js"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs",
+          "focus"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs",
+          "contrast"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductPageSettingsLive.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P022.3",
+      "title": "Responsive save bar, viewport fullscreen, sticky matrix columns and persistent error toasts",
+      "depends_on": [
+        "P022.2"
+      ],
+      "read_first": [
+        "assets/admin/product-editor.css",
+        "assets/admin/product-editor.js"
+      ],
+      "files": [
+        "assets/admin/product-editor.css",
+        "assets/admin/product-editor.js",
+        "tests/e2e/UiStage1Live.mjs"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "assets/admin/product-editor.js"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs",
+          "layout"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/TwoBlockLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductInfoBlockLive.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P022.4",
+      "title": "Storefront selector: control contrast, legible unavailable state, theme-aware muted text",
+      "depends_on": [],
+      "read_first": [
+        "docs/09-ui.md",
+        "assets/variant-selector/selector.css"
+      ],
+      "files": [
+        "assets/variant-selector/selector.css",
+        "tests/e2e/SelectorContrast.spec.mjs"
+      ],
+      "dod": [
+        [
+          "npx",
+          "--no-install",
+          "playwright",
+          "test",
+          "--config=playwright.config.mjs"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductPageSettingsLive.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P022.5",
+      "title": "Shopify import page at 360 px and dropzone contrast",
+      "depends_on": [
+        "P022.2"
+      ],
+      "read_first": [
+        "src/Admin/ShopifyImportPage.php"
+      ],
+      "files": [
+        "src/Admin/ShopifyImportPage.php",
+        "assets/admin/admin.css",
+        "tests/e2e/UiStage1Live.mjs"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Admin/ShopifyImportPage.php"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs",
+          "import"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P022.6",
+      "title": "Full stage 1 check, notes and report",
+      "depends_on": [
+        "P022.3",
+        "P022.4",
+        "P022.5"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P022-ui-a11y-stage1/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "8f9f15ae9c58d8b9c8f20dc9c214996039dad4219848ae9400920290ca040157"
+}

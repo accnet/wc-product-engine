@@ -20,3 +20,4 @@
 - P018 — P017 amendment: register WPE_VERSION (done)
 - P019 — Incremental catalog projection on import and missing SKU column fix (done)
 - P020 — Re-certify on WordPress 7.1.5 / WooCommerce 11.3.0 (in_progress)
+- P022 — UI stage 1: keyboard, focus, contrast and responsive fixes (in_progress)
