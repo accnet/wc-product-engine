@@ -280,6 +280,14 @@ class CohortRoutingVariableDataStore extends WC_Product_Variable_Data_Store_CPT
         return parent::read_children($product, $force_read);
     }
 
+    public function read_variation_attributes(&$product)
+    {
+        if ($this->isNativeProduct($product, 'read')) {
+            return $this->native()->read_variation_attributes($product);
+        }
+        return parent::read_variation_attributes($product);
+    }
+
     public function read_price_data(&$product, $for_display = false)
     {
         if ($this->isNativeProduct($product, 'read')) {

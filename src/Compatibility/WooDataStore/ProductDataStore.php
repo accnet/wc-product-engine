@@ -290,6 +290,8 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             'date_modified'      => $data['updated_at'],
         ]);
 
+        $product->set_attributes($this->readNativeAttributes($productId));
+
         $this->read_meta($product);
         $this->read_downloads($product);
 
@@ -299,6 +301,199 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         }
 
         $product->set_object_read(true);
+    }
+
+    /**
+     * WooCommerce attribute name for a native option: the attribute taxonomy when the option is
+     * linked to a registered one, otherwise the option's display name (custom attribute).
+     */
+    protected static function attributeNameFor(array $option): string
+    {
+        $taxonomy = (string)($option['taxonomy'] ?? '');
+        if ($taxonomy !== '' && taxonomy_exists($taxonomy)) {
+            return $taxonomy;
+        }
+        return (string)(($option['name'] ?? '') !== '' ? $option['name'] : ($option['key'] ?? ''));
+    }
+
+    /**
+     * WooCommerce attribute value for a native option value: the term slug for taxonomy
+     * attributes, the label for custom attributes (as WC_Product_Data_Store_CPT stores them).
+     */
+    protected static function attributeValueFor(array $row): string
+    {
+        $taxonomy = (string)($row['taxonomy'] ?? '');
+        if ($taxonomy !== '' && taxonomy_exists($taxonomy)) {
+            $termId = (int)($row['term_id'] ?? 0);
+            if ($termId > 0) {
+                $term = get_term($termId, $taxonomy);
+                if ($term instanceof \WP_Term) {
+                    return (string)$term->slug;
+                }
+            }
+            return (string)($row['value_key'] ?? '');
+        }
+        return (string)($row['label'] ?? '');
+    }
+
+    /**
+     * Build the product's WC_Product_Attribute list from wpe_options / wpe_option_values.
+     *
+     * @return array<string, \WC_Product_Attribute>
+     */
+    protected function readNativeAttributes(int $productId): array
+    {
+        $prefix = $this->wpdb->prefix;
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT o.id AS option_id, o.name, o.`key`, o.taxonomy, o.position, o.visible, o.used_for_variation,
+                    ov.id AS value_id, ov.label, ov.value_key, ov.term_id
+             FROM {$prefix}wpe_options o
+             LEFT JOIN {$prefix}wpe_option_values ov ON ov.option_id = o.id
+             WHERE o.product_id = %d
+             ORDER BY o.position ASC, o.id ASC, ov.position ASC, ov.id ASC",
+            $productId
+        ), ARRAY_A);
+
+        if (!is_array($rows) || $rows === []) {
+            return [];
+        }
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $optionId = (int)$row['option_id'];
+            if (!isset($grouped[$optionId])) {
+                $grouped[$optionId] = ['option' => $row, 'values' => []];
+            }
+            if ($row['value_id'] !== null) {
+                $grouped[$optionId]['values'][] = $row;
+            }
+        }
+
+        $attributes = [];
+        foreach ($grouped as $optionId => $group) {
+            $option = $group['option'];
+            $name = self::attributeNameFor($option);
+            if ($name === '') {
+                continue;
+            }
+            $isTaxonomy = $name === (string)($option['taxonomy'] ?? '');
+
+            $values = [];
+            foreach ($group['values'] as $valueRow) {
+                if ($isTaxonomy) {
+                    $termId = (int)($valueRow['term_id'] ?? 0);
+                    if ($termId > 0) {
+                        $values[] = $termId;
+                    }
+                } elseif ((string)$valueRow['label'] !== '') {
+                    $values[] = (string)$valueRow['label'];
+                }
+            }
+
+            $attribute = new \WC_Product_Attribute();
+            $attribute->set_id($isTaxonomy ? (int)wc_attribute_taxonomy_id_by_name($name) : 0);
+            $attribute->set_name($name);
+            $attribute->set_options($values);
+            $attribute->set_position((int)$option['position']);
+            $attribute->set_visible(!empty($option['visible']));
+            $attribute->set_variation(!empty($option['used_for_variation']));
+            $attributes[sanitize_title($name)] = $attribute;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Variation attributes (attribute key => value, '' for "any") from wpe_variant_values.
+     *
+     * @return array<string, string>
+     */
+    protected function readNativeVariationAttributes(int $variantId): array
+    {
+        $prefix = $this->wpdb->prefix;
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT o.name, o.`key`, o.taxonomy, vv.is_any, ov.label, ov.value_key, ov.term_id
+             FROM {$prefix}wpe_variant_values vv
+             INNER JOIN {$prefix}wpe_options o ON o.id = vv.option_id
+             LEFT JOIN {$prefix}wpe_option_values ov ON ov.id = vv.value_id AND ov.option_id = vv.option_id
+             WHERE vv.variant_id = %d AND o.used_for_variation = 1
+             ORDER BY o.position ASC, o.id ASC",
+            $variantId
+        ), ARRAY_A);
+
+        $attributes = [];
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $name = self::attributeNameFor($row);
+            if ($name === '') {
+                continue;
+            }
+            $isAny = !empty($row['is_any']) || $row['label'] === null;
+            $attributes[sanitize_title($name)] = $isAny ? '' : self::attributeValueFor($row);
+        }
+        return $attributes;
+    }
+
+    /**
+     * Values each variation attribute takes across the product's variations, keyed by attribute
+     * name, mirroring WC_Product_Variable_Data_Store_CPT::read_variation_attributes() without
+     * reading legacy variation postmeta.
+     *
+     * @return array<string, string[]>
+     */
+    public function read_variation_attributes(&$product): array
+    {
+        $productId = $product->get_id();
+        $variationAttributes = array_filter(
+            $product->get_attributes(),
+            static fn ($attribute): bool => $attribute instanceof \WC_Product_Attribute && $attribute->get_variation()
+        );
+        if ($variationAttributes === []) {
+            return [];
+        }
+
+        $prefix = $this->wpdb->prefix;
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT o.name, o.`key`, o.taxonomy, vv.is_any, ov.label, ov.value_key, ov.term_id
+             FROM {$prefix}wpe_variant_values vv
+             INNER JOIN {$this->tableVariants} v ON v.id = vv.variant_id
+             INNER JOIN {$prefix}wpe_options o ON o.id = vv.option_id
+             LEFT JOIN {$prefix}wpe_option_values ov ON ov.id = vv.value_id AND ov.option_id = vv.option_id
+             WHERE v.product_id = %d AND v.deleted_at IS NULL AND o.used_for_variation = 1",
+            $productId
+        ), ARRAY_A);
+
+        $assigned = [];
+        $anyFor = [];
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $key = sanitize_title(self::attributeNameFor($row));
+            if (!empty($row['is_any']) || $row['label'] === null) {
+                $anyFor[$key] = true;
+                continue;
+            }
+            $assigned[$key][self::attributeValueFor($row)] = true;
+        }
+
+        $result = [];
+        foreach ($variationAttributes as $key => $attribute) {
+            $all = $attribute->is_taxonomy()
+                ? array_values(array_filter(array_map(
+                    static function ($termId) use ($attribute) {
+                        $term = get_term((int)$termId, $attribute->get_name());
+                        return $term instanceof \WP_Term ? (string)$term->slug : '';
+                    },
+                    $attribute->get_options()
+                )))
+                : array_map('strval', $attribute->get_options());
+
+            if (!empty($anyFor[$key]) || empty($assigned[$key])) {
+                $values = $all;
+            } else {
+                $values = array_values(array_filter($all, static fn (string $v): bool => isset($assigned[$key][$v])));
+            }
+            $result[$attribute->get_name()] = array_values(array_unique($values));
+        }
+
+        return $result;
     }
 
     /**
@@ -412,7 +607,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     {
         $productId = $product->get_id();
         $rows = $this->wpdb->get_results($this->wpdb->prepare(
-            "SELECT o.name, o.`key`, o.taxonomy, ov.label, ov.value_key
+            "SELECT o.name, o.`key`, o.taxonomy, ov.label, ov.value_key, ov.term_id
              FROM {$this->wpdb->prefix}wpe_options o
              INNER JOIN {$this->wpdb->prefix}wpe_option_values ov
                  ON ov.id = o.default_value_id AND ov.option_id = o.id
@@ -424,8 +619,8 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $defaults = [];
         if (is_array($rows)) {
             foreach ($rows as $r) {
-                $attrKey = sanitize_title((string)($r['name'] ?: $r['key']));
-                $attrVal = (string)$r['label'];
+                $attrKey = sanitize_title(self::attributeNameFor($r));
+                $attrVal = self::attributeValueFor($r);
                 if ($attrKey !== '' && $attrVal !== '') {
                     $defaults[$attrKey] = $attrVal;
                 }
@@ -531,7 +726,26 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     {
         $productId = $product->get_id();
         try {
-            $vector = $this->optRepo->buildCombinationVector($productId, $match_attributes);
+            // WooCommerce passes posted form keys (attribute_<sanitized name>); map them to option ids.
+            $selections = [];
+            $byAttributeKey = [];
+            foreach ($this->optRepo->getOptionsByProductId($productId) as $opt) {
+                $byAttributeKey[sanitize_title(self::attributeNameFor($opt))] = (int)$opt['id'];
+            }
+            foreach ((array)$match_attributes as $key => $value) {
+                $key = (string)$key;
+                if (strpos($key, 'attribute_') === 0) {
+                    $attrKey = sanitize_title(substr($key, strlen('attribute_')));
+                    if (isset($byAttributeKey[$attrKey])) {
+                        if ($value !== '' && $value !== null) {
+                            $selections[$byAttributeKey[$attrKey]] = wp_unslash((string)$value);
+                        }
+                        continue;
+                    }
+                }
+                $selections[$key] = $value;
+            }
+            $vector = $this->optRepo->buildCombinationVector($productId, $selections);
             $keyHex = $this->optRepo->buildCombinationKey($vector);
             $varId = $this->wpdb->get_var($this->wpdb->prepare(
                 "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND active_combination_key = UNHEX(%s) AND status = 'publish' AND deleted_at IS NULL",
@@ -1196,8 +1410,12 @@ class ProductVariationDataStore extends ProductDataStore
             'date_modified'     => $row['updated_at'],
         ]);
 
-        if (!empty($extra['attributes']) && is_array($extra['attributes'])) {
-            $product->set_attributes($extra['attributes']);
+        $attributes = $this->readNativeVariationAttributes($variantId);
+        if ($attributes === [] && !empty($extra['attributes']) && is_array($extra['attributes'])) {
+            $attributes = $extra['attributes'];
+        }
+        if ($attributes !== []) {
+            $product->set_attributes($attributes);
         }
 
         $this->read_meta($product);
