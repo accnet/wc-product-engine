@@ -242,7 +242,8 @@ final class ProductMediaApiController
                      */
                     do_action('wpe_product_media_changed', $productId, $userId);
                 }
-                return [200, ['id' => (string) $productId, 'version' => $new]];
+                // MutationResult (docs/04): the media library revision is the product's parent revision.
+                return [200, ['id' => (string) $productId, 'version' => $new, 'parent_version' => $new]];
             });
         } catch (Throwable $e) {
             return $this->errorResponse($e);
