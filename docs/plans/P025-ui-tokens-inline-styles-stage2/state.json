@@ -1,7 +1,7 @@
 {
   "id": "P025",
   "title": "UI stage 2: unified design tokens and inline styles to classes",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "481ff67947530072d3650fa762f4b0045dde4d6e26708e004ac9bfba4b1f00e6",
   "tasks": [
     {
@@ -547,9 +547,213 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "0d70a68f15841c1d05c571ab511e3e944b390f5e1460be7a97cbc815c1be8af3",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168326797-88d72446.log",
+          "time": "2026-11-20T09:52:06.797Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "0d70a68f15841c1d05c571ab511e3e944b390f5e1460be7a97cbc815c1be8af3",
+          "output_sha256": "b045d7fd5f1d134adcb2f5b4a5ddc58c8219496994f59815f6765dba5d57d190",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168365362-dfae57b4.log",
+          "time": "2026-11-20T09:52:45.362Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "2894ac6d76ad0f236fb454d9dd9298afb676b989cbfbd989e0d6c9985ddddb55",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168419476-c31ebf24.log",
+          "time": "2026-11-20T09:53:39.476Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "2894ac6d76ad0f236fb454d9dd9298afb676b989cbfbd989e0d6c9985ddddb55",
+          "output_sha256": "8ac51ac7c1dcf33670bd13e65d0acd63b78c7df372588662cd3389643e9c5f44",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168433873-6fb19d11.log",
+          "time": "2026-11-20T09:53:53.873Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "33a36ca1dedb8e7b0acf2f79ffb9935720ec787ede4082868845e977e21a8faa",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168495544-d6ae75aa.log",
+          "time": "2026-11-20T09:54:55.545Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "33a36ca1dedb8e7b0acf2f79ffb9935720ec787ede4082868845e977e21a8faa",
+          "output_sha256": "5a99797531566accd1e14aa58cb44ed41575866c98b88c53583fd57dc73b8440",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168509803-d8c650b6.log",
+          "time": "2026-11-20T09:55:09.804Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "19ae7f61b6a9d9ae28ed96a5be003def1eefbf6ed1f08f20759bf765ddabba20",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168558847-3e695fec.log",
+          "time": "2026-11-20T09:55:58.847Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "19ae7f61b6a9d9ae28ed96a5be003def1eefbf6ed1f08f20759bf765ddabba20",
+          "output_sha256": "458eff4f48cbaefac660d50e59ad8cda25df8196f240626995682c59d268fe68",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168584483-8795da19.log",
+          "time": "2026-11-20T09:56:24.484Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "71b5b22419d0917fe08123067bea0da82e6af6d37a3461598def01b04c811fc6",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168634083-7db706fb.log",
+          "time": "2026-11-20T09:57:14.084Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "71b5b22419d0917fe08123067bea0da82e6af6d37a3461598def01b04c811fc6",
+          "output_sha256": "3746d401186270c981b2de1e4d03cfef6cbad8009c4aa32c005dfd115ef32e19",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168644810-3ffc35b1.log",
+          "time": "2026-11-20T09:57:24.810Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "aadbb223202e3fc4c40fa454db2a1920b8efcafec75fdfb9196507dae4efc3a4",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168685557-da05e846.log",
+          "time": "2026-11-20T09:58:05.558Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "8b87f40c74af1e18777b23fb05859cbb0227f572439d315752ade1ab9a9172be",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168685658-de179fef.log",
+          "time": "2026-11-20T09:58:05.658Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "8554512f8290036850ee2a16336354a075269234c241ce26f8521960f7dd931a",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168685753-778855f9.log",
+          "time": "2026-11-20T09:58:05.754Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168734577-3a8dd429.log",
+          "time": "2026-11-20T09:58:54.578Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168766072-7771fa62.log",
+          "time": "2026-11-20T09:59:26.072Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "9b42b3f8591d1d1c6eb2d2a0d5648bab0c3f739c",
+          "content_digest": "62389d5eb73d1ecd299bf9dced8961a64bb66b464481e1b6fd9814adca8cc1af",
+          "output_sha256": "3746d401186270c981b2de1e4d03cfef6cbad8009c4aa32c005dfd115ef32e19",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795168781506-7d5cfaa6.log",
+          "time": "2026-11-20T09:59:41.507Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:50:38.630Z"
     }
   ],
-  "approved_hash": "481ff67947530072d3650fa762f4b0045dde4d6e26708e004ac9bfba4b1f00e6"
+  "approved_hash": "481ff67947530072d3650fa762f4b0045dde4d6e26708e004ac9bfba4b1f00e6",
+  "report_hash": "4e9d523540bab2e487d665013e0d0691bf59016b4f39c27d586b7a310245d26d"
 }
