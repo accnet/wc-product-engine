@@ -11,6 +11,8 @@
  * - get_attributes() matches legacy _product_attributes (name, options, variation flag);
  * - each variation's attributes match its legacy attribute_* postmeta;
  * - get_variation_attributes() lists every variation option with values;
+ * - each variation's name matches WooCommerce's generated title, get_title() is the parent title
+ *   (parent data is loaded) and the attribute summary is set;
  * - find_matching_product_variation() with posted attribute_* keys returns the variation itself.
  *
  * Read-only: creates nothing.
@@ -63,6 +65,10 @@ class NativeAttributeReadTest
              ORDER BY p.id"
         );
         $store = \WC_Data_Store::load('product-variable');
+        // WooCommerce's own title generator: reads the parent post title of the shell post.
+        $cptVariationStore = new \WC_Product_Variation_Data_Store_CPT();
+        $generateTitle = new \ReflectionMethod($cptVariationStore, 'generate_product_title');
+        $generateTitle->setAccessible(true);
         $products = 0;
         $variations = 0;
         foreach ($ids as $id) {
@@ -112,6 +118,15 @@ class NativeAttributeReadTest
                 $variations++;
                 $own = $variation->get_attributes();
                 $this->check($own !== [], "Variation {$childId}: get_attributes() must not be empty");
+
+                $expectedName = $generateTitle->invoke($cptVariationStore, $variation);
+                $this->check($variation->get_name() !== '', "Variation {$childId}: get_name() must not be empty");
+                $this->check($variation->get_name() === $expectedName, "Variation {$childId}: name '{$variation->get_name()}' must match WooCommerce '{$expectedName}'");
+                $this->check($variation->get_title() === $product->get_name(), "Variation {$childId}: get_title() must be the parent title");
+                $this->check(
+                    $variation->get_attribute_summary() === wc_get_formatted_variation($variation, true, true),
+                    "Variation {$childId}: attribute summary mismatch"
+                );
 
                 foreach ($own as $key => $value) {
                     $legacyValue = get_post_meta($childId, 'attribute_' . $key, true);

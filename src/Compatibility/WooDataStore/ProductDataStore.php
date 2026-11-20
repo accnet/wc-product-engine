@@ -1418,9 +1418,97 @@ class ProductVariationDataStore extends ProductDataStore
             $product->set_attributes($attributes);
         }
 
+        $parentData = $this->readParentData((int)$row['product_id']);
+        $product->set_parent_data($parentData);
+        $product->set_props([
+            'sold_individually' => wc_string_to_bool($parentData['sold_individually']),
+            'tax_status'        => $parentData['tax_status'] !== '' ? $parentData['tax_status'] : 'taxable',
+            'cross_sell_ids'    => $parentData['_crosssell_ids'],
+            'name'              => $this->generateVariationTitle($product, $parentData['title']),
+            'attribute_summary' => wc_get_formatted_variation($product, true, true),
+        ]);
+
         $this->read_meta($product);
         $this->read_downloads($product);
         $product->set_object_read(true);
+    }
+
+    /**
+     * Variation title as WC_Product_Variation_Data_Store_CPT::generate_product_title() builds it:
+     * "<parent title> - <attribute values>", attributes omitted for 3+ attributes or for several
+     * attributes with a multi-word name, with the same WooCommerce filters.
+     */
+    /**
+     * Parent props a variation inherits (WC_Product_Variation::set_parent_data), read from the
+     * native parent row like WC_Product_Variation_Data_Store_CPT::read_product_data() reads postmeta.
+     * Customs props stay empty: they are legacy-only and refused under native authority.
+     */
+    protected function readParentData(int $parentId): array
+    {
+        $parent = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT * FROM {$this->tableProducts} WHERE id = %d",
+            $parentId
+        ), ARRAY_A) ?: [];
+        $inv = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
+            $parentId
+        ), ARRAY_A) ?: [];
+
+        $featured = $parentId > 0 ? $this->mediaRepo->getFeaturedImage($parentId) : null;
+        $imageId = 0;
+        if ($featured) {
+            $imageId = !empty($featured['attachment_id']) ? (int)$featured['attachment_id'] : (int)($featured['id'] ?? 0);
+        }
+        $crossSells = $parentId > 0 ? $this->mediaRepo->getLinks($parentId, 'crosssell') : [];
+        $dimension = static fn ($v): string => $v !== null && $v !== '' ? (string)$v : '';
+
+        return [
+            'title'              => (string)($parent['title'] ?? ''),
+            'status'             => (string)($parent['status'] ?? ''),
+            'sku'                => (string)($parent['sku'] ?? ''),
+            'global_unique_id'   => '',
+            'manage_stock'       => !empty($inv['manage_stock']) ? 'yes' : 'no',
+            'backorders'         => (string)($inv['backorders'] ?? 'no'),
+            'stock_quantity'     => isset($inv['quantity']) && $inv['quantity'] !== null ? wc_stock_amount($inv['quantity']) : 0,
+            'weight'             => $dimension($parent['weight'] ?? null),
+            'length'             => $dimension($parent['length'] ?? null),
+            'width'              => $dimension($parent['width'] ?? null),
+            'height'             => $dimension($parent['height'] ?? null),
+            'tax_class'          => (string)($parent['tax_class'] ?? ''),
+            'purchase_note'      => (string)($parent['purchase_note'] ?? ''),
+            'sold_individually'  => !empty($parent['sold_individually']) ? 'yes' : 'no',
+            'tax_status'         => (string)($parent['tax_status'] ?? 'taxable'),
+            '_crosssell_ids'     => array_map('intval', array_column($crossSells, 'target_id')),
+            'shipping_class_id'  => (int)($parent['shipping_class_id'] ?? 0),
+            'catalog_visibility' => (string)($parent['catalog_visibility'] ?? 'visible'),
+            'image_id'           => $imageId,
+        ];
+    }
+
+    protected function generateVariationTitle(WC_Product_Variation $product, string $titleBase): string
+    {
+        $attributes = (array)$product->get_attributes();
+        $includeAttributes = count($attributes) < 3;
+        if ($includeAttributes && count($attributes) > 1) {
+            foreach (array_keys($attributes) as $name) {
+                if (strpos((string)$name, '-') !== false) {
+                    $includeAttributes = false;
+                    break;
+                }
+            }
+        }
+        $includeAttributes = (bool)apply_filters('woocommerce_product_variation_title_include_attributes', $includeAttributes, $product);
+
+        $separator = apply_filters('woocommerce_product_variation_title_attributes_separator', ' - ', $product);
+        $titleSuffix = $includeAttributes ? wc_get_formatted_variation($product, true, false) : '';
+
+        return (string)apply_filters(
+            'woocommerce_product_variation_title',
+            $titleSuffix ? $titleBase . $separator . $titleSuffix : $titleBase,
+            $product,
+            $titleBase,
+            $titleSuffix
+        );
     }
 
     public function update(&$product): void
