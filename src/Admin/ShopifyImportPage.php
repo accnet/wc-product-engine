@@ -97,7 +97,8 @@ class ShopifyImportPage
                                 <input type="file" id="wpe-csv-file-input" accept=".csv" style="display: none;">
                             </div>
 
-                            <!-- Or Server Path -->
+                            <?php if (current_user_can('manage_options')) : ?>
+                            <!-- Or Server Path (administrators only, allowed directories only) -->
                             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
                                 <label for="wpe-server-path-input">
                                     <strong><?php echo esc_html__('Or direct file path on server:', 'wc-product-engine'); ?></strong>
@@ -109,9 +110,10 @@ class ShopifyImportPage
                                     </button>
                                 </div>
                                 <p class="description">
-                                    <?php echo esc_html__('For very large CSV files already present on the server without uploading via browser.', 'wc-product-engine'); ?>
+                                    <?php echo esc_html__('For very large CSV files already present on the server without uploading via browser. The file must be a .csv inside wp-content/uploads/wpe-imports/ (or a directory added with the wpe_import_server_path_roots filter).', 'wc-product-engine'); ?>
                                 </p>
                             </div>
+                            <?php endif; ?>
 
                             <!-- File Selected Info -->
                             <div id="wpe-selected-file-info" style="display: none; margin-top: 15px; padding: 12px; background: #e7f3fe; border-left: 4px solid #2271b1; border-radius: 3px;">

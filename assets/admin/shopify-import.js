@@ -189,7 +189,7 @@
                 success: function (res) {
                     if (res.status === 'success') {
                         state.stagedFileId = res.staged_file_id;
-                        state.filePath = res.file_path;
+                        state.filePath = null;
                         state.fileName = res.original_filename;
 
                         selectedFilename.text('Uploaded: ' + res.original_filename);
@@ -220,7 +220,7 @@
             state.batchSize = parseInt($('#wpe-opt-batch-size').val(), 10) || 25;
 
             var initPayload = {
-                file_path: state.filePath,
+                file_path: state.stagedFileId ? null : state.filePath,
                 staged_file_id: state.stagedFileId,
                 original_filename: state.fileName,
                 update_mode: updateMode,

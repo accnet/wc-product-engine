@@ -237,6 +237,47 @@ class CsvStager
     }
 
     /**
+     * Resolve an operator-supplied server path for a large CSV import.
+     *
+     * The path must name an existing, readable `.csv` file whose real path lies inside one of the
+     * allowed import directories: the private staging directory, plus any directory added through
+     * the `wpe_import_server_path_roots` filter. Symlinks are resolved before the check.
+     *
+     * @throws \InvalidArgumentException When the path is malformed, not a CSV or outside the allowed directories.
+     */
+    public function resolveServerImportPath(string $path): string
+    {
+        if ($path === '' || str_contains($path, "\0") || preg_match('#^[a-z][a-z0-9+.\-]*://#i', $path)) {
+            throw new \InvalidArgumentException('Invalid server file path.');
+        }
+
+        $realFile = realpath($path);
+        if ($realFile === false || !is_file($realFile) || !is_readable($realFile)) {
+            throw new \InvalidArgumentException('Server file not found or not readable.');
+        }
+        if (strtolower(pathinfo($realFile, PATHINFO_EXTENSION)) !== 'csv') {
+            throw new \InvalidArgumentException('Only .csv files can be imported.');
+        }
+
+        /**
+         * Directories from which administrators may import a CSV by server path.
+         *
+         * @param string[] $roots Absolute directory paths. Defaults to the private staging directory.
+         */
+        $roots = (array)apply_filters('wpe_import_server_path_roots', [$this->uploadDir]);
+        foreach ($roots as $root) {
+            $realRoot = is_string($root) && $root !== '' ? realpath($root) : false;
+            if ($realRoot !== false && str_starts_with($realFile, rtrim($realRoot, '/\\') . DIRECTORY_SEPARATOR)) {
+                return $realFile;
+            }
+        }
+
+        throw new \InvalidArgumentException(
+            'The file is outside the allowed import directories. Place it in wp-content/uploads/wpe-imports/ or add its directory with the wpe_import_server_path_roots filter.'
+        );
+    }
+
+    /**
      * Sniff dialect (woo vs shopify), delimiter (,, ;, \t), encoding, and UTF-8 BOM (R115).
      *
      * @param string $filePath Absolute file path.

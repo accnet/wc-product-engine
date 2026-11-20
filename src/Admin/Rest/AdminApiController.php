@@ -266,7 +266,6 @@ class AdminApiController
             return new WP_REST_Response([
                 'status'            => 'success',
                 'staged_file_id'    => $staged['staged_file_id'],
-                'file_path'         => $staged['file_path'],
                 'original_filename' => $staged['original_filename'],
                 'file_size'         => $staged['size'],
                 'file_size_fmt'     => size_format($staged['size']),
@@ -283,8 +282,8 @@ class AdminApiController
     {
         $params = $request->get_json_params() ?: $request->get_params();
 
-        $filePath = sanitize_text_field($params['file_path'] ?? '');
         $stagedFileId = sanitize_text_field($params['staged_file_id'] ?? '');
+        $serverPath = is_string($params['file_path'] ?? null) ? trim(wp_unslash($params['file_path'])) : '';
 
         if ($stagedFileId !== '') {
             try {
@@ -292,15 +291,30 @@ class AdminApiController
             } catch (\Throwable $e) {
                 return new WP_REST_Response([
                     'status'  => 'error',
-                    'message' => 'Staged file not found: ' . $e->getMessage(),
+                    'message' => 'Staged file not found. Upload the CSV file again.',
                 ], 404);
             }
-        }
-
-        if ($filePath === '' || !file_exists($filePath)) {
+        } elseif ($serverPath !== '') {
+            // A server path reads a file the browser never sent, so it is limited to site administrators
+            // and to .csv files inside the allowed import directories (audit F01).
+            if (!current_user_can('manage_options')) {
+                return new WP_REST_Response([
+                    'status'  => 'error',
+                    'message' => 'Only administrators can import a file by server path. Upload the CSV file instead.',
+                ], 403);
+            }
+            try {
+                $filePath = $this->csvStager->resolveServerImportPath($serverPath);
+            } catch (\Throwable $e) {
+                return new WP_REST_Response([
+                    'status'  => 'error',
+                    'message' => $e->getMessage(),
+                ], 400);
+            }
+        } else {
             return new WP_REST_Response([
                 'status'  => 'error',
-                'message' => 'File path does not exist or is not readable: ' . $filePath,
+                'message' => 'Missing staged_file_id. Upload the CSV file first.',
             ], 400);
         }
 
