@@ -1,7 +1,7 @@
 {
   "id": "P020",
   "title": "Re-certify on WordPress 7.1.5 / WooCommerce 11.3.0",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "fe1281341ba91ce46355e2b822d33b3993c060fe05a80716f3f35d128a8a17f9",
   "tasks": [
     {
@@ -393,9 +393,51 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "c96b0a61b2611cf202d48306dd7652287b90ee3e",
+          "content_digest": "483474fdd9991bfb06c4b1b409e4b54c6fc2d825bad089d0229a7e0e0c2a7432",
+          "output_sha256": "1a71c6983d3917224121d4327bd2e2c1f6df17c62fcb3e47477014bd0823cd5e",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795163585751-3f098279.log",
+          "time": "2026-11-20T08:33:05.751Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "c96b0a61b2611cf202d48306dd7652287b90ee3e",
+          "content_digest": "483474fdd9991bfb06c4b1b409e4b54c6fc2d825bad089d0229a7e0e0c2a7432",
+          "output_sha256": "7820e297f8a1408c0959898f9f6c83774a2dec7308721958469c3199d0139ae7",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795163585867-147ea6db.log",
+          "time": "2026-11-20T08:33:05.867Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "c96b0a61b2611cf202d48306dd7652287b90ee3e",
+          "content_digest": "483474fdd9991bfb06c4b1b409e4b54c6fc2d825bad089d0229a7e0e0c2a7432",
+          "output_sha256": "798589e9debff5ddf02125da3fd991119b74c8f5ffdab1bde11910e5942671af",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795163585967-642eb02b.log",
+          "time": "2026-11-20T08:33:05.967Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:32:29.489Z"
     }
   ],
-  "approved_hash": "fe1281341ba91ce46355e2b822d33b3993c060fe05a80716f3f35d128a8a17f9"
+  "approved_hash": "fe1281341ba91ce46355e2b822d33b3993c060fe05a80716f3f35d128a8a17f9",
+  "report_hash": "d3c96a54cfcdba098aa2ef9fcfe75b901de6138c59566cf17492474102a7c846"
 }
