@@ -62,6 +62,26 @@
     "weight": "products.weight / variants.weight",
     "width": "products.width / variants.width"
   },
+  "excluded_props": {
+    "customs_commodity_code": {
+      "since": "WooCommerce 11.3.0",
+      "storage": "postmeta _customs_commodity_code (WC_Product_Data_Store_CPT)",
+      "policy": "legacy_only_blocks_native",
+      "reason": "Not held by the native store yet. The native data store refuses to save a non-empty value and cutover refuses products that carry one (P021, OD-18)."
+    },
+    "customs_country_of_origin": {
+      "since": "WooCommerce 11.3.0",
+      "storage": "postmeta _customs_country_of_origin (WC_Product_Data_Store_CPT)",
+      "policy": "legacy_only_blocks_native",
+      "reason": "Not held by the native store yet. The native data store refuses to save a non-empty value and cutover refuses products that carry one (P021, OD-18)."
+    },
+    "customs_description": {
+      "since": "WooCommerce 11.3.0",
+      "storage": "postmeta _customs_description (WC_Product_Data_Store_CPT)",
+      "policy": "legacy_only_blocks_native",
+      "reason": "Not held by the native store yet. The native data store refuses to save a non-empty value and cutover refuses products that carry one (P021, OD-18)."
+    }
+  },
   "data_store_cpt_methods": [
     "add_meta",
     "create",

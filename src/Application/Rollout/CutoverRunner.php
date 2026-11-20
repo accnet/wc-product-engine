@@ -8,6 +8,7 @@ use RuntimeException;
 use InvalidArgumentException;
 use WPE\Application\Migration\LegacyMirror;
 use WPE\Application\Migration\LegacyCapture;
+use WPE\Compatibility\WooDataStore\LegacyOnlyProps;
 
 /**
  * CutoverRunner — Cutover barrier, canary routing, and monitored rollout orchestrator.
@@ -74,6 +75,12 @@ class CutoverRunner
      */
     public function startCutover(string $cohortId, string $gateReceiptToken, array $options = []): string
     {
+        // Props the native store does not hold yet keep their products on legacy (P021, OD-18).
+        $legacyOnly = LegacyOnlyProps::productsWithData($this->wpdb, array_map('intval', (array)($options['product_ids'] ?? [])));
+        if ($legacyOnly !== []) {
+            throw new RuntimeException('Cutover rejected: products with WooCommerce customs data must stay on legacy authority: ' . implode(',', $legacyOnly));
+        }
+
         // 1. Verify gate receipt token (R169, R170, AC-T42-02)
         $cohortMeta = ['cohort_id' => $cohortId];
         $eligibility = $this->gates->verifyCutoverEligibility($gateReceiptToken, $cohortMeta);

@@ -79,6 +79,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
      */
     public function create(&$product): void
     {
+        LegacyOnlyProps::assertNativeSavable($product);
         $payload = [
             'name'               => $product->get_name('edit'),
             'slug'               => $product->get_slug('edit'),
@@ -214,6 +215,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
      */
     public function update(&$product): void
     {
+        LegacyOnlyProps::assertNativeSavable($product);
         $productId = $product->get_id();
         $changes = $product->get_changes();
 
@@ -957,6 +959,7 @@ class ProductVariationDataStore extends ProductDataStore
 {
     public function create(&$product): void
     {
+        LegacyOnlyProps::assertNativeSavable($product);
         $parentId = (int)$product->get_parent_id();
         if ($parentId <= 0) {
             throw new InvalidArgumentException("Variation requires a valid parent ID");

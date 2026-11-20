@@ -1,0 +1,139 @@
+{
+  "id": "P021",
+  "title": "WC 11.3 customs props: legacy-only, fail-closed under native",
+  "status": "done",
+  "content_hash": "24722443ac31ab8b2c6fb8efeff2185e2127e54b76fc45ac83957a92d2f4d1ac",
+  "tasks": [
+    {
+      "id": "P021.1",
+      "title": "Legacy-only customs props: data store guard, cutover pre-check, mapping exclusion, test",
+      "depends_on": [],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "contracts/compatibility/wc-props-mapping.json"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/LegacyOnlyProps.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Application/Rollout/CutoverRunner.php",
+        "tests/integration/LegacyOnlyPropsTest.php",
+        "contracts/compatibility/wc-props-mapping.json",
+        "docs/QUESTIONS.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/LegacyOnlyProps.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/ProductDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Rollout/CutoverRunner.php"
+        ],
+        [
+          "php",
+          "tests/unit/T03Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/LegacyOnlyProps.php"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "bf076768ac022bae617079d552eaf4a033d36102d2b0edeef279eb19e5d5f4fe",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055014-2904a035.log",
+          "time": "2026-11-20T07:50:55.015Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/ProductDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "a02ab5da7ea42c5b8994c8e6a0a879ec652dd08a7e8ecf8f877b895786e7ec6a",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055107-e00623f9.log",
+          "time": "2026-11-20T07:50:55.107Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Rollout/CutoverRunner.php"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "246c2360312827d593c9dfba68f20536eb1cb1b2fbe5b4360e17ef073a197c8b",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055198-35258ebc.log",
+          "time": "2026-11-20T07:50:55.198Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/unit/T03Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "a8ea106df3cce6cc8429c99e7e12f4008dc4d35b0e3c3e46142b17df2a82375a",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055295-5d197dc3.log",
+          "time": "2026-11-20T07:50:55.295Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "1a71c6983d3917224121d4327bd2e2c1f6df17c62fcb3e47477014bd0823cd5e",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055401-9d725e18.log",
+          "time": "2026-11-20T07:50:55.401Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "c85f3774d1bd6b8baf75fdeca8b7d0d1f8ef2156",
+          "content_digest": "468a88f5c3581f11d4d903958cb22e8d1d85bb3e1259c665413defb3d5841c8a",
+          "output_sha256": "2f4882cf1821edd5d0ef01417b84ada0e1c47d48a55ceca61a11482855cb1d29",
+          "output_path": "docs/plans/P021-wc113-customs-legacy-only/command-1795161055508-2593e6e9.log",
+          "time": "2026-11-20T07:50:55.508Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:40:28.097Z"
+    }
+  ],
+  "approved_hash": "24722443ac31ab8b2c6fb8efeff2185e2127e54b76fc45ac83957a92d2f4d1ac",
+  "report_hash": "d38322e8b0edcf569da67640e24f849a42a1549c5201c4c1907a6bef1c5376ca"
+}
