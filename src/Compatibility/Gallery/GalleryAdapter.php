@@ -405,9 +405,10 @@ class GalleryAdapter
         $feat = $this->featuredImageRow($productId);
         if ($feat && !empty($feat['id'])) {
             $this->bridge->primeAsset($feat);
-            $attId = $this->bridge->getOrCreateAttachmentId((int)$feat['id']);
+            // Read-only on page views; 0 keeps WooCommerce's own thumbnail (audit F07).
+            $attId = $this->bridge->attachmentIdForDisplay((int)$feat['id']);
             self::$featuredAttachmentCache[$productId] = $attId;
-            return $attId;
+            return $attId > 0 ? $attId : $imageId;
         }
 
         self::$featuredAttachmentCache[$productId] = 0;
@@ -439,7 +440,10 @@ class GalleryAdapter
         $attachmentIds = [];
         foreach ($gallery as $item) {
             if (!empty($item['id'])) {
-                $attachmentIds[] = $this->bridge->getOrCreateAttachmentId((int)$item['id']);
+                $attId = $this->bridge->attachmentIdForDisplay((int)$item['id']);
+                if ($attId > 0) {
+                    $attachmentIds[] = $attId;
+                }
             }
         }
 
@@ -455,7 +459,7 @@ class GalleryAdapter
     {
         $assetId      = (int)$asset['id'];
         $this->bridge->primeAsset($asset);
-        $attachmentId = $this->bridge->getOrCreateAttachmentId($assetId);
+        $attachmentId = $this->bridge->attachmentIdForDisplay($assetId);
         $provider     = $this->assetService->getProvider($asset['provider'] ?? 'default');
         $sourceUrl    = $asset['source_url'];
         $origW        = (int)($asset['width'] ?? 1920);

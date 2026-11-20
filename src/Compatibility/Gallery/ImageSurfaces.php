@@ -477,7 +477,7 @@ class ImageSurfaces
 
         $attachmentId = (int)($asset['attachment_id'] ?? 0);
         if ($attachmentId <= 0) {
-            $attachmentId = $this->bridge->getOrCreateAttachmentId((int)$asset['id']);
+            $attachmentId = $this->bridge->attachmentIdForDisplay((int)$asset['id']);
         }
 
         $thumbW = (int)($renditionThumb['width'] ?: 300);

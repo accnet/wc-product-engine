@@ -198,6 +198,7 @@ class Commands
      *   wp wpe media report [--limit=<int>]
      *   wp wpe media clean-uploads [--limit=<int>]
      *   wp wpe media delete-file <asset-id>
+     *   wp wpe media backfill-attachments [--limit=<int>]
      */
     public static function media(array $args, array $assocArgs): void
     {
@@ -234,6 +235,17 @@ class Commands
             return;
         }
 
-        \WP_CLI::error("Unknown media subcommand '{$sub}'. Use: report, clean-uploads, delete-file.");
+        if ($sub === 'backfill-attachments') {
+            // Creates the attachment posts that display filters no longer create on page views (audit F07).
+            $res = \WPE\Compatibility\Gallery\AttachmentBridge::instance()->backfillMissingAttachments($limit);
+            \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+            if ($res['failed'] > 0) {
+                \WP_CLI::error("{$res['failed']} attachment(s) could not be created; see the PHP error log.");
+            }
+            \WP_CLI::success("Created {$res['created']} of {$res['checked']} missing attachments.");
+            return;
+        }
+
+        \WP_CLI::error("Unknown media subcommand '{$sub}'. Use: report, clean-uploads, delete-file, backfill-attachments.");
     }
 }

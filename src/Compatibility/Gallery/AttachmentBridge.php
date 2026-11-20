@@ -119,6 +119,92 @@ class AttachmentBridge
     /* -------------------------------------------------------------------------- */
 
     /**
+     * Attachment ID to show for an asset in display filters (product image, gallery, variation image).
+     *
+     * Returns the asset's existing attachment when it has one. A missing attachment is only created
+     * where writes belong (wp-admin screens, cron, WP-CLI); on storefront, REST and AJAX requests it
+     * returns 0 so the caller keeps WooCommerce's own value, and no transaction, row lock or
+     * wp_insert_post runs on a page view. Never throws: a failure is logged and treated as 0, so a
+     * broken asset cannot take down a product page (audit F07). Missing attachments are filled by
+     * the editor and importers, or by `wp wpe media backfill-attachments`.
+     */
+    public function attachmentIdForDisplay(int $assetId): int
+    {
+        if ($assetId <= 0) {
+            return 0;
+        }
+        try {
+            $asset = $this->getAssetById($assetId);
+            if (!$asset) {
+                return 0;
+            }
+            $existing = (int)($asset['attachment_id'] ?? 0);
+            if ($existing > 0) {
+                $post = get_post($existing);
+                if ($post && $post->post_type === 'attachment') {
+                    $this->attachmentToAsset[$existing] = $assetId;
+                    return $existing;
+                }
+            }
+            if (!self::mayAllocateAttachments()) {
+                return 0;
+            }
+            return $this->getOrCreateAttachmentId($assetId);
+        } catch (\Throwable $e) {
+            error_log(sprintf('[wc-product-engine] attachment for asset %d unavailable: %s', $assetId, $e->getMessage()));
+            return 0;
+        }
+    }
+
+    /**
+     * Whether this request may create attachment posts for assets (never on a page view).
+     */
+    public static function mayAllocateAttachments(): bool
+    {
+        $allowed = (defined('WP_CLI') && WP_CLI)
+            || wp_doing_cron()
+            || (is_admin() && !wp_doing_ajax());
+
+        /**
+         * Whether display filters may create missing attachment posts in this request.
+         *
+         * @param bool $allowed True on wp-admin screens, cron and WP-CLI.
+         */
+        return (bool)apply_filters('wpe_allow_attachment_allocation', $allowed);
+    }
+
+    /**
+     * Create the missing attachment posts of assets linked to products or variations, in batches.
+     *
+     * @return array{checked:int, created:int, failed:int}
+     */
+    public function backfillMissingAttachments(int $limit = 500): array
+    {
+        $ids = $this->wpdb->get_col($this->wpdb->prepare(
+            "SELECT DISTINCT a.id FROM {$this->tableAssets} a
+             WHERE a.attachment_id IS NULL
+               AND (EXISTS (SELECT 1 FROM {$this->wpdb->prefix}wpe_product_media pm WHERE pm.asset_id = a.id)
+                 OR EXISTS (SELECT 1 FROM {$this->wpdb->prefix}wpe_variant_media vm WHERE vm.asset_id = a.id))
+             ORDER BY a.id ASC
+             LIMIT %d",
+            max(1, $limit)
+        )) ?: [];
+
+        $result = ['checked' => count($ids), 'created' => 0, 'failed' => 0];
+        foreach ($ids as $id) {
+            try {
+                if ($this->getOrCreateAttachmentId((int)$id) > 0) {
+                    $result['created']++;
+                }
+            } catch (\Throwable $e) {
+                $result['failed']++;
+                error_log(sprintf('[wc-product-engine] backfill attachment for asset %d failed: %s', (int)$id, $e->getMessage()));
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Get or create a real WordPress attachment post for an asset.
      * Thread-safe with row locking and CAS to prevent duplicate attachments during concurrent requests (R87).
      */
