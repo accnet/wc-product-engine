@@ -223,7 +223,17 @@ class AdminApiController
         global $wpdb;
         try {
             $projector = new CatalogProjector($wpdb);
-            $newGeneration = $projector->buildNewGeneration();
+
+            // A large catalog is rebuilt by the background worker, not inside this request (audit F12).
+            if ($projector->shouldRebuildInBackground()) {
+                $projector->requestRebuild(get_current_user_id());
+                return new WP_REST_Response([
+                    'status'  => 'queued',
+                    'message' => __('Catalog index rebuild queued. The background worker (wp wpe rebuild --if-requested) will run it.', 'wc-product-engine'),
+                ], 202);
+            }
+
+            $newGeneration = $projector->rebuild();
 
             return new WP_REST_Response([
                 'status'     => 'success',
@@ -231,10 +241,11 @@ class AdminApiController
                 'message'    => sprintf('Catalog index rebuilt successfully to Generation #%d.', $newGeneration),
             ], 200);
         } catch (\Throwable $e) {
+            $status = (int)$e->getCode() === 409 ? 409 : 500;
             return new WP_REST_Response([
                 'status'  => 'error',
                 'message' => \WPE\Support\RestErrors::safeMessage($e, 'rebuild index', __('Failed to rebuild the catalog index.', 'wc-product-engine')),
-            ], 500);
+            ], $status);
         }
     }
 

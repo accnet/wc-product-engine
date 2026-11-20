@@ -21,6 +21,12 @@ use WPE\Infrastructure\Database\ProductRepository;
  */
 class CatalogProjector
 {
+    /** wpe_control key of a full rebuild requested from the admin for the background worker. */
+    public const REBUILD_REQUEST_KEY = 'catalog_rebuild_requested';
+
+    /** Rows deleted per statement when purging old generations. */
+    private const PURGE_BATCH = 5000;
+
     private \wpdb $wpdb;
     private ProductRepository $prodRepo;
 
@@ -114,24 +120,125 @@ class CatalogProjector
      * @param int $retainCount Minimum number of latest generations to keep (e.g. 2: active + previous)
      * @return int Number of purged generations
      */
-    public function purgeOldGenerations(int $retainCount = 2): int
+    public function purgeOldGenerations(int $retainCount = 2, bool $purgeAbandoned = false): int
     {
         $gens = $this->getStoredGenerations();
-        if (count($gens) <= $retainCount) {
+        $active = $this->getActiveGeneration();
+
+        // Keep the active generation plus the newest ones below it. Generations above the active one
+        // are a build in progress, unless the caller holds the rebuild lock ($purgeAbandoned), in
+        // which case they are leftovers of an interrupted build and are purged first.
+        $below = array_values(array_filter($gens, static fn(int $g): bool => $g < $active));
+        $above = array_values(array_filter($gens, static fn(int $g): bool => $g > $active));
+        $keepBelow = max(0, $retainCount - 1);
+        $toPurge = array_slice($below, 0, max(0, count($below) - $keepBelow));
+        if ($purgeAbandoned) {
+            $toPurge = array_merge($toPurge, $above);
+        }
+        if ($toPurge === []) {
             return 0;
         }
-
-        // Keep the latest $retainCount generations
-        $toPurge = array_slice($gens, 0, count($gens) - $retainCount);
         $purgedCount = 0;
 
         foreach ($toPurge as $gen) {
-            $this->wpdb->delete($this->tableCatalog, ['generation' => $gen]);
-            $this->wpdb->delete($this->tableCatalogFacets, ['generation' => $gen]);
+            // Bounded deletes keep each statement (and its undo log / replication event) small on large catalogs.
+            foreach ([$this->tableCatalog, $this->tableCatalogFacets] as $table) {
+                do {
+                    $deleted = $this->wpdb->query($this->wpdb->prepare(
+                        "DELETE FROM {$table} WHERE generation = %d LIMIT %d",
+                        $gen,
+                        self::PURGE_BATCH
+                    ));
+                } while ($deleted !== false && $deleted >= self::PURGE_BATCH);
+            }
             $purgedCount++;
         }
 
         return $purgedCount;
+    }
+
+    /**
+     * Number of catalog generations kept after a rebuild: the active one plus the previous one by
+     * default, so cursors issued just before the switch keep working (R66).
+     */
+    public function generationsToKeep(): int
+    {
+        /**
+         * Catalog generations kept after a rebuild (minimum 2: active + previous).
+         *
+         * @param int $keep
+         */
+        return max(2, (int)apply_filters('wpe_catalog_generations_to_keep', 2));
+    }
+
+    /**
+     * Refresh one product in the catalog after a save: project it into the active generation, or
+     * build the first generation when the catalog is still empty. A save never rebuilds the whole
+     * catalog (audit F12: at 20k products that is ~40 s and ~150k queries per save).
+     *
+     * @return string 'incremental' or 'full'
+     */
+    public function refreshProduct(int $productId): string
+    {
+        $active = $this->getActiveGeneration();
+        $hasRows = (bool)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT 1 FROM {$this->tableCatalog} WHERE generation = %d LIMIT 1",
+            $active
+        ));
+        if (!$hasRows) {
+            $this->buildNewGeneration();
+            return 'full';
+        }
+        $this->projectProduct($productId, $active);
+        return 'incremental';
+    }
+
+    /**
+     * Ask the background worker (`wp wpe rebuild --if-requested`, run from system cron) for a full
+     * rebuild instead of running one inside a web request.
+     */
+    public function requestRebuild(int $requestedBy = 0): void
+    {
+        $now = gmdate('Y-m-d H:i:s.u');
+        $this->wpdb->query($this->wpdb->prepare(
+            "INSERT INTO {$this->tableControl} (`key`, value, version, updated_at)
+             VALUES (%s, %s, 1, %s)
+             ON DUPLICATE KEY UPDATE value = VALUES(value), version = version + 1, updated_at = VALUES(updated_at)",
+            self::REBUILD_REQUEST_KEY,
+            (string)wp_json_encode(['requested_at' => $now, 'requested_by' => $requestedBy]),
+            $now
+        ));
+    }
+
+    /**
+     * Pending rebuild request, or null.
+     *
+     * @return array{requested_at?:string, requested_by?:int}|null
+     */
+    public function pendingRebuildRequest(): ?array
+    {
+        $val = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+            self::REBUILD_REQUEST_KEY
+        ));
+        $decoded = is_string($val) ? json_decode($val, true) : null;
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Whether a full rebuild is too large to run inside a web request (REST/admin screen).
+     */
+    public function shouldRebuildInBackground(): bool
+    {
+        $count = (int)$this->wpdb->get_var(
+            "SELECT COUNT(*) FROM {$this->tableProducts} WHERE deleted_at IS NULL AND status != 'trash'"
+        );
+        /**
+         * Product count above which a rebuild requested from the admin runs in the background worker.
+         *
+         * @param int $threshold
+         */
+        return $count > (int)apply_filters('wpe_catalog_sync_rebuild_max_products', 2000);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -449,8 +556,60 @@ class CatalogProjector
      */
     public function buildNewGeneration(?callable $progressCallback = null): int
     {
+        return $this->withRebuildLock(fn(): int => $this->runBuild($progressCallback));
+    }
+
+    /**
+     * Operator rebuild (admin button, Operations, WP-CLI): build a new generation, then purge the
+     * generations beyond generationsToKeep() and any left by an interrupted build, in the same lock
+     * (audit F12: without this, generations accumulated without bound).
+     */
+    public function rebuild(?callable $progressCallback = null): int
+    {
+        return $this->withRebuildLock(function () use ($progressCallback): int {
+            $keep = $this->generationsToKeep();
+            // Under the lock no build is running, so generations above the active one are leftovers of
+            // an interrupted build: drop them before they can take the "previous" slot.
+            $this->purgeOldGenerations($keep, true);
+            $newGen = $this->runBuild($progressCallback);
+            $this->purgeOldGenerations($keep);
+            return $newGen;
+        });
+    }
+
+    /**
+     * Run a build while holding the rebuild lock: two concurrent rebuilds would both compute the
+     * same next generation and write into it at once (audit F12). Clears a pending background
+     * request, since the build covers it.
+     *
+     * @param callable():int $build
+     */
+    private function withRebuildLock(callable $build): int
+    {
+        $lock = $this->wpdb->prefix . 'wpe_catalog_rebuild';
+        if ((int)$this->wpdb->get_var($this->wpdb->prepare('SELECT GET_LOCK(%s, 0)', $lock)) !== 1) {
+            throw new \RuntimeException('A catalog rebuild is already running. Try again when it has finished.', 409);
+        }
+
+        try {
+            $newGen = $build();
+            $this->wpdb->delete($this->tableControl, ['key' => self::REBUILD_REQUEST_KEY]);
+            return $newGen;
+        } finally {
+            $this->wpdb->query($this->wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock));
+        }
+    }
+
+    private function runBuild(?callable $progressCallback): int
+    {
         $currentGen = $this->getActiveGeneration();
-        $newGen = $currentGen + 1;
+        // Above every stored generation, so rows left by an interrupted rebuild are never reused,
+        // and cleared first in case a partial build used this number before.
+        $storedMax = (int)$this->wpdb->get_var("SELECT COALESCE(MAX(generation), 0) FROM {$this->tableCatalog}");
+        $newGen = max($currentGen, $storedMax) + 1;
+        foreach ([$this->tableCatalog, $this->tableCatalogFacets] as $table) {
+            $this->wpdb->query($this->wpdb->prepare("DELETE FROM {$table} WHERE generation = %d", $newGen));
+        }
         $rebuildStart = gmdate('Y-m-d H:i:s.u');
 
         // 1. Initial full scan of active products

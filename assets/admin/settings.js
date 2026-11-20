@@ -383,6 +383,8 @@
                     if (res && res.status === 'success') {
                         $('#wpe-current-gen').text('#' + res.generation);
                         setStatus('success', res.message || t('rebuilt', 'Catalog index rebuilt.'));
+                    } else if (res && res.status === 'queued') {
+                        setStatus('success', res.message || t('rebuildQueued', 'Catalog index rebuild queued.'));
                     } else {
                         setStatus('error', (res && res.message) || t('rebuildFailed', 'Rebuild failed.'));
                     }

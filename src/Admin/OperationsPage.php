@@ -320,7 +320,16 @@ class OperationsPage
             case 'rebuild':
             case 'rebuild_index':
                 $projector = new CatalogProjector($this->wpdb);
-                $generation = $projector->buildNewGeneration();
+                // Web actors hand a large rebuild to the background worker; WP-CLI (actor 0) runs it here (audit F12).
+                if ($actorId > 0 && $projector->shouldRebuildInBackground()) {
+                    $projector->requestRebuild($actorId);
+                    $result = [
+                        'action' => 'rebuild',
+                        'status' => 'queued',
+                    ];
+                    break;
+                }
+                $generation = $projector->rebuild();
                 $result = [
                     'action'        => 'rebuild',
                     'generation'    => $generation,

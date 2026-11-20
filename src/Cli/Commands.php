@@ -111,9 +111,36 @@ class Commands
 
     /**
      * Rebuild catalog and facet index generation.
+     *
+     * ## OPTIONS
+     *
+     * [--if-requested]
+     * : Only rebuild when the admin queued a rebuild (large catalogs). Meant for system cron, e.g.
+     *   `* * * * * wp --path=<root> wpe rebuild --if-requested`.
      */
     public static function rebuild(array $args, array $assocArgs): void
     {
+        if (!empty($assocArgs['if-requested'])) {
+            $projector = new \WPE\Application\Catalog\CatalogProjector();
+            $request = $projector->pendingRebuildRequest();
+            if ($request === null) {
+                \WP_CLI::log('No catalog rebuild requested.');
+                return;
+            }
+            \WP_CLI::log('Rebuild requested at ' . ($request['requested_at'] ?? '?') . '; rebuilding...');
+            try {
+                $gen = $projector->rebuild();
+            } catch (\RuntimeException $e) {
+                if ((int)$e->getCode() === 409) {
+                    \WP_CLI::log($e->getMessage());
+                    return;
+                }
+                throw $e;
+            }
+            \WP_CLI::success("Catalog index rebuild completed: Generation {$gen}");
+            return;
+        }
+
         $ops = OperationsPage::getInstance();
         $res = $ops->handleAction('rebuild', [], 0);
         \WP_CLI::success("Catalog index rebuild completed: Generation " . ($res['generation'] ?? ''));

@@ -1176,7 +1176,8 @@ class ProductEditorService
             }
 
             try {
-                (new CatalogProjector($this->wpdb))->buildNewGeneration();
+                // Only this product is re-projected; a save never rebuilds the whole catalog (audit F12).
+                (new CatalogProjector($this->wpdb))->refreshProduct($productId);
                 $projection['catalog_index'] = 'ok';
             } catch (\Throwable $cE) {
                 $projection['catalog_index'] = 'error';
@@ -1357,7 +1358,7 @@ class ProductEditorService
                         $rev
                     ));
                     LegacyMirror::getInstance()->mirrorAggregate($productId, $rev, $workerEpoch);
-                    (new CatalogProjector($this->wpdb))->buildNewGeneration();
+                    (new CatalogProjector($this->wpdb))->refreshProduct($productId);
                 } catch (\Throwable $e) {
                     // Best-effort re-projection on parent post update
                 }
