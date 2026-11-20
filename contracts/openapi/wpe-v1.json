@@ -101,7 +101,14 @@
             }
           }
         ],
-        "security": [],
+        "security": [
+          {
+            "wpCookie": []
+          },
+          {
+            "applicationPassword": []
+          }
+        ],
         "responses": {
           "400": {
             "description": "invalid_request",

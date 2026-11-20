@@ -40,7 +40,7 @@ Catalog ETag generation/context; resolver no-store, canonical checkout revalidat
 | wpe_export_products | administrator only ban đầu | Private CSV exports |
 | wpe_manage_operations | administrator only ban đầu | Health/migrations/cutover/rollback/cleanup |
 
-WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể cấp Shop Manager explicit, không mặc nhiên nâng quyền. Job download chỉ creator còn cap tương ứng hoặc operations admin. Public resolver/catalog chỉ published visibility. Worker recheck actor/cap at import commit, migration operator lost permission→blocked.
+WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể cấp Shop Manager explicit, không mặc nhiên nâng quyền. Job download chỉ creator còn cap tương ứng hoặc operations admin. Public resolver chỉ published visibility; `GET /catalog` yêu cầu `edit_products` (SEC-01). Worker recheck actor/cap at import commit, migration operator lost permission→blocked.
 
 ### 1.9 Error codes
 
@@ -68,7 +68,7 @@ WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể c�
 
 | Endpoint | Request/response cốt lõi | Permission/semantics |
 |---|---|---|
-| `GET /catalog` | category/tag/attribute IDs, min/max base_price, in_stock, sort, limit, cursor, count_mode → card list + next_cursor + index_generation/freshness + total nếu yêu cầu | Public published/catalog-visible only; cursor gắn query hash/sort/cohort/generation |
+| `GET /catalog` | category/tag/attribute IDs, min/max base_price, in_stock, sort, limit, cursor, count_mode → card list + next_cursor + index_generation/freshness + total nếu yêu cầu | Signed-in `edit_products` only (audit SEC-01, 2026-11-20: index chứa cả draft/private và nhận filter status/visibility/generation; không có client storefront); cursor gắn query hash/sort/cohort/generation |
 | `GET /products/{id}` | ProductView gồm content, options, default_selection, media, price_summary, revision | Public purchasable/visible policy; admin `context=edit` riêng permission |
 | `GET /products/{id}/variants` | cursor, limit → variant summaries/options/primary_media; stock availability, không public quantity chính xác mặc định | Publish visibility; không trả toàn bộ 10k variants trong một request |
 | `POST /products/{id}/resolve` | selection map, quantity, expected_revision?, request_sequence → none/partial/exact/ambiguous + allowed_values + exact variant | Public; canonical resolver, rate-limited; không tạo cart/hold stock |

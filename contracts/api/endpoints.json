@@ -75,7 +75,7 @@
       "method": "GET",
       "path": "/catalog",
       "contract": "category/tag/attribute IDs, min/max base_price, in_stock, sort, limit, cursor, count_mode → card list + next_cursor + index_generation/freshness + total nếu yêu cầu",
-      "permission": "Public published/catalog-visible only; cursor gắn query hash/sort/cohort/generation"
+      "permission": "Signed-in edit_products only (audit SEC-01); cursor gắn query hash/sort/cohort/generation"
     },
     {
       "method": "GET",

@@ -628,12 +628,24 @@ class CatalogQuery
         register_rest_route('wpe/v1', '/catalog', [
             'methods'             => 'GET',
             'callback'            => [self::class, 'handleRestRequest'],
-            'permission_callback' => '__return_true',
+            'permission_callback' => [self::class, 'canQueryCatalog'],
         ]);
     }
 
     /**
-     * Handles public GET /wpe/v1/catalog requests.
+     * Who may call GET /wpe/v1/catalog (audit SEC-01).
+     *
+     * The index holds every non-trashed product, drafts and private ones included, and the
+     * endpoint accepts status, visibility and generation filters. No storefront code calls it,
+     * so it is limited to users who can edit products instead of being public.
+     */
+    public static function canQueryCatalog(): bool
+    {
+        return current_user_can('edit_products');
+    }
+
+    /**
+     * Handles GET /wpe/v1/catalog requests (signed-in product editors only).
      */
     public static function handleRestRequest(\WP_REST_Request $request): \WP_REST_Response
     {
