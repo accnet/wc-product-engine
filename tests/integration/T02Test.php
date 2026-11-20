@@ -74,32 +74,53 @@ class T02Test
 
         $posts_count_before = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
 
-        // Execute activation hook
-        \WPE\Bootstrap\PluginBootstrap::onActivate();
+        $optFlags = \WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS;
+        $savedFlags = get_option($optFlags, null);
 
-        $posts_count_after = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
-        if ($posts_count_before !== $posts_count_after) {
-            echo "  [FAIL] Posts table was modified during activation ({$posts_count_before} -> {$posts_count_after})\n";
-            return false;
-        }
-        echo "  [OK] Posts table count intact ({$posts_count_after}).\n";
+        try {
+            // 1. Activation on this site: no product rows and no change to the flags an admin saved.
+            \WPE\Bootstrap\PluginBootstrap::onActivate();
 
-        // Verify default authority is legacy
-        $flags = $this->bootstrap->getFlags();
-        if (($flags['cohort_mode'] ?? '') !== 'legacy') {
-            echo "  [FAIL] Default cohort_mode must be 'legacy', found: " . ($flags['cohort_mode'] ?? 'null') . "\n";
-            return false;
-        }
-        echo "  [OK] Default cohort authority is legacy.\n";
-
-        // Verify all native flags are false by default
-        foreach (['query_enabled', 'media_enabled', 'resolver_enabled', 'native_writes_enabled'] as $f) {
-            if (!empty($flags[$f])) {
-                echo "  [FAIL] Flag {$f} must be false by default.\n";
+            $posts_count_after = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
+            if ($posts_count_before !== $posts_count_after) {
+                echo "  [FAIL] Posts table was modified during activation ({$posts_count_before} -> {$posts_count_after})\n";
                 return false;
             }
+            echo "  [OK] Posts table count intact ({$posts_count_after}).\n";
+
+            if (get_option($optFlags, null) !== $savedFlags) {
+                echo "  [FAIL] Activation changed the saved feature flags.\n";
+                return false;
+            }
+            echo "  [OK] Activation keeps the saved feature flags.\n";
+
+            // 2. Fresh install (no saved flags): activation writes the defaults, legacy with every native flag off.
+            //    The site's own flags are not the subject here; they are restored below.
+            delete_option($optFlags);
+            \WPE\Bootstrap\PluginBootstrap::onActivate();
+            $this->bootstrap->loadFlags();
+            $flags = $this->bootstrap->getFlags();
+            if (($flags['cohort_mode'] ?? '') !== 'legacy') {
+                echo "  [FAIL] Default cohort_mode must be 'legacy', found: " . ($flags['cohort_mode'] ?? 'null') . "\n";
+                return false;
+            }
+            echo "  [OK] Default cohort authority is legacy.\n";
+
+            foreach (['query_enabled', 'media_enabled', 'resolver_enabled', 'native_writes_enabled'] as $f) {
+                if (!empty($flags[$f])) {
+                    echo "  [FAIL] Flag {$f} must be false by default.\n";
+                    return false;
+                }
+            }
+            echo "  [OK] All native feature flags are disabled by default.\n";
+        } finally {
+            if ($savedFlags === null) {
+                delete_option($optFlags);
+            } else {
+                update_option($optFlags, $savedFlags);
+            }
+            $this->bootstrap->loadFlags();
         }
-        echo "  [OK] All native feature flags are disabled by default.\n";
 
         return true;
     }
@@ -299,6 +320,24 @@ class T02Test
                 break;
             }
         }
+        // A catalog without categorised products still gets the check: a fixture product in a fixture category.
+        $fixtureProduct = null;
+        $fixtureTerm = null;
+        if ($pid === null) {
+            $term = wp_insert_term('T02 cohort fixture ' . wp_generate_password(6, false), 'product_cat');
+            if (!is_wp_error($term)) {
+                $fixtureTerm = (int) $term['term_id'];
+                $product = new \WC_Product_Simple();
+                $product->set_name('T02 cohort fixture');
+                $product->set_status('draft');
+                $product->set_category_ids([$fixtureTerm]);
+                $fixtureProduct = (int) $product->save();
+                if ($fixtureProduct > 0) {
+                    $pid = $fixtureProduct;
+                    $tid = $fixtureTerm;
+                }
+            }
+        }
         $ok3 = $pid !== null;
         if ($ok3) {
             update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, ['products' => [$pid => 'legacy'], 'categories' => [$tid => 'full_native']]);
@@ -319,6 +358,12 @@ class T02Test
                 && $status['dependencies_satisfied'] === $this->bootstrap->areDependenciesSatisfied();
         }
         $restore();
+        if ($fixtureProduct) {
+            wp_delete_post($fixtureProduct, true);
+        }
+        if ($fixtureTerm) {
+            wp_delete_term($fixtureTerm, 'product_cat');
+        }
         echo $ok3 ? "  [OK] Cohort conflict resolves deterministically; status endpoint mirrors live config.\n" : "  [FAIL] Cohort conflict was not deterministic or status did not reflect config.\n";
 
         return [
