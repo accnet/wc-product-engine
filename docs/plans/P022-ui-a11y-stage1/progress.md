@@ -6,5 +6,5 @@ Status: in_progress
 - [x] P022.2 — Focus ring, contrast and reduced motion in admin styles (done)
 - [x] P022.3 — Responsive save bar, viewport fullscreen, sticky matrix columns and persistent error toasts (done)
 - [ ] P022.4 — Storefront selector: control contrast, legible unavailable state, theme-aware muted text (todo)
-- [ ] P022.5 — Shopify import page at 360 px and dropzone contrast (todo)
+- [x] P022.5 — Shopify import page at 360 px and dropzone contrast (done)
 - [ ] P022.6 — Full stage 1 check, notes and report (todo)

@@ -460,6 +460,28 @@ const sections = {
         check('Error toast is announced assertively, stays after 6 s and closes with its "Close" button', errAnnounced && errStays && closeName === 'Close' && errClosed, `announced=${errAnnounced} stays=${errStays} name=${closeName} closed=${errClosed}`);
         await page.unroute(() => true).catch(() => {});
     },
+
+    /** R-03, C-05 (import): Shopify import page without horizontal scroll; dropzone border contrast. */
+    async import(page) {
+        const overflow = [];
+        for (const [w, h] of [[360, 740], [768, 1000], [1024, 768], [1440, 900]]) {
+            await page.setViewportSize({ width: w, height: h });
+            await page.goto(`${SITE}/wp-admin/admin.php?page=wpe-shopify-import`, { waitUntil: 'load' });
+            await page.waitForSelector('#wpe-dropzone', { timeout: 15000 });
+            const m = await page.evaluate(() => {
+                const doc = document.documentElement;
+                const wrap = document.querySelector('.wpe-import-wrap').getBoundingClientRect();
+                return { scroll: doc.scrollWidth, client: doc.clientWidth, wrapRight: Math.round(wrap.right) };
+            });
+            if (m.scroll > m.client + 1 || m.wrapRight > m.client + 1) overflow.push(`${w}px ${JSON.stringify(m)}`);
+            await shot(page, `import-${w}.png`);
+        }
+        check('Shopify import page has no horizontal scroll at 360/768/1024/1440 px', overflow.length === 0, overflow.join(' | '));
+
+        await installContrast(page);
+        const dz = await page.evaluate(() => window.__wpeContrast(document.getElementById('wpe-dropzone'), 'border'));
+        check('Import dropzone border is at least 3:1', dz >= 3, String(dz));
+    },
 };
 
 // ---------------------------------------------------------------- runner

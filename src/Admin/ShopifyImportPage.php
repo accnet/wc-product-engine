@@ -86,7 +86,7 @@ class ShopifyImportPage
                             <h2><?php echo esc_html__('1. Select Shopify CSV File', 'wc-product-engine'); ?></h2>
 
                             <!-- Dropzone -->
-                            <div id="wpe-dropzone" style="border: 2px dashed #c3c4c7; border-radius: 6px; padding: 30px; text-align: center; background: #fafafa; cursor: pointer; transition: all 0.2s ease;">
+                            <div id="wpe-dropzone" style="border: 2px dashed #8c8f94; border-radius: 6px; padding: 30px; text-align: center; background: #fafafa; cursor: pointer; transition: all 0.2s ease;">
                                 <span class="dashicons dashicons-cloud-upload" style="font-size: 48px; width: 48px; height: 48px; color: #2271b1;"></span>
                                 <p style="font-size: 15px; margin: 10px 0 5px 0;">
                                     <strong><?php echo esc_html__('Drag & drop CSV file here or click to browse', 'wc-product-engine'); ?></strong>

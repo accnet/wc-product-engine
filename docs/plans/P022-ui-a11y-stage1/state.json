@@ -418,8 +418,36 @@
           "import"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/ShopifyImportPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "ec977f7e56360eee1ccf8635ce994eaca75f9344",
+          "content_digest": "e96b8ed99f61945a3ae26b2e21a30305975429674570a543396fe0d69350ebf9",
+          "output_sha256": "15226f38bb09f5a4cf09d7a28a49ec105a9122d4a5ac4343133955b8063ba99a",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163286413-8e8191b7.log",
+          "time": "2026-11-20T08:28:06.414Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "import"
+          ],
+          "exit_code": 0,
+          "commit": "ec977f7e56360eee1ccf8635ce994eaca75f9344",
+          "content_digest": "e96b8ed99f61945a3ae26b2e21a30305975429674570a543396fe0d69350ebf9",
+          "output_sha256": "afbc772f4b91b48ab43c815d5936cdb4b34d2dffb86d115665be7c57f8b6e7c2",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163296995-56a80b3f.log",
+          "time": "2026-11-20T08:28:16.996Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:22:58.810Z"
     },
     {
       "id": "P022.6",
