@@ -59,6 +59,7 @@ Không thêm dependency runtime ngoài WC/WP trong V1 nếu không có task cont
 | `WPE_TEST_DB_USER` | `wpe_test` | User test tối thiểu |
 | `WPE_TEST_DB_PASSWORD` | không có | Test secret cung cấp ngoài git |
 | `WPE_TEST_DB` | `test_wpe_bench` | DB `test_*` dùng tạm trên cùng DB server/credentials của site cho benchmark và DoD integration; `tests/performance/use-test-db.php` (qua `wp --require`) đặt `DB_NAME` trước `wp-config.php`, từ chối tên không có tiền tố `test_` |
+| `WPE_VERSION` | theo bản plugin | Hằng số do `wc-product-engine.php` định nghĩa, không phải cấu hình site; Shopify CSV import đưa vào fingerprint sản phẩm để bản plugin mới không dùng lại fingerprint cũ (P017 D03) |
 | `WPE_WORKER_BATCH_SIZE` | `100` | Adaptive bounded batch |
 | `WPE_WORKER_CONCURRENCY` | `1` | Tăng sau benchmark |
 | `WPE_IMPORT_MEMORY_MB` | `256` | Spill disk/group limit |

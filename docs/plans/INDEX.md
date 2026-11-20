@@ -17,3 +17,4 @@
 - P015 — Shopify CSV import performance (done)
 - P016 — P015 amendment: test DB variable and narrowed D03 (done)
 - P017 — Batched legacy meta writes and skip unchanged products on import (in_progress)
+- P018 — P017 amendment: register WPE_VERSION (done)

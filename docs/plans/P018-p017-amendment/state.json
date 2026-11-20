@@ -1,0 +1,66 @@
+{
+  "id": "P018",
+  "title": "P017 amendment: register WPE_VERSION",
+  "status": "done",
+  "content_hash": "9fa6d01542d7b8d285ac1cbe085717fb2c033347043137838776627945463498",
+  "tasks": [
+    {
+      "id": "P018.1",
+      "title": "Register WPE_VERSION in the configuration table",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P017-import-mirror-batch-skip/plan.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P018-p017-amendment/plan.md",
+        "docs/plans/P018-p017-amendment/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "866f584c127d2dec40cd67306980c56454cb7d7dbcd8e2eeb348397e4fa08fe6",
+          "output_sha256": "91f79d61f5127ff85f1764dbf136a1f6d53932419224786c3e8a7a448647f6dd",
+          "output_path": "docs/plans/P018-p017-amendment/command-1795157576111-05c4bbd8.log",
+          "time": "2026-11-20T06:52:56.111Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "de60f711f0964941f7005198f4153f9dd734312b",
+          "content_digest": "866f584c127d2dec40cd67306980c56454cb7d7dbcd8e2eeb348397e4fa08fe6",
+          "output_sha256": "462bf1a8539d502a5f1e5e9114ec64df3f8d15e6cbd6e65e041653bb00c95d84",
+          "output_path": "docs/plans/P018-p017-amendment/command-1795157576200-784870b1.log",
+          "time": "2026-11-20T06:52:56.200Z"
+        }
+      ],
+      "started_at": "2026-11-20T06:52:51.150Z"
+    }
+  ],
+  "approved_hash": "9fa6d01542d7b8d285ac1cbe085717fb2c033347043137838776627945463498",
+  "report_hash": "111253bae1e0065266eb74a90700cb934f0e7368f4122974a19db349bba48099"
+}
