@@ -38,5 +38,15 @@ spl_autoload_register(function (string $class): void {
     }
 });
 
+// WooCommerce feature compatibility (audit F15). Orders are only read through the WooCommerce CRUD API
+// (wc_get_order, WC_Order::get_items), never through wp_posts/postmeta, so High-Performance Order Storage
+// is supported. The cart and checkout blocks are not modified by this plugin.
+add_action('before_woocommerce_init', static function (): void {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', WPE_PLUGIN_FILE, true);
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', WPE_PLUGIN_FILE, true);
+    }
+});
+
 // Initialize plugin bootstrap
 \WPE\Bootstrap\PluginBootstrap::instance()->init();
