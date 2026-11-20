@@ -4,9 +4,18 @@ namespace WPE\Infrastructure\Database;
 
 class SchemaMigrator
 {
-    public const SCHEMA_VERSION = 1;
+    /**
+     * Version of contracts/database/schema.sql. Bump it whenever schema.sql changes: sites whose
+     * stored version is lower re-run migrate() on load (PluginBootstrap::ensureSchema()).
+     *
+     * 1: T05, 25 tables.
+     * 2: P011 media library tables wpe_asset_storage and wpe_upload_items (audit DB-01: sites
+     *    installed before P011 stayed at 1 and never got them).
+     */
+    public const SCHEMA_VERSION = 2;
     public const OPTION_SCHEMA_VERSION = 'wpe_schema_version';
     public const OPTION_MIGRATION_CHECKPOINT = 'wpe_migration_checkpoint';
+    /** @deprecated 1.1.1 The migration lock is a MySQL named lock now; kept for callers that reference it. */
     public const LOCK_TRANSIENT = 'wpe_migration_lock';
 
     private \wpdb $wpdb;
@@ -19,15 +28,18 @@ class SchemaMigrator
     }
 
     /**
-     * Acquire migration lock.
+     * Acquire the migration lock without waiting.
+     *
+     * A MySQL named lock (GET_LOCK) instead of a transient: taking it is atomic, so two requests
+     * cannot both pass a get-then-set check, and the server frees it if the PHP process dies
+     * (audit DB-01). The name includes the table prefix so sites sharing a database do not block
+     * each other.
+     *
+     * @param int $timeout Unused; kept for backward compatibility. The lock lives as long as the connection.
      */
     public function acquireLock(int $timeout = 60): bool
     {
-        if (get_transient(self::LOCK_TRANSIENT)) {
-            return false;
-        }
-        set_transient(self::LOCK_TRANSIENT, time() + $timeout, $timeout);
-        return true;
+        return (int)$this->wpdb->get_var($this->wpdb->prepare('SELECT GET_LOCK(%s, 0)', $this->lockName())) === 1;
     }
 
     /**
@@ -35,7 +47,13 @@ class SchemaMigrator
      */
     public function releaseLock(): void
     {
-        delete_transient(self::LOCK_TRANSIENT);
+        $this->wpdb->query($this->wpdb->prepare('SELECT RELEASE_LOCK(%s)', $this->lockName()));
+    }
+
+    private function lockName(): string
+    {
+        // MySQL lock names are limited to 64 characters.
+        return substr($this->wpdb->prefix . 'wpe_schema_migration', 0, 64);
     }
 
     /**
