@@ -38,14 +38,57 @@ class GalleryAdapter
     /** @var array<int, array<int, int>> */
     private static array $galleryAttachmentIdsCache = [];
 
+    /** @var array<int, array|null> Featured image row per product for this request (null = none). */
+    private static array $featuredRowCache = [];
+
+    /** Whether the main query's products had their featured rows loaded in one query. */
+    private static bool $featuredMainQueryPrimed = false;
+
     public static function invalidateStaticProductCache(?int $productId = null): void
     {
         if ($productId === null) {
             self::$featuredAttachmentCache = [];
             self::$galleryAttachmentIdsCache = [];
+            self::$featuredRowCache = [];
+            self::$featuredMainQueryPrimed = false;
             return;
         }
-        unset(self::$featuredAttachmentCache[$productId], self::$galleryAttachmentIdsCache[$productId]);
+        unset(self::$featuredAttachmentCache[$productId], self::$galleryAttachmentIdsCache[$productId], self::$featuredRowCache[$productId]);
+    }
+
+    /**
+     * Featured image row of a product. The first call of a request loads the rows of every product in
+     * the main query with one query and primes their attachment posts, so an archive page does not
+     * run one query per product card (audit F08).
+     */
+    private function featuredImageRow(int $productId): ?array
+    {
+        if (!array_key_exists($productId, self::$featuredRowCache)) {
+            $ids = [$productId];
+            if (!self::$featuredMainQueryPrimed) {
+                self::$featuredMainQueryPrimed = true;
+                global $wp_query;
+                if ($wp_query instanceof \WP_Query && is_array($wp_query->posts)) {
+                    foreach ($wp_query->posts as $post) {
+                        if ($post instanceof \WP_Post && $post->post_type === 'product' && !array_key_exists((int)$post->ID, self::$featuredRowCache)) {
+                            $ids[] = (int)$post->ID;
+                        }
+                    }
+                }
+            }
+            $rows = $this->mediaRepo->getFeaturedImages($ids);
+            $attachmentIds = [];
+            foreach (array_unique($ids) as $id) {
+                self::$featuredRowCache[$id] = $rows[$id] ?? null;
+                if (!empty($rows[$id]['attachment_id'])) {
+                    $attachmentIds[] = (int)$rows[$id]['attachment_id'];
+                }
+            }
+            if ($attachmentIds !== [] && function_exists('_prime_post_caches')) {
+                _prime_post_caches($attachmentIds, false, true);
+            }
+        }
+        return self::$featuredRowCache[$productId];
     }
 
     public function __construct(
@@ -359,7 +402,7 @@ class GalleryAdapter
             return $cached > 0 ? $cached : $imageId;
         }
 
-        $feat = $this->mediaRepo->getFeaturedImage($productId);
+        $feat = $this->featuredImageRow($productId);
         if ($feat && !empty($feat['id'])) {
             $this->bridge->primeAsset($feat);
             $attId = $this->bridge->getOrCreateAttachmentId((int)$feat['id']);

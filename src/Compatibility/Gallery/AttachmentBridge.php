@@ -236,8 +236,10 @@ class AttachmentBridge
             return null;
         }
 
+        // 0 records "not an engine asset" for this request, so ordinary media (theme and post images)
+        // is looked up once instead of on every url/metadata/srcset/downsize filter call (audit F08).
         if (isset($this->attachmentToAsset[$attachmentId])) {
-            return $this->attachmentToAsset[$attachmentId];
+            return $this->attachmentToAsset[$attachmentId] > 0 ? $this->attachmentToAsset[$attachmentId] : null;
         }
 
         // Check meta tag first
@@ -258,6 +260,7 @@ class AttachmentBridge
             return (int)$assetId;
         }
 
+        $this->attachmentToAsset[$attachmentId] = 0;
         return null;
     }
 

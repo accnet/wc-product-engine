@@ -285,6 +285,36 @@ class MediaRepository
         return $row ?: null;
     }
 
+    /**
+     * Featured image rows of several products in one query.
+     *
+     * @param int[] $productIds
+     * @return array<int, array> product ID => same row shape as getFeaturedImage(); products without one are absent.
+     */
+    public function getFeaturedImages(array $productIds): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $productIds), static fn(int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+        $rows = $this->wpdb->get_results(
+            "SELECT pm.product_id AS wpe_product_id, pm.alt_override, a.*
+             FROM {$this->tableProductMedia} pm
+             JOIN {$this->tableAssets} a ON a.id = pm.asset_id
+             WHERE pm.product_id IN (" . \WPE\Support\Sql::intList($ids) . ") AND pm.role = 'featured'
+             ORDER BY pm.product_id ASC, pm.position ASC",
+            ARRAY_A
+        ) ?: [];
+
+        $out = [];
+        foreach ($rows as $row) {
+            $pid = (int)$row['wpe_product_id'];
+            unset($row['wpe_product_id']);
+            $out[$pid] ??= $row;
+        }
+        return $out;
+    }
+
     /* -------------------------------------------------------------------------- */
     /* Variant Media                                                              */
     /* -------------------------------------------------------------------------- */

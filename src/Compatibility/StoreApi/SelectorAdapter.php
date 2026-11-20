@@ -59,6 +59,15 @@ class SelectorAdapter
     /** @var array<int, array|null> */
     private array $lastProductRow = [];
 
+    /** @var array<int, string> Engine product type per product ID for this request; '' = not managed. */
+    private array $managedTypes = [];
+
+    /** Whether the main query's products were loaded into $managedTypes in one query. */
+    private bool $mainQueryPrimed = false;
+
+    /** @var array<int, string> Lowest-price cache key per product for this request. */
+    private array $lowestKeyMemo = [];
+
     public function __construct(
         ?\wpdb $wpdb = null,
         ?OptionsRepository $optionsRepo = null,
@@ -141,12 +150,15 @@ class SelectorAdapter
             $this->configCache = [];
             $this->lowestPriceCache = [];
             $this->lastProductRow = [];
+            $this->managedTypes = [];
+            $this->mainQueryPrimed = false;
+            $this->lowestKeyMemo = [];
             $ver = (int)get_option('wpe_selector_cache_ver', 1);
             update_option('wpe_selector_cache_ver', $ver + 1, false);
             return;
         }
 
-        unset($this->lastProductRow[$productId]);
+        unset($this->lastProductRow[$productId], $this->managedTypes[$productId], $this->lowestKeyMemo[$productId]);
         foreach (array_keys($this->configCache) as $k) {
             if (str_starts_with($k, $productId . ':')) {
                 unset($this->configCache[$k]);
@@ -169,11 +181,65 @@ class SelectorAdapter
      */
     public function isProductManagedByWpe(int $productId): bool
     {
-        $count = (int)$this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(*) FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
-            $productId
-        ));
-        return $count > 0;
+        return $this->managedProductType($productId) !== '';
+    }
+
+    /**
+     * Load the engine type of several products in one query (archive pages, related products).
+     *
+     * @param int[] $productIds
+     */
+    public function primeManagedProducts(array $productIds): void
+    {
+        $missing = [];
+        foreach ($productIds as $id) {
+            $id = (int)$id;
+            if ($id > 0 && !array_key_exists($id, $this->managedTypes)) {
+                $missing[$id] = $id;
+            }
+        }
+        if ($missing === []) {
+            return;
+        }
+        foreach (array_chunk($missing, 500) as $chunk) {
+            foreach ($chunk as $id) {
+                $this->managedTypes[$id] = '';
+            }
+            $rows = $this->wpdb->get_results(
+                "SELECT id, type FROM {$this->tableProducts} WHERE id IN (" . \WPE\Support\Sql::intList($chunk) . ") AND deleted_at IS NULL",
+                ARRAY_A
+            ) ?: [];
+            foreach ($rows as $row) {
+                $this->managedTypes[(int)$row['id']] = (string)$row['type'];
+            }
+        }
+    }
+
+    /**
+     * Engine product type ('simple', 'variable', ...) or '' when the product is not managed.
+     * Memoized per request; the first lookup also primes every product of the main query (audit F08).
+     */
+    private function managedProductType(int $productId): string
+    {
+        if ($productId <= 0) {
+            return '';
+        }
+        if (!array_key_exists($productId, $this->managedTypes)) {
+            $ids = [$productId];
+            if (!$this->mainQueryPrimed) {
+                $this->mainQueryPrimed = true;
+                global $wp_query;
+                if ($wp_query instanceof \WP_Query && is_array($wp_query->posts)) {
+                    foreach ($wp_query->posts as $post) {
+                        if ($post instanceof \WP_Post && $post->post_type === 'product') {
+                            $ids[] = (int)$post->ID;
+                        }
+                    }
+                }
+            }
+            $this->primeManagedProducts($ids);
+        }
+        return $this->managedTypes[$productId] ?? '';
     }
 
     /**
@@ -322,14 +388,7 @@ class SelectorAdapter
      */
     public function isVariableProductManagedByWpe(int $productId): bool
     {
-        if ($productId <= 0) {
-            return false;
-        }
-        $count = (int)$this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(*) FROM {$this->tableProducts} WHERE id = %d AND type = 'variable' AND deleted_at IS NULL",
-            $productId
-        ));
-        return $count > 0;
+        return $this->managedProductType($productId) === 'variable';
     }
 
     /**
@@ -338,12 +397,11 @@ class SelectorAdapter
     public function filterVariablePriceHtml(string $priceHtml, mixed $product): string
     {
         $productId = is_numeric($product) ? (int)$product : ($product instanceof WC_Product ? (int)$product->get_id() : 0);
-        if ($productId <= 0 || !$this->isVariableProductManagedByWpe($productId)) {
+        // Cheap flag check first: with Single Price Display off no query runs per product card (audit F08).
+        if ($productId <= 0 || !$this->getProductPageFlags()['single_price_display']) {
             return $priceHtml;
         }
-
-        $flags = $this->getProductPageFlags();
-        if (!$flags['single_price_display']) {
+        if (!$this->isVariableProductManagedByWpe($productId)) {
             return $priceHtml;
         }
 
@@ -356,12 +414,11 @@ class SelectorAdapter
     public function filterProductGetPriceHtml(string $priceHtml, mixed $product): string
     {
         $productId = is_numeric($product) ? (int)$product : ($product instanceof WC_Product ? (int)$product->get_id() : 0);
-        if ($productId <= 0 || !$this->isVariableProductManagedByWpe($productId)) {
+        // Cheap flag check first: with Single Price Display off no query runs per product card (audit F08).
+        if ($productId <= 0 || !$this->getProductPageFlags()['single_price_display']) {
             return $priceHtml;
         }
-
-        $flags = $this->getProductPageFlags();
-        if (!$flags['single_price_display']) {
+        if (!$this->isVariableProductManagedByWpe($productId)) {
             return $priceHtml;
         }
 
@@ -1590,6 +1647,16 @@ class SelectorAdapter
      * Consolidates product, variant price/sale, and inventory state into a single SQL query.
      */
     private function getLowestPriceCacheKey(int $productId): string
+    {
+        // The fingerprint query is identical for every price filter that runs for the same product in
+        // one request (variable_price_html and get_price_html both fire per card), so compute it once.
+        if (isset($this->lowestKeyMemo[$productId])) {
+            return $this->lowestKeyMemo[$productId];
+        }
+        return $this->lowestKeyMemo[$productId] = $this->computeLowestPriceCacheKey($productId);
+    }
+
+    private function computeLowestPriceCacheKey(int $productId): string
     {
         $globalVer = (int)get_option('wpe_selector_cache_ver', 1);
         $flagsJson = wp_json_encode($this->getProductPageFlags());
