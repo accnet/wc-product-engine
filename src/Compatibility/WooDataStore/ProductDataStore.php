@@ -19,6 +19,7 @@ use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Compatibility\WordPress\PostIdAllocator;
 use WPE\Compatibility\WooDataStore\ProductLifecycle;
+use WPE\Application\Variant\EffectivePriceResolver;
 
 /**
  * WooCommerce Product Data Store adapter for native engine storage.
@@ -89,6 +90,8 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             'sku'                => $product->get_sku('edit') ?: null,
             'regular_price'      => $product->get_regular_price('edit') !== '' ? $product->get_regular_price('edit') : null,
             'sale_price'         => $product->get_sale_price('edit') !== '' ? $product->get_sale_price('edit') : null,
+            'sale_from'          => self::utcDateString($product->get_date_on_sale_from('edit')),
+            'sale_to'            => self::utcDateString($product->get_date_on_sale_to('edit')),
             'virtual'            => $product->get_virtual('edit'),
             'downloadable'       => $product->get_downloadable('edit'),
             'tax_status'         => $product->get_tax_status('edit') ?: 'taxable',
@@ -135,6 +138,78 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     }
 
     /**
+     * WooCommerce price props for a stored product or variation row (audit LOG-09).
+     *
+     * `price` is the effective price from EffectivePriceResolver: the sale price only inside its
+     * sale window and only when it is not above the regular price, otherwise the regular price.
+     * The sale window is exposed as date_on_sale_from/to so WC_Product::is_on_sale() agrees.
+     * Previously `price` was the sale price whenever one was stored, and the window was not read.
+     *
+     * @return array<string, mixed>
+     */
+    protected static function priceProps(array $row): array
+    {
+        $resolved = EffectivePriceResolver::resolve($row);
+        return [
+            'regular_price'     => $row['regular_price'] !== null ? (string)$row['regular_price'] : '',
+            'sale_price'        => $row['sale_price'] !== null ? (string)$row['sale_price'] : '',
+            'price'             => $resolved['active_price'] ?? '',
+            'date_on_sale_from' => self::utcTimestamp($row['sale_from'] ?? null),
+            'date_on_sale_to'   => self::utcTimestamp($row['sale_to'] ?? null),
+        ];
+    }
+
+    /**
+     * Lowest effective price of a variable product's published variations, '' when none is priced.
+     *
+     * Same rules as EffectivePriceResolver::resolve() in one aggregate query, so loading a parent
+     * with thousands of variations does not hydrate them. Stored variation columns already hold
+     * materialized shared prices.
+     */
+    protected function lowestVariationPrice(int $productId): string
+    {
+        $now = gmdate('Y-m-d H:i:s.u');
+        $min = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT MIN(CASE
+                        WHEN sale_price IS NOT NULL
+                         AND (regular_price IS NULL OR sale_price <= regular_price)
+                         AND (sale_from IS NULL OR sale_from <= %s)
+                         AND (sale_to IS NULL OR sale_to >= %s)
+                        THEN sale_price
+                        ELSE regular_price
+                    END)
+             FROM {$this->tableVariants}
+             WHERE product_id = %d AND status = 'publish' AND deleted_at IS NULL",
+            $now,
+            $now,
+            $productId
+        ));
+        return $min === null ? '' : (string)$min;
+    }
+
+    /** UTC timestamp for a stored DATETIME column, or null. */
+    protected static function utcTimestamp($value): ?int
+    {
+        if ($value === null || $value === '' || str_starts_with((string)$value, '0000-00-00')) {
+            return null;
+        }
+        $ts = strtotime((string)$value . ' UTC');
+        return $ts === false ? null : $ts;
+    }
+
+    /** Stored DATETIME (UTC) for a WooCommerce date prop, or null. */
+    protected static function utcDateString($date): ?string
+    {
+        if ($date instanceof \DateTimeInterface) {
+            return gmdate('Y-m-d H:i:s', $date->getTimestamp());
+        }
+        if (is_int($date)) {
+            return gmdate('Y-m-d H:i:s', $date);
+        }
+        return null;
+    }
+
+    /**
      * Read product data from native storage without fallback to postmeta (R40).
      */
     public function read(&$product): void
@@ -172,15 +247,19 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             }
         }
 
-        $product->set_props([
+        $priceProps = self::priceProps($data);
+        if ($product instanceof WC_Product_Variable) {
+            // A variable parent has no price of its own; WooCommerce exposes the lowest active
+            // price of its published variations, as _price does under the CPT store (audit LOG-09).
+            $priceProps['price'] = $this->lowestVariationPrice($productId);
+        }
+
+        $product->set_props($priceProps + [
             'name'               => $data['title'],
             'slug'               => $data['slug'],
             'status'             => $data['status'],
             'catalog_visibility' => $data['catalog_visibility'] ?? 'visible',
             'sku'                => $data['sku'] ?? '',
-            'regular_price'      => $data['regular_price'] !== null ? (string)$data['regular_price'] : '',
-            'sale_price'         => $data['sale_price'] !== null ? (string)$data['sale_price'] : '',
-            'price'              => ($data['sale_price'] !== null && $data['sale_price'] !== '') ? (string)$data['sale_price'] : ($data['regular_price'] !== null ? (string)$data['regular_price'] : ''),
             'virtual'            => !empty($data['virtual']),
             'downloadable'       => !empty($data['downloadable']),
             'tax_status'         => $data['tax_status'] ?? 'taxable',
@@ -239,6 +318,8 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         if (array_key_exists('sku', $changes)) $payload['sku'] = $changes['sku'] ?: null;
         if (array_key_exists('regular_price', $changes)) $payload['regular_price'] = $changes['regular_price'] !== '' ? $changes['regular_price'] : null;
         if (array_key_exists('sale_price', $changes)) $payload['sale_price'] = $changes['sale_price'] !== '' ? $changes['sale_price'] : null;
+        if (array_key_exists('date_on_sale_from', $changes)) $payload['sale_from'] = self::utcDateString($changes['date_on_sale_from']);
+        if (array_key_exists('date_on_sale_to', $changes)) $payload['sale_to'] = self::utcDateString($changes['date_on_sale_to']);
         if (isset($changes['virtual'])) $payload['virtual'] = $changes['virtual'];
         if (isset($changes['downloadable'])) $payload['downloadable'] = $changes['downloadable'];
         if (isset($changes['tax_status'])) $payload['tax_status'] = $changes['tax_status'];
@@ -1009,11 +1090,11 @@ class ProductVariationDataStore extends ProductDataStore
         $extraProps = ['attributes' => $attrs];
 
         $sql = "INSERT INTO {$this->tableVariants}
-                (id, product_id, status, sku, combination_key, active_combination_key, regular_price, sale_price, tax_class, virtual, downloadable, weight, length, width, height, position, description, stock_owner_id, extra_props, version, created_at, updated_at, deleted_at)
-                VALUES (%d, %d, %s, %s, UNHEX(%s), UNHEX(%s), %s, %s, %s, %d, %d, %s, %s, %s, %s, %d, %s, %d, %s, 1, %s, %s, NULL)
+                (id, product_id, status, sku, combination_key, active_combination_key, regular_price, sale_price, sale_from, sale_to, tax_class, virtual, downloadable, weight, length, width, height, position, description, stock_owner_id, extra_props, version, created_at, updated_at, deleted_at)
+                VALUES (%d, %d, %s, %s, UNHEX(%s), UNHEX(%s), %s, %s, NULLIF(%s, ''), NULLIF(%s, ''), %s, %d, %d, %s, %s, %s, %s, %d, %s, %d, %s, 1, %s, %s, NULL)
                 ON DUPLICATE KEY UPDATE
                 status = VALUES(status), sku = VALUES(sku), combination_key = VALUES(combination_key), active_combination_key = VALUES(active_combination_key),
-                regular_price = VALUES(regular_price), sale_price = VALUES(sale_price), tax_class = VALUES(tax_class),
+                regular_price = VALUES(regular_price), sale_price = VALUES(sale_price), sale_from = VALUES(sale_from), sale_to = VALUES(sale_to), tax_class = VALUES(tax_class),
                 virtual = VALUES(virtual), downloadable = VALUES(downloadable), weight = VALUES(weight), length = VALUES(length),
                 width = VALUES(width), height = VALUES(height), description = VALUES(description), position = VALUES(position),
                 extra_props = VALUES(extra_props), version = version + 1, updated_at = VALUES(updated_at), deleted_at = NULL";
@@ -1031,6 +1112,8 @@ class ProductVariationDataStore extends ProductDataStore
             $combHex,
             $regularPrice,
             $salePrice,
+            (string)self::utcDateString($product->get_date_on_sale_from('edit')),
+            (string)self::utcDateString($product->get_date_on_sale_to('edit')),
             $product->get_tax_class('edit') ?: null,
             $product->get_virtual('edit') ? 1 : 0,
             $product->get_downloadable('edit') ? 1 : 0,
@@ -1092,13 +1175,10 @@ class ProductVariationDataStore extends ProductDataStore
 
         $extra = json_decode($row['extra_props'] ?? '{}', true) ?: [];
 
-        $product->set_props([
+        $product->set_props(self::priceProps($row) + [
             'parent_id'         => (int)$row['product_id'],
             'status'            => $row['status'],
             'sku'               => $row['sku'] ?? '',
-            'regular_price'     => $row['regular_price'] !== null ? (string)$row['regular_price'] : '',
-            'sale_price'        => $row['sale_price'] !== null ? (string)$row['sale_price'] : '',
-            'price'             => ($row['sale_price'] !== null && $row['sale_price'] !== '') ? (string)$row['sale_price'] : ($row['regular_price'] !== null ? (string)$row['regular_price'] : ''),
             'virtual'           => !empty($row['virtual']),
             'downloadable'      => !empty($row['downloadable']),
             'tax_class'         => $row['tax_class'] ?? '',
@@ -1148,6 +1228,8 @@ class ProductVariationDataStore extends ProductDataStore
         }
         if (array_key_exists('regular_price', $changes)) $payload['regular_price'] = $changes['regular_price'] !== '' ? $changes['regular_price'] : null;
         if (array_key_exists('sale_price', $changes)) $payload['sale_price'] = $changes['sale_price'] !== '' ? $changes['sale_price'] : null;
+        if (array_key_exists('date_on_sale_from', $changes)) $payload['sale_from'] = self::utcDateString($changes['date_on_sale_from']);
+        if (array_key_exists('date_on_sale_to', $changes)) $payload['sale_to'] = self::utcDateString($changes['date_on_sale_to']);
         if (isset($changes['virtual'])) $payload['virtual'] = $changes['virtual'] ? 1 : 0;
         if (isset($changes['downloadable'])) $payload['downloadable'] = $changes['downloadable'] ? 1 : 0;
         if (isset($changes['tax_class'])) $payload['tax_class'] = $changes['tax_class'];

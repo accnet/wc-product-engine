@@ -337,8 +337,9 @@ class ProductRepository
                     'sku'                => $sku,
                     'regular_price'      => $regularPrice,
                     'sale_price'         => $salePrice,
-                    'sale_from'          => $data['sale_from'] ?? $current['sale_from'],
-                    'sale_to'            => $data['sale_to'] ?? $current['sale_to'],
+                    // array_key_exists so that null clears a sale window (audit LOG-09); absent keeps it.
+                    'sale_from'          => array_key_exists('sale_from', $data) ? $data['sale_from'] : $current['sale_from'],
+                    'sale_to'            => array_key_exists('sale_to', $data) ? $data['sale_to'] : $current['sale_to'],
                     'virtual'            => isset($data['virtual']) ? (!empty($data['virtual']) ? 1 : 0) : $current['virtual'],
                     'downloadable'       => isset($data['downloadable']) ? (!empty($data['downloadable']) ? 1 : 0) : $current['downloadable'],
                     'tax_status'         => $data['tax_status'] ?? $current['tax_status'],
