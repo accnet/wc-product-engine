@@ -1,52 +1,38 @@
 {
   "schema_version": 1,
-  "locked_at": "2026-10-12T22:20:00+07:00",
+  "locked_at": "2026-11-20T15:00:00+07:00",
   "environment": {
     "site_url": "http://site1.localhost",
     "site_path": "/var/www/site1.localhost",
     "wordpress": {
-      "version": "7.1.3",
+      "version": "7.1.5",
       "files": {
-        "wp-includes/version.php": "7513dacf90ade66347561ffc2e79d27e74b6a3f05d869bd455144ed7cd378a04",
+        "wp-includes/version.php": "b1e7dd803e3a7c0877c231ea56d7a3ec14dda20eb39c9c5b64fe3573a6220038",
         "wp-settings.php": "2e3185ee44bcdd9d9c4bef8ce4891827711dec2b5d5d4c08c951738ccef51f8d"
       }
     },
     "woocommerce": {
-      "version": "11.2.1",
+      "version": "11.3.0",
       "entry_file": "wp-content/plugins/woocommerce/woocommerce.php",
-      "sha256": "22018a852fed9076bdb612737eb767d8fd6a6e1d0021c55f1fd7f8d0276bbbf5"
+      "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803"
     },
     "php": {
-      "version": "8.3.31",
+      "version": "8.3.36",
       "sapi": "cli",
       "architecture": "x86_64"
     },
     "database": {
       "server": "MariaDB",
-      "version": "11.8.6-MariaDB-ubu2204",
+      "version": "11.8.9-MariaDB",
       "engine": "InnoDB",
       "charset": "utf8mb4"
     },
     "theme": {
-      "name": "calora",
-      "version": "1.0.0",
+      "name": "storefront",
+      "version": "4.6.2",
       "status": "active"
     },
     "active_plugins": [
-      {
-        "name": "calora-bundles",
-        "file": "calora-bundles/calora-bundles.php",
-        "version": "1.0.0",
-        "sha256": "f07a6c215c3b90beb6741aa47b452726ffaaceab58bfe5aca27d86a48bc83f53",
-        "category": "CRUD-safe"
-      },
-      {
-        "name": "calora-companion",
-        "file": "calora-companion/calora-companion.php",
-        "version": "1.1.0",
-        "sha256": "3633573bd8920d5613101dd6e2a737370fb8d4d9a9f2aa1acf50c6060891e288",
-        "category": "WP API bridge"
-      },
       {
         "name": "classic-editor",
         "file": "classic-editor/classic-editor.php",
@@ -62,6 +48,13 @@
         "category": "WP API bridge"
       },
       {
+        "name": "contact-form-7",
+        "file": "contact-form-7/wp-contact-form-7.php",
+        "version": "6.2.5",
+        "sha256": "0be0438fadcb8532b991ea85961a1848473eb60fd711c1ad68132d71dc76407c",
+        "category": "WP API bridge"
+      },
+      {
         "name": "disable-xml-rpc",
         "file": "disable-xml-rpc/disable-xml-rpc.php",
         "version": "1.0.1",
@@ -72,33 +65,25 @@
         "name": "wc-product-engine",
         "file": "wc-product-engine/wc-product-engine.php",
         "version": "1.1.0",
-        "sha256": "d8527c326d33a414513d20f67f1027d7c6c26228aa4419cce2f3009069645a9f",
+        "sha256": "37501ec646fe9e8d73b9942ee9de989fbbe7d5d0d56e99468e79a237d9053731",
         "category": "Engine under test (legacy mode)"
       },
       {
         "name": "woocommerce",
         "file": "woocommerce/woocommerce.php",
-        "version": "11.2.1",
-        "sha256": "22018a852fed9076bdb612737eb767d8fd6a6e1d0021c55f1fd7f8d0276bbbf5",
+        "version": "11.3.0",
+        "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803",
         "category": "Core Host"
       }
     ],
     "inactive_plugins": [
       {
         "name": "cards-shield",
-        "version": "2.0"
+        "version": "3.0.8"
       },
       {
-        "name": "contact-form-7",
-        "version": "6.2.2"
-      },
-      {
-        "name": "duplicator",
-        "version": "1.5.16"
-      },
-      {
-        "name": "easy-wp-smtp",
-        "version": "2.14.0"
+        "name": "wp-mail-smtp",
+        "version": "4.10.4"
       }
     ]
   }

@@ -125,8 +125,8 @@
       "classification": "CRUD-safe",
       "status": "supported",
       "owner": "team-catalog",
-      "notes": "Bundles remain in legacy mode without direct SQL writes",
-      "active": true
+      "notes": "Bundles remain in legacy mode without direct SQL writes (not installed on host at the 2026-11-20 re-pin)",
+      "active": false
     },
     {
       "slug": "calora-companion",
@@ -134,8 +134,8 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-storefront",
-      "notes": "Theme helper using standard WordPress APIs",
-      "active": true
+      "notes": "Theme helper using standard WordPress APIs (not installed on host at the 2026-11-20 re-pin)",
+      "active": false
     },
     {
       "slug": "classic-editor",
@@ -157,12 +157,12 @@
     },
     {
       "slug": "contact-form-7",
-      "version": "6.2.2",
+      "version": "6.2.5",
       "classification": "WP API bridge",
       "status": "unknown",
       "owner": "team-integration",
-      "notes": "Isolated forms post type (version changed from 6.1.6 to 6.2.2; not re-reviewed)",
-      "active": false
+      "notes": "Isolated forms post type. Version changed from 6.2.2 to 6.2.5 and now active; code review of 6.2.5 (2026-11-20): writes only its own wpcf7_contact_form posts and meta through WordPress APIs, no direct SQL writes, no product or global query hooks. Not in the AuthoritySeal allowlist, so sealing is refused while it is active (OD-17).",
+      "active": true
     },
     {
       "slug": "disable-xml-rpc",
@@ -179,7 +179,7 @@
       "classification": "SQL-reader",
       "status": "supported",
       "owner": "team-operations",
-      "notes": "Backup reader only, does not modify product tables during catalog operations (currently inactive on host)",
+      "notes": "Backup reader only, does not modify product tables during catalog operations (not installed on host at the 2026-11-20 re-pin)",
       "active": false
     },
     {
@@ -188,16 +188,25 @@
       "classification": "WP API bridge",
       "status": "supported",
       "owner": "team-integration",
-      "notes": "Mail routing only (currently inactive on host)",
+      "notes": "Mail routing only (not installed on host at the 2026-11-20 re-pin)",
       "active": false
     },
     {
       "slug": "cards-shield",
-      "version": "2.0",
+      "version": "3.0.8",
       "classification": "WP API bridge",
-      "status": "supported",
+      "status": "unknown",
       "owner": "team-checkout",
-      "notes": "Payment protection gateway bridge (currently inactive on host)",
+      "notes": "Payment protection gateway bridge (version changed from 2.0 to 3.0.8; not re-reviewed)",
+      "active": false
+    },
+    {
+      "slug": "wp-mail-smtp",
+      "version": "4.10.4",
+      "classification": "WP API bridge",
+      "status": "unknown",
+      "owner": "team-integration",
+      "notes": "Mail routing plugin, installed after the 2026-10-12 baseline (inactive on host; not reviewed)",
       "active": false
     },
     {
@@ -209,5 +218,5 @@
       "notes": "Direct SQL writer without adapter is a strict blocker for native cohort rollout (AC-T01-03, R02)"
     }
   ],
-  "re_pinned_at": "2026-10-12T22:20:00+07:00"
+  "re_pinned_at": "2026-11-20T15:00:00+07:00"
 }

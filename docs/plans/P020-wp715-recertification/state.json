@@ -275,8 +275,36 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "c11a85b6a49c5955c7193e879eba22708c3faaa3",
+          "content_digest": "8f24d407cab9fd092542329d94c2941ae89d40299b206b23ada29b61adf03277",
+          "output_sha256": "1a71c6983d3917224121d4327bd2e2c1f6df17c62fcb3e47477014bd0823cd5e",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795161171801-a42db950.log",
+          "time": "2026-11-20T07:52:51.802Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "c11a85b6a49c5955c7193e879eba22708c3faaa3",
+          "content_digest": "8f24d407cab9fd092542329d94c2941ae89d40299b206b23ada29b61adf03277",
+          "output_sha256": "75d87e401e3f7ee0ede7eb433ead11e200924821879d436c1709f481d4b550ee",
+          "output_path": "docs/plans/P020-wp715-recertification/command-1795161171906-919376d7.log",
+          "time": "2026-11-20T07:52:51.907Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:31:49.748Z"
     },
     {
       "id": "P020.4",

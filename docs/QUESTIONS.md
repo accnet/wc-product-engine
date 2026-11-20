@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Một câu hỏi mở: OD-16 (mục 4). Các câu hỏi OD-12, OD-13, OD-14 và OD-18 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Hai câu hỏi mở: OD-16 và OD-17 (mục 4). Các câu hỏi OD-12, OD-13, OD-14 và OD-18 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -42,3 +42,13 @@ Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-sco
 - Default đã thử: không đổi flag của site (đó là cấu hình của người dùng), không nới test. Block P013.4, chuyển phần việc sang amendment plan P014 với DoD dùng `T15Test` (hooks/lifecycle, pass ở baseline) thay `T02Test`.
 - Blocker và impact: P013 không close được (P013.4 blocked, P013.5 phụ thuộc). Không ảnh hưởng runtime.
 - Proposed resolution: nếu muốn T02 làm bằng chứng, chạy `node scripts/test-runtime.mjs T02` trên bản site có flag mặc định, hoặc xác nhận chấp nhận P014 thay P013.4/P013.5.
+- Cập nhật 2026-11-20: P020.2 sửa `T02Test` để không phụ thuộc flag và category của site (R03 kiểm tra activation giữ flag đã lưu và cài mới ghi default, rồi khôi phục; AC-T02-03 tạo fixture khi catalog không có product có category). Còn lại chỉ là xác nhận chấp nhận P014 thay P013.4/P013.5.
+
+### OD-17 — contact-form-7 6.2.5 đang active nhưng không có trong allowlist seal
+
+- Status: open (default đã áp dụng).
+- Doc section: 01 §8, `contracts/compatibility/matrix.json`; `src/Application/Rollout/AuthoritySeal.php` (allowlist plugin được certify); `docs/plans/P020-wp715-recertification/plan.md` D02.
+- Context: contact-form-7 được bật trên site1.localhost (trước là 6.2.2, inactive). `AuthoritySeal::sealAuthority()` từ chối seal khi có plugin active ngoài allowlist, nên `T45Test` fail đúng thiết kế (`Uncertified plugins detected: contact-form-7/wp-contact-form-7.php`), kéo theo T46/T49. Review code 6.2.5 (20/11/2026): chỉ ghi post/meta `wpcf7_contact_form` của chính nó qua WordPress API, không SQL ghi trực tiếp, không hook vào product hay query toàn cục.
+- Default đã thử: không thêm vào allowlist (đó là quyết định bảo mật), matrix ghi status `unknown`, không nới test.
+- Blocker và impact: không seal được authority khi plugin này active; không ảnh hưởng site đang chạy legacy.
+- Proposed resolution: (A) certify contact-form-7 6.2.5 (thêm vào allowlist + matrix `supported`, plan riêng); (B) tắt plugin trên site; (C) giữ nguyên, chấp nhận T45/T46/T49 fail.

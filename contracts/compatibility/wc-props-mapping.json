@@ -1,8 +1,8 @@
 {
   "status": "sealed",
   "sealed_at": "2026-10-12T15:00:00+07:00",
-  "source_wp": "7.1.3",
-  "source_wc": "11.2.1",
+  "source_wp": "7.1.5",
+  "source_wc": "11.3.0",
   "properties_count": 55,
   "props_mapping": {
     "id": "products.id / variants.id + real WP shells",
@@ -124,9 +124,9 @@
     "update_review_count"
   ],
   "unsupported_custom_props_policy": "Direct postmeta writes outside declared props trigger blocker cohort native",
-  "resealed_at": "2026-10-12T22:20:00+07:00",
+  "resealed_at": "2026-11-20T15:00:00+07:00",
   "verification": {
-    "method": "Compared get_data() keys of WC_Product_Simple/WC_Product_Variation and get_class_methods(WC_Product_Data_Store_CPT) on the live host",
-    "result": "All 56 mapped properties present; 39/39 data store methods identical to the previous baseline; meta_data remains handled by metadata bridge, not props_mapping"
+    "method": "Compared get_data() keys of WC_Product_Simple/WC_Product_Variable/WC_Product_Variation and get_class_methods(WC_Product_Data_Store_CPT) on the live host (WooCommerce 11.3.0)",
+    "result": "All 56 mapped properties present; 3 props added in WooCommerce 11.3.0 recorded in excluded_props (legacy_only_blocks_native, P021); 39/39 data store methods identical to the previous baseline; meta_data remains handled by metadata bridge, not props_mapping"
   }
 }
