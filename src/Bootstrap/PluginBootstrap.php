@@ -549,7 +549,22 @@ class PluginBootstrap
                 return;
             }
             if ($val !== null) {
-                $boolVal = filter_var($val, FILTER_VALIDATE_BOOLEAN);
+                // Same rules as the Settings screen: only registered boolean flags are writable here.
+                // Authority state (cohort_mode) changes only through the governed rollout commands (audit F14).
+                if (in_array($flag, \WPE\Admin\SettingsRegistry::readOnlyKeys(), true)) {
+                    \WP_CLI::error("Flag {$flag} is authority state and cannot be set with 'wp wpe flag'. Use the rollout commands.");
+                }
+                if (!in_array($flag, \WPE\Admin\SettingsRegistry::flagKeys(), true)) {
+                    \WP_CLI::error(sprintf(
+                        "Unknown flag '%s'. Writable flags: %s",
+                        $flag,
+                        implode(', ', \WPE\Admin\SettingsRegistry::flagKeys())
+                    ));
+                }
+                $boolVal = filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($boolVal === null) {
+                    \WP_CLI::error("Value '{$val}' is not a boolean. Use true/false, 1/0, yes/no or on/off.");
+                }
                 $this->setFlag($flag, $boolVal);
                 \WP_CLI::success("Flag {$flag} updated to " . ($boolVal ? 'true' : 'false'));
             } else {
