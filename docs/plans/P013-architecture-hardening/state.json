@@ -471,7 +471,7 @@
           "--all"
         ]
       ],
-      "status": "blocked",
+      "status": "done",
       "runs": [
         {
           "argv": [
@@ -484,12 +484,12 @@
             "eval-file",
             "tests/integration/T02Test.php"
           ],
-          "exit_code": 1,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
-          "output_sha256": "bc9cb427e102f071b496a72a058785c2b2b94cf2b2ebd2c13cdf3b19ac759726",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127596574-430f4a63.log",
-          "time": "2026-11-19T22:33:16.574Z"
+          "exit_code": 0,
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
+          "output_sha256": "adcdf576704c2dc38a745082bf69b2324e157bca22afaa810a61c640dfbcae93",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165731820-f115bf2a.log",
+          "time": "2026-11-20T09:08:51.820Z"
         },
         {
           "argv": [
@@ -503,11 +503,11 @@
             "tests/integration/T26Test.php"
           ],
           "exit_code": 0,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
           "output_sha256": "7c848c4cd726aa79e7d351305a14327d4ef50d0812c3d69c7a3ad040500eb3ee",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127597979-12fccd57.log",
-          "time": "2026-11-19T22:33:17.980Z"
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165733208-cc25a043.log",
+          "time": "2026-11-20T09:08:53.208Z"
         },
         {
           "argv": [
@@ -521,11 +521,11 @@
             "tests/integration/T41Test.php"
           ],
           "exit_code": 0,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
           "output_sha256": "611fff3353ba4a03c94b4929743e32f41269d8d3cabe94a78cc265375346347b",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127600051-ac91b9c3.log",
-          "time": "2026-11-19T22:33:20.051Z"
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165734708-418d0722.log",
+          "time": "2026-11-20T09:08:54.708Z"
         },
         {
           "argv": [
@@ -539,11 +539,11 @@
             "tests/integration/SettingsApiTest.php"
           ],
           "exit_code": 0,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
           "output_sha256": "194d44edbf229a68fbcda27820a6ca9e67c1101c33cd42f022f38e131073a6e6",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127601416-9e312309.log",
-          "time": "2026-11-19T22:33:21.416Z"
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165736039-5855d5a7.log",
+          "time": "2026-11-20T09:08:56.040Z"
         },
         {
           "argv": [
@@ -557,11 +557,11 @@
             "tests/integration/ProductPageSettingsTest.php"
           ],
           "exit_code": 0,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
           "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127603421-e99f4613.log",
-          "time": "2026-11-19T22:33:23.422Z"
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165738101-d82128b9.log",
+          "time": "2026-11-20T09:08:58.101Z"
         },
         {
           "argv": [
@@ -570,14 +570,14 @@
             "--all"
           ],
           "exit_code": 0,
-          "commit": "1a1cf69a024fa699ba3f61c4529b6fcf17392dbd",
-          "content_digest": "5fbbe671da465d525ef9892114a8943264783d8a30bcfa95dda9f4e7aa90bc87",
-          "output_sha256": "b9e2d75fd22c165ec60d40c2fedfcdda47342b9a2a6837f1fa5f4343653ff3d9",
-          "output_path": "docs/plans/P013-architecture-hardening/command-1795127603524-260cc191.log",
-          "time": "2026-11-19T22:33:23.525Z"
+          "commit": "02891cd394ff02f443dd230f34c62760f643d13f",
+          "content_digest": "15e817084973712d60cb02d03be1d2a10854a9ad9a63fdf26ff78a5816f8e5c4",
+          "output_sha256": "21a07c450a3dab8d8b7430d7310aafb35b740a36959bdf2f17e38c5b87572095",
+          "output_path": "docs/plans/P013-architecture-hardening/command-1795165738209-c83a3f62.log",
+          "time": "2026-11-20T09:08:58.210Z"
         }
       ],
-      "started_at": "2026-11-19T22:33:12.140Z"
+      "started_at": "2026-11-20T09:08:47.745Z"
     },
     {
       "id": "P013.5",
