@@ -484,7 +484,7 @@ class PluginBootstrap
             'restUrl'    => esc_url_raw(rest_url('wpe/v1/admin/')),
             'opsRestUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
             'nonce'      => wp_create_nonce('wp_rest'),
-            'canManageOps' => Capabilities::canManageOperations(),
+            'canManageOps' => Capabilities::canRunOperations(),
             'i18n'       => [
                 /* translators: %d: number of changed settings */
                 'unsavedOne'      => __('%d unsaved change', 'wc-product-engine'),
@@ -514,7 +514,7 @@ class PluginBootstrap
             register_rest_route('wpe/v1', '/status', [
                 'methods' => 'GET',
                 'callback' => [$this, 'getRestStatus'],
-                'permission_callback' => [Capabilities::class, 'canManageOperations'],
+                'permission_callback' => [Capabilities::class, 'canViewOperations'],
             ]);
             // Operations UI lives in Settings -> Operations; only its REST routes are needed,
             // so the page and its migration services are built on REST requests only.

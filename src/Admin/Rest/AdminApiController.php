@@ -182,6 +182,27 @@ class AdminApiController
             ], 400);
         }
 
+        // Engine gates (native writes, variants manager) are administrator-only. A payload that
+        // repeats their stored value is allowed, so a shop manager can still save other settings (audit SEC-02).
+        if (!current_user_can(SettingsRegistry::ADMIN_ONLY_CAPABILITY)) {
+            $stored = $bootstrap->getFlags();
+            $forbidden = [];
+            foreach (SettingsRegistry::adminOnlyKeys() as $key) {
+                if (array_key_exists($key, $result['values']) && $result['values'][$key] !== (bool)($stored[$key] ?? false)) {
+                    $forbidden[$key] = __('Only an administrator can change this setting.', 'wc-product-engine');
+                }
+            }
+            if ($forbidden !== []) {
+                return new WP_REST_Response([
+                    'status'  => 'error',
+                    'code'    => 'forbidden',
+                    'reason'  => 'admin_only_setting',
+                    'message' => __('Only an administrator can change engine gates. Nothing was saved.', 'wc-product-engine'),
+                    'errors'  => $forbidden,
+                ], 403);
+            }
+        }
+
         $hasChanges = ($result['values'] !== []) || !empty($result['has_attribute_display_config']);
 
         // Merge onto the stored option so unrelated keys (e.g. cohort_mode) are preserved untouched.

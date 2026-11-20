@@ -173,6 +173,26 @@ final class SettingsRegistry
     }
 
     /**
+     * Engine-level gates (Features group, runtime gate) that only an administrator may change.
+     * Shop managers can still save every other setting (audit SEC-02).
+     *
+     * @return string[]
+     */
+    public static function adminOnlyKeys(): array
+    {
+        $keys = [];
+        foreach (self::flagsByGroup(self::GROUP_FEATURES) as $key => $def) {
+            if (($def['runtime'] ?? '') === self::RUNTIME_GATE) {
+                $keys[] = $key;
+            }
+        }
+        return $keys;
+    }
+
+    /** Capability required to change the keys of adminOnlyKeys(). */
+    public const ADMIN_ONLY_CAPABILITY = 'manage_options';
+
+    /**
      * Validate an incoming settings payload.
      *
      * @param array<string, mixed> $params Decoded request body.

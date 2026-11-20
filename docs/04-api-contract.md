@@ -40,7 +40,7 @@ Catalog ETag generation/context; resolver no-store, canonical checkout revalidat
 | wpe_export_products | administrator only ban đầu | Private CSV exports |
 | wpe_manage_operations | administrator only ban đầu | Health/migrations/cutover/rollback/cleanup |
 
-WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể cấp Shop Manager explicit, không mặc nhiên nâng quyền. Job download chỉ creator còn cap tương ứng hoặc operations admin. Public resolver chỉ published visibility; `GET /catalog` yêu cầu `edit_products` (SEC-01). Worker recheck actor/cap at import commit, migration operator lost permission→blocked.
+WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể cấp Shop Manager explicit, không mặc nhiên nâng quyền: `manage_woocommerce` chỉ đọc health/status, mọi `POST /operations/action` cần `wpe_manage_operations` (SEC-02). Job download chỉ creator còn cap tương ứng hoặc operations admin. Public resolver chỉ published visibility; `GET /catalog` yêu cầu `edit_products` (SEC-01). Worker recheck actor/cap at import commit, migration operator lost permission→blocked.
 
 ### 1.9 Error codes
 
@@ -201,7 +201,7 @@ Các route editor của admin UI (`wpe/v1/admin/product/{id}/variants` và các 
 
 ## 9. Cài đặt Product Page và dữ liệu storefront selector
 
-Route quản trị cài đặt `wpe/v1/admin/settings` (yêu cầu quyền `manage_woocommerce` và REST nonce) quản lý thêm nhóm `product_page` gồm 7 cờ boolean (mặc định `false` để giữ nguyên hành vi hiện có): `single_price_display`, `show_selected_value`, `show_help_text`, `button_selector`, `color_swatches`, `image_swatches`, `mark_unavailable_options`, cùng cấu hình hiển thị mặc định theo attribute ID cho thuộc tính global (`attribute_display_config`). Trong payload của editor sản phẩm (`variation_options`), mỗi option có thêm `display_type` (`auto`, `dropdown`, `button`, `color`, `image`) và `help_text`, và mỗi value có `color` (hex `#rrggbb` hoặc rỗng, lưu vào `option_values.swatch`).
+Route quản trị cài đặt `wpe/v1/admin/settings` (yêu cầu quyền `manage_woocommerce` và REST nonce; đổi gate nhóm Features có runtime gate — `variants_ui_enabled`, `native_writes_enabled` — cần `manage_options`, nếu không trả 403 `forbidden`/`admin_only_setting`, SEC-02) quản lý thêm nhóm `product_page` gồm 7 cờ boolean (mặc định `false` để giữ nguyên hành vi hiện có): `single_price_display`, `show_selected_value`, `show_help_text`, `button_selector`, `color_swatches`, `image_swatches`, `mark_unavailable_options`, cùng cấu hình hiển thị mặc định theo attribute ID cho thuộc tính global (`attribute_display_config`). Trong payload của editor sản phẩm (`variation_options`), mỗi option có thêm `display_type` (`auto`, `dropdown`, `button`, `color`, `image`) và `help_text`, và mỗi value có `color` (hex `#rrggbb` hoặc rỗng, lưu vào `option_values.swatch`).
 
 Phản hồi của `POST /products/{id}/resolve` bổ sung:
 - `variant.price_html`: HTML giá đầy đủ của variation đã resolve (kể cả khi mọi variation có cùng mức giá), định dạng theo tiền tệ, thuế hiển thị, price suffix và lịch sale của cùng variation đó.

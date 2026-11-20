@@ -262,7 +262,7 @@ class SettingsPage
         $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? 'legacy'));
         $epoch = $health['authority_epoch'] ?? null;
         $counts = $health['counts'] ?? [];
-        $canOps = Capabilities::canManageOperations();
+        $canOps = Capabilities::canViewOperations();
         ?>
         <section class="wpe-panel" aria-labelledby="wpe-h-status">
             <div class="wpe-statusbar <?php echo esc_attr($statusClass); ?>">
@@ -681,6 +681,9 @@ class SettingsPage
         $checked = !empty($flags[$key]);
         $inactive = $checked && !$bootstrap->isFlagEnabled($key);
         $id = 'wpe-flag-' . $key;
+        // Engine gates are administrator-only (audit SEC-02); others see the state but cannot change it.
+        $locked = in_array($key, SettingsRegistry::adminOnlyKeys(), true)
+            && !current_user_can(SettingsRegistry::ADMIN_ONLY_CAPABILITY);
         ?>
         <div class="wpe-feature" data-flag-row="<?php echo esc_attr($key); ?>">
             <div class="wpe-feature__body">
@@ -699,6 +702,9 @@ class SettingsPage
                     <span class="wpe-badge is-warning" data-inactive-badge<?php echo $inactive ? '' : ' hidden'; ?>>
                         <?php echo esc_html__('On, but inactive: requirements not met', 'wc-product-engine'); ?>
                     </span>
+                    <?php if ($locked) : ?>
+                        <span class="wpe-badge is-muted"><?php echo esc_html__('Administrator only', 'wc-product-engine'); ?></span>
+                    <?php endif; ?>
                 </p>
                 <p class="wpe-field-error" id="<?php echo esc_attr($id); ?>-error" data-error-for="<?php echo esc_attr($key); ?>" hidden></p>
             </div>
@@ -708,7 +714,7 @@ class SettingsPage
                        role="switch"
                        aria-describedby="<?php echo esc_attr($id); ?>-desc"
                        <?php checked($checked); ?>
-                       <?php disabled(!$depsOk); ?>>
+                       <?php disabled(!$depsOk || $locked); ?>>
                 <span class="wpe-switch__track" aria-hidden="true"></span>
             </span>
         </div>
@@ -730,7 +736,7 @@ class SettingsPage
         $projLag = (int)($health['projection_lag']['pending_projections'] ?? 0);
         $starvation = $health['worker_starvation'] ?? ['alert' => false, 'starved_job_id' => null, 'threshold_sec' => 120];
         $checkpoints = is_array($health['checkpoints'] ?? null) ? $health['checkpoints'] : [];
-        $canOps = Capabilities::canManageOperations();
+        $canOps = Capabilities::canRunOperations();
         ?>
         <section class="wpe-panel" id="wpe-operations-panel" aria-labelledby="wpe-h-ops">
             <div id="wpe-health-banner" class="wpe-statusbar <?php echo esc_attr($statusClass); ?>">
@@ -908,7 +914,7 @@ class SettingsPage
 
     private function renderMaintenance(): void
     {
-        $canOps = Capabilities::canManageOperations();
+        $canOps = Capabilities::canViewOperations();
         ?>
         <section class="wpe-panel" aria-labelledby="wpe-h-maint">
             <div class="wpe-card">

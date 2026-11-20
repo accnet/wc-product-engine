@@ -117,7 +117,7 @@ class OperationsPage
         wp_localize_script('wpe-operations-js', 'wpeOpsConfig', [
             'restUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
             'nonce'   => wp_create_nonce('wp_rest'),
-            'canManage' => Capabilities::canManageOperations(),
+            'canManage' => Capabilities::canRunOperations(),
         ]);
     }
 
@@ -132,13 +132,20 @@ class OperationsPage
         register_rest_route('wpe/v1', '/operations/action', [
             'methods'             => 'POST',
             'callback'            => [$this, 'restHandleAction'],
-            'permission_callback' => [$this, 'checkPermission'],
+            'permission_callback' => [$this, 'checkActionPermission'],
         ]);
     }
 
+    /** Health report: read-only, shop managers included. */
     public function checkPermission(): bool
     {
-        return Capabilities::canManageOperations();
+        return Capabilities::canViewOperations();
+    }
+
+    /** Mutating actions: wpe_manage_operations only (audit SEC-02). */
+    public function checkActionPermission(): bool
+    {
+        return Capabilities::canRunOperations();
     }
 
     public function restGetHealth(\WP_REST_Request $request): \WP_REST_Response
@@ -307,7 +314,8 @@ class OperationsPage
     public function handleAction(string $action, array $params = [], int $actorId = 0): array
     {
         // 1. Authorization check for non-CLI actors (R167, AC-T41-02)
-        if ($actorId > 0 && !user_can($actorId, 'wpe_manage_operations') && !user_can($actorId, 'manage_woocommerce')) {
+        // WP-CLI runs as actor 0; any web actor needs the dedicated capability (audit SEC-02).
+        if ($actorId > 0 && !Capabilities::userCanRunOperations($actorId)) {
             throw new \RuntimeException("Unauthorized: user {$actorId} lacks wpe_manage_operations capability.");
         }
 
