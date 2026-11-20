@@ -1,6 +1,6 @@
 <?php
 /**
- * ImportPerformanceTest — P015/P017 import correctness, idempotency and cost guards.
+ * ImportPerformanceTest — P015/P017/P019 import correctness, idempotency and cost guards.
  *
  * Runs the real Shopify batch importer on a small generated CSV with many
  * variants per product and repeated image URLs, then re-imports the same file
@@ -68,6 +68,8 @@ final class ImportPerformanceTest
             $this->testSkuMatchKeepsCaseInsensitiveLookup();
             $this->testMirrorBatchedMetaKeepsRowSemantics($first);
             $this->testUnchangedProductsAreSkipped($first);
+            $this->testCatalogIsProjectedPerProduct($first);
+            $this->testMissingSkuColumnImports();
             echo "All ImportPerformanceTest tests passed.\n";
         } catch (\Throwable $e) {
             echo 'FAILED: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
@@ -223,9 +225,9 @@ final class ImportPerformanceTest
         $assets = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_assets WHERE source_url IN ({$placeholders})", ...$urls));
         $this->assert($assets === count($urls), 'Expected one asset per unique URL, got ' . $assets);
 
-        // Query totals for a fixture this small are dominated by the per-job catalog
-        // rebuild, so throughput is measured by tests/performance/ImportBenchmark.php.
-        echo sprintf("  ✓ first import creates every variant, image and SKU exactly once (%d queries incl. catalog rebuild)\n", $importQueries);
+        // Throughput is measured by tests/performance/ImportBenchmark.php; this fixture
+        // only checks correctness and records the query total.
+        echo sprintf("  ✓ first import creates every variant, image and SKU exactly once (%d queries incl. catalog update)\n", $importQueries);
         return $state;
     }
 
@@ -447,15 +449,82 @@ final class ImportPerformanceTest
         $has99 = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL AND regular_price = 99", $first[$handles[1]]['product_id']));
         $this->assert($has99 === 1, 'Changed price was not imported.');
 
-        echo sprintf("  ✓ unchanged products skipped (%d queries for an all-skipped job incl. catalog rebuild); stock change, changed row and skip_unchanged=false re-import\n", $skipQueries);
+        echo sprintf("  ✓ unchanged products skipped (%d queries for an all-skipped job incl. catalog update); stock change, changed row and skip_unchanged=false re-import\n", $skipQueries);
+    }
+
+    /**
+     * P019 D01: an import upserts the products it writes into the active
+     * catalog generation instead of building a new generation.
+     */
+    private function testCatalogIsProjectedPerProduct(array $first): void
+    {
+        $p = $this->wpdb->prefix;
+        $projector = new \WPE\Application\Catalog\CatalogProjector($this->wpdb);
+        if ($projector->getActiveGeneration() === 0) {
+            $projector->buildNewGeneration();
+        }
+        $genBefore = $projector->getActiveGeneration();
+
+        $handles = array_keys($this->products);
+        $rows = array_map('str_getcsv', file($this->csvPath, FILE_IGNORE_NEW_LINES));
+        $priceCol = array_search('Variant Price', $rows[0], true);
+        $handleCol = array_search('Handle', $rows[0], true);
+        foreach ($rows as $i => $r) {
+            if ($i > 0 && $r[$handleCol] === $handles[0]) {
+                $rows[$i][$priceCol] = '999.00';
+                break;
+            }
+        }
+        $fh = fopen($this->csvPath, 'wb');
+        foreach ($rows as $r) {
+            fputcsv($fh, $r);
+        }
+        fclose($fh);
+
+        $this->runImport();
+        $this->assert(($this->lastResult['rebuild_report']['mode'] ?? '') === 'incremental', 'Expected incremental catalog update, got ' . wp_json_encode($this->lastResult['rebuild_report'] ?? null));
+        $this->assert($projector->getActiveGeneration() === $genBefore, 'Import built a new catalog generation.');
+
+        foreach ($handles as $h) {
+            $pid = $first[$h]['product_id'];
+            $row = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT c.source_version, c.max_price, p.version FROM {$p}wpe_catalog c JOIN {$p}wpe_products p ON p.id = c.product_id WHERE c.generation = %d AND c.product_id = %d",
+                $genBefore,
+                $pid
+            ), ARRAY_A);
+            $this->assert($row !== null, "{$h}: no catalog row in the active generation.");
+            $this->assert((int) $row['source_version'] === (int) $row['version'], "{$h}: catalog row is stale (source_version {$row['source_version']}, version {$row['version']}).");
+        }
+        $max = (float) $this->wpdb->get_var($this->wpdb->prepare("SELECT max_price FROM {$p}wpe_catalog WHERE generation = %d AND product_id = %d", $genBefore, $first[$handles[0]]['product_id']));
+        $this->assert(abs($max - 999.0) < 0.001, "Catalog max_price not updated to 999, got {$max}.");
+
+        echo "  ✓ import projects written products into the active catalog generation (no full rebuild)\n";
+    }
+
+    /** P019 D04: a CSV without a variant SKU column imports with empty SKUs. */
+    private function testMissingSkuColumnImports(): void
+    {
+        $handle = "perf-nosku-{$this->suffix}";
+        $this->importRows([
+            ['Handle' => $handle, 'Title' => 'No SKU column', 'Status' => 'active', 'Option1 Name' => 'Size', 'Option1 Value' => 'S', 'Variant Price' => '10.00'],
+            ['Handle' => $handle, 'Option1 Name' => 'Size', 'Option1 Value' => 'M', 'Variant Price' => '11.00'],
+        ], ['Handle', 'Title', 'Status', 'Option1 Name', 'Option1 Value', 'Variant Price']);
+
+        $p = $this->wpdb->prefix;
+        $pid = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT id FROM {$p}wpe_products WHERE slug = %s AND deleted_at IS NULL", $handle));
+        $this->assert($pid > 0, 'Product from a CSV without a SKU column was not imported.');
+        $count = (int) $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$p}wpe_variants WHERE product_id = %d AND deleted_at IS NULL AND (sku IS NULL OR sku = '')", $pid));
+        $this->assert($count === 2, "Expected 2 variants without SKU, got {$count}.");
+
+        echo "  ✓ CSV without a variant SKU column imports with empty SKUs\n";
     }
 
     /**
      * Import a small CSV built from rows keyed by header name.
      */
-    private function importRows(array $rows): void
+    private function importRows(array $rows, ?array $headers = null): void
     {
-        $headers = ['Handle', 'Title', 'Status', 'Option1 Name', 'Option1 Value', 'Variant SKU', 'Variant Price'];
+        $headers = $headers ?? ['Handle', 'Title', 'Status', 'Option1 Name', 'Option1 Value', 'Variant SKU', 'Variant Price'];
         $path = trailingslashit(sys_get_temp_dir()) . 'wpe-perf-rows-' . wp_generate_password(6, false) . '.csv';
         $fh = fopen($path, 'wb');
         fputcsv($fh, $headers);

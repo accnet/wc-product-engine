@@ -491,7 +491,8 @@ class ShopifyBatchImporter
             $stockStatus = ($manageStock === 1 && (float)$stockQuantity <= 0 && $backorders === 'no') ? 'outofstock' : 'instock';
 
             $currentGroup['variants'][] = [
-                'sku'              => $row['sku'] !== '' ? trim($row['sku']) : null,
+                // A file without a SKU column imports like empty SKU cells (P019 D04).
+                'sku'              => ($row['sku'] ?? '') !== '' ? trim($row['sku']) : null,
                 'regular_price'    => $priceData['regular_price'],
                 'sale_price'       => $priceData['sale_price'],
                 'price_warning'    => $priceData['warning'],
@@ -565,6 +566,7 @@ class ShopifyBatchImporter
                 $batchProductCount++;
                 $batchVariantCount += $importRes['variant_count'];
                 $this->recordImportFingerprint($importRes, $fingerprint);
+                $this->projectIntoActiveCatalog((int)$importRes['product_id'], $handleKey, $timeStr, $batchLogs);
 
                 $msg = sprintf(
                     "[%s] [SUCCESS] Imported product #%d \"%s\" (Handle: %s, Type: %s, Variants: %d, Images: %d)",
@@ -626,25 +628,31 @@ class ShopifyBatchImporter
                 "[%s] [INFO] Total Products Imported: %d\n" .
                 "[%s] [INFO] Total Variations Created: %d\n" .
                 "[%s] [INFO] Total Errors: %d\n" .
-                "[%s] [INFO] Unchanged Products Skipped: %d\n" .
-                "[%s] [INFO] Rebuilding Catalog Index Generation...\n",
+                "[%s] [INFO] Unchanged Products Skipped: %d\n",
                 $endTimeStr,
                 $endTimeStr, $productsProcessed,
                 $endTimeStr, $variantsProcessed,
                 $endTimeStr, $errorsCount,
-                $endTimeStr, $productsSkipped,
-                $endTimeStr
+                $endTimeStr, $productsSkipped
             );
             $batchLogs[] = ['level' => 'info', 'message' => $completionMsg];
             @file_put_contents($logFile, $completionMsg, FILE_APPEND);
 
             try {
-                $projector = new CatalogProjector($this->wpdb);
-                $gen = $projector->buildNewGeneration();
-                $genMsg = sprintf("[%s] [SUCCESS] Catalog Index Rebuilt successfully! Generation: %d\n", gmdate('H:i:s'), $gen);
+                $projector = $this->catalogProjector();
+                $activeGen = $projector->getActiveGeneration();
+                if ($activeGen > 0) {
+                    // Written products were projected as they were imported (P019 D01).
+                    $genMsg = sprintf("[%s] [SUCCESS] Catalog index updated per product in generation %d\n", gmdate('H:i:s'), $activeGen);
+                    $rebuildReport = ['generation' => $activeGen, 'mode' => 'incremental'];
+                } else {
+                    // No catalog yet: build the first generation (P019 D02).
+                    $gen = $projector->buildNewGeneration();
+                    $genMsg = sprintf("[%s] [SUCCESS] Catalog Index Rebuilt successfully! Generation: %d\n", gmdate('H:i:s'), $gen);
+                    $rebuildReport = ['generation' => $gen, 'mode' => 'full'];
+                }
                 $batchLogs[] = ['level' => 'success', 'message' => $genMsg];
                 @file_put_contents($logFile, $genMsg, FILE_APPEND);
-                $rebuildReport = ['generation' => $gen];
             } catch (\Throwable $pE) {
                 $warnMsg = sprintf("[%s] [WARNING] Catalog rebuild failed: %s\n", gmdate('H:i:s'), $pE->getMessage());
                 $batchLogs[] = ['level' => 'warning', 'message' => $warnMsg];
@@ -978,6 +986,39 @@ class ShopifyBatchImporter
             'warnings'      => $warnings,
             'mirrored'      => $mirrored,
         ];
+    }
+
+    private ?CatalogProjector $catalogProjector = null;
+
+    private function catalogProjector(): CatalogProjector
+    {
+        return $this->catalogProjector ??= new CatalogProjector($this->wpdb);
+    }
+
+    /**
+     * Upsert one imported product into the active catalog generation, as
+     * scheduled price changes do (P019 D01). Without an active generation the
+     * job builds one at the end (D02). Failures only add a warning.
+     */
+    private function projectIntoActiveCatalog(int $productId, string $handle, string $timeStr, array &$batchLogs): void
+    {
+        if ($productId <= 0) {
+            return;
+        }
+        try {
+            $projector = $this->catalogProjector();
+            $activeGen = $projector->getActiveGeneration();
+            if ($activeGen > 0) {
+                $projector->projectProduct($productId, $activeGen);
+            }
+        } catch (\Throwable $e) {
+            $batchLogs[] = ['level' => 'warning', 'message' => sprintf(
+                '[%s] [WARNING] Handle "%s": catalog projection failed: %s',
+                $timeStr,
+                $handle,
+                $e->getMessage()
+            )];
+        }
     }
 
     /** Bump when the CSV-to-product mapping changes so stored fingerprints never match (P017 D03). */
