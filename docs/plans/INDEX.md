@@ -23,3 +23,4 @@
 - P021 — WC 11.3 customs props: legacy-only, fail-closed under native (done)
 - P022 — UI stage 1: keyboard, focus, contrast and responsive fixes (done)
 - P023 — P020 amendment: PROGRESS reflects the 7.1.5 receipts (done)
+- P024 — P011 amendment: close out on local + fake provider scope (OD-19 Option B) (done)

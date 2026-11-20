@@ -1,0 +1,341 @@
+{
+  "id": "P024",
+  "title": "P011 amendment: close out on local + fake provider scope (OD-19 Option B)",
+  "status": "done",
+  "content_hash": "06ced501ad8460d7680b946349a195233e0f3750921d3488c9e8a010c67219fb",
+  "tasks": [
+    {
+      "id": "P024.1",
+      "title": "Record OD-19 Option B waiver, run full P011 local + fake-provider regression and close out",
+      "depends_on": [],
+      "read_first": [
+        "docs/QUESTIONS.md",
+        "docs/10-integrations.md",
+        "docs/plans/P011-product-media-library/plan.md"
+      ],
+      "files": [
+        "docs/QUESTIONS.md",
+        "docs/NOTES.md",
+        "docs/plans/P011-product-media-library/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaSchemaTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/StorageResolverTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ManagedUploadTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductMediaLibraryTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductMediaRestTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/VariantImagePickerRulesTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaLegacyWriterGuardTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/MediaRecoveryTest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductMediaLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantImagePickerLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "7b42482fb864fc40d5c041bc6149bccfaca1ee3658416ad65cfc0c71951ed278",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166928914-d30ba87a.log",
+          "time": "2026-11-20T09:28:48.915Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MediaSchemaTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "f2b6d15bf86697abf3590fe73975c2a809be0054757c25aa18bccfc70cc86d9b",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166930352-2c8c5412.log",
+          "time": "2026-11-20T09:28:50.352Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/StorageResolverTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "b8eeb069f3a807b9bdc2d6421550c290451a89fd9ca87c8d7a4e10eb11655123",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166931702-1d5d283b.log",
+          "time": "2026-11-20T09:28:51.703Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ManagedUploadTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "5593fd9d527e3995a6712f3deb1b3f8776a479382e2c1c6acdf4705075200035",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166934407-deeca4f8.log",
+          "time": "2026-11-20T09:28:54.408Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductMediaLibraryTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "9791f0b76333085e4fc0d900f5a7def65924adea2cfc909f8984b24f885bb0f6",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166936233-859e1bad.log",
+          "time": "2026-11-20T09:28:56.234Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductMediaRestTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "60f106bb37ffd595fb724efa39fa544fe025d8b436656d9677dcb9ef489573c5",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166938012-3d3100a1.log",
+          "time": "2026-11-20T09:28:58.013Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/VariantImagePickerRulesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "54da557c7ab22a8ad53b92ab23f8df8c5773b68223cda1391eb89519db5e51ce",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166948492-b6c6605c.log",
+          "time": "2026-11-20T09:29:08.493Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MediaLegacyWriterGuardTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "e1cef5c06ac3ed9ad1ee68b637a4e1a81a7118b3cc1eb2602700d888d845196e",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166954527-2f9592ba.log",
+          "time": "2026-11-20T09:29:14.528Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/MediaRecoveryTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "4107fd67631da1181802d3ce08080c510972e4a2a532361b93e8af07b2c945f5",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166955899-efa4eb57.log",
+          "time": "2026-11-20T09:29:15.899Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "de79f37cb301bf12f8c95f276edddf2cf1b6909bf5b768618033d411ed431409",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795166985340-0e2ea975.log",
+          "time": "2026-11-20T09:29:45.341Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantImagePickerLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "61a5fbe4c3ef881db199de940edd4f4faf00b5632fcb56e33199ead8a5154f1d",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795167000685-0615ee5f.log",
+          "time": "2026-11-20T09:30:00.686Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "952bb622a046c8f1140dee8a11a105fdde96c0382f6d1c71700626ae1f294eb4",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795167000786-bf7b060b.log",
+          "time": "2026-11-20T09:30:00.786Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "16203472122a1415281b96e98b568371f6ed5142",
+          "content_digest": "77a96671b409d1f937d4fe61a5924118934f4647e86d6fff99967eba738568e5",
+          "output_sha256": "500f8f80d8e8500c886a9cce02b41ace12df3f3044aeb704afb0dd8d258c2d12",
+          "output_path": "docs/plans/P024-p011-closeout-local-waiver/command-1795167000880-2821d750.log",
+          "time": "2026-11-20T09:30:00.880Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:28:33.811Z"
+    }
+  ],
+  "approved_hash": "06ced501ad8460d7680b946349a195233e0f3750921d3488c9e8a010c67219fb",
+  "report_hash": "b1f8c1810e2cb0ebdd9ff2ce5e9f325b1e10bf6cdd761e5fbc2da3bab2073ecd"
+}

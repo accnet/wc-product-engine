@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Một câu hỏi mở: OD-19 (mục 4, chặn P011.12). Các câu hỏi OD-12…OD-18 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
+Không có câu hỏi mở. Các câu hỏi OD-12…OD-19 đã được trả lời, xem mục 3. OD-01…OD-11 đã được trả lời hoặc áp dụng, xem mục 3 và `docs/audits/OPEN-DECISIONS.md`. Runtime pins/extensions chưa certified là T01 deliverables.
 
 ## 2. Entry format
 
@@ -30,19 +30,10 @@ Mỗi entry: task ID — tóm tắt; status open/answered; doc section; commit; 
 | OD-16 | P013.4 — `T02Test` fail vì trạng thái site, không vì code | answered | 06 T02, `docs/plans/P013-architecture-hardening/plan.md` §5 | P020.2 sửa `T02Test` tách khỏi flag và category của site; chạy lại đầy đủ 6 lệnh DoD của P013.4 đều pass (commit `171ff6f`), hoàn tất P013.5 và đóng P013 (2026-11-20). |
 | OD-17 | `contact-form-7` 6.2.5 đang active nhưng không có trong allowlist seal | answered | 01 §8, `AuthoritySeal.php`, P020 D02 | Phương án B (người dùng chọn 2026-11-20): tắt plugin `contact-form-7` trên `site1.localhost` và DB test `test_wpe_regress`, giữ nguyên allowlist `AuthoritySeal` (không certify); chạy lại evidence T45 và verify T45/T49/T46 pass (49/49). |
 | OD-18 | WooCommerce 11.3.0 thêm 3 prop customs (`customs_commodity_code`, `customs_country_of_origin`, `customs_description`, postmeta `_customs_*`) chưa có trong `wc-props-mapping.json` | answered | 03 §1, `docs/plans/P021-wc113-customs-legacy-only/plan.md` | Fail-closed (người dùng chọn 2026-11-20): 3 prop ghi trong `excluded_props` với policy `legacy_only_blocks_native`; data store native từ chối lưu giá trị khác rỗng (`wpe_legacy_only_prop`), cutover từ chối sản phẩm có dữ liệu customs. Hỗ trợ native để plan sau. |
+| OD-19 | P011.12 — Plugin object storage `images-space` chưa được cài/kích hoạt trên `site1.localhost` | answered | 10 §5, `docs/plans/P011-product-media-library/plan.md` §5 P011.12, `docs/plans/P024-p011-closeout-local-waiver/plan.md` | Phương án B (người dùng chọn 2026-11-20): miễn chứng nhận S3 live round-trip trên môi trường này và đóng P011 ở phạm vi local storage + fake provider qua amendment plan P024 (không phải chứng nhận S3 live). `tests/integration/StorageLiveRoundTripTest.php` giữ nguyên hành vi fail-closed và `P011.12` giữ trạng thái `blocked` để chạy lại khi cài `images-space`. |
 
 Chi tiết: `docs/audits/OPEN-DECISIONS.md`, `docs/adr/003-audit-remediation-scope.md`. Affected tasks: T01, T02, T04, T27, T38, T40, T42, T46, T47, P011.12.
 
 ## 4. Câu hỏi mở
 
-### OD-19 — P011.12 — Plugin object storage `images-space` chưa được cài/kích hoạt trên `site1.localhost`
-
-- Status: open (P011.12 ở trạng thái `blocked`).
-- Doc section: 10 §5; `docs/plans/P011-product-media-library/plan.md` §3 D02, §5 P011.12.
-- Commit: test `tests/integration/StorageLiveRoundTripTest.php` đã được viết và chạy fail-closed trong commit P011.12.
-- Context: P011.1–P011.11 đã hoàn tất (`done`). Chỉ còn P011.12 yêu cầu chạy round-trip thật với object storage mặc định (upload ảnh PNG nhỏ, xác minh tồn tại và đúng kích thước trên remote, đọc lại qua URL đã lưu kiểm SHA-256, xóa object và các dòng DB thử nghiệm) và bắt buộc **fail (không skip, không fallback về local storage)** khi plugin storage không nạp được hoặc chưa cấu hình.
-- Default đã thử: kiểm tra `/var/www/site1.localhost/wp-content/plugins/` và `wp plugin list` (không có plugin `images-space`, cũng không có mu-plugin), kiểm tra `wp option list` (không có option `images_space_settings`). Chạy `node scripts/plan.mjs run P011.12 -- php -d zend.assertions=1 -d assert.exception=1 /usr/local/bin/wp eval-file tests/integration/StorageLiveRoundTripTest.php` trả về exit 1: `FAILED: Object storage plugin is not installed or loaded (ImagesSpace\Application\Settings / ImagesSpace\Storage\AdapterFactory missing). Live round trip cannot be skipped.` Không chuyển sang LocalStorageProvider để giả pass.
-- Blocker và impact: P011.12 không thể pass và P011 chưa thể `close` (`in_progress`, 11/12 task `done`, P011.12 `blocked`). Không ảnh hưởng runtime: media library hiện hoạt động bình thường trên local storage theo OD-15 A1.
-- Proposed resolution:
-  - Phương án A: cài đặt, kích hoạt và cấu hình plugin `images-space` (S3/Spaces/MinIO thật) trên `site1.localhost`, sau đó chạy lại `P011.12` (`StorageLiveRoundTripTest.php`) để chứng nhận round-trip thật và đóng P011.
-  - Phương án B: nếu môi trường này không dùng S3 thật, xác nhận miễn chứng nhận S3 live round-trip và ủy quyền tạo amendment plan đóng P011 ở phạm vi local + fake provider (ghi rõ không phải chứng nhận S3).
+Không có câu hỏi mở.
