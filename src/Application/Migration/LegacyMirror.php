@@ -40,6 +40,12 @@ class LegacyMirror
     private string $tableAudit;
     private string $tableControl;
 
+    /** Rows per multi-row postmeta read/insert in flushQueuedMeta(). */
+    private const META_FLUSH_CHUNK = 500;
+
+    /** @var array<int, array<string, string>> Legacy meta queued by the running mirror. */
+    private array $pendingMeta = [];
+
     public function __construct(
         ?wpdb $wpdb = null,
         ?LegacyCapture $legacyCapture = null,
@@ -141,6 +147,7 @@ class LegacyMirror
 
         // 4. Execute legacy write strictly inside origin guard (R160)
         LegacyCapture::withOrigin('native_projection', function () use ($aggregateId, $product, $inventory, $variants, $terms, $metaRows) {
+            $this->pendingMeta = [];
             $now = current_time('mysql');
             $nowGmt = gmdate('Y-m-d H:i:s');
 
@@ -221,7 +228,7 @@ class LegacyMirror
             }
 
             foreach ($metaToUpdate as $mKey => $mVal) {
-                $this->updatePostMetaDirect($aggregateId, $mKey, (string)$mVal);
+                $this->queueMeta($aggregateId, $mKey, (string)$mVal);
             }
 
             // Project featured and gallery images
@@ -233,7 +240,7 @@ class LegacyMirror
                 $aggregateId
             ), ARRAY_A);
             if ($featuredImg && !empty($featuredImg['attachment_id'])) {
-                $this->updatePostMetaDirect($aggregateId, '_thumbnail_id', (string)$featuredImg['attachment_id']);
+                $this->queueMeta($aggregateId, '_thumbnail_id', (string)$featuredImg['attachment_id']);
             }
 
             $galleryImgs = $this->wpdb->get_col($this->wpdb->prepare(
@@ -246,7 +253,7 @@ class LegacyMirror
             if (!empty($galleryImgs)) {
                 $galleryClean = array_filter($galleryImgs);
                 if (!empty($galleryClean)) {
-                    $this->updatePostMetaDirect($aggregateId, '_product_image_gallery', implode(',', $galleryClean));
+                    $this->queueMeta($aggregateId, '_product_image_gallery', implode(',', $galleryClean));
                 }
             }
 
@@ -289,11 +296,11 @@ class LegacyMirror
                         }
                     }
                 }
-                $this->updatePostMetaDirect($aggregateId, '_product_attributes', serialize($productAttributes));
-                $this->updatePostMetaDirect($aggregateId, '_default_attributes', serialize($defaultAttributes));
+                $this->queueMeta($aggregateId, '_product_attributes', serialize($productAttributes));
+                $this->queueMeta($aggregateId, '_default_attributes', serialize($defaultAttributes));
             } else {
-                $this->updatePostMetaDirect($aggregateId, '_product_attributes', serialize([]));
-                $this->updatePostMetaDirect($aggregateId, '_default_attributes', serialize([]));
+                $this->queueMeta($aggregateId, '_product_attributes', serialize([]));
+                $this->queueMeta($aggregateId, '_default_attributes', serialize([]));
             }
 
             // Project taxonomy terms from wpe_product_terms first (without wiping product_type)
@@ -362,33 +369,75 @@ class LegacyMirror
                 if (!empty($prices)) {
                     $minP = min($prices);
                     $maxP = max($prices);
-                    $this->updatePostMetaDirect($aggregateId, '_price', (string)$minP);
-                    $this->updatePostMetaDirect($aggregateId, '_min_variation_price', (string)$minP);
-                    $this->updatePostMetaDirect($aggregateId, '_max_variation_price', (string)$maxP);
+                    $this->queueMeta($aggregateId, '_price', (string)$minP);
+                    $this->queueMeta($aggregateId, '_min_variation_price', (string)$minP);
+                    $this->queueMeta($aggregateId, '_max_variation_price', (string)$maxP);
                 } else {
-                    $this->updatePostMetaDirect($aggregateId, '_price', '');
-                    $this->updatePostMetaDirect($aggregateId, '_min_variation_price', '');
-                    $this->updatePostMetaDirect($aggregateId, '_max_variation_price', '');
+                    $this->queueMeta($aggregateId, '_price', '');
+                    $this->queueMeta($aggregateId, '_min_variation_price', '');
+                    $this->queueMeta($aggregateId, '_max_variation_price', '');
                 }
                 if (!empty($regPrices)) {
-                    $this->updatePostMetaDirect($aggregateId, '_min_variation_regular_price', (string)min($regPrices));
-                    $this->updatePostMetaDirect($aggregateId, '_max_variation_regular_price', (string)max($regPrices));
+                    $this->queueMeta($aggregateId, '_min_variation_regular_price', (string)min($regPrices));
+                    $this->queueMeta($aggregateId, '_max_variation_regular_price', (string)max($regPrices));
                 } else {
-                    $this->updatePostMetaDirect($aggregateId, '_min_variation_regular_price', '');
-                    $this->updatePostMetaDirect($aggregateId, '_max_variation_regular_price', '');
+                    $this->queueMeta($aggregateId, '_min_variation_regular_price', '');
+                    $this->queueMeta($aggregateId, '_max_variation_regular_price', '');
                 }
             }
 
             // Project extension / arbitrary metadata from wpe_meta
             if (!empty($metaRows)) {
                 foreach ($metaRows as $mr) {
-                    $this->updatePostMetaDirect($aggregateId, $mr['meta_key'], $mr['meta_value']);
+                    $this->queueMeta($aggregateId, $mr['meta_key'], $mr['meta_value']);
                 }
             }
 
-            // Project variations
+            // Project variations. Per-variation reads are loaded once for the
+            // whole aggregate (P017 D01); results are identical to per-row reads.
             $activeVarIds = [];
+            $noThumbVarIds = [];
             if (!empty($variants)) {
+                $varIdList = implode(',', array_map(static fn(array $row): int => (int)$row['id'], $variants));
+
+                $existingVarPosts = array_flip(array_map('intval', $this->wpdb->get_col(
+                    "SELECT ID FROM {$this->wpdb->posts} WHERE ID IN ({$varIdList})"
+                )));
+
+                $invByOwner = [];
+                foreach ((array)$this->wpdb->get_results(
+                    "SELECT * FROM {$this->tableInventory} WHERE owner_id IN ({$varIdList})",
+                    ARRAY_A
+                ) as $invRow) {
+                    $invByOwner[(int)$invRow['owner_id']] = $invRow;
+                }
+
+                $valuesByVariant = [];
+                foreach ((array)$this->wpdb->get_results(
+                    "SELECT vv.variant_id, o.name, ov.label, vv.is_any
+                     FROM {$this->wpdb->prefix}wpe_variant_values vv
+                     JOIN {$this->wpdb->prefix}wpe_options o ON vv.option_id = o.id
+                     LEFT JOIN {$this->wpdb->prefix}wpe_option_values ov ON vv.value_id = ov.id
+                     WHERE vv.variant_id IN ({$varIdList})",
+                    ARRAY_A
+                ) as $vvRow) {
+                    $valuesByVariant[(int)$vvRow['variant_id']][] = $vvRow;
+                }
+
+                // First primary image row per variation, as the former LIMIT 1 read.
+                $imageByVariant = [];
+                foreach ((array)$this->wpdb->get_results(
+                    "SELECT vm.variant_id, a.attachment_id FROM {$this->wpdb->prefix}wpe_variant_media vm
+                     JOIN {$this->wpdb->prefix}wpe_assets a ON vm.asset_id = a.id
+                     WHERE vm.variant_id IN ({$varIdList}) AND vm.is_primary = 1",
+                    ARRAY_A
+                ) as $imgRow) {
+                    $imgVarId = (int)$imgRow['variant_id'];
+                    if (!array_key_exists($imgVarId, $imageByVariant)) {
+                        $imageByVariant[$imgVarId] = $imgRow;
+                    }
+                }
+
                 foreach ($variants as $v) {
                     $varId = (int)$v['id'];
                     $activeVarIds[] = $varId;
@@ -407,10 +456,7 @@ class LegacyMirror
                         $vPrice = '';
                     }
 
-                    $vExists = $this->wpdb->get_var($this->wpdb->prepare(
-                        "SELECT ID FROM {$this->wpdb->posts} WHERE ID = %d",
-                        $varId
-                    ));
+                    $vExists = isset($existingVarPosts[$varId]);
 
                     $varTitle = "Variation for " . ($effectiveTitle ?: $product['title']);
                     if ($vExists) {
@@ -436,59 +482,49 @@ class LegacyMirror
                         ]);
                     }
 
-                    $this->updatePostMetaDirect($varId, '_sku', $v['sku'] ?? '');
-                    $this->updatePostMetaDirect($varId, '_regular_price', $vReg);
-                    $this->updatePostMetaDirect($varId, '_sale_price', $vSale);
-                    $this->updatePostMetaDirect($varId, '_price', $vPrice);
+                    $this->queueMeta($varId, '_sku', $v['sku'] ?? '');
+                    $this->queueMeta($varId, '_regular_price', $vReg);
+                    $this->queueMeta($varId, '_sale_price', $vSale);
+                    $this->queueMeta($varId, '_price', $vPrice);
 
                     // Variation inventory
-                    $vInv = $this->wpdb->get_row($this->wpdb->prepare(
-                        "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
-                        $varId
-                    ), ARRAY_A);
+                    $vInv = $invByOwner[$varId] ?? null;
                     if ($vInv) {
-                        $this->updatePostMetaDirect($varId, '_manage_stock', $vInv['manage_stock'] ? 'yes' : 'no');
-                        $this->updatePostMetaDirect($varId, '_stock', $vInv['quantity'] !== null ? (string)(float)$vInv['quantity'] : '');
-                        $this->updatePostMetaDirect($varId, '_stock_status', $vInv['stock_status'] ?? 'instock');
+                        $this->queueMeta($varId, '_manage_stock', $vInv['manage_stock'] ? 'yes' : 'no');
+                        $this->queueMeta($varId, '_stock', $vInv['quantity'] !== null ? (string)(float)$vInv['quantity'] : '');
+                        $this->queueMeta($varId, '_stock_status', $vInv['stock_status'] ?? 'instock');
                     } else {
-                        $this->updatePostMetaDirect($varId, '_manage_stock', 'no');
-                        $this->updatePostMetaDirect($varId, '_stock_status', 'instock');
+                        $this->queueMeta($varId, '_manage_stock', 'no');
+                        $this->queueMeta($varId, '_stock_status', 'instock');
                     }
 
                     // Variation attributes (including Any / wildcard where value_id IS NULL)
-                    $vValues = $this->wpdb->get_results($this->wpdb->prepare(
-                        "SELECT o.name, ov.label, vv.is_any
-                         FROM {$this->wpdb->prefix}wpe_variant_values vv
-                         JOIN {$this->wpdb->prefix}wpe_options o ON vv.option_id = o.id
-                         LEFT JOIN {$this->wpdb->prefix}wpe_option_values ov ON vv.value_id = ov.id
-                         WHERE vv.variant_id = %d",
-                        $varId
-                    ), ARRAY_A);
+                    $vValues = $valuesByVariant[$varId] ?? [];
 
                     foreach ($vValues as $vv) {
                         $attrKey = 'attribute_' . sanitize_title($vv['name']);
                         $attrVal = (!empty($vv['is_any']) || $vv['label'] === null) ? '' : (string)$vv['label'];
-                        $this->updatePostMetaDirect($varId, $attrKey, $attrVal);
+                        $this->queueMeta($varId, $attrKey, $attrVal);
                     }
 
                     // Variation image
-                    $vImg = $this->wpdb->get_row($this->wpdb->prepare(
-                        "SELECT a.attachment_id FROM {$this->wpdb->prefix}wpe_variant_media vm
-                         JOIN {$this->wpdb->prefix}wpe_assets a ON vm.asset_id = a.id
-                         WHERE vm.variant_id = %d AND vm.is_primary = 1
-                         LIMIT 1",
-                        $varId
-                    ), ARRAY_A);
+                    $vImg = $imageByVariant[$varId] ?? null;
                     if ($vImg && !empty($vImg['attachment_id'])) {
-                        $this->updatePostMetaDirect($varId, '_thumbnail_id', (string)$vImg['attachment_id']);
+                        $this->queueMeta($varId, '_thumbnail_id', (string)$vImg['attachment_id']);
                     } else {
-                        $this->wpdb->delete($this->wpdb->postmeta, [
-                            'post_id'  => $varId,
-                            'meta_key' => '_thumbnail_id',
-                        ]);
+                        $noThumbVarIds[] = $varId;
                     }
                 }
             }
+
+            if (!empty($noThumbVarIds)) {
+                $this->wpdb->query(
+                    "DELETE FROM {$this->wpdb->postmeta}
+                     WHERE meta_key = '_thumbnail_id' AND post_id IN (" . implode(',', $noThumbVarIds) . ")"
+                );
+            }
+
+            $this->flushQueuedMeta();
 
             // Trash any old product_variation posts in wp_posts that were tombstoned in wpe_variants
             $trashedVarIds = $this->wpdb->get_col($this->wpdb->prepare(
@@ -740,27 +776,89 @@ class LegacyMirror
         ]);
     }
 
-    private function updatePostMetaDirect(int $postId, string $key, string $value): void
+    /**
+     * Queue a legacy meta value for the aggregate being mirrored. The last value
+     * queued for a post/key wins, as when each value was written in turn.
+     */
+    private function queueMeta(int $postId, string $key, string $value): void
     {
-        $existing = $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT meta_id FROM {$this->wpdb->postmeta} WHERE post_id = %d AND meta_key = %s LIMIT 1",
-            $postId,
-            $key
-        ));
+        $this->pendingMeta[$postId][$key] = $value;
+    }
 
-        if ($existing) {
-            $this->wpdb->update($this->wpdb->postmeta, [
-                'meta_value' => $value,
-            ], ['meta_id' => $existing]);
-        } else {
-            $this->wpdb->insert($this->wpdb->postmeta, [
-                'post_id'    => $postId,
-                'meta_key'   => $key,
-                'meta_value' => $value,
-            ]);
+    /**
+     * Write queued meta with the semantics of a per-key "update first row, else
+     * insert" (P017 D02): the lowest meta_id row of a key is updated when its
+     * value differs, a missing key is inserted, equal values are not written.
+     */
+    private function flushQueuedMeta(): void
+    {
+        $pending = $this->pendingMeta;
+        $this->pendingMeta = [];
+        if (empty($pending)) {
+            return;
         }
 
-        wp_cache_delete($postId, 'post_meta');
+        $keys = [];
+        foreach ($pending as $postMeta) {
+            foreach ($postMeta as $key => $unused) {
+                $keys[(string)$key] = true;
+            }
+        }
+        $keyPlaceholders = implode(',', array_fill(0, count($keys), '%s'));
+
+        $inserts = [];
+        foreach (array_chunk(array_keys($pending), self::META_FLUSH_CHUNK) as $postChunk) {
+            $postIdList = implode(',', array_map('intval', $postChunk));
+            $rows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT meta_id, post_id, meta_key, meta_value FROM {$this->wpdb->postmeta}
+                 WHERE post_id IN ({$postIdList}) AND meta_key IN ({$keyPlaceholders})
+                 ORDER BY meta_id ASC",
+                ...array_map('strval', array_keys($keys))
+            ), ARRAY_A);
+
+            $firstRow = [];
+            foreach ((array)$rows as $row) {
+                $slot = (int)$row['post_id'] . "\0" . $row['meta_key'];
+                if (!isset($firstRow[$slot])) {
+                    $firstRow[$slot] = $row;
+                }
+            }
+
+            foreach ($postChunk as $postId) {
+                foreach ($pending[$postId] as $key => $value) {
+                    $key = (string)$key;
+                    $slot = (int)$postId . "\0" . $key;
+                    if (!isset($firstRow[$slot])) {
+                        $inserts[] = [(int)$postId, $key, $value];
+                    } elseif ($firstRow[$slot]['meta_value'] === null || (string)$firstRow[$slot]['meta_value'] !== $value) {
+                        $this->wpdb->update(
+                            $this->wpdb->postmeta,
+                            ['meta_value' => $value],
+                            ['meta_id' => (int)$firstRow[$slot]['meta_id']]
+                        );
+                    }
+                }
+            }
+        }
+
+        foreach (array_chunk($inserts, self::META_FLUSH_CHUNK) as $insertChunk) {
+            $placeholders = [];
+            $values = [];
+            foreach ($insertChunk as [$postId, $key, $value]) {
+                $placeholders[] = '(%d, %s, %s)';
+                $values[] = $postId;
+                $values[] = $key;
+                $values[] = $value;
+            }
+            $this->wpdb->query($this->wpdb->prepare(
+                "INSERT INTO {$this->wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode(', ', $placeholders),
+                ...$values
+            ));
+        }
+
+        foreach (array_keys($pending) as $postId) {
+            wp_cache_delete((int)$postId, 'post_meta');
+        }
     }
 
     public function logAuditAlert(string $operation, int $targetId, array $payload): void

@@ -1,0 +1,217 @@
+{
+  "id": "P017",
+  "title": "Batched legacy meta writes and skip unchanged products on import",
+  "status": "in_progress",
+  "content_hash": "b3553e7a890d22d539c6d7a2a66aa670efc6f08318e83c224cb45ed1c3faf0bb",
+  "tasks": [
+    {
+      "id": "P017.1",
+      "title": "Batched meta writes and reads in LegacyMirror with identical output",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Application/Migration/LegacyMirror.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyMirror.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T39Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T40Test.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyMirror.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "6e720e35fe76e3f9603705ad6fb32e8976eebc6bad43ca7ef02ad922e4a82fbf",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157055063-6d16a3f1.log",
+          "time": "2026-11-20T06:44:15.064Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "f96a36702e14203f5f54c9dd61eb617024734e1a044b7891dd9cb19c582c10c2",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157079737-a0f1cc23.log",
+          "time": "2026-11-20T06:44:39.737Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T39Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "cb889ebea7abf1ab3eb6a93891207e5f6ee1b6adff34398334e1794c0f61293a",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157081221-fef5a418.log",
+          "time": "2026-11-20T06:44:41.221Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "00d0121d94488719ba237be024644d33fe09b809f2de389d855126409d5788c1",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157082882-991b413b.log",
+          "time": "2026-11-20T06:44:42.883Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "b18a646ceb6345d98dc6042c104500ee170f2c9c5110376e43ce8b8fc2027c41",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157088588-eafb6ffa.log",
+          "time": "2026-11-20T06:44:48.589Z"
+        },
+        {
+          "argv": [
+            "/usr/local/bin/wp",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "3a064da8619e38c2190e373ab4011513c4cfd017",
+          "content_digest": "a49b8ee6ea6600e089ffeb61c44d61cc8965fb948baf2f2645e8eec7f3a43eeb",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795157098323-46271586.log",
+          "time": "2026-11-20T06:44:58.324Z"
+        }
+      ],
+      "started_at": "2026-11-20T06:40:37.251Z"
+    },
+    {
+      "id": "P017.2",
+      "title": "Skip unchanged products on Shopify re-import",
+      "depends_on": [
+        "P017.1"
+      ],
+      "read_first": [
+        "docs/10-integrations.md",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "tests/integration/ImportPerformanceTest.php",
+        "docs/03-database-schema.md",
+        "docs/10-integrations.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "/usr/local/bin/wp",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P017.3",
+      "title": "Benchmark after P017, notes and report",
+      "depends_on": [
+        "P017.2"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P017-import-mirror-batch-skip/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "b3553e7a890d22d539c6d7a2a66aa670efc6f08318e83c224cb45ed1c3faf0bb"
+}

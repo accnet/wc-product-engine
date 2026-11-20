@@ -1,6 +1,6 @@
 <?php
 /**
- * ImportPerformanceTest — P015 import correctness, idempotency and cost guards.
+ * ImportPerformanceTest — P015/P017 import correctness, idempotency and cost guards.
  *
  * Runs the real Shopify batch importer on a small generated CSV with many
  * variants per product and repeated image URLs, then re-imports the same file
@@ -65,6 +65,7 @@ final class ImportPerformanceTest
             $this->testDnsIsResolvedOncePerHost();
             $this->testDuplicateRowsCollapseLaterRowWins();
             $this->testSkuMatchKeepsCaseInsensitiveLookup();
+            $this->testMirrorBatchedMetaKeepsRowSemantics($first);
             echo "All ImportPerformanceTest tests passed.\n";
         } catch (\Throwable $e) {
             echo 'FAILED: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
@@ -298,6 +299,77 @@ final class ImportPerformanceTest
 
         $this->assert($after === $before, 'Lower-case SKU re-import changed the variant set: ' . wp_json_encode([$before, $after]));
         echo "  ✓ SKU matching on re-import stays case-insensitive\n";
+    }
+
+    /**
+     * P017 D01/D02: the batched legacy mirror writes nothing when legacy meta
+     * already matches, repairs changed or missing keys, updates only the first
+     * row of a duplicated key, and stays within a per-variation query budget.
+     */
+    private function testMirrorBatchedMetaKeepsRowSemantics(array $first): void
+    {
+        $handle = "perf-many-variants-{$this->suffix}";
+        $pid = $first[$handle]['product_id'];
+        $vids = $first[$handle]['variant_ids'];
+        $in = implode(',', array_merge([$pid], $vids));
+        $pm = $this->wpdb->postmeta;
+        $snapshot = function () use ($in, $pm): array {
+            return $this->wpdb->get_results("SELECT meta_id, post_id, meta_key, meta_value FROM {$pm} WHERE post_id IN ({$in}) ORDER BY meta_id", ARRAY_A);
+        };
+
+        $metaWrites = 0;
+        $mirrorQueries = 0;
+        $counter = function ($sql) use (&$metaWrites, &$mirrorQueries, $pm) {
+            $mirrorQueries++;
+            if (preg_match('/^\s*(INSERT|UPDATE|DELETE)\b[^;]*?`?' . preg_quote($pm, '/') . '`?\s/i', $sql)) {
+                $metaWrites++;
+            }
+            return $sql;
+        };
+        $mirror = function () use ($pid, $counter, &$metaWrites, &$mirrorQueries): void {
+            $state = $this->wpdb->get_row($this->wpdb->prepare("SELECT native_applied FROM {$this->wpdb->prefix}wpe_object_state WHERE object_id = %d", $pid), ARRAY_A);
+            $m = \WPE\Application\Migration\LegacyMirror::getInstance();
+            $epoch = $m->getAggregateEpoch($pid);
+            $metaWrites = 0;
+            $mirrorQueries = 0;
+            add_filter('query', $counter);
+            try {
+                $res = $m->mirrorAggregate($pid, (int) ($state['native_applied'] ?? 0) + 1, $epoch);
+            } finally {
+                remove_filter('query', $counter);
+            }
+            $this->assert($res['status'] === 'mirrored', 'Mirror did not run: ' . wp_json_encode($res));
+        };
+
+        $before = $snapshot();
+        $mirror();
+        $this->assert($snapshot() === $before, 'Re-mirroring unchanged data changed legacy meta.');
+        $this->assert($metaWrites === 0, "Re-mirroring unchanged data issued {$metaWrites} postmeta writes.");
+        $budget = 3 * count($vids) + 60;
+        $this->assert($mirrorQueries <= $budget, "Mirror used {$mirrorQueries} queries for " . count($vids) . " variations (budget {$budget}).");
+
+        // Damage legacy meta: changed value, missing key, duplicated key.
+        $v0 = $vids[0];
+        $v1 = $vids[1];
+        $this->wpdb->query($this->wpdb->prepare("UPDATE {$pm} SET meta_value = 'x' WHERE post_id = %d AND meta_key = '_regular_price'", $v0));
+        $this->wpdb->query($this->wpdb->prepare("DELETE FROM {$pm} WHERE post_id = %d AND meta_key = '_stock_status'", $v1));
+        $firstSku = $this->wpdb->get_row($this->wpdb->prepare("SELECT meta_id, meta_value FROM {$pm} WHERE post_id = %d AND meta_key = '_sku' ORDER BY meta_id LIMIT 1", $v0), ARRAY_A);
+        $this->wpdb->insert($pm, ['post_id' => $v0, 'meta_key' => '_sku', 'meta_value' => 'dup-row']);
+        $dupId = (int) $this->wpdb->insert_id;
+        $this->wpdb->update($pm, ['meta_value' => 'bad'], ['meta_id' => (int) $firstSku['meta_id']]);
+
+        $mirror();
+
+        // get_col() returns '' as null; compare values as strings.
+        $get = fn (int $post, string $key): array => array_map('strval', $this->wpdb->get_col($this->wpdb->prepare("SELECT meta_value FROM {$pm} WHERE post_id = %d AND meta_key = %s ORDER BY meta_id", $post, $key)));
+        $expectedPrice = array_values(array_filter($before, fn ($r) => (int) $r['post_id'] === $v0 && $r['meta_key'] === '_regular_price'))[0]['meta_value'];
+        $expectedStatus = array_values(array_filter($before, fn ($r) => (int) $r['post_id'] === $v1 && $r['meta_key'] === '_stock_status'))[0]['meta_value'];
+        $this->assert($get($v0, '_regular_price') === [$expectedPrice], 'Changed _regular_price was not restored.');
+        $this->assert($get($v1, '_stock_status') === [$expectedStatus], 'Missing _stock_status was not re-inserted.');
+        $this->assert($get($v0, '_sku') === [(string) $firstSku['meta_value'], 'dup-row'], 'Duplicated key: only the first row may be updated, got ' . wp_json_encode($get($v0, '_sku')));
+        $this->wpdb->delete($pm, ['meta_id' => $dupId]);
+
+        echo sprintf("  ✓ batched mirror: no writes when unchanged, repairs changed/missing keys, first-row semantics (%d queries for %d variations)\n", $mirrorQueries, count($vids));
     }
 
     /**
