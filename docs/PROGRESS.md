@@ -2,7 +2,7 @@
 
 ## 1. Trạng thái
 
-Bộ docs đã tạo; runtime T01–T49 đã implement. Kế hoạch P001 (docs/plans/P001-audit-remediation) đã re-pin lên WP 7.1.3 / WC 11.2.1 và chạy lại toàn bộ receipt: `node scripts/verify-task.mjs Txx` exit 0 cho 49/49 task, 212/212 requirement ở trạng thái `verified` và 110/110 AC có anchor (receipt theo từng R/AC từ output thật, có isolation receipt). `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation. Đây là evidence tích hợp trên site1.localhost (khoảng 370 product), không phải benchmark 100k/1M. Ngày 20/11/2026 host lên WP 7.1.5 / WC 11.3.0 / PHP 8.3.36 / MariaDB 11.8.9; P020 (docs/plans/P020-wp715-recertification) re-pin và chạy lại evidence trên root cô lập (DB `test_wpe_regress`), kết quả từng task ở report P020 và `docs/evidence/rerun-summary.json`. Receipt nào chưa chạy lại pass trên runtime mới là stale (R171) cho đến khi chạy lại. Gate: READY có waiver của user (không audit độc lập, không đo 100k/1M), chưa authorize cutover production; xem docs/audits/READINESS-GATE.md.
+Bộ docs đã tạo; runtime T01–T49 đã implement. Kế hoạch P001 (docs/plans/P001-audit-remediation) đã re-pin lên WP 7.1.3 / WC 11.2.1 và chạy lại toàn bộ receipt: `node scripts/verify-task.mjs Txx` exit 0 cho 49/49 task, 212/212 requirement ở trạng thái `verified` và 110/110 AC có anchor (receipt theo từng R/AC từ output thật, có isolation receipt). `[x]` chỉ dùng khi evidence task pass; không đánh dấu từ docs validation. Đây là evidence tích hợp trên site1.localhost (khoảng 370 product), không phải benchmark 100k/1M. Ngày 20/11/2026 host lên WP 7.1.5 / WC 11.3.0 / PHP 8.3.36 / MariaDB 11.8.9; P020 (docs/plans/P020-wp715-recertification) re-pin và chạy lại evidence trên root cô lập (DB `test_wpe_regress`), kết quả: `node scripts/rerun-evidence.mjs --verify-only` (`docs/evidence/verify-summary.json`) cho 46/49 task verify và 12/12 readiness gate pass; T45 bị chặn bởi OD-17, kéo theo T46/T49 (chi tiết ở report P020). Vì vậy T45, T46 và T49 để `[ ]`: đã implement, nhưng receipt trên runtime mới chưa pass (P023). Receipt nào chưa chạy lại pass trên runtime mới là stale (R171) cho đến khi chạy lại. Gate: READY có waiver của user (không audit độc lập, không đo 100k/1M), chưa authorize cutover production; xem docs/audits/READINESS-GATE.md.
 
 ## 2. P0 — Foundation
 
@@ -70,9 +70,9 @@ Bộ docs đã tạo; runtime T01–T49 đã implement. Kế hoạch P001 (docs/
 ## 8. P6 — Controlled rollout/release
 
 - [x] T43 — Cutover barrier, canary và monitored rollout
-- [x] T45 — Seal authority và chuyển full_native
-- [x] T49 — Release packaging, docs và staged delivery
+- [ ] T45 — Seal authority và chuyển full_native
+- [ ] T49 — Release packaging, docs và staged delivery
 
 ## 9. P7 — Retention cleanup
 
-- [x] T46 — Retention, garbage collection và legacy cleanup
+- [ ] T46 — Retention, garbage collection và legacy cleanup

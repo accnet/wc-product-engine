@@ -1,0 +1,120 @@
+{
+  "id": "P023",
+  "title": "P020 amendment: PROGRESS reflects the 7.1.5 receipts",
+  "status": "done",
+  "content_hash": "bea1bfc47f7907ae74561b0664786ef87d5718a3a1eb2ff56e6c6ee802e7759c",
+  "tasks": [
+    {
+      "id": "P023.1",
+      "title": "PROGRESS: T45/T46/T49 unchecked with reason; status sentence cites verify-summary 46/49",
+      "depends_on": [],
+      "read_first": [
+        "docs/plans/P020-wp715-recertification/report.md"
+      ],
+      "files": [
+        "docs/PROGRESS.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "7d174cea305bc2591215b358df1a8b3785d2f9b71ee9298aac7e9b0f000c2bbb",
+          "output_sha256": "27ce61b46b5eb2123aba6d1de97fb114010902a7e4f48ffb8f7f0f60ae647977",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163629084-7724a679.log",
+          "time": "2026-11-20T08:33:49.085Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "7d174cea305bc2591215b358df1a8b3785d2f9b71ee9298aac7e9b0f000c2bbb",
+          "output_sha256": "820a8d309a206f468ce475e384c8b7a8732a5b97fedc44366cd786c3676c158b",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163629189-05180e86.log",
+          "time": "2026-11-20T08:33:49.190Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "7d174cea305bc2591215b358df1a8b3785d2f9b71ee9298aac7e9b0f000c2bbb",
+          "output_sha256": "8c9373ec23f8b1ff2ec058ff44619bed8dcb0fed3869cc997e4e50e742ababbe",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163629282-59319ce6.log",
+          "time": "2026-11-20T08:33:49.283Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "8e2d5bb7a043272027360ce02d571bb2f72b1de0066e5beaadfe7c7e6ea50d00",
+          "output_sha256": "1b7a17f71308bb6feab2b0a430e1a6aeede1f478a712bad18277ef0aea558887",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163645124-49700da7.log",
+          "time": "2026-11-20T08:34:05.125Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "8e2d5bb7a043272027360ce02d571bb2f72b1de0066e5beaadfe7c7e6ea50d00",
+          "output_sha256": "26fbb1aae8b83903a7cd0b9ae5317278bacfbf4b85c49cb89ff3c1637816ac88",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163645234-29387161.log",
+          "time": "2026-11-20T08:34:05.234Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "ea446c4fc187dfc02a4bbb802b0c9d1c92c20260",
+          "content_digest": "8e2d5bb7a043272027360ce02d571bb2f72b1de0066e5beaadfe7c7e6ea50d00",
+          "output_sha256": "8c9373ec23f8b1ff2ec058ff44619bed8dcb0fed3869cc997e4e50e742ababbe",
+          "output_path": "docs/plans/P023-p020-progress-amendment/command-1795163645333-6d1a2626.log",
+          "time": "2026-11-20T08:34:05.334Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:33:48.979Z"
+    }
+  ],
+  "approved_hash": "bea1bfc47f7907ae74561b0664786ef87d5718a3a1eb2ff56e6c6ee802e7759c",
+  "report_hash": "2240fd842238863ccb9a7d4f13c67b2facc882fde07e6f865f992677904cf16a"
+}
