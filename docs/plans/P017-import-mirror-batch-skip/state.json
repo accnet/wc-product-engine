@@ -1,7 +1,7 @@
 {
   "id": "P017",
   "title": "Batched legacy meta writes and skip unchanged products on import",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "b3553e7a890d22d539c6d7a2a66aa670efc6f08318e83c224cb45ed1c3faf0bb",
   "tasks": [
     {
@@ -332,9 +332,38 @@
           "check"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "89e15b68edce76649d605a7fb55451b393137d11",
+          "content_digest": "fa1adfe46c395d35704f6d122ad514566ef67dcb2154e59cab1ea685af58d3f6",
+          "output_sha256": "91f79d61f5127ff85f1764dbf136a1f6d53932419224786c3e8a7a448647f6dd",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795158251281-2ef160e3.log",
+          "time": "2026-11-20T07:04:11.282Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "89e15b68edce76649d605a7fb55451b393137d11",
+          "content_digest": "fa1adfe46c395d35704f6d122ad514566ef67dcb2154e59cab1ea685af58d3f6",
+          "output_sha256": "462bf1a8539d502a5f1e5e9114ec64df3f8d15e6cbd6e65e041653bb00c95d84",
+          "output_path": "docs/plans/P017-import-mirror-batch-skip/command-1795158251369-0254e37a.log",
+          "time": "2026-11-20T07:04:11.370Z"
+        }
+      ],
+      "started_at": "2026-11-20T07:01:46.308Z"
     }
   ],
-  "approved_hash": "b3553e7a890d22d539c6d7a2a66aa670efc6f08318e83c224cb45ed1c3faf0bb"
+  "approved_hash": "b3553e7a890d22d539c6d7a2a66aa670efc6f08318e83c224cb45ed1c3faf0bb",
+  "report_hash": "b6167b4af21028b79003edfa5b38ed985eb691f9674c7715cee25d5f0c0f314c"
 }
