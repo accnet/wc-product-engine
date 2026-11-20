@@ -121,6 +121,26 @@ class T43Test
     }
 
     /**
+     * The cutover needs a passing gate receipt; name the failed gates instead of a later TypeError.
+     *
+     * @param array<string, mixed> $result ReadinessGates::validateAllGates() result.
+     */
+    private function requireGateToken(array $result): string
+    {
+        $token = $result['gate_receipt_token'] ?? null;
+        if (!is_string($token) || $token === '') {
+            $reasons = [];
+            foreach ((array) ($result['gates'] ?? []) as $id => $gate) {
+                if (($gate['status'] ?? '') !== 'passed') {
+                    $reasons[] = $id . ' ' . ($gate['status'] ?? '?') . ': ' . ($gate['reason'] ?? '');
+                }
+            }
+            throw new \RuntimeException('Readiness gates did not pass, no gate receipt token: ' . implode('; ', array_slice($reasons, 0, 3)));
+        }
+        return $token;
+    }
+
+    /**
      * R173: Cutover checkpoint faults & crash recovery (resume/abort with single authoritative source).
      */
     public function testR173_cutover_checkpoint_faults(): void
@@ -175,7 +195,7 @@ class T43Test
 
         // Obtain valid gate receipt token
         $manifest = $this->gates->buildCohortManifest('all');
-        $gateToken = $this->gates->validateAllGates($manifest)['gate_receipt_token'];
+        $gateToken = $this->requireGateToken($this->gates->validateAllGates($manifest));
 
         // Scenario A: Fault at acquire_barrier_lock checkpoint
         $jobIdA = $this->runner->startCutover('all', $gateToken, ['product_ids' => [$productId]]);
@@ -206,7 +226,7 @@ class T43Test
         // Scenario B: Fault at epoch_flip checkpoint with subsequent successful resume
         // Re-generate token since abort cleaned barrier
         $manifestB = $this->gates->buildCohortManifest('all');
-        $gateTokenB = $this->gates->validateAllGates($manifestB)['gate_receipt_token'];
+        $gateTokenB = $this->requireGateToken($this->gates->validateAllGates($manifestB));
 
         $jobIdB = $this->runner->startCutover('all', $gateTokenB, ['product_ids' => [$productId]]);
         $this->cleanJobIds[] = $jobIdB;

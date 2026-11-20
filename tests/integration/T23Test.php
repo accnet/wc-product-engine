@@ -422,10 +422,14 @@ class T23Test
         }
 
         // Verify no modified WC core files exist via plugin checksums
-        $cmd = 'wp --path=/var/www/site1.localhost --allow-root plugin verify-checksums woocommerce 2>&1';
-        $output = shell_exec($cmd);
-        if (!str_contains((string)$output, 'Success: Verified 1 of 1 plugins.')) {
-            throw new RuntimeException("AC-T23-02 Failed: WooCommerce Core files have modifications: " . $output);
+        // --no-color: wp-cli may colour "Success:" with ANSI codes, which broke the text match.
+        $cmd = 'wp --path=' . escapeshellarg(ABSPATH) . ' --allow-root --no-color plugin verify-checksums woocommerce 2>&1';
+        $lines = [];
+        $exitCode = 1;
+        exec($cmd, $lines, $exitCode);
+        $output = implode("\n", $lines);
+        if ($exitCode !== 0 || !str_contains($output, 'Success: Verified 1 of 1 plugins.')) {
+            throw new RuntimeException("AC-T23-02 Failed: WooCommerce Core files have modifications (exit {$exitCode}): " . $output);
         }
 
         echo " OK\n";
