@@ -41,10 +41,17 @@ class CatalogAdapters
 
     /**
      * Initializes WordPress hooks for query interception.
+     * Strict fail-closed mode is enforced under sealed full_native; under indexed / cohort_canary /
+     * native_bridge (where legacy CPT & lookup tables remain canonical or actively mirrored),
+     * exotic unsupported WP_Query clauses fall back cleanly instead of throwing a 500 error.
      */
     public static function init(): void
     {
-        $instance = new self();
+        $mode = class_exists(\WPE\Bootstrap\PluginBootstrap::class)
+            ? \WPE\Bootstrap\PluginBootstrap::instance()->getSystemMode()
+            : 'full_native';
+        $strict = ($mode === 'full_native');
+        $instance = new self(null, null, $strict);
         add_filter('posts_pre_query', [$instance, 'handlePostsPreQuery'], 10, 2);
     }
 
@@ -79,25 +86,40 @@ class CatalogAdapters
             $unsupported[] = "Raw SQL modification detected";
         }
 
+        // Check for explicit post ID inclusion/exclusion lists not handled by CatalogQuery
+        if (!empty($queryVars['post__in'])) {
+            $unsupported[] = 'Unsupported explicit post__in filter';
+        }
+        if (!empty($queryVars['post__not_in'])) {
+            $unsupported[] = 'Unsupported explicit post__not_in filter';
+        }
+
         // Check for unsupported post status
-        if (isset($queryVars['post_status'])) {
+        if (isset($queryVars['post_status']) && $queryVars['post_status'] !== '') {
             $statuses = (array)$queryVars['post_status'];
             $allowedStatuses = ['publish', 'draft', 'trash', 'any'];
             foreach ($statuses as $st) {
-                if (!in_array($st, $allowedStatuses, true)) {
+                if ($st !== '' && !in_array($st, $allowedStatuses, true)) {
                     $unsupported[] = "Unsupported post_status: '{$st}'";
                 }
             }
         }
 
-        // Check for unsupported taxonomy in tax_query
+        // Check for unsupported taxonomy in tax_query (supports nested clauses & product_visibility)
         if (!empty($queryVars['tax_query']) && is_array($queryVars['tax_query'])) {
-            foreach ($queryVars['tax_query'] as $taxClause) {
-                if (is_array($taxClause) && isset($taxClause['taxonomy'])) {
-                    $tax = $taxClause['taxonomy'];
-                    if ($tax !== 'product_cat' && $tax !== 'product_tag' && !str_starts_with($tax, 'pa_')) {
-                        $unsupported[] = "Unsupported taxonomy: '{$tax}'";
+            foreach ($this->flattenTaxClauses($queryVars['tax_query']) as $taxClause) {
+                $tax = (string)$taxClause['taxonomy'];
+                if ($tax === 'product_visibility') {
+                    $visSlugs = $this->resolveVisibilitySlugs($taxClause);
+                    foreach ($visSlugs as $slug) {
+                        if (!in_array($slug, ['exclude-from-catalog', 'exclude-from-search', 'featured', 'outofstock'], true)) {
+                            $unsupported[] = "Unsupported product_visibility term: '{$slug}'";
+                        }
                     }
+                    continue;
+                }
+                if ($tax !== 'product_cat' && $tax !== 'product_tag' && !str_starts_with($tax, 'pa_')) {
+                    $unsupported[] = "Unsupported taxonomy: '{$tax}'";
                 }
             }
         }
@@ -106,6 +128,73 @@ class CatalogAdapters
             'supported' => empty($unsupported),
             'reasons'   => $unsupported,
         ];
+    }
+
+    /**
+     * Flatten nested WP_Tax_Query arrays into leaf clauses that specify a taxonomy.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function flattenTaxClauses(array $taxQuery): array
+    {
+        $clauses = [];
+        foreach ($taxQuery as $key => $item) {
+            if ($key === 'relation' || !is_array($item)) {
+                continue;
+            }
+            if (isset($item['taxonomy'])) {
+                $clauses[] = $item;
+            } else {
+                foreach ($this->flattenTaxClauses($item) as $sub) {
+                    $clauses[] = $sub;
+                }
+            }
+        }
+        return $clauses;
+    }
+
+    /**
+     * Resolve term slugs for a product_visibility tax_query clause (by slug, name, term_id, or term_taxonomy_id).
+     *
+     * @return string[]
+     */
+    private function resolveVisibilitySlugs(array $clause): array
+    {
+        $terms = (array)($clause['terms'] ?? []);
+        if (empty($terms)) {
+            return [];
+        }
+        $field = (string)($clause['field'] ?? 'slug');
+        if ($field === 'slug' || $field === 'name') {
+            return array_values(array_map(static fn($t): string => strtolower(trim((string)$t)), $terms));
+        }
+
+        $idToSlug = [];
+        if (function_exists('wc_get_product_visibility_term_ids')) {
+            foreach ((array)wc_get_product_visibility_term_ids() as $slug => $ttId) {
+                if ((int)$ttId > 0) {
+                    $idToSlug[(int)$ttId] = (string)$slug;
+                }
+            }
+        }
+
+        $resolved = [];
+        foreach ($terms as $rawId) {
+            $intId = (int)$rawId;
+            if (isset($idToSlug[$intId])) {
+                $resolved[] = $idToSlug[$intId];
+                continue;
+            }
+            if (function_exists('get_term_by')) {
+                $termObj = get_term_by($field === 'term_taxonomy_id' ? 'term_taxonomy_id' : 'id', $intId, 'product_visibility');
+                if ($termObj && !empty($termObj->slug)) {
+                    $resolved[] = (string)$termObj->slug;
+                    continue;
+                }
+            }
+            $resolved[] = 'unknown_' . $intId;
+        }
+        return $resolved;
     }
 
     /* -------------------------------------------------------------------------- */
@@ -136,15 +225,31 @@ class CatalogAdapters
             $adapted['tag'] = is_array($queryVars['product_tag']) ? $queryVars['product_tag'] : [$queryVars['product_tag']];
         }
 
-        // 3. Tax Query parsing (categories, tags, and pa_* attributes)
+        // 3. Tax Query parsing (categories, tags, pa_* attributes, and product_visibility)
+        $excludeCatalog = false;
+        $excludeSearch = false;
         if (!empty($queryVars['tax_query']) && is_array($queryVars['tax_query'])) {
-            foreach ($queryVars['tax_query'] as $clause) {
-                if (!is_array($clause) || empty($clause['taxonomy'])) {
-                    continue;
-                }
-                $tax = $clause['taxonomy'];
+            foreach ($this->flattenTaxClauses($queryVars['tax_query']) as $clause) {
+                $tax = (string)$clause['taxonomy'];
                 $terms = (array)($clause['terms'] ?? []);
                 if (empty($terms)) {
+                    continue;
+                }
+
+                if ($tax === 'product_visibility') {
+                    $operator = strtoupper((string)($clause['operator'] ?? 'IN'));
+                    $slugs = $this->resolveVisibilitySlugs($clause);
+                    foreach ($slugs as $visSlug) {
+                        if ($visSlug === 'featured') {
+                            $adapted['featured'] = ($operator !== 'NOT IN');
+                        } elseif ($visSlug === 'outofstock') {
+                            $adapted['in_stock'] = ($operator === 'NOT IN');
+                        } elseif ($visSlug === 'exclude-from-catalog' && $operator === 'NOT IN') {
+                            $excludeCatalog = true;
+                        } elseif ($visSlug === 'exclude-from-search' && $operator === 'NOT IN') {
+                            $excludeSearch = true;
+                        }
+                    }
                     continue;
                 }
 
@@ -156,6 +261,10 @@ class CatalogAdapters
                     $adapted['attributes'][$tax] = $terms;
                 }
             }
+        }
+
+        if ($excludeCatalog && $excludeSearch && empty($adapted['visibility'])) {
+            $adapted['visibility'] = 'visible';
         }
 
         // 4. Status
@@ -222,10 +331,15 @@ class CatalogAdapters
                 $adapted['sort'] = 'rating';
                 break;
             case 'menu_order':
+            case 'menu_order title':
                 $adapted['sort'] = 'menu_order';
                 break;
             case 'title':
                 $adapted['sort'] = 'title_asc';
+                break;
+            case 'ID':
+            case 'id':
+                $adapted['sort'] = $order === 'ASC' ? 'date_asc' : 'date_desc';
                 break;
             default:
                 $adapted['sort'] = 'price_asc';
@@ -340,16 +454,41 @@ class CatalogAdapters
      */
     public function handlePostsPreQuery($pre, WP_Query $query): ?array
     {
-        // AC-T19-02: Non-product queries must NOT be touched!
-        $postType = $query->get('post_type');
-        $isProductQuery = ($postType === 'product' || (is_array($postType) && in_array('product', $postType, true)));
+        if ($pre !== null) {
+            return $pre;
+        }
 
-        if (!$isProductQuery && !$query->get('wc_query')) {
+        // AC-T19-02: Non-product queries and multi-post-type searches must NOT be touched!
+        $postType = $query->get('post_type');
+        $isSingleProductType = ($postType === 'product' || (is_array($postType) && count($postType) === 1 && in_array('product', $postType, true)));
+
+        if (!$isSingleProductType && !$query->get('wc_query')) {
+            return null;
+        }
+
+        $queryVars = $query->query_vars;
+
+        // Single-product lookups (/product/<slug>/, ?p=<id>) load a single post shell, not a catalog archive
+        if (
+            $query->is_singular
+            || !empty($queryVars['p'])
+            || !empty($queryVars['page_id'])
+            || !empty($queryVars['name'])
+            || !empty($queryVars['pagename'])
+        ) {
+            return null;
+        }
+
+        // WP-Admin list table queries (edit.php?post_type=product) manage drafts/private/trash across WP_Posts_List_Table
+        if (
+            function_exists('is_admin') && is_admin()
+            && (!function_exists('wp_doing_ajax') || !wp_doing_ajax())
+            && !$query->get('wc_query')
+        ) {
             return null;
         }
 
         // Check if query is supported
-        $queryVars = $query->query_vars;
         $support = $this->evaluateQuerySupport($queryVars);
 
         if (!$support['supported']) {
@@ -371,6 +510,14 @@ class CatalogAdapters
 
         if (empty($result['ids'])) {
             return [];
+        }
+
+        $fields = (string)$query->get('fields');
+        if ($fields === 'ids') {
+            return $result['ids'];
+        }
+        if ($fields === 'id=>parent') {
+            return null;
         }
 
         // Prime post caches and return WP_Post instances
