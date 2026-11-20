@@ -554,6 +554,17 @@ class LegacyMirror
             if (function_exists('wc_delete_product_transients')) {
                 wc_delete_product_transients($aggregateId);
             }
+
+            // The postmeta above bypassed the WooCommerce data store, so refresh its lookup table for
+            // the product and its live variations (audit F04). The table is derived and can be rebuilt
+            // with `wp wpe lookup rebuild`, so a failure is logged instead of failing the mirror.
+            if (class_exists(\WC_Product_Data_Store_CPT::class)) {
+                try {
+                    (new \WPE\Compatibility\WooDataStore\LookupTableProjector())->projectProduct($aggregateId, $activeVarIds);
+                } catch (\Throwable $e) {
+                    error_log(sprintf('[wc-product-engine] lookup table projection for product %d failed: %s', $aggregateId, $e->getMessage()));
+                }
+            }
         });
 
         // 5. Update object state: record native_applied revision and updated legacy_hash
