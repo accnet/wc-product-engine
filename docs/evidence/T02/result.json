@@ -1,19 +1,19 @@
 {
   "task_id": "T02",
-  "commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+  "commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
   "qa_status": "passed",
-  "content_digest": "0ad94f4e333aac82609d3254de50a75cee31592ccddb252abde7a7f3a17d26c7",
+  "content_digest": "510ca667e94bd89b034c82e3258868aac93905594bc094e2f3431d3d0f69ce4c",
   "environment": {
-    "wordpress": "7.1.3",
-    "woocommerce": "11.2.1",
-    "php": "8.3.31",
-    "database": "11.8.6-MariaDB-ubu2204"
+    "wordpress": "7.1.5",
+    "woocommerce": "11.3.0",
+    "php": "8.3.36",
+    "database": "11.8.9-MariaDB"
   },
   "commands": [
     {
       "argv": [
         "wp",
-        "--path=/var/www/site1.localhost",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T02Test.php"
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T02",
       "exit_code": 0,
       "output_path": "docs/evidence/T02/output.log",
-      "output_sha256": "1e7d83fcd4f779094445fe1d9844febe1cfea2d4171acd654e01bb3122aa5875",
-      "content_digest": "0ad94f4e333aac82609d3254de50a75cee31592ccddb252abde7a7f3a17d26c7"
+      "output_sha256": "976e4e3685aa28d881ace64b4364d1d2c0835320a110273a679a42fd7be46e06",
+      "content_digest": "510ca667e94bd89b034c82e3258868aac93905594bc094e2f3431d3d0f69ce4c"
     }
   ],
   "regression_results": [
@@ -34,7 +34,7 @@
       "assertion_summary": "Verified plugin activation does not mutate data, products, or default legacy authority",
       "basis": "output_anchor",
       "anchor": {
-        "line": 28,
+        "line": 29,
         "text": "R03 (activation_no_mutation): PASSED"
       }
     },
@@ -46,7 +46,7 @@
       "assertion_summary": "Verified independent feature flag scoping and deterministic cohort precedence",
       "basis": "output_anchor",
       "anchor": {
-        "line": 29,
+        "line": 30,
         "text": "R04 (flag_scope): PASSED"
       }
     },
@@ -58,7 +58,7 @@
       "assertion_summary": "Verified missing/unsupported dependencies block native features and render admin notice",
       "basis": "output_anchor",
       "anchor": {
-        "line": 30,
+        "line": 31,
         "text": "R05 (dependency_missing): PASSED"
       }
     },
@@ -70,7 +70,7 @@
       "assertion_summary": "Verified plugin deactivation retains all database tables and product records",
       "basis": "output_anchor",
       "anchor": {
-        "line": 31,
+        "line": 32,
         "text": "R06 (deactivate_retains_data): PASSED"
       }
     },
@@ -82,7 +82,7 @@
       "assertion_summary": "Task test output asserts requirement evidence_env_matches_runtime",
       "basis": "output_anchor",
       "anchor": {
-        "line": 17,
+        "line": 18,
         "text": "[OK] R203 passed: environment equals live runtime and no version literal in the runner."
       }
     },
@@ -94,7 +94,7 @@
       "assertion_summary": "Task test output asserts requirement evidence_binds_base_commit_and_files",
       "basis": "output_anchor",
       "anchor": {
-        "line": 19,
+        "line": 20,
         "text": "[OK] R204 passed: base commit exists in git, fake commit rejected, per-file hashes cover task files."
       }
     },
@@ -106,7 +106,7 @@
       "assertion_summary": "Task test output asserts requirement per_requirement_receipt",
       "basis": "output_anchor",
       "anchor": {
-        "line": 21,
+        "line": 22,
         "text": "[OK] R205 passed: anchors required, fail marker rejected, 'fail-closed' accepted, AC basis recorded."
       }
     }
@@ -119,7 +119,7 @@
       "observation": "Install does not alter authority or products; unsupported dependencies block native",
       "basis": "output_anchor",
       "anchor": {
-        "line": 35,
+        "line": 36,
         "text": "AC-T02-01 (install_inert_unsupported_blocks_native): PASSED"
       }
     },
@@ -130,7 +130,7 @@
       "observation": "When query feature flag is false, WooCommerce legacy queries remain active",
       "basis": "output_anchor",
       "anchor": {
-        "line": 36,
+        "line": 37,
         "text": "AC-T02-02 (legacy_reads_when_query_off): PASSED"
       }
     },
@@ -141,7 +141,7 @@
       "observation": "Cohort conflict resolved via deterministic precedence rules; status reflects real configuration",
       "basis": "output_anchor",
       "anchor": {
-        "line": 37,
+        "line": 38,
         "text": "AC-T02-03 (cohort_conflict_deterministic_status_real): PASSED"
       }
     }
@@ -159,93 +159,101 @@
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+    "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
-      "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4005,
-      "wp_wpe_catalog": 439,
-      "wp_wpe_catalog_facets": 102,
-      "wp_wpe_control": 10,
-      "wp_wpe_downloads": 6,
+      "wp_wpe_asset_storage": 0,
+      "wp_wpe_assets": 688,
+      "wp_wpe_audit": 6311,
+      "wp_wpe_catalog": 5136,
+      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_control": 7,
+      "wp_wpe_downloads": 2,
       "wp_wpe_external_ids": 0,
-      "wp_wpe_import_rows": 1,
-      "wp_wpe_inventory": 263,
+      "wp_wpe_import_rows": 0,
+      "wp_wpe_inventory": 4690,
       "wp_wpe_jobs": 2,
-      "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 344,
-      "wp_wpe_option_values": 61,
-      "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1155,
+      "wp_wpe_meta": 6,
+      "wp_wpe_object_state": 4906,
+      "wp_wpe_option_values": 1029,
+      "wp_wpe_options": 184,
+      "wp_wpe_outbox": 4941,
       "wp_wpe_product_links": 0,
-      "wp_wpe_product_media": 15,
-      "wp_wpe_product_terms": 56,
-      "wp_wpe_products": 114,
-      "wp_wpe_reservation_bridge": 3,
-      "wp_wpe_sku_registry": 215,
+      "wp_wpe_product_media": 679,
+      "wp_wpe_product_terms": 0,
+      "wp_wpe_products": 101,
+      "wp_wpe_reservation_bridge": 2,
+      "wp_wpe_sku_registry": 116,
       "wp_wpe_stock_operations": 3,
-      "wp_wpe_variant_media": 0,
-      "wp_wpe_variant_values": 24,
-      "wp_wpe_variants": 133,
-      "wp_posts": 242,
-      "wp_postmeta": 2584
+      "wp_wpe_upload_items": 0,
+      "wp_wpe_variant_media": 4558,
+      "wp_wpe_variant_values": 13705,
+      "wp_wpe_variants": 4589,
+      "wp_posts": 5384,
+      "wp_postmeta": 53318
     },
     "counts_after_test": {
-      "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4005,
-      "wp_wpe_catalog": 439,
-      "wp_wpe_catalog_facets": 102,
-      "wp_wpe_control": 10,
-      "wp_wpe_downloads": 6,
+      "wp_wpe_asset_storage": 0,
+      "wp_wpe_assets": 688,
+      "wp_wpe_audit": 6311,
+      "wp_wpe_catalog": 5136,
+      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_control": 7,
+      "wp_wpe_downloads": 2,
       "wp_wpe_external_ids": 0,
-      "wp_wpe_import_rows": 1,
-      "wp_wpe_inventory": 263,
+      "wp_wpe_import_rows": 0,
+      "wp_wpe_inventory": 4690,
       "wp_wpe_jobs": 2,
-      "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 344,
-      "wp_wpe_option_values": 61,
-      "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1155,
+      "wp_wpe_meta": 6,
+      "wp_wpe_object_state": 4906,
+      "wp_wpe_option_values": 1029,
+      "wp_wpe_options": 184,
+      "wp_wpe_outbox": 4941,
       "wp_wpe_product_links": 0,
-      "wp_wpe_product_media": 15,
-      "wp_wpe_product_terms": 56,
-      "wp_wpe_products": 114,
-      "wp_wpe_reservation_bridge": 3,
-      "wp_wpe_sku_registry": 215,
+      "wp_wpe_product_media": 679,
+      "wp_wpe_product_terms": 0,
+      "wp_wpe_products": 101,
+      "wp_wpe_reservation_bridge": 2,
+      "wp_wpe_sku_registry": 116,
       "wp_wpe_stock_operations": 3,
-      "wp_wpe_variant_media": 0,
-      "wp_wpe_variant_values": 24,
-      "wp_wpe_variants": 133,
-      "wp_posts": 242,
-      "wp_postmeta": 2584
+      "wp_wpe_upload_items": 0,
+      "wp_wpe_variant_media": 4558,
+      "wp_wpe_variant_values": 13705,
+      "wp_wpe_variants": 4589,
+      "wp_posts": 5384,
+      "wp_postmeta": 53318
     },
     "counts_after_restore": {
-      "wp_wpe_assets": 24,
-      "wp_wpe_audit": 4005,
-      "wp_wpe_catalog": 439,
-      "wp_wpe_catalog_facets": 102,
-      "wp_wpe_control": 10,
-      "wp_wpe_downloads": 6,
+      "wp_wpe_asset_storage": 0,
+      "wp_wpe_assets": 688,
+      "wp_wpe_audit": 6311,
+      "wp_wpe_catalog": 5136,
+      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_control": 7,
+      "wp_wpe_downloads": 2,
       "wp_wpe_external_ids": 0,
-      "wp_wpe_import_rows": 1,
-      "wp_wpe_inventory": 263,
+      "wp_wpe_import_rows": 0,
+      "wp_wpe_inventory": 4690,
       "wp_wpe_jobs": 2,
-      "wp_wpe_meta": 18,
-      "wp_wpe_object_state": 344,
-      "wp_wpe_option_values": 61,
-      "wp_wpe_options": 32,
-      "wp_wpe_outbox": 1155,
+      "wp_wpe_meta": 6,
+      "wp_wpe_object_state": 4906,
+      "wp_wpe_option_values": 1029,
+      "wp_wpe_options": 184,
+      "wp_wpe_outbox": 4941,
       "wp_wpe_product_links": 0,
-      "wp_wpe_product_media": 15,
-      "wp_wpe_product_terms": 56,
-      "wp_wpe_products": 114,
-      "wp_wpe_reservation_bridge": 3,
-      "wp_wpe_sku_registry": 215,
+      "wp_wpe_product_media": 679,
+      "wp_wpe_product_terms": 0,
+      "wp_wpe_products": 101,
+      "wp_wpe_reservation_bridge": 2,
+      "wp_wpe_sku_registry": 116,
       "wp_wpe_stock_operations": 3,
-      "wp_wpe_variant_media": 0,
-      "wp_wpe_variant_values": 24,
-      "wp_wpe_variants": 133,
-      "wp_posts": 242,
-      "wp_postmeta": 2584
+      "wp_wpe_upload_items": 0,
+      "wp_wpe_variant_media": 4558,
+      "wp_wpe_variant_values": 13705,
+      "wp_wpe_variants": 4589,
+      "wp_posts": 5384,
+      "wp_postmeta": 53318
     },
     "leaked_by_test": {},
     "residue_after_restore": {},
@@ -270,14 +278,14 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "89118c51d72a4f52ac19f755f26bd64e57ea1ee6",
+  "base_commit": "0bb31413af95da9c1b16f874c5f06dc1658b34b8",
   "file_hashes": {
     "composer.json": "6550998d046ccd98d2019b475163a888fe558d554393b9eaa3bdecedd5ddb9f4",
     "composer.lock": "89b266b7e204ee1582cd36e271d626f811d855b102d0aadb03d53d230106c3d8",
     "package-lock.json": "965f2a78fb03c7267257af3e31287ed799fcfd8c9fd6f4c31dde612b10c5c3d5",
     "package.json": "c25b9e29f5fdfabc0a0908da2e7cdc1200742b7c9e0c6e10786eb3feb506ecaf",
-    "src/Bootstrap/PluginBootstrap.php": "ba1f628ed58e528e09445afd4e669fe62f3757205792a550e706832e3f297d2c",
-    "tests/integration/T02Test.php": "e588f65384f1d2456f861d8ca9bfbd7599f2af72a65ea6ceb1c2a72c973c17ea",
-    "wc-product-engine.php": "d8527c326d33a414513d20f67f1027d7c6c26228aa4419cce2f3009069645a9f"
+    "src/Bootstrap/PluginBootstrap.php": "2d7907535a6c06014107efb2f588670f51111377a2d3b56e15b35049ed6ed50b",
+    "tests/integration/T02Test.php": "95c2696036981219d823454228a7c73251911b1aa2b53a31ede4255feb1755c1",
+    "wc-product-engine.php": "37501ec646fe9e8d73b9942ee9de989fbbe7d5d0d56e99468e79a237d9053731"
   }
 }
