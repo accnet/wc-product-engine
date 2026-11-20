@@ -1,14 +1,11 @@
 /* WC Product Engine — Admin Styles */
 
-.wpe-settings-wrap,
 .wpe-import-wrap {
     max-width: 1200px;
     margin: 20px 20px 0 0;
 }
 
-.wrap.wpe-settings-wrap h1.wp-heading-inline,
 .wrap.wpe-import-wrap h1.wp-heading-inline,
-.wpe-settings-wrap h1,
 .wpe-import-wrap h1 {
     display: inline-flex;
     align-items: center;
@@ -86,14 +83,6 @@
     width: 20px;
     height: 20px;
     font-size: 20px;
-}
-
-/* Metric boxes */
-.wpe-status-grid .card,
-.wpe-metric-box {
-    border: 1px solid var(--wpe-border, #dcdcde);
-    border-radius: var(--wpe-radius-sm, 6px);
-    box-shadow: var(--wpe-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.04));
 }
 
 /* Terminal Console */

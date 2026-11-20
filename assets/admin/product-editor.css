@@ -269,7 +269,6 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-drawer-container .button .dashicons,
 .wpe-modal-dialog .button .dashicons,
 .wpe-btn-delete-option .dashicons,
-.wpe-desc-attr-delete .dashicons,
 .wpe-btn-delete-desc-attr .dashicons,
 .wpe-btn-delete-variant .dashicons,
 .wpe-btn-media-unlink .dashicons,
@@ -321,8 +320,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-drawer-container .button.button-primary,
 .wpe-modal-dialog .button.button-primary,
 .wpe-btn-apply-generator,
-.wpe-btn-save-drawer,
-.wpe-btn-apply-bulk-edit {
+.wpe-btn-save-drawer {
     background: var(--wpe-p-color-primary) !important;
     border-color: var(--wpe-p-color-primary) !important;
     color: #ffffff !important;
@@ -336,8 +334,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-drawer-container .button.button-primary:hover,
 .wpe-modal-dialog .button.button-primary:hover,
 .wpe-btn-apply-generator:hover,
-.wpe-btn-save-drawer:hover,
-.wpe-btn-apply-bulk-edit:hover {
+.wpe-btn-save-drawer:hover {
     background: var(--wpe-p-color-primary-hover) !important;
     border-color: var(--wpe-p-color-primary-hover) !important;
     color: #ffffff !important;
@@ -367,7 +364,6 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-btn-delete-option,
-.wpe-desc-attr-delete,
 .wpe-btn-delete-desc-attr,
 .wpe-btn-delete-variant,
 .wpe-btn-media-unlink,
@@ -391,7 +387,6 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-btn-delete-option:hover,
-.wpe-desc-attr-delete:hover,
 .wpe-btn-delete-desc-attr:hover,
 .wpe-btn-delete-variant:hover,
 .wpe-btn-media-unlink:hover,
@@ -538,13 +533,6 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     color: var(--wpe-p-color-text-subdued);
 }
 
-.wpe-section-desc {
-    padding: 12px 20px 0;
-    font-size: 13px;
-    color: var(--wpe-p-color-text-subdued);
-    margin: 0;
-}
-
 .wpe-section-body {
     padding: 18px 20px;
 }
@@ -678,73 +666,6 @@ input.wpe-option-name-input:focus {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.wpe-option-ui-settings {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    background: #ffffff;
-    border: 1px solid var(--wpe-p-color-border-subdued);
-    border-radius: var(--wpe-p-border-radius-base);
-}
-
-.wpe-option-ui-field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 190px;
-}
-
-.wpe-option-ui-field--wide {
-    flex: 1;
-    min-width: 220px;
-}
-
-.wpe-option-ui-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--wpe-p-color-text-subdued);
-}
-
-.wpe-option-display-type-select,
-.wpe-option-help-text-input {
-    height: 32px !important;
-    min-height: 32px !important;
-    padding: 3px 8px !important;
-    font-size: 12.5px !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: var(--wpe-p-border-radius-sm) !important;
-    background: #ffffff !important;
-}
-
-.wpe-chip--color {
-    gap: 6px;
-    padding: 3px 8px;
-}
-
-.wpe-chip-color-picker {
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    border: 1px solid var(--wpe-p-color-border);
-    border-radius: 4px;
-    background: transparent;
-    cursor: pointer;
-}
-
-.wpe-chip-color-hex {
-    width: 72px !important;
-    height: 22px !important;
-    min-height: 22px !important;
-    padding: 1px 5px !important;
-    font-size: 11px !important;
-    font-family: monospace !important;
-    border: 1px solid var(--wpe-p-color-border-control) !important;
-    border-radius: 4px !important;
-    background: #ffffff !important;
 }
 
 .wpe-bulk-paste-box {
@@ -1563,31 +1484,7 @@ select.wpe-editable-input {
     box-sizing: border-box !important;
 }
 
-/* 13. UX Enhancements: Presets, Reordering, Interactive Stock & Group Controls */
-.wpe-option-presets-bar {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.wpe-btn-preset-option {
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 2px 10px !important;
-    font-size: 12px !important;
-    background: #f8fafc !important;
-    border: 1px dashed #cbd5e1 !important;
-    color: #334155 !important;
-    border-radius: 999px !important;
-}
-
-.wpe-btn-preset-option:hover {
-    background: #eff6ff !important;
-    border-color: #3b82f6 !important;
-    color: #1d4ed8 !important;
-}
-
+/* 13. UX Enhancements: Reordering, Interactive Stock & Group Controls */
 .wpe-option-reorder-btns {
     display: inline-flex;
     align-items: center;
@@ -1638,37 +1535,6 @@ select.wpe-editable-input {
 
 .wpe-chip-move:hover {
     color: #0f172a;
-}
-
-.wpe-value-presets-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-    font-size: 11.5px;
-    color: #64748b;
-}
-
-.wpe-btn-value-preset {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px dashed #cbd5e1;
-    background: #f8fafc;
-    color: #334155;
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.wpe-btn-value-preset:hover {
-    background: #eff6ff;
-    border-color: #3b82f6;
-    color: #1d4ed8;
 }
 
 .wpe-stock-pill.parent-stock.wpe-clickable-stock {
@@ -2301,15 +2167,6 @@ select.wpe-editable-input {
     margin-bottom: 0;
 }
 
-.wpe-info-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
-}
-
 .wpe-info-section-title {
     font-size: 14px;
     font-weight: 600;
@@ -2318,32 +2175,6 @@ select.wpe-editable-input {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.wpe-info-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-}
-
-.wpe-info-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-
-.wpe-info-grid-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-@media (max-width: 782px) {
-    .wpe-info-grid-2,
-    .wpe-info-grid-3,
-    .wpe-info-grid-4 {
-        grid-template-columns: 1fr;
-    }
 }
 
 .wpe-field {
@@ -2437,18 +2268,6 @@ select.wpe-editable-input {
     margin-bottom: 12px;
 }
 
-.wpe-common-price-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #dcfce7;
-    color: #166534;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-}
-
 /* Empty Variants Card (Simple Product) */
 .wpe-empty-variants-card {
     text-align: center;
@@ -2478,19 +2297,6 @@ select.wpe-editable-input {
     height: 24px;
     font-size: 24px;
     line-height: 1;
-}
-
-.wpe-empty-variants-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--wpe-p-color-text);
-    margin: 0 0 6px 0;
-}
-
-.wpe-empty-variants-desc {
-    font-size: 13px;
-    color: var(--wpe-p-color-text-subdued);
-    margin: 0 0 16px 0;
 }
 
 /* Fullscreen Navigation Tabs */
@@ -2555,23 +2361,6 @@ select.wpe-editable-input {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-
-.wpe-dialog-radio-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--wpe-p-color-border);
-    border-radius: 8px;
-    cursor: pointer;
-    background: #ffffff;
-    transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.wpe-dialog-radio-card:hover {
-    border-color: var(--wpe-p-color-interactive);
-    background: #f8fafc;
 }
 
 /* Touch screens have no hover state: keep row image remove buttons visible (P022.1). */

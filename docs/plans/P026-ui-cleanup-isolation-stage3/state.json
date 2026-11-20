@@ -1,0 +1,251 @@
+{
+  "id": "P026",
+  "title": "UI stage 3: native buttons, !important removal, dead CSS and theme isolation",
+  "status": "in_progress",
+  "content_hash": "ec8826d04e1ee83bb303cc875c3dbda88195b16309f5a1137c1e3c559d44aa9d",
+  "tasks": [
+    {
+      "id": "P026.1",
+      "title": "Remove verified dead CSS classes and deduplicate repeated template helpers in product-editor.js",
+      "depends_on": [],
+      "read_first": [
+        "assets/admin/product-editor.css",
+        "assets/admin/admin.css",
+        "assets/admin/product-editor.js"
+      ],
+      "files": [
+        "assets/admin/product-editor.css",
+        "assets/admin/admin.css",
+        "assets/admin/product-editor.js"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "assets/admin/product-editor.js"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage2Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductMediaLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/TwoBlockLive.mjs"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "df3489f162900a808d6c4a2f23038b13da421f19",
+          "content_digest": "38a3d50f5665ebcdd2681be1c8bb246700c5ee5de15bbedc1509aee596b981ae",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169109572-8235c15f.log",
+          "time": "2026-11-20T10:05:09.572Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "df3489f162900a808d6c4a2f23038b13da421f19",
+          "content_digest": "38a3d50f5665ebcdd2681be1c8bb246700c5ee5de15bbedc1509aee596b981ae",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169153267-5da26445.log",
+          "time": "2026-11-20T10:05:53.267Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage2Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "df3489f162900a808d6c4a2f23038b13da421f19",
+          "content_digest": "38a3d50f5665ebcdd2681be1c8bb246700c5ee5de15bbedc1509aee596b981ae",
+          "output_sha256": "3746d401186270c981b2de1e4d03cfef6cbad8009c4aa32c005dfd115ef32e19",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169163889-d489e4a6.log",
+          "time": "2026-11-20T10:06:03.890Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductMediaLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "df3489f162900a808d6c4a2f23038b13da421f19",
+          "content_digest": "38a3d50f5665ebcdd2681be1c8bb246700c5ee5de15bbedc1509aee596b981ae",
+          "output_sha256": "de79f37cb301bf12f8c95f276edddf2cf1b6909bf5b768618033d411ed431409",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169191522-af2dd279.log",
+          "time": "2026-11-20T10:06:31.523Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/TwoBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "df3489f162900a808d6c4a2f23038b13da421f19",
+          "content_digest": "38a3d50f5665ebcdd2681be1c8bb246700c5ee5de15bbedc1509aee596b981ae",
+          "output_sha256": "4887ac65beb18d4c5f52f6e85701f2f7cf4697db2e2b32c33783ddb84b35202d",
+          "output_path": "docs/plans/P026-ui-cleanup-isolation-stage3/command-1795169220010-0a8a0a59.log",
+          "time": "2026-11-20T10:07:00.016Z"
+        }
+      ],
+      "started_at": "2026-11-20T10:02:32.030Z"
+    },
+    {
+      "id": "P026.2",
+      "title": "Remove unnecessary !important overrides and align native WordPress button styles in admin CSS",
+      "depends_on": [
+        "P026.1"
+      ],
+      "read_first": [
+        "assets/admin/product-editor.css",
+        "assets/admin/admin.css",
+        "assets/admin/tokens.css"
+      ],
+      "files": [
+        "assets/admin/product-editor.css",
+        "assets/admin/admin.css"
+      ],
+      "dod": [
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage2Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantsBlockLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductInfoBlockLive.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/VariantImagePickerLive.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P026.3",
+      "title": "Harden storefront selector CSS with scoped tokens, !important reduction, dead CSS removal and theme isolation",
+      "depends_on": [
+        "P026.2"
+      ],
+      "read_first": [
+        "assets/variant-selector/selector.css",
+        "tests/e2e/SelectorContrast.spec.mjs",
+        "tests/e2e/SelectorBehavior.spec.mjs"
+      ],
+      "files": [
+        "assets/variant-selector/selector.css",
+        "tests/e2e/SelectorThemeIsolation.spec.mjs"
+      ],
+      "dod": [
+        [
+          "npx",
+          "--no-install",
+          "playwright",
+          "test",
+          "--config=playwright.config.mjs"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "node",
+          "tests/e2e/ProductPageSettingsLive.mjs"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P026.4",
+      "title": "Stage 3 browser and CSS-budget verification, notes and report",
+      "depends_on": [
+        "P026.3"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "tests/e2e/UiStage3Live.mjs",
+        "docs/NOTES.md",
+        "docs/plans/P026-ui-cleanup-isolation-stage3/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "--check",
+          "tests/e2e/UiStage3Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage3Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage1Live.mjs"
+        ],
+        [
+          "node",
+          "tests/e2e/UiStage2Live.mjs"
+        ],
+        [
+          "npx",
+          "--no-install",
+          "playwright",
+          "test",
+          "--config=playwright.config.mjs"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "ec8826d04e1ee83bb303cc875c3dbda88195b16309f5a1137c1e3c559d44aa9d"
+}

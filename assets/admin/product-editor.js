@@ -1080,6 +1080,42 @@
         `).join('') + `</div>`;
     }
 
+    function buildMediaEmptyHtml(includeDesc) {
+        return `
+            <div class="wpe-media-empty">
+                <span class="dashicons dashicons-format-gallery wpe-media-empty-icon" aria-hidden="true"></span>
+                <div class="wpe-media-empty-title">No images in this product's media library yet</div>
+                ${includeDesc ? '<div class="wpe-media-empty-desc">Upload images from your computer or add via external CDN URL below. Images belong exclusively to this product.</div>' : ''}
+            </div>
+        `;
+    }
+
+    function buildMediaUrlBarHtml(opts = {}) {
+        const urlIdAttr = opts.urlId ? ` id="${opts.urlId}"` : '';
+        const altIdAttr = opts.altId ? ` id="${opts.altId}"` : '';
+        return `
+            <div class="wpe-media-url-bar">
+                <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
+                <input type="url"${urlIdAttr} class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
+                <input type="text"${altIdAttr} class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
+                <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
+            </div>
+        `;
+    }
+
+    function showBulkDiffPreview(rowsHtml) {
+        const $bulkPreview = $('#wpe-bulk-diff-preview');
+        if ($bulkPreview.hasClass('wpe-hidden')) {
+            $bulkPreview.removeClass('wpe-hidden').hide();
+        }
+        $bulkPreview.html(`
+            <table class="wpe-diff-table">
+                <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        `).slideDown(motionMs(150));
+    }
+
     /**
      * Render the Per-Product Media Library Section (P011.9)
      * Inline view displays at most 2 rows (10 slots on desktop: 9 cards + 1 "+X View All" tile when > 10 images).
@@ -1110,13 +1146,7 @@
 
         let cardsHtml = '';
         if (orderedAssets.length === 0) {
-            cardsHtml = `
-                <div class="wpe-media-empty">
-                    <span class="dashicons dashicons-format-gallery wpe-media-empty-icon" aria-hidden="true"></span>
-                    <div class="wpe-media-empty-title">No images in this product's media library yet</div>
-                    <div class="wpe-media-empty-desc">Upload images from your computer or add via external CDN URL below. Images belong exclusively to this product.</div>
-                </div>
-            `;
+            cardsHtml = buildMediaEmptyHtml(true);
         } else if (orderedAssets.length <= INLINE_MEDIA_MAX_SLOTS) {
             orderedAssets.forEach((asset, idx) => {
                 cardsHtml += buildMediaCardHtml(asset, idx, orderedAssets.length);
@@ -1186,12 +1216,7 @@
                             </div>
                         </div>
 
-                        <div class="wpe-media-url-bar">
-                            <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
-                            <input type="url" id="wpe-media-ext-url" class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
-                            <input type="text" id="wpe-media-ext-alt" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
-                            <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
-                        </div>
+                        ${buildMediaUrlBarHtml({ urlId: 'wpe-media-ext-url', altId: 'wpe-media-ext-alt' })}
                     </div>
                 </div>
             </div>
@@ -1251,12 +1276,7 @@
 
         let allCardsHtml = '';
         if (orderedAssets.length === 0) {
-            allCardsHtml = `
-                <div class="wpe-media-empty">
-                    <span class="dashicons dashicons-format-gallery wpe-media-empty-icon" aria-hidden="true"></span>
-                    <div class="wpe-media-empty-title">No images in this product's media library yet</div>
-                </div>
-            `;
+            allCardsHtml = buildMediaEmptyHtml(false);
         } else {
             orderedAssets.forEach((asset, idx) => {
                 allCardsHtml += buildMediaCardHtml(asset, idx, orderedAssets.length);
@@ -1275,12 +1295,7 @@
                 <span class="dashicons dashicons-cloud-upload wpe-media-dropzone-icon wpe-media-dropzone-icon--compact"></span>
                 <div class="wpe-media-dropzone-title">Drop product images here or click to upload more</div>
             </div>
-            <div class="wpe-media-url-bar">
-                <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
-                <input type="url" class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
-                <input type="text" class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
-                <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
-            </div>
+            ${buildMediaUrlBarHtml()}
         `);
 
         $modal.find('#wpe-product-media-full-footer').html(`
@@ -5476,16 +5491,7 @@
                         </tr>
                     `;
                 });
-                const $bulkPreview = $('#wpe-bulk-diff-preview');
-                if ($bulkPreview.hasClass('wpe-hidden')) {
-                    $bulkPreview.removeClass('wpe-hidden').hide();
-                }
-                $bulkPreview.html(`
-                    <table class="wpe-diff-table">
-                        <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
-                        <tbody>${rowsHtml}</tbody>
-                    </table>
-                `).slideDown(motionMs(150));
+                showBulkDiffPreview(rowsHtml);
                 return;
             }
 
@@ -5501,16 +5507,7 @@
                         </tr>
                     `;
                 });
-                const $bulkPreview = $('#wpe-bulk-diff-preview');
-                if ($bulkPreview.hasClass('wpe-hidden')) {
-                    $bulkPreview.removeClass('wpe-hidden').hide();
-                }
-                $bulkPreview.html(`
-                    <table class="wpe-diff-table">
-                        <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
-                        <tbody>${rowsHtml}</tbody>
-                    </table>
-                `).slideDown(motionMs(150));
+                showBulkDiffPreview(rowsHtml);
                 return;
             }
 
@@ -5547,17 +5544,7 @@
                             `;
                         });
 
-                        const tableHtml = `
-                            <table class="wpe-diff-table">
-                                <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
-                                <tbody>${rowsHtml}</tbody>
-                            </table>
-                        `;
-                        const $bulkPreview = $('#wpe-bulk-diff-preview');
-                        if ($bulkPreview.hasClass('wpe-hidden')) {
-                            $bulkPreview.removeClass('wpe-hidden').hide();
-                        }
-                        $bulkPreview.html(tableHtml).slideDown(motionMs(150));
+                        showBulkDiffPreview(rowsHtml);
                     }
                 })
                 .fail(function () {
