@@ -21,5 +21,5 @@
 - P019 — Incremental catalog projection on import and missing SKU column fix (done)
 - P020 — Re-certify on WordPress 7.1.5 / WooCommerce 11.3.0 (done)
 - P021 — WC 11.3 customs props: legacy-only, fail-closed under native (done)
-- P022 — UI stage 1: keyboard, focus, contrast and responsive fixes (in_progress)
+- P022 — UI stage 1: keyboard, focus, contrast and responsive fixes (done)
 - P023 — P020 amendment: PROGRESS reflects the 7.1.5 receipts (done)

@@ -1,7 +1,7 @@
 {
   "id": "P022",
   "title": "UI stage 1: keyboard, focus, contrast and responsive fixes",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "8f9f15ae9c58d8b9c8f20dc9c214996039dad4219848ae9400920290ca040157",
   "tasks": [
     {
@@ -532,9 +532,63 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "be083208d1c018e5d8b5d57bff24039605467ce7",
+          "content_digest": "9968914a20c51210ebbdf58f631fb528ed59092e7c794545d7c851d6a7368f4d",
+          "output_sha256": "03264ec3fb7f2ad743d2e1df07a2d143909c3170958ab3c74458971de5602e4c",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163730598-2fe00504.log",
+          "time": "2026-11-20T08:35:30.598Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "be083208d1c018e5d8b5d57bff24039605467ce7",
+          "content_digest": "9968914a20c51210ebbdf58f631fb528ed59092e7c794545d7c851d6a7368f4d",
+          "output_sha256": "1b7a17f71308bb6feab2b0a430e1a6aeede1f478a712bad18277ef0aea558887",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163730707-04ca38c1.log",
+          "time": "2026-11-20T08:35:30.708Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "be083208d1c018e5d8b5d57bff24039605467ce7",
+          "content_digest": "9968914a20c51210ebbdf58f631fb528ed59092e7c794545d7c851d6a7368f4d",
+          "output_sha256": "8c9373ec23f8b1ff2ec058ff44619bed8dcb0fed3869cc997e4e50e742ababbe",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163730812-c430d118.log",
+          "time": "2026-11-20T08:35:30.813Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "be083208d1c018e5d8b5d57bff24039605467ce7",
+          "content_digest": "9968914a20c51210ebbdf58f631fb528ed59092e7c794545d7c851d6a7368f4d",
+          "output_sha256": "128af56a15b4a3e22f3ddec13a655a7e582df9379ebdf82abd52a9a92bea00e7",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163730927-52f0ff8f.log",
+          "time": "2026-11-20T08:35:30.928Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:33:54.124Z"
     }
   ],
-  "approved_hash": "8f9f15ae9c58d8b9c8f20dc9c214996039dad4219848ae9400920290ca040157"
+  "approved_hash": "8f9f15ae9c58d8b9c8f20dc9c214996039dad4219848ae9400920290ca040157",
+  "report_hash": "03a86e46a1f033a446743b468150acce9358ed82d0a33c5c4e8633e7fc7786c7"
 }
