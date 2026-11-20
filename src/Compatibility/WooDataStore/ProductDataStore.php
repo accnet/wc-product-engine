@@ -160,6 +160,18 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $crosssells = $this->mediaRepo->getLinks($productId, 'crosssell');
         $extra = json_decode($data['extra_props'] ?? '{}', true) ?: [];
 
+        $featuredImageId = 0;
+        if ($featured) {
+            $featuredImageId = !empty($featured['attachment_id']) ? (int)$featured['attachment_id'] : (int)($featured['id'] ?? 0);
+        }
+        $galleryImageIds = [];
+        foreach ($gallery as $gItem) {
+            $gId = !empty($gItem['attachment_id']) ? (int)$gItem['attachment_id'] : (int)($gItem['id'] ?? 0);
+            if ($gId > 0) {
+                $galleryImageIds[] = $gId;
+            }
+        }
+
         $product->set_props([
             'name'               => $data['title'],
             'slug'               => $data['slug'],
@@ -188,8 +200,8 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             'backorders'         => $inv['backorders'] ?? 'no',
             'description'        => $data['description'] ?? '',
             'short_description'  => $data['short_description'] ?? '',
-            'image_id'           => $featured ? (int)$featured['asset_id'] : 0,
-            'gallery_image_ids'  => array_map('intval', array_column($gallery, 'asset_id')),
+            'image_id'           => $featuredImageId,
+            'gallery_image_ids'  => $galleryImageIds,
             'upsell_ids'         => array_map('intval', array_column($upsells, 'target_id')),
             'cross_sell_ids'     => array_map('intval', array_column($crosssells, 'target_id')),
             'average_rating'     => (float)($extra['average_rating'] ?? 0.0),
