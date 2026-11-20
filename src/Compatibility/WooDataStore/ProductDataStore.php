@@ -71,6 +71,186 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         return $stores;
     }
 
+    /**
+     * Evict any primed runtime hydration bundle for a product (P028).
+     */
+    public static function evictRuntimeCache(int $productId): void
+    {
+        \WPE\Support\AuthorityResolver::evictObject($productId);
+    }
+
+    /**
+     * Bulk-preload native product aggregates for archive loops in O(1) SQL queries (P028).
+     *
+     * @param int[] $productIds
+     */
+    public static function primeProducts(array $productIds, ?\wpdb $db = null): void
+    {
+        \WPE\Support\AuthorityResolver::ensureRuntimeCacheGroup();
+        $ids = array_values(array_unique(array_filter(array_map('intval', $productIds), static fn(int $id): bool => $id > 0)));
+        if ($ids === [] || !function_exists('wp_cache_set')) {
+            return;
+        }
+
+        $wpdb = $db ?? $GLOBALS['wpdb'];
+        $prefix = $wpdb->prefix;
+        $inList = \WPE\Support\Sql::intList($ids);
+
+        // 1. Products
+        $prodById = [];
+        $prodRows = $wpdb->get_results(
+            "SELECT * FROM {$prefix}wpe_products WHERE id IN ({$inList}) AND deleted_at IS NULL",
+            ARRAY_A
+        ) ?: [];
+        foreach ($prodRows as $pr) {
+            $prodById[(int)$pr['id']] = $pr;
+        }
+        if ($prodById === []) {
+            return;
+        }
+
+        $validIds = array_keys($prodById);
+        $validIn = \WPE\Support\Sql::intList($validIds);
+
+        // 2. Inventory
+        $invById = [];
+        $invRows = $wpdb->get_results(
+            "SELECT * FROM {$prefix}wpe_inventory WHERE owner_id IN ({$validIn})",
+            ARRAY_A
+        ) ?: [];
+        foreach ($invRows as $ir) {
+            $invById[(int)$ir['owner_id']] = $ir;
+        }
+
+        // 3. Featured + Gallery Media
+        $featuredById = [];
+        $galleryById = [];
+        $mediaRows = $wpdb->get_results(
+            "SELECT pm.product_id AS wpe_pid, pm.role AS wpe_role, pm.position AS wpe_pos, pm.alt_override, a.*
+             FROM {$prefix}wpe_product_media pm
+             JOIN {$prefix}wpe_assets a ON a.id = pm.asset_id
+             WHERE pm.product_id IN ({$validIn})
+             ORDER BY pm.product_id ASC, pm.role ASC, pm.position ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($mediaRows as $mr) {
+            $pid = (int)$mr['wpe_pid'];
+            $role = (string)$mr['wpe_role'];
+            unset($mr['wpe_pid'], $mr['wpe_role'], $mr['wpe_pos']);
+            if ($role === 'featured') {
+                $featuredById[$pid] ??= $mr;
+            } elseif ($role === 'gallery') {
+                $galleryById[$pid][] = $mr;
+            }
+        }
+
+        // 4. Upsell + Cross-sell Links
+        $upsellsById = [];
+        $crosssellsById = [];
+        $linkRows = $wpdb->get_results(
+            "SELECT product_id, target_id, kind FROM {$prefix}wpe_product_links
+             WHERE product_id IN ({$validIn})
+             ORDER BY product_id ASC, position ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($linkRows as $lr) {
+            $pid = (int)$lr['product_id'];
+            if ($lr['kind'] === 'upsell') {
+                $upsellsById[$pid][] = ['target_id' => (int)$lr['target_id']];
+            } elseif ($lr['kind'] === 'crosssell') {
+                $crosssellsById[$pid][] = ['target_id' => (int)$lr['target_id']];
+            }
+        }
+
+        // 5. Custom Meta
+        $metaById = [];
+        $metaRows = $wpdb->get_results(
+            "SELECT object_id, meta_key, meta_value FROM {$prefix}wpe_meta
+             WHERE object_id IN ({$validIn})
+             ORDER BY meta_id ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($metaRows as $mr) {
+            $pid = (int)$mr['object_id'];
+            $metaById[$pid][$mr['meta_key']][] = maybe_unserialize($mr['meta_value']);
+        }
+
+        // 6. Downloads
+        $downloadsById = [];
+        $dlRows = $wpdb->get_results(
+            "SELECT object_id, download_id, name, file_url, position FROM {$prefix}wpe_downloads
+             WHERE object_id IN ({$validIn})
+             ORDER BY object_id ASC, position ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($dlRows as $dr) {
+            $downloadsById[(int)$dr['object_id']][] = $dr;
+        }
+
+        // 7. Options & Option Values (covers both readNativeAttributes and read_default_attributes)
+        $optionsById = [];
+        $optRows = $wpdb->get_results(
+            "SELECT o.product_id, o.id AS option_id, o.name, o.`key`, o.taxonomy, o.position, o.visible,
+                    o.used_for_variation, o.default_value_id,
+                    ov.id AS value_id, ov.label, ov.value_key, ov.term_id
+             FROM {$prefix}wpe_options o
+             LEFT JOIN {$prefix}wpe_option_values ov ON ov.option_id = o.id
+             WHERE o.product_id IN ({$validIn})
+             ORDER BY o.product_id ASC, o.position ASC, o.id ASC, ov.position ASC, ov.id ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($optRows as $or) {
+            $optionsById[(int)$or['product_id']][] = $or;
+        }
+
+        // 8. Child Variations (covers read_children, lowestVariationPrice, and read_price_data)
+        $variantsById = [];
+        $varIds = [];
+        foreach ($validIds as $pid) {
+            if (($prodById[$pid]['type'] ?? '') === 'variable') {
+                $varIds[] = $pid;
+            }
+        }
+        if ($varIds !== []) {
+            $varIn = \WPE\Support\Sql::intList($varIds);
+            $vRows = $wpdb->get_results(
+                "SELECT id, product_id, status, regular_price, sale_price, sale_from, sale_to, tax_class
+                 FROM {$prefix}wpe_variants
+                 WHERE product_id IN ({$varIn}) AND deleted_at IS NULL
+                 ORDER BY product_id ASC, position ASC, id ASC",
+                ARRAY_A
+            ) ?: [];
+            foreach ($vRows as $vr) {
+                $variantsById[(int)$vr['product_id']][] = $vr;
+            }
+        }
+
+        foreach ($validIds as $pid) {
+            $bundle = [
+                'product'      => $prodById[$pid],
+                'inventory'    => $invById[$pid] ?? null,
+                'featured'     => $featuredById[$pid] ?? null,
+                'gallery'      => $galleryById[$pid] ?? [],
+                'upsells'      => $upsellsById[$pid] ?? [],
+                'crosssells'   => $crosssellsById[$pid] ?? [],
+                'meta_map'     => $metaById[$pid] ?? [],
+                'downloads'    => $downloadsById[$pid] ?? [],
+                'option_rows'  => $optionsById[$pid] ?? [],
+                'variant_rows' => $variantsById[$pid] ?? [],
+            ];
+            wp_cache_set('prod_bundle_' . $pid, $bundle, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+        }
+    }
+
+    protected function getPrimedBundle(int $productId): ?array
+    {
+        if ($productId <= 0 || !function_exists('wp_cache_get')) {
+            return null;
+        }
+        $bundle = wp_cache_get('prod_bundle_' . $productId, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+        return is_array($bundle) ? $bundle : null;
+    }
+
     /* -------------------------------------------------------------------------- */
     /* Core CRUD Lifecycle (WC_Object_Data_Store_Interface)                       */
     /* -------------------------------------------------------------------------- */
@@ -168,6 +348,24 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
      */
     protected function lowestVariationPrice(int $productId): string
     {
+        $bundle = $this->getPrimedBundle($productId);
+        if ($bundle !== null) {
+            $lowest = null;
+            foreach ($bundle['variant_rows'] as $vr) {
+                if (($vr['status'] ?? '') !== 'publish') {
+                    continue;
+                }
+                $eff = EffectivePriceResolver::resolve($vr)['active_price'] ?? '';
+                if ($eff === '') {
+                    continue;
+                }
+                if ($lowest === null || (float)$eff < (float)$lowest) {
+                    $lowest = (string)$eff;
+                }
+            }
+            return $lowest ?? '';
+        }
+
         $now = gmdate('Y-m-d H:i:s.u');
         $min = $this->wpdb->get_var($this->wpdb->prepare(
             "SELECT MIN(CASE
@@ -215,24 +413,65 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     public function read(&$product): void
     {
         $productId = $product->get_id();
-        $data = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT * FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
-            $productId
-        ), ARRAY_A);
+        $bundle = $this->getPrimedBundle($productId);
 
-        if (!$data) {
-            throw new Exception(esc_html__('Invalid product.', 'woocommerce'));
+        if ($bundle !== null) {
+            $data       = $bundle['product'];
+            $inv        = $bundle['inventory'];
+            $featured   = $bundle['featured'];
+            $gallery    = $bundle['gallery'];
+            $upsells    = $bundle['upsells'];
+            $crosssells = $bundle['crosssells'];
+        } else {
+            $data = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
+                $productId
+            ), ARRAY_A);
+
+            if (!$data) {
+                throw new Exception(esc_html__('Invalid product.', 'woocommerce'));
+            }
+
+            $inv = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
+                $productId
+            ), ARRAY_A);
+
+            $featured = null;
+            $gallery = [];
+            $mediaRows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT pm.role AS wpe_role, pm.position AS wpe_pos, pm.alt_override, a.*
+                 FROM {$this->wpdb->prefix}wpe_product_media pm
+                 JOIN {$this->wpdb->prefix}wpe_assets a ON a.id = pm.asset_id
+                 WHERE pm.product_id = %d
+                 ORDER BY pm.role ASC, pm.position ASC",
+                $productId
+            ), ARRAY_A) ?: [];
+            foreach ($mediaRows as $mr) {
+                $role = (string)$mr['wpe_role'];
+                unset($mr['wpe_role'], $mr['wpe_pos']);
+                if ($role === 'featured') {
+                    $featured ??= $mr;
+                } elseif ($role === 'gallery') {
+                    $gallery[] = $mr;
+                }
+            }
+
+            $upsells = [];
+            $crosssells = [];
+            $linkRows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT target_id, kind FROM {$this->tableProductLinks} WHERE product_id = %d ORDER BY position ASC",
+                $productId
+            ), ARRAY_A) ?: [];
+            foreach ($linkRows as $lr) {
+                if ($lr['kind'] === 'upsell') {
+                    $upsells[] = ['target_id' => (int)$lr['target_id']];
+                } elseif ($lr['kind'] === 'crosssell') {
+                    $crosssells[] = ['target_id' => (int)$lr['target_id']];
+                }
+            }
         }
 
-        $inv = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
-            $productId
-        ), ARRAY_A);
-
-        $featured = $this->mediaRepo->getFeaturedImage($productId);
-        $gallery = $this->mediaRepo->getGallery($productId);
-        $upsells = $this->mediaRepo->getLinks($productId, 'upsell');
-        $crosssells = $this->mediaRepo->getLinks($productId, 'crosssell');
         $extra = json_decode($data['extra_props'] ?? '{}', true) ?: [];
 
         $featuredImageId = 0;
@@ -343,16 +582,21 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
      */
     protected function readNativeAttributes(int $productId): array
     {
-        $prefix = $this->wpdb->prefix;
-        $rows = $this->wpdb->get_results($this->wpdb->prepare(
-            "SELECT o.id AS option_id, o.name, o.`key`, o.taxonomy, o.position, o.visible, o.used_for_variation,
-                    ov.id AS value_id, ov.label, ov.value_key, ov.term_id
-             FROM {$prefix}wpe_options o
-             LEFT JOIN {$prefix}wpe_option_values ov ON ov.option_id = o.id
-             WHERE o.product_id = %d
-             ORDER BY o.position ASC, o.id ASC, ov.position ASC, ov.id ASC",
-            $productId
-        ), ARRAY_A);
+        $bundle = $this->getPrimedBundle($productId);
+        if ($bundle !== null) {
+            $rows = $bundle['option_rows'];
+        } else {
+            $prefix = $this->wpdb->prefix;
+            $rows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT o.id AS option_id, o.name, o.`key`, o.taxonomy, o.position, o.visible, o.used_for_variation,
+                        ov.id AS value_id, ov.label, ov.value_key, ov.term_id
+                 FROM {$prefix}wpe_options o
+                 LEFT JOIN {$prefix}wpe_option_values ov ON ov.option_id = o.id
+                 WHERE o.product_id = %d
+                 ORDER BY o.position ASC, o.id ASC, ov.position ASC, ov.id ASC",
+                $productId
+            ), ARRAY_A);
+        }
 
         if (!is_array($rows) || $rows === []) {
             return [];
@@ -581,8 +825,13 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     public function read_children(&$product, $force_read = false): array
     {
         $productId = $product->get_id();
-        $sql = "SELECT id, status FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY position ASC, id ASC";
-        $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $productId), ARRAY_A);
+        $bundle = !$force_read ? $this->getPrimedBundle($productId) : null;
+        if ($bundle !== null) {
+            $rows = $bundle['variant_rows'];
+        } else {
+            $sql = "SELECT id, status FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL ORDER BY position ASC, id ASC";
+            $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $productId), ARRAY_A);
+        }
 
         $all = [];
         $visible = [];
@@ -606,15 +855,30 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
     protected function read_default_attributes(&$product): void
     {
         $productId = $product->get_id();
-        $rows = $this->wpdb->get_results($this->wpdb->prepare(
-            "SELECT o.name, o.`key`, o.taxonomy, ov.label, ov.value_key, ov.term_id
-             FROM {$this->wpdb->prefix}wpe_options o
-             INNER JOIN {$this->wpdb->prefix}wpe_option_values ov
-                 ON ov.id = o.default_value_id AND ov.option_id = o.id
-             WHERE o.product_id = %d AND o.used_for_variation = 1 AND o.default_value_id IS NOT NULL
-             ORDER BY o.position ASC",
-            $productId
-        ), ARRAY_A);
+        $bundle = $this->getPrimedBundle($productId);
+        if ($bundle !== null) {
+            $rows = [];
+            foreach ($bundle['option_rows'] as $or) {
+                if (
+                    !empty($or['used_for_variation'])
+                    && !empty($or['default_value_id'])
+                    && $or['value_id'] !== null
+                    && (int)$or['value_id'] === (int)$or['default_value_id']
+                ) {
+                    $rows[] = $or;
+                }
+            }
+        } else {
+            $rows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT o.name, o.`key`, o.taxonomy, ov.label, ov.value_key, ov.term_id
+                 FROM {$this->wpdb->prefix}wpe_options o
+                 INNER JOIN {$this->wpdb->prefix}wpe_option_values ov
+                     ON ov.id = o.default_value_id AND ov.option_id = o.id
+                 WHERE o.product_id = %d AND o.used_for_variation = 1 AND o.default_value_id IS NOT NULL
+                 ORDER BY o.position ASC",
+                $productId
+            ), ARRAY_A);
+        }
 
         $defaults = [];
         if (is_array($rows)) {
@@ -813,21 +1077,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function get_product_type($product_id)
     {
-        $type = $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT type FROM {$this->tableProducts} WHERE id = %d",
-            $product_id
-        ));
-
-        if ($type) {
-            return $type;
-        }
-
-        $isVar = $this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(1) FROM {$this->tableVariants} WHERE id = %d",
-            $product_id
-        ));
-
-        return ((int)$isVar > 0) ? 'variation' : false;
+        return \WPE\Support\AuthorityResolver::getNativeProductType((int)$product_id, $this->wpdb);
     }
 
     public function get_starting_sales(): array
@@ -985,7 +1235,9 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function read_meta(&$object)
     {
-        $metaMap = $this->mediaRepo->getMeta($object->get_id());
+        $objectId = (int)$object->get_id();
+        $bundle = $this->getPrimedBundle($objectId);
+        $metaMap = $bundle !== null ? $bundle['meta_map'] : $this->mediaRepo->getMeta($objectId);
         $rawMeta = [];
         $metaIdCounter = 1;
 
@@ -1006,11 +1258,13 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function add_meta(&$object, $meta)
     {
+        self::evictRuntimeCache((int)$object->get_id());
         return $this->mediaRepo->addMeta($object->get_id(), 'product', $meta->key, $meta->value, false);
     }
 
     public function update_meta(&$object, $meta)
     {
+        self::evictRuntimeCache((int)$object->get_id());
         if (!empty($meta->id)) {
             $this->mediaRepo->updateMeta((int)$meta->id, $meta->value);
         } else {
@@ -1020,6 +1274,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function delete_meta(&$object, $meta)
     {
+        self::evictRuntimeCache((int)$object->get_id());
         if (!empty($meta->id)) {
             $this->mediaRepo->deleteMeta((int)$meta->id);
         }
@@ -1199,7 +1454,9 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     protected function read_downloads(&$product): void
     {
-        $downloads = $this->mediaRepo->getDownloads($product->get_id());
+        $productId = (int)$product->get_id();
+        $bundle = $this->getPrimedBundle($productId);
+        $downloads = $bundle !== null ? $bundle['downloads'] : $this->mediaRepo->getDownloads($productId);
         $wcDownloads = [];
         foreach ($downloads as $d) {
             $wcDownload = new WC_Product_Download();
@@ -1219,10 +1476,14 @@ class ProductVariableDataStore extends ProductDataStore
 {
     public function read(&$product): void
     {
+        // parent::read() already calls read_children() and read_default_attributes() for WC_Product_Variable
         parent::read($product);
-        $this->read_children($product);
     }
 
+    /**
+     * Read all published child variation prices directly from wpe_variants (or primed archive bundle)
+     * in O(1) SQL queries without instantiating WC_Product_Variation objects in a loop (P028 D02).
+     */
     public function read_price_data(&$product, $for_display = false): array
     {
         $prices = [
@@ -1230,28 +1491,66 @@ class ProductVariableDataStore extends ProductDataStore
             'regular_price' => [],
             'sale_price'    => [],
         ];
-        $children = $product->get_children();
-        if (empty($children)) {
+        $productId = (int)$product->get_id();
+        if ($productId <= 0) {
             return $prices;
         }
 
-        foreach ($children as $childId) {
-            $child = wc_get_product($childId);
-            if (!$child) {
-                continue;
+        $bundle = $this->getPrimedBundle($productId);
+        if ($bundle !== null) {
+            $rows = [];
+            foreach ($bundle['variant_rows'] as $vr) {
+                if (($vr['status'] ?? '') === 'publish') {
+                    $rows[] = $vr;
+                }
             }
-            $reg = $child->get_regular_price();
-            $sale = $child->get_sale_price();
-            $p = $child->get_price();
+        } else {
+            $rows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT id, regular_price, sale_price, sale_from, sale_to, tax_class
+                 FROM {$this->tableVariants}
+                 WHERE product_id = %d AND status = 'publish' AND deleted_at IS NULL
+                 ORDER BY position ASC, id ASC",
+                $productId
+            ), ARRAY_A) ?: [];
+        }
 
-            if ($p !== '' && $p !== null) {
-                $prices['price'][$childId] = wc_format_decimal($p, wc_get_price_decimals());
+        if ($rows === []) {
+            return $prices;
+        }
+
+        $decimals = wc_get_price_decimals();
+        $applyDisplayTax = $for_display
+            && function_exists('wc_tax_enabled')
+            && wc_tax_enabled()
+            && $product->is_taxable();
+
+        foreach ($rows as $row) {
+            $childId = (int)$row['id'];
+            $resolved = EffectivePriceResolver::resolve($row);
+            $p = $resolved['active_price'] ?? '';
+            $reg = $row['regular_price'] !== null ? (string)$row['regular_price'] : '';
+            $sale = ($resolved['on_sale'] ?? false) && $row['sale_price'] !== null ? (string)$row['sale_price'] : '';
+
+            if ($applyDisplayTax && function_exists('wc_get_price_to_display')) {
+                if ($p !== '') {
+                    $p = (string)wc_get_price_to_display($product, ['price' => $p]);
+                }
+                if ($reg !== '') {
+                    $reg = (string)wc_get_price_to_display($product, ['price' => $reg]);
+                }
+                if ($sale !== '') {
+                    $sale = (string)wc_get_price_to_display($product, ['price' => $sale]);
+                }
             }
-            if ($reg !== '' && $reg !== null) {
-                $prices['regular_price'][$childId] = wc_format_decimal($reg, wc_get_price_decimals());
+
+            if ($p !== '') {
+                $prices['price'][$childId] = wc_format_decimal($p, $decimals);
             }
-            if ($sale !== '' && $sale !== null) {
-                $prices['sale_price'][$childId] = wc_format_decimal($sale, wc_get_price_decimals());
+            if ($reg !== '') {
+                $prices['regular_price'][$childId] = wc_format_decimal($reg, $decimals);
+            }
+            if ($sale !== '') {
+                $prices['sale_price'][$childId] = wc_format_decimal($sale, $decimals);
             }
         }
 

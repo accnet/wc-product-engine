@@ -40,14 +40,27 @@ class CatalogAdapters
     private \wpdb $wpdb;
     private CatalogQuery $queryCompiler;
     private CatalogProjector $projector;
+    private ContextCache $contextCache;
     private bool $strictMode;
+    private bool $persistentContextCache;
 
-    public function __construct(?\wpdb $wpdb = null, ?CatalogQuery $queryCompiler = null, bool $strictMode = true)
-    {
+    public function __construct(
+        ?\wpdb $wpdb = null,
+        ?CatalogQuery $queryCompiler = null,
+        bool $strictMode = true,
+        ?ContextCache $contextCache = null
+    ) {
         $this->wpdb = $wpdb ?? $GLOBALS['wpdb'];
-        $this->queryCompiler = $queryCompiler ?? new CatalogQuery($this->wpdb);
         $this->projector = new CatalogProjector($this->wpdb);
+        $this->queryCompiler = $queryCompiler ?? new CatalogQuery($this->wpdb, $this->projector);
+        $this->contextCache = $contextCache ?? new ContextCache($this->wpdb, $this->projector);
         $this->strictMode = $strictMode;
+        $this->persistentContextCache = function_exists('wp_using_ext_object_cache') && wp_using_ext_object_cache();
+    }
+
+    public function setPersistentContextCache(bool $enabled): void
+    {
+        $this->persistentContextCache = $enabled;
     }
 
     /**
@@ -354,6 +367,13 @@ class CatalogAdapters
             }
         }
 
+        if (!empty($adapted['category'])) {
+            $adapted['category'] = array_values(array_unique(array_map('strval', $adapted['category'])));
+        }
+        if (!empty($adapted['tag'])) {
+            $adapted['tag'] = array_values(array_unique(array_map('strval', $adapted['tag'])));
+        }
+
         if ($excludeCatalog && $excludeSearch && empty($adapted['visibility'])) {
             $adapted['visibility'] = 'visible';
         }
@@ -460,44 +480,45 @@ class CatalogAdapters
 
         $gen = $this->projector->getActiveGeneration();
 
-        // 4. Compile SQL for numbered pagination
+        // 4. Execute via zero-filesort CatalogQuery::executeArchivePage with context-isolated caching (P028.3)
         $adapted['generation'] = $gen;
+        $adapted['page'] = $page;
         $adapted['limit'] = $limit;
-        $adapted['count_mode'] = 'exact';
+        $adapted['offset'] = $offset;
 
-        // Calculate exact total count
-        $refMethod = new \ReflectionMethod($this->queryCompiler, 'executeCount');
-        $refMethod->setAccessible(true);
-        $normMethod = new \ReflectionMethod($this->queryCompiler, 'normalizeFilters');
-        $normMethod->setAccessible(true);
+        \WPE\Support\AuthorityResolver::ensureRuntimeCacheGroup();
+        $cacheKey = $this->contextCache->generateCacheKey($adapted, ['generation' => $gen]);
 
-        $normalized = $normMethod->invoke($this->queryCompiler, $adapted);
-        $total = (int)$refMethod->invoke($this->queryCompiler, $normalized, $gen);
-
-        // Compile bounded SELECT with OFFSET for numbered archives
-        $compileMethod = new \ReflectionMethod($this->queryCompiler, 'compileQuery');
-        $compileMethod->setAccessible(true);
-        [$baseSql, $params] = $compileMethod->invoke($this->queryCompiler, $normalized, $adapted['sort'], $limit, $gen, null);
-
-        // Replace LIMIT %d with LIMIT %d OFFSET %d
-        if ($offset > 0) {
-            $baseSql = preg_replace('/LIMIT\s+%d$/', 'LIMIT %d OFFSET %d', $baseSql);
-            $params[] = $offset;
+        if (function_exists('wp_cache_get')) {
+            $memHit = wp_cache_get($cacheKey, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+            if (is_array($memHit)) {
+                return $memHit;
+            }
         }
 
-        $prepared = $this->wpdb->prepare($baseSql, ...$params);
-        $rows = $this->wpdb->get_results($prepared, ARRAY_A);
-        $ids = array_map(fn($r) => (int)$r['product_id'], $rows);
+        $compute = function () use ($adapted, $page, $limit): array {
+            $pageRes = $this->queryCompiler->executeArchivePage($adapted);
+            $total = (int)$pageRes['total'];
+            $totalPages = $limit > 0 ? (int)ceil($total / $limit) : 1;
 
-        $totalPages = $limit > 0 ? (int)ceil($total / $limit) : 1;
+            return [
+                'ids'         => $pageRes['ids'],
+                'total'       => $total,
+                'total_pages' => $totalPages,
+                'page'        => $page,
+                'limit'       => $limit,
+            ];
+        };
 
-        return [
-            'ids'         => $ids,
-            'total'       => $total,
-            'total_pages' => $totalPages,
-            'page'        => $page,
-            'limit'       => $limit,
-        ];
+        $result = $this->persistentContextCache
+            ? $this->contextCache->remember($cacheKey, $compute)
+            : $compute();
+
+        if (function_exists('wp_cache_set')) {
+            wp_cache_set($cacheKey, $result, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+        }
+
+        return $result;
     }
 
     /* -------------------------------------------------------------------------- */
@@ -591,11 +612,49 @@ class CatalogAdapters
             return $result['ids'];
         }
 
-        // Prime post caches and return WP_Post instances
+        // Prime post caches, native authority probes, native product bundles, and thumbnail attachments in bulk (P028.3)
         _prime_post_caches($result['ids'], true, true);
+        \WPE\Support\AuthorityResolver::primeObjects($result['ids'], $this->wpdb);
+        \WPE\Compatibility\WooDataStore\ProductDataStore::primeProducts($result['ids'], $this->wpdb);
+        $this->primeAttachmentPostsFromBundles($result['ids']);
+
         $posts = array_filter(array_map('get_post', $result['ids']));
 
         return array_values($posts);
+    }
+
+    /**
+     * Bulk-prime WP attachment posts + metadata for featured/gallery images of primed products
+     * so storefront get_image() calls execute 0 per-product N+1 queries (P028.3).
+     *
+     * @param int[] $productIds
+     */
+    private function primeAttachmentPostsFromBundles(array $productIds): void
+    {
+        if (!function_exists('wp_cache_get') || !function_exists('_prime_post_caches')) {
+            return;
+        }
+        $attachmentIds = [];
+        foreach ($productIds as $pid) {
+            $bundle = wp_cache_get('prod_bundle_' . (int)$pid, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+            if (!is_array($bundle)) {
+                continue;
+            }
+            if (!empty($bundle['featured']['attachment_id'])) {
+                $attachmentIds[] = (int)$bundle['featured']['attachment_id'];
+            }
+            if (!empty($bundle['gallery']) && is_array($bundle['gallery'])) {
+                foreach ($bundle['gallery'] as $g) {
+                    if (!empty($g['attachment_id'])) {
+                        $attachmentIds[] = (int)$g['attachment_id'];
+                    }
+                }
+            }
+        }
+        $attachmentIds = array_values(array_unique(array_filter($attachmentIds, static fn(int $id): bool => $id > 0)));
+        if ($attachmentIds !== []) {
+            _prime_post_caches($attachmentIds, false, true);
+        }
     }
 
     /* -------------------------------------------------------------------------- */

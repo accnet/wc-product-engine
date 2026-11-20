@@ -244,6 +244,7 @@ class ProductRepository
             );
 
             $this->wpdb->query("COMMIT");
+            \WPE\Support\AuthorityResolver::evictObject($productId);
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
             throw $e;
@@ -458,6 +459,7 @@ class ProductRepository
             );
 
             $this->wpdb->query("COMMIT");
+            \WPE\Support\AuthorityResolver::evictObject($productId);
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
             throw $e;
@@ -629,6 +631,7 @@ class ProductRepository
             );
 
             $this->wpdb->query("COMMIT");
+            \WPE\Support\AuthorityResolver::evictObject($productId);
             return true;
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
@@ -1005,12 +1008,23 @@ class ProductRepository
         $varRows = $this->wpdb->get_results($this->wpdb->prepare($varSql, $productId), ARRAY_A);
         $variations = [];
         if (!empty($varRows)) {
+            // Batch-fetch variant inventories in a single IN(...) query instead of N queries (P028)
+            $varIds = array_values(array_map(static fn(array $vr): int => (int)$vr['id'], $varRows));
+            $invByOwner = [];
+            if ($varIds !== []) {
+                $inVarIds = \WPE\Support\Sql::intList($varIds);
+                $invRows = $this->wpdb->get_results(
+                    "SELECT * FROM {$this->tableInventory} WHERE owner_id IN ({$inVarIds})",
+                    ARRAY_A
+                ) ?: [];
+                foreach ($invRows as $ir) {
+                    $invByOwner[(int)$ir['owner_id']] = $ir;
+                }
+            }
+
             foreach ($varRows as $vr) {
                 $vId = (int)$vr['id'];
-                $vInv = $this->wpdb->get_row($this->wpdb->prepare(
-                    "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
-                    $vId
-                ), ARRAY_A);
+                $vInv = $invByOwner[$vId] ?? null;
 
                 $variations[] = [
                     'id'             => (string)$vr['id'],

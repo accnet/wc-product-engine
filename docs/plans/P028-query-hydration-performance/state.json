@@ -1,0 +1,652 @@
+{
+  "id": "P028",
+  "title": "Eliminate storefront N+1 hydration and filesorts on native catalog queries",
+  "status": "done",
+  "content_hash": "2486cae5fd641b9e563e8b7d10d6a7557ce33b4d0917edfb683914998f96e700",
+  "tasks": [
+    {
+      "id": "P028.1",
+      "title": "Eliminate N+1 hydration in ProductDataStore, ProductRepository, and AuthorityResolver with bulk priming and clean_post_cache eviction",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Support/AuthorityResolver.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Compatibility/WooDataStore/CohortRoutingDataStore.php"
+      ],
+      "files": [
+        "src/Support/AuthorityResolver.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Compatibility/WooDataStore/CohortRoutingDataStore.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "src/Compatibility/WooDataStore/InventoryBridge.php",
+        "tests/integration/QueryHydrationPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Support/AuthorityResolver.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/ProductRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/ProductDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/CohortRoutingDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/MetaBridge.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/InventoryBridge.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421352-1f9a090f.log",
+          "time": "2026-11-20T19:37:01.353Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421448-9135bb3f.log",
+          "time": "2026-11-20T19:37:01.449Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/ProductDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "a02ab5da7ea42c5b8994c8e6a0a879ec652dd08a7e8ecf8f877b895786e7ec6a",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421547-6f2bccfe.log",
+          "time": "2026-11-20T19:37:01.548Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/CohortRoutingDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "1640b518e9090cb895bd30853d55aaaced54f3610e1f8c081a94ff3d71fa6931",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421638-af296ab2.log",
+          "time": "2026-11-20T19:37:01.638Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/MetaBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "ed63fd00d25ac4bf24f979d7602a6606319137f099e0de025696cf4a330768fb",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421730-0c68aca3.log",
+          "time": "2026-11-20T19:37:01.730Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/InventoryBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "dd2827a76dcf37a2e40bee7e8e4cd72b97197fa4687d9200e8570092972d4ff8",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421821-c69640ac.log",
+          "time": "2026-11-20T19:37:01.821Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "50cb99de0b84df53dc2b845e5a8cd9eb61b40cece2d029643d7668a909d0422f",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203421917-8cbf4c4f.log",
+          "time": "2026-11-20T19:37:01.917Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "8adcf28f7f4de05ea238b25ed229c51476cc3629fbd69606386aaf8925277e41",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203422037-fd82f197.log",
+          "time": "2026-11-20T19:37:02.037Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "56e774b351d5fc803efa364646ce8c5550546752098471f4035696c4769484e0",
+          "output_sha256": "4c0d23ee5a525b78258dd4e4997bfac0bcbaad6756b4431d7e7ecaedfe14c264",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795203422143-f5f8f81f.log",
+          "time": "2026-11-20T19:37:02.143Z"
+        }
+      ],
+      "started_at": "2026-11-20T19:37:01.266Z"
+    },
+    {
+      "id": "P028.2",
+      "title": "Add wpe_catalog sort indexes (SchemaMigrator v3), zero-filesort EXISTS/B-Tree compilation in CatalogQuery, and native option facets in CatalogProjector",
+      "depends_on": [
+        "P028.1"
+      ],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Application/Catalog/CatalogProjector.php",
+        "src/Application/Catalog/CatalogQuery.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Application/Catalog/CatalogProjector.php",
+        "src/Application/Catalog/CatalogQuery.php",
+        "tests/integration/CatalogIndexOptimizationTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/SchemaMigrator.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Catalog/CatalogProjector.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Catalog/CatalogQuery.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/CatalogIndexOptimizationTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/SchemaMigrator.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "ab196b20e9281096530222aa211c66fa8d125bebff281dad1c61d1b4141a95d7",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204165746-c57fb02d.log",
+          "time": "2026-11-20T19:49:25.747Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Catalog/CatalogProjector.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "b6e0fd0e6c912feda4dacefc865dbef97c58d5cca92da3ffb8fb63a19788bacd",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204165833-2101c001.log",
+          "time": "2026-11-20T19:49:25.833Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Catalog/CatalogQuery.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "6cf506574641666737e1136a9d55c74d0f478bff0734f4f03619f4c9c1dce0c9",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204165931-664351d8.log",
+          "time": "2026-11-20T19:49:25.931Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/CatalogIndexOptimizationTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "8232ec2f2310d7e5a37bf7f8db004ff74cb35dceec62da5cad5e3b1c0fbcbd17",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204166018-b0873982.log",
+          "time": "2026-11-20T19:49:26.019Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "8adcf28f7f4de05ea238b25ed229c51476cc3629fbd69606386aaf8925277e41",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204166123-c7a31ea3.log",
+          "time": "2026-11-20T19:49:26.123Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "eb4f88666d824514e8a82184511b1226c403416a49fcbcde83dc13ce1b9f9430",
+          "output_sha256": "eb4f6e1a782b3477db2e69f279bf1cc312d838b049d53896c51abb10ea3b4adf",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204166227-2d94d347.log",
+          "time": "2026-11-20T19:49:26.227Z"
+        }
+      ],
+      "started_at": "2026-11-20T19:37:10.498Z"
+    },
+    {
+      "id": "P028.3",
+      "title": "Wire bulk archive priming and ContextCache in CatalogAdapters and verify end-to-end query budgets",
+      "depends_on": [
+        "P028.2"
+      ],
+      "read_first": [
+        "src/Application/Catalog/CatalogAdapters.php",
+        "src/Application/Catalog/ContextCache.php"
+      ],
+      "files": [
+        "src/Application/Catalog/CatalogAdapters.php",
+        "tests/integration/QueryHydrationPerformanceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Catalog/CatalogAdapters.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Catalog/CatalogAdapters.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "847307d2d7a5d094a65088a236e07f1b00f760d9e69d9d1c89e006a1d31cb193",
+          "output_sha256": "8a1fbfaade727487c25f159daf6052abccbd5f1488ac27ea0bdb2d3eccae1bb6",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204452915-14265f74.log",
+          "time": "2026-11-20T19:54:12.915Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "847307d2d7a5d094a65088a236e07f1b00f760d9e69d9d1c89e006a1d31cb193",
+          "output_sha256": "50cb99de0b84df53dc2b845e5a8cd9eb61b40cece2d029643d7668a909d0422f",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204453005-26b04ac8.log",
+          "time": "2026-11-20T19:54:13.006Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "847307d2d7a5d094a65088a236e07f1b00f760d9e69d9d1c89e006a1d31cb193",
+          "output_sha256": "8adcf28f7f4de05ea238b25ed229c51476cc3629fbd69606386aaf8925277e41",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204453110-9ceb08be.log",
+          "time": "2026-11-20T19:54:13.111Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "847307d2d7a5d094a65088a236e07f1b00f760d9e69d9d1c89e006a1d31cb193",
+          "output_sha256": "2ed8e1b43a247fb26516f970a63f81a0157bc6e5ff52a34be242af0ffecd2b01",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204453212-d2f0163f.log",
+          "time": "2026-11-20T19:54:13.213Z"
+        }
+      ],
+      "started_at": "2026-11-20T19:49:41.001Z"
+    },
+    {
+      "id": "P028.4",
+      "title": "Re-certify T05/T06/T10/T11/T12/T16/T17/T19 on isolated root, rebuild live facets/indexes, benchmark before/after, update NOTES and report",
+      "depends_on": [
+        "P028.3"
+      ],
+      "read_first": [
+        "docs/07-testing.md",
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/evidence/T05/result.json",
+        "docs/evidence/T06/result.json",
+        "docs/evidence/T10/result.json",
+        "docs/evidence/T11/result.json",
+        "docs/evidence/T12/result.json",
+        "docs/evidence/T16/result.json",
+        "docs/evidence/T17/result.json",
+        "docs/evidence/T19/result.json",
+        "docs/NOTES.md",
+        "docs/plans/P028-query-hydration-performance/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T05"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T06"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T10"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T11"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T12"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T16"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T17"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T19"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T05"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "a85531cf00a0e548276655cc6684ae167b73210fdefce213fb5625b853db1641",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204702505-dc59eaa4.log",
+          "time": "2026-11-20T19:58:22.505Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T06"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "14b403a6859f5fb0b2223a4e9f96c4a1a4ff2b87b7d1529120919bf6702000b2",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204703821-57b8632f.log",
+          "time": "2026-11-20T19:58:23.822Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T10"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "cbe0cfb4b191d60aba079ef421f5dd3ad525262ee077501569a8f5e2c8f06bb0",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204705164-dcb86478.log",
+          "time": "2026-11-20T19:58:25.165Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T11"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "783bc5e1b87eb04f8b38dd88f27b2d099a6de3b1c8fedfa8194f2d8e0b2760a7",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204706459-fac8f91a.log",
+          "time": "2026-11-20T19:58:26.459Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T12"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "fa7901893ecea6e8a4433d1b7cb65593c2319198b53031db04ee7f9bff4ddc69",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204707775-dbb2ece1.log",
+          "time": "2026-11-20T19:58:27.775Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T16"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "120cc2747ec95c77c2370c6866e15672a2c6ea6f480239bd4e7bb62ee4c236c1",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204709082-defacd34.log",
+          "time": "2026-11-20T19:58:29.083Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T17"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "326e79d94e4fa1343ec75fb0c0d27c644dba737b30874605014b5514a7094bb3",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204710420-020703b0.log",
+          "time": "2026-11-20T19:58:30.420Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T19"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "ddc4f064092b46c396ee2abb7126c526611db3f3e1a322187cc53d17bbb99592",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204711737-ab3d5391.log",
+          "time": "2026-11-20T19:58:31.737Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "8adcf28f7f4de05ea238b25ed229c51476cc3629fbd69606386aaf8925277e41",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204711855-2fbf7e33.log",
+          "time": "2026-11-20T19:58:31.855Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "1bf8ea064be4be76a39e158be8b6e8996337612d3767e288f0273c0e2c26ea00",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204711981-8c6823a9.log",
+          "time": "2026-11-20T19:58:31.982Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+          "content_digest": "02bce2e2307782348d2c5213756c9449fa597f258b8e4c2183ee8dd588565cdb",
+          "output_sha256": "cc472412408ce1312809ebacb37e206f4244d405bad6b33516dfb4ea9b1818ce",
+          "output_path": "docs/plans/P028-query-hydration-performance/command-1795204712097-b6748e68.log",
+          "time": "2026-11-20T19:58:32.097Z"
+        }
+      ],
+      "started_at": "2026-11-20T19:54:22.064Z"
+    }
+  ],
+  "approved_hash": "2486cae5fd641b9e563e8b7d10d6a7557ce33b4d0917edfb683914998f96e700",
+  "report_hash": "d40f3721fbb0dd0a5ffb4388cfe3e0f9edd22dcebf1a892ac90600cb38a459e7"
+}

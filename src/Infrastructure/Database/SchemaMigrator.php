@@ -11,8 +11,10 @@ class SchemaMigrator
      * 1: T05, 25 tables.
      * 2: P011 media library tables wpe_asset_storage and wpe_upload_items (audit DB-01: sites
      *    installed before P011 stayed at 1 and never got them).
+     * 3: P028 workload sort indexes on wpe_catalog (idx_cat_menu_order, idx_cat_rating,
+     *    idx_cat_title, idx_cat_price) per docs/03-database-schema.md §4.
      */
-    public const SCHEMA_VERSION = 2;
+    public const SCHEMA_VERSION = 3;
     public const OPTION_SCHEMA_VERSION = 'wpe_schema_version';
     public const OPTION_MIGRATION_CHECKPOINT = 'wpe_migration_checkpoint';
     /** @deprecated 1.1.1 The migration lock is a MySQL named lock now; kept for callers that reference it. */
@@ -129,6 +131,8 @@ class SchemaMigrator
                 $applied[] = $tableName;
             }
 
+            $this->ensureCatalogWorkloadIndexes($applied);
+
             update_option(self::OPTION_SCHEMA_VERSION, self::SCHEMA_VERSION);
             delete_option(self::OPTION_MIGRATION_CHECKPOINT);
 
@@ -145,6 +149,46 @@ class SchemaMigrator
             ];
         } finally {
             $this->releaseLock();
+        }
+    }
+
+    /**
+     * Ensure workload B-Tree sort indexes exist on {prefix}wpe_catalog (P028 D03).
+     *
+     * @param string[] $applied
+     */
+    private function ensureCatalogWorkloadIndexes(array &$applied): void
+    {
+        $catalogTable = $this->wpdb->prefix . 'wpe_catalog';
+        $exists = $this->wpdb->get_var($this->wpdb->prepare("SHOW TABLES LIKE %s", $catalogTable));
+        if ($exists !== $catalogTable) {
+            return;
+        }
+
+        $existing = [];
+        $rows = $this->wpdb->get_results("SHOW INDEX FROM `{$catalogTable}`", ARRAY_A) ?: [];
+        foreach ($rows as $row) {
+            if (!empty($row['Key_name'])) {
+                $existing[(string)$row['Key_name']] = true;
+            }
+        }
+
+        $indexes = [
+            'idx_cat_menu_order' => '(`generation`, `status`, `menu_order`, `product_id`)',
+            'idx_cat_rating'     => '(`generation`, `status`, `rating_average`, `product_id`)',
+            'idx_cat_title'      => '(`generation`, `status`, `title_sort`, `product_id`)',
+            'idx_cat_price'      => '(`generation`, `status`, `min_price`, `product_id`)',
+        ];
+
+        foreach ($indexes as $indexName => $columnsSql) {
+            if (isset($existing[$indexName])) {
+                continue;
+            }
+            $res = $this->wpdb->query("ALTER TABLE `{$catalogTable}` ADD INDEX `{$indexName}` {$columnsSql}");
+            if ($res === false) {
+                throw new \RuntimeException("Failed to create index {$indexName} on {$catalogTable}: " . $this->wpdb->last_error);
+            }
+            $applied[] = "{$catalogTable}.{$indexName}";
         }
     }
 

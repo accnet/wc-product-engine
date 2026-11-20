@@ -149,8 +149,9 @@ class CohortRoutingDataStore extends WC_Product_Data_Store_CPT
 
     public function get_product_type($product_id)
     {
-        if (AuthorityResolver::isNativeObject((int)$product_id)) {
-            $type = $this->native()->get_product_type($product_id);
+        $pid = (int)$product_id;
+        if (AuthorityResolver::isNativeObject($pid)) {
+            $type = AuthorityResolver::getNativeProductType($pid);
             if ($type !== false) {
                 return $type;
             }
@@ -220,6 +221,7 @@ class CohortRoutingVariableDataStore extends WC_Product_Variable_Data_Store_CPT
     protected function native(): ProductVariableDataStore
     {
         if ($this->nativeStore === null) {
+            class_exists(ProductDataStore::class);
             $this->nativeStore = new ProductVariableDataStore();
         }
         return $this->nativeStore;
@@ -398,6 +400,7 @@ class CohortRoutingVariationDataStore extends WC_Product_Variation_Data_Store_CP
     protected function native(): ProductVariationDataStore
     {
         if ($this->nativeStore === null) {
+            class_exists(ProductDataStore::class);
             $this->nativeStore = new ProductVariationDataStore();
         }
         return $this->nativeStore;

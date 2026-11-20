@@ -202,6 +202,7 @@ class MetaBridge
         self::$inProgress[$guardKey] = true;
         try {
             $result = $bridge->updatePostMeta((int)$objectId, (string)$metaKey, $metaValue, $prevValue);
+            \WPE\Support\AuthorityResolver::evictObject((int)$objectId);
             return $result;
         } finally {
             unset(self::$inProgress[$guardKey]);
@@ -223,6 +224,7 @@ class MetaBridge
         self::$inProgress[$guardKey] = true;
         try {
             $result = $bridge->addPostMeta((int)$objectId, (string)$metaKey, $metaValue, (bool)$unique);
+            \WPE\Support\AuthorityResolver::evictObject((int)$objectId);
             return $result;
         } finally {
             unset(self::$inProgress[$guardKey]);
@@ -244,6 +246,7 @@ class MetaBridge
         self::$inProgress[$guardKey] = true;
         try {
             $result = $bridge->deletePostMeta((int)$objectId, (string)$metaKey, $metaValue, (bool)$deleteAll);
+            \WPE\Support\AuthorityResolver::evictObject((int)$objectId);
             return $result;
         } finally {
             unset(self::$inProgress[$guardKey]);

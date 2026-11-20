@@ -427,8 +427,12 @@ class CatalogProjector
         $updates = [];
 
         foreach ($catalogRow as $col => $val) {
-            $placeholders[] = '%s';
-            $values[] = $val;
+            if ($val === null) {
+                $placeholders[] = 'NULL';
+            } else {
+                $placeholders[] = '%s';
+                $values[] = $val;
+            }
             if ($col !== 'generation' && $col !== 'product_id') {
                 $updates[] = "`{$col}` = VALUES(`{$col}`)";
             }
@@ -487,6 +491,26 @@ class CatalogProjector
             }
         }
 
+        // Native product-level options (non-variation options in wpe_options / wpe_option_values, P028 D05)
+        $prefix = $this->wpdb->prefix;
+        $prodOptRows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT o.`key` AS opt_key, o.taxonomy, ov.value_key, ov.label, ov.term_id
+             FROM {$prefix}wpe_options o
+             INNER JOIN {$prefix}wpe_option_values ov ON ov.option_id = o.id
+             WHERE o.product_id = %d AND o.used_for_variation = 0",
+            $productId
+        ), ARRAY_A) ?: [];
+
+        foreach ($prodOptRows as $por) {
+            foreach ($this->resolveNativeFacetPairs($por) as [$fk, $vk]) {
+                $facets[] = [
+                    'facet_key'  => $fk,
+                    'value_key'  => $vk,
+                    'variant_id' => 0,
+                ];
+            }
+        }
+
         // Variant-level attributes for variable products (variant_id = variant.id)
         if ($type === 'variable') {
             $variants = $this->wpdb->get_results($this->wpdb->prepare(
@@ -509,6 +533,32 @@ class CatalogProjector
                             ];
                         }
                     }
+                }
+            }
+
+            // Native variant option values from wpe_variant_values / wpe_options / wpe_option_values (P028 D05)
+            $varValRows = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT v.id AS variant_id, vv.option_id, vv.is_any,
+                        o.`key` AS opt_key, o.taxonomy,
+                        ov.value_key, ov.label, ov.term_id
+                 FROM {$this->tableVariants} v
+                 INNER JOIN {$prefix}wpe_variant_values vv ON vv.variant_id = v.id
+                 INNER JOIN {$prefix}wpe_options o ON o.id = vv.option_id
+                 LEFT JOIN {$prefix}wpe_option_values ov
+                     ON (vv.is_any = 1 AND ov.option_id = o.id)
+                     OR (vv.is_any = 0 AND ov.id = vv.value_id AND ov.option_id = o.id)
+                 WHERE v.product_id = %d AND v.deleted_at IS NULL AND v.status = 'publish'",
+                $productId
+            ), ARRAY_A) ?: [];
+
+            foreach ($varValRows as $vvr) {
+                $vId = (int)$vvr['variant_id'];
+                foreach ($this->resolveNativeFacetPairs($vvr) as [$fk, $vk]) {
+                    $facets[] = [
+                        'facet_key'  => $fk,
+                        'value_key'  => $vk,
+                        'variant_id' => $vId,
+                    ];
                 }
             }
         }
@@ -541,6 +591,79 @@ class CatalogProjector
         }
 
         return true;
+    }
+
+    /**
+     * Resolve normalized [facet_key, value_key] pairs for a native option/option-value row (P028 D05).
+     *
+     * @return array<int, array{0: string, 1: string}>
+     */
+    private function resolveNativeFacetPairs(array $row): array
+    {
+        $facetKeys = [];
+        $taxonomy = trim((string)($row['taxonomy'] ?? ''));
+        $optKey = trim((string)($row['opt_key'] ?? ''));
+
+        if ($taxonomy !== '') {
+            $tk = sanitize_key($taxonomy);
+            if ($tk !== '') {
+                $facetKeys[] = $tk;
+            }
+        }
+        if ($optKey !== '') {
+            $ok = sanitize_key($optKey);
+            if ($ok !== '' && !in_array($ok, $facetKeys, true)) {
+                $facetKeys[] = $ok;
+            }
+            $paOk = sanitize_key('pa_' . $optKey);
+            if ($taxonomy === '' && $paOk !== 'pa_' && !in_array($paOk, $facetKeys, true)) {
+                $facetKeys[] = $paOk;
+            }
+        }
+
+        if ($facetKeys === []) {
+            return [];
+        }
+
+        $valueKeys = [];
+        $termId = (int)($row['term_id'] ?? 0);
+        if ($termId > 0 && $taxonomy !== '' && function_exists('get_term')) {
+            $term = get_term($termId, $taxonomy);
+            if ($term instanceof \WP_Term && $term->slug !== '') {
+                $ts = sanitize_key($term->slug);
+                if ($ts !== '') {
+                    $valueKeys[] = $ts;
+                }
+            }
+        }
+
+        $valKey = trim((string)($row['value_key'] ?? ''));
+        if ($valKey !== '') {
+            $vk = sanitize_key($valKey);
+            if ($vk !== '' && !in_array($vk, $valueKeys, true)) {
+                $valueKeys[] = $vk;
+            }
+        } else {
+            $label = trim((string)($row['label'] ?? ''));
+            if ($label !== '') {
+                $lk = sanitize_key($label);
+                if ($lk !== '' && !in_array($lk, $valueKeys, true)) {
+                    $valueKeys[] = $lk;
+                }
+            }
+        }
+
+        if ($valueKeys === []) {
+            return [];
+        }
+
+        $pairs = [];
+        foreach ($facetKeys as $fk) {
+            foreach ($valueKeys as $vk) {
+                $pairs[] = [$fk, $vk];
+            }
+        }
+        return $pairs;
     }
 
     /* -------------------------------------------------------------------------- */

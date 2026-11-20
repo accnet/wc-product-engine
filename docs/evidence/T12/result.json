@@ -1,8 +1,8 @@
 {
   "task_id": "T12",
-  "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
   "qa_status": "passed",
-  "content_digest": "90a53f74c410f49e3f6352bf1602aa0ea7d0262a0e6a731d6ded7484471e8e33",
+  "content_digest": "8287320ccdea4a7830a8f1c78e76ac75e0b82f7ce90ef8c1aa30710a8eca7ea5",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.0",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T12/output.log",
       "output_sha256": "bd0837bb097ba67665d0ffe62bb03519b34637a177554a5ea9b73b2d3afd1f1c",
-      "content_digest": "90a53f74c410f49e3f6352bf1602aa0ea7d0262a0e6a731d6ded7484471e8e33"
+      "content_digest": "8287320ccdea4a7830a8f1c78e76ac75e0b82f7ce90ef8c1aa30710a8eca7ea5"
     }
   ],
   "regression_results": [
@@ -148,9 +148,9 @@
     "counts_before": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -159,9 +159,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -179,9 +179,9 @@
     "counts_after_test": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7331,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7373,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -190,9 +190,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -210,9 +210,9 @@
     "counts_after_restore": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -221,9 +221,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -263,9 +263,9 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "base_commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
   "file_hashes": {
-    "src/Compatibility/WooDataStore/InventoryBridge.php": "6f047ff7fd81f8aaeec4d9282ec5c1ad15f443197002a2691bb3bdd3d6afc83f",
+    "src/Compatibility/WooDataStore/InventoryBridge.php": "fd1f5de514e34614fab8790b2f6bad3173fd6418a64d4a04ff8a3eb09767139b",
     "tests/integration/T12Test.php": "9513824987eaf747370d0b0d7a30529da22ed20a4009b702a0a4d6ef5065f8e9"
   }
 }

@@ -351,8 +351,10 @@ class InventoryBridge
             }
         }
         clean_post_cache($productId);
+        \WPE\Support\AuthorityResolver::evictObject($productId);
         if ($ownerId !== $productId) {
             clean_post_cache($ownerId);
+            \WPE\Support\AuthorityResolver::evictObject($ownerId);
         }
 
         return [
