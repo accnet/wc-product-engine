@@ -318,12 +318,50 @@ class T10Test
         $productId = $product->get_id();
         $this->cleanProductIds[] = $productId;
 
-        // Check wp_postmeta: native properties must NOT be saved in wp_postmeta
+        // The native save must not write owned props to wp_postmeta itself. Under native_bridge
+        // (P027) postmeta is only a projection written later by OutboxProjectionWorker/LegacyMirror,
+        // and get_post_meta() is served from native tables by MetaBridge (T11), so inspect the raw table.
+        $ownedKeys = ['_regular_price', '_sale_price', '_price', '_sku', '_stock', '_manage_stock'];
+        $keyList = "'" . implode("','", $ownedKeys) . "'";
+        $rawRows = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->wpdb->postmeta} WHERE post_id = %d AND meta_key IN ({$keyList})",
+            $productId
+        ));
+        if ($rawRows !== 0) {
+            echo "FAILED: Native save wrote {$rawRows} owned prop row(s) directly to wp_postmeta.\n";
+            return false;
+        }
+
+        // Whatever get_post_meta() returns for an owned key must come from native storage.
         $metaPrice = get_post_meta($productId, '_regular_price', true);
         $metaStock = get_post_meta($productId, '_stock', true);
-        if ($metaPrice !== '' || $metaStock !== '') {
-            echo "FAILED: Native property found in wp_postmeta (price=$metaPrice, stock=$metaStock).\n";
+        if (($metaPrice !== '' && abs((float)$metaPrice - 120.0) > 0.0001) || ($metaStock !== '' && (float)$metaStock !== 20.0)) {
+            echo "FAILED: get_post_meta returned non-native values (price=$metaPrice, stock=$metaStock).\n";
             return false;
+        }
+
+        // Plant conflicting legacy rows straight into wp_postmeta (bypassing MetaBridge): a fresh
+        // read must still return native values, proving no hidden CPT/postmeta fallback.
+        $planted = ['_regular_price' => '999', '_price' => '999', '_sku' => 'R40-STALE', '_stock' => '777', '_manage_stock' => 'no'];
+        $plantedIds = [];
+        foreach ($planted as $key => $value) {
+            $this->wpdb->insert($this->wpdb->postmeta, ['post_id' => $productId, 'meta_key' => $key, 'meta_value' => $value]);
+            $plantedIds[] = (int)$this->wpdb->insert_id;
+        }
+        clean_post_cache($productId);
+        wp_cache_delete($productId, 'post_meta');
+        try {
+            $fresh = new WC_Product_Simple();
+            $fresh->set_id($productId);
+            $this->dataStore->read($fresh);
+            if (abs((float)$fresh->get_regular_price() - 120.0) > 0.0001 || $fresh->get_sku() !== $sku
+                || !$fresh->get_manage_stock() || (float)$fresh->get_stock_quantity() !== 20.0) {
+                echo "FAILED: read() used stale postmeta (price={$fresh->get_regular_price()}, sku={$fresh->get_sku()}, stock={$fresh->get_stock_quantity()}).\n";
+                return false;
+            }
+        } finally {
+            $this->wpdb->query("DELETE FROM {$this->wpdb->postmeta} WHERE meta_id IN (" . implode(',', array_map('intval', $plantedIds)) . ')');
+            wp_cache_delete($productId, 'post_meta');
         }
 
         // Verify get_query_for_stock generates query against native wpe_inventory table
