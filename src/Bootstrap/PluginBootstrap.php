@@ -388,7 +388,8 @@ class PluginBootstrap
             return;
         }
 
-        wp_enqueue_style('wpe-admin-css', Assets::url('assets/admin/admin.css'), [], Assets::version('assets/admin/admin.css'));
+        wp_enqueue_style('wpe-admin-tokens', Assets::url('assets/admin/tokens.css'), [], Assets::version('assets/admin/tokens.css'));
+        wp_enqueue_style('wpe-admin-css', Assets::url('assets/admin/admin.css'), ['wpe-admin-tokens'], Assets::version('assets/admin/admin.css'));
 
         if (strpos($hook, 'wpe-shopify-import') !== false) {
             wp_enqueue_script(

@@ -24,3 +24,4 @@
 - P022 — UI stage 1: keyboard, focus, contrast and responsive fixes (done)
 - P023 — P020 amendment: PROGRESS reflects the 7.1.5 receipts (done)
 - P024 — P011 amendment: close out on local + fake provider scope (OD-19 Option B) (done)
+- P025 — UI stage 2: unified design tokens and inline styles to classes (in_progress)

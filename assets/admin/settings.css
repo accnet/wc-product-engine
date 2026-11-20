@@ -1,49 +1,47 @@
 /* WC Product Engine — Settings screen.
- * Everything is scoped under .wpe-admin so nothing leaks into other wp-admin screens. */
+ * Shared base tokens come from assets/admin/tokens.css; screen-specific overrides stay scoped under .wpe-admin. */
 
 .wpe-admin,
 .wrap.wpe-admin {
     --wpe-bg: #f1f2f4;
-    --wpe-surface: #ffffff;
     --wpe-surface-subdued: #fafbfb;
     --wpe-border: #dcdfe3;
     --wpe-border-subdued: #ebebeb;
-    --wpe-border-control: #8c8f94; /* inputs: 3.24:1 on white, WCAG 1.4.11 (P022.2) */
     --wpe-text: #202223;
     --wpe-text-subdued: #5c5f62; /* >= 4.5:1 on white */
-    --wpe-focus: #005bd3;
     --wpe-primary: #303030;
     --wpe-primary-hover: #1a1a1a;
-    --wpe-ok: #0b6b4f;
-    --wpe-ok-bg: #e3f1df;
     --wpe-warning: #7a4d00;
     --wpe-warning-bg: #fff4d6;
-    --wpe-error: #b02a10;
-    --wpe-error-bg: #fde7e4;
-    --wpe-info: #0b4d8c;
-    --wpe-info-bg: #e5f1fb;
-    --wpe-radius: 12px;
-    --wpe-radius-sm: 8px;
+    --wpe-radius: var(--wpe-radius-xl, 12px);
+    --wpe-radius-sm: var(--wpe-radius-md, 8px);
 
     max-width: 960px;
-    margin: 20px auto;
-    padding: 0 20px;
+    margin: var(--wpe-space-5, 20px) auto;
+    padding: 0 var(--wpe-space-5, 20px);
     box-sizing: border-box;
     color: var(--wpe-text);
 }
 
+.wrap.wpe-admin h1.wp-heading-inline,
 .wpe-admin h1 {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     font-size: 23px;
     font-weight: 600;
+    line-height: 1.3;
 }
 
 .wpe-admin h1 .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 26px;
     width: 26px;
     height: 26px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 /* ---- Tabs ------------------------------------------------------------ */
@@ -127,9 +125,14 @@
 }
 
 .wpe-statusbar .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 26px;
     width: 26px;
     height: 26px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .wpe-statusbar__text {
@@ -347,6 +350,20 @@
 .wpe-btn.is-ghost:hover { background: rgba(255, 255, 255, 0.12); }
 .wpe-btn--sm { min-height: 28px; padding: 3px 10px; font-size: 12px; }
 .wpe-btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+.wp-core-ui .wpe-admin .button .dashicons,
+.wpe-admin .wpe-btn .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
+    margin: 0;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
 
 /* ---- Operations & Health tab ----------------------------------------- */
 .wpe-metrics--ops {

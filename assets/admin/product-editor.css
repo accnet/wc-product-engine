@@ -1,49 +1,42 @@
-/* WC Product Engine — Modern Commerce SaaS & Refined WordPress Native Design System */
+/* WC Product Engine — Modern Commerce SaaS & Refined WordPress Native Design System
+ * Aliases map legacy --wpe-p-* editor tokens onto shared --wpe-* tokens (assets/admin/tokens.css). */
 
 :root {
     /* Surface & Background Tokens */
-    --wpe-p-color-bg: #f1f5f9;
-    --wpe-p-color-surface: #ffffff;
-    --wpe-p-color-surface-subdued: #f8fafc;
-    --wpe-p-color-surface-hover: #f1f5f9;
-    --wpe-p-color-border: #cbd5e1;
-    --wpe-p-color-border-subdued: #e2e8f0;
-    --wpe-p-color-border-hover: #94a3b8;
+    --wpe-p-color-bg: var(--wpe-bg, #f1f5f9);
+    --wpe-p-color-surface: var(--wpe-surface, #ffffff);
+    --wpe-p-color-surface-subdued: var(--wpe-surface-subdued, #f8fafc);
+    --wpe-p-color-surface-hover: var(--wpe-surface-hover, #f1f5f9);
+    --wpe-p-color-border: var(--wpe-border, #cbd5e1);
+    --wpe-p-color-border-subdued: var(--wpe-border-subdued, #e2e8f0);
+    --wpe-p-color-border-hover: var(--wpe-border-hover, #94a3b8);
     /* Border of interactive controls (inputs, selects, buttons), WCAG 1.4.11 (P022.2):
      * 3.87:1 on white and 3.53:1 on the tinted row-hover and card surfaces (#f1f5f9). */
-    --wpe-p-color-border-control: #7e8287;
+    --wpe-p-color-border-control: var(--wpe-border-control-tinted, #7e8287);
 
     /* Typography & Semantic Color Tokens */
-    --wpe-p-color-text: #0f172a;
-    --wpe-p-color-text-subdued: #475569;
-    --wpe-p-color-text-muted: #64748b;
-    --wpe-p-color-interactive: #005bd3;
-    --wpe-p-color-interactive-hover: #004299;
-    --wpe-p-color-primary: #1e293b;
-    --wpe-p-color-primary-hover: #0f172a;
-    --wpe-p-color-brand: #008060;
-    --wpe-p-color-brand-hover: #006e52;
-    --wpe-p-color-critical: #dc2626;
-    --wpe-p-color-critical-subdued: #fee2e2;
-    --wpe-p-color-warning: #d97706;
-    --wpe-p-color-warning-subdued: #fef3c7;
-    --wpe-p-color-success-subdued: #dcfce7;
-
-    /* Spacing Scale (4px base) */
-    --wpe-space-1: 4px;
-    --wpe-space-2: 8px;
-    --wpe-space-3: 12px;
-    --wpe-space-4: 16px;
-    --wpe-space-5: 20px;
-    --wpe-space-6: 24px;
+    --wpe-p-color-text: var(--wpe-text, #0f172a);
+    --wpe-p-color-text-subdued: var(--wpe-text-subdued, #475569);
+    --wpe-p-color-text-muted: var(--wpe-text-muted, #64748b);
+    --wpe-p-color-interactive: var(--wpe-interactive, #005bd3);
+    --wpe-p-color-interactive-hover: var(--wpe-interactive-hover, #004299);
+    --wpe-p-color-primary: var(--wpe-primary, #1e293b);
+    --wpe-p-color-primary-hover: var(--wpe-primary-hover, #0f172a);
+    --wpe-p-color-brand: var(--wpe-brand, #008060);
+    --wpe-p-color-brand-hover: var(--wpe-brand-hover, #006e52);
+    --wpe-p-color-critical: var(--wpe-critical, #dc2626);
+    --wpe-p-color-critical-subdued: var(--wpe-critical-bg, #fee2e2);
+    --wpe-p-color-warning: var(--wpe-warning, #d97706);
+    --wpe-p-color-warning-subdued: var(--wpe-warning-bg, #fef3c7);
+    --wpe-p-color-success-subdued: var(--wpe-success-bg, #dcfce7);
 
     /* Radius & Elevation Tokens */
-    --wpe-p-border-radius-sm: 6px;
-    --wpe-p-border-radius-base: 8px;
-    --wpe-p-border-radius-card: 10px;
-    --wpe-p-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.05);
-    --wpe-p-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
-    --wpe-p-shadow-floating: 0 12px 32px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.08);
+    --wpe-p-border-radius-sm: var(--wpe-radius-sm, 6px);
+    --wpe-p-border-radius-base: var(--wpe-radius-md, 8px);
+    --wpe-p-border-radius-card: var(--wpe-radius-lg, 10px);
+    --wpe-p-shadow-card: var(--wpe-shadow-card);
+    --wpe-p-shadow-hover: var(--wpe-shadow-hover);
+    --wpe-p-shadow-floating: var(--wpe-shadow-floating);
 }
 
 /* 1. WooCommerce Product Data Tab Integration (Legacy and Recovery Mode) */
@@ -137,11 +130,12 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     color: #991b1b;
 }
 
-#wpe-box-fullscreen .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
+#wpe-box-fullscreen {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1;
 }
 
 /* Layers (fullscreen editor, drawer, dialogs): visible focus for keyboard users. */
@@ -211,9 +205,14 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-icon-close .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 20px;
     height: 20px;
     font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .wpe-icon-close:hover {
@@ -231,8 +230,15 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     gap: 12px;
 }
 
+.wpe-editor-loading .spinner {
+    float: none;
+    margin: 0;
+    flex-shrink: 0;
+}
+
 /* Global Button Polish (Shopify Polaris style) */
 .wpe-editor-wrap .button,
+.wpe-info-wrap .button,
 .wpe-fullscreen-container .button,
 .wpe-drawer-container .button,
 .wpe-modal-dialog .button {
@@ -258,11 +264,21 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-editor-wrap .button .dashicons,
+.wpe-info-wrap .button .dashicons,
 .wpe-fullscreen-container .button .dashicons,
 .wpe-drawer-container .button .dashicons,
 .wpe-modal-dialog .button .dashicons,
+.wpe-btn-delete-option .dashicons,
+.wpe-desc-attr-delete .dashicons,
+.wpe-btn-delete-desc-attr .dashicons,
+.wpe-btn-delete-variant .dashicons,
+.wpe-btn-media-unlink .dashicons,
+.wpe-btn-remove-common-price .dashicons,
 .wpe-dirty-badge .dashicons,
 .wpe-section-title-wrap .dashicons,
+.wpe-info-section-title .dashicons,
+.wpe-ref-unpriced-warning .dashicons,
+.wpe-group-collapse-btn .dashicons,
 .wpe-tab-btn .dashicons,
 #wpe-box-fullscreen .dashicons {
     display: inline-flex !important;
@@ -279,6 +295,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-editor-wrap .button:hover,
+.wpe-info-wrap .button:hover,
 .wpe-fullscreen-container .button:hover,
 .wpe-drawer-container .button:hover,
 .wpe-modal-dialog .button:hover {
@@ -288,6 +305,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-editor-wrap .button:disabled,
+.wpe-info-wrap .button:disabled,
 .wpe-fullscreen-container .button:disabled,
 .wpe-drawer-container .button:disabled,
 .wpe-modal-dialog .button:disabled {
@@ -298,6 +316,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 
 /* Primary Button (Shopify Dark / Polaris Black) */
 .wpe-editor-wrap .button.button-primary,
+.wpe-info-wrap .button.button-primary,
 .wpe-fullscreen-container .button.button-primary,
 .wpe-drawer-container .button.button-primary,
 .wpe-modal-dialog .button.button-primary,
@@ -312,6 +331,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-editor-wrap .button.button-primary:hover,
+.wpe-info-wrap .button.button-primary:hover,
 .wpe-fullscreen-container .button.button-primary:hover,
 .wpe-drawer-container .button.button-primary:hover,
 .wpe-modal-dialog .button.button-primary:hover,
@@ -338,6 +358,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-editor-wrap .button-small,
+.wpe-info-wrap .button-small,
 .wpe-fullscreen-container .button-small {
     height: 30px !important;
     min-height: 30px !important;
@@ -347,9 +368,12 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 
 .wpe-btn-delete-option,
 .wpe-desc-attr-delete,
-.wpe-btn-delete-variant {
+.wpe-btn-delete-desc-attr,
+.wpe-btn-delete-variant,
+.wpe-btn-media-unlink,
+.wpe-btn-remove-common-price {
     background: transparent !important;
-    border: none !important;
+    border: 1px solid transparent !important;
     box-shadow: none !important;
     color: var(--wpe-p-color-text-subdued) !important;
     cursor: pointer !important;
@@ -358,16 +382,44 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 4px !important;
-    transition: background 0.15s, color 0.15s !important;
+    gap: 5px !important;
+    line-height: 1.2 !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    transition: background 0.15s, color 0.15s, border-color 0.15s !important;
     text-decoration: none !important;
 }
 
 .wpe-btn-delete-option:hover,
 .wpe-desc-attr-delete:hover,
-.wpe-btn-delete-variant:hover {
+.wpe-btn-delete-desc-attr:hover,
+.wpe-btn-delete-variant:hover,
+.wpe-btn-media-unlink:hover,
+.wpe-btn-remove-common-price:hover {
     color: var(--wpe-p-color-critical) !important;
     background: var(--wpe-p-color-critical-subdued) !important;
+    border-color: #fecaca !important;
+}
+
+.wpe-btn-delete-desc-attr {
+    width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+}
+
+.wpe-btn-media-unlink {
+    width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+}
+
+.wpe-btn-remove-common-price {
+    color: #b91c1c !important;
+    padding: 5px 10px !important;
 }
 
 /* 3. Top Action & Status Bar */
@@ -914,6 +966,16 @@ input.wpe-option-name-input:focus {
     object-fit: cover;
 }
 
+.wpe-media-slot .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 1;
+}
+
 .wpe-media-slot:hover {
     border-color: var(--wpe-p-color-interactive);
     background: #f0f7ff;
@@ -1285,6 +1347,14 @@ select.wpe-editable-input {
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
+.wpe-modal-header .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
 .wpe-modal-title {
     font-size: 16px;
     font-weight: 700;
@@ -1363,6 +1433,17 @@ select.wpe-editable-input {
     align-items: center;
     gap: 10px;
     animation: wpeFadeIn 0.2s ease-in-out;
+}
+
+.wpe-toast > .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .wpe-toast.success {
@@ -1508,11 +1589,14 @@ select.wpe-editable-input {
     gap: 2px;
 }
 
+.wpe-editor-wrap .button.wpe-btn-move-option,
+.wpe-fullscreen-container .button.wpe-btn-move-option,
 .wpe-btn-move-option {
-    width: 24px !important;
-    height: 24px !important;
-    min-height: 24px !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 0 !important;
+    line-height: 1 !important;
     border: 1px solid transparent !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -1520,6 +1604,8 @@ select.wpe-editable-input {
     border-radius: 4px !important;
 }
 
+.wpe-editor-wrap .button.wpe-btn-move-option:hover:not(:disabled),
+.wpe-fullscreen-container .button.wpe-btn-move-option:hover:not(:disabled),
 .wpe-btn-move-option:hover:not(:disabled) {
     background: #e2e8f0 !important;
     color: #0f172a !important;
@@ -1527,9 +1613,14 @@ select.wpe-editable-input {
 
 .wpe-chip-move {
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     color: #475569;
-    padding: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
     line-height: 1;
     user-select: none;
     opacity: 1;
@@ -1588,11 +1679,16 @@ select.wpe-editable-input {
 }
 
 .wpe-btn-revert-shared-stock {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
     background: transparent !important;
     border: none !important;
     color: #475569 !important;
     cursor: pointer !important;
-    padding: 0 4px !important;
+    padding: 0 !important;
     font-size: 14px !important;
     line-height: 1 !important;
     box-shadow: none !important;
@@ -1620,10 +1716,13 @@ select.wpe-editable-input {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 2px 4px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
     color: #475569;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     border-radius: 4px;
 }
 
@@ -1867,6 +1966,17 @@ select.wpe-editable-input {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
+.wpe-media-badge .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
 .wpe-media-badge.featured {
     background: var(--wpe-p-color-brand);
     color: #ffffff;
@@ -1954,13 +2064,16 @@ select.wpe-editable-input {
     gap: 2px;
 }
 
+.wpe-editor-wrap .button.wpe-btn-media-move,
+.wpe-fullscreen-container .button.wpe-btn-media-move,
+.wpe-modal-dialog .button.wpe-btn-media-move,
 .wpe-btn-media-move {
-    width: 24px !important;
-    height: 24px !important;
-    min-height: 24px !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 0 !important;
     line-height: 1 !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
     border-radius: 4px !important;
 }
 
@@ -1973,6 +2086,14 @@ select.wpe-editable-input {
     transition: border-color 0.15s ease, background-color 0.15s ease;
     cursor: pointer;
     margin-bottom: 12px;
+}
+
+.wpe-media-upload-zone .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .wpe-media-upload-zone--compact {
@@ -1999,6 +2120,18 @@ select.wpe-editable-input {
     border: 1px solid #e2e8f0;
     padding: 10px 12px;
     border-radius: 8px;
+}
+
+.wpe-media-url-bar .dashicons,
+.wpe-upload-queue-item .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .wpe-media-url-bar input[type="url"],
@@ -2120,6 +2253,16 @@ select.wpe-editable-input {
     display: flex;
 }
 
+.wpe-picker-check .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+    line-height: 1;
+}
+
 /* Drawer Prev / Next Variant Navigation */
 .wpe-drawer-nav {
     display: inline-flex;
@@ -2127,6 +2270,7 @@ select.wpe-editable-input {
     gap: 6px;
 }
 
+.wpe-drawer-container .button.wpe-btn-drawer-nav,
 .wpe-btn-drawer-nav {
     height: 30px !important;
     min-height: 30px !important;
@@ -2309,6 +2453,28 @@ select.wpe-editable-input {
     border-radius: var(--wpe-p-border-radius-card);
 }
 
+.wpe-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    margin: 0 auto 12px;
+}
+
+.wpe-empty-icon .dashicons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 1;
+}
+
 .wpe-empty-variants-title {
     font-size: 15px;
     font-weight: 600;
@@ -2413,6 +2579,7 @@ select.wpe-editable-input {
 /* Visible keyboard focus for every button and link in the editor (P022.2, WCAG 2.4.7).
  * The button skin above replaces WordPress' box-shadow focus ring, so draw an outline instead. */
 .wpe-editor-wrap :is(button, a[href], [tabindex="0"]):focus-visible,
+.wpe-info-wrap :is(button, a[href], [tabindex="0"]):focus-visible,
 .wpe-fullscreen-container :is(button, a[href], [tabindex="0"]):focus-visible,
 .wpe-drawer-container :is(button, a[href], [tabindex="0"]):focus-visible,
 .wpe-modal-dialog :is(button, a[href], [tabindex="0"]):focus-visible,
@@ -2425,6 +2592,7 @@ select.wpe-editable-input {
 /* Respect the reduced-motion preference for every WPE layer (P022.2). */
 @media (prefers-reduced-motion: reduce) {
     .wpe-editor-wrap *, .wpe-editor-wrap *::before, .wpe-editor-wrap *::after,
+    .wpe-info-wrap *, .wpe-info-wrap *::before, .wpe-info-wrap *::after,
     .wpe-fullscreen-overlay, .wpe-fullscreen-overlay *,
     .wpe-drawer-overlay, .wpe-drawer-overlay *,
     .wpe-modal-backdrop, .wpe-modal-backdrop *,
@@ -2485,6 +2653,12 @@ select.wpe-editable-input {
     height: 24px;
     margin-left: 4px;
     color: #ffffff;
+}
+
+.wpe-toast .wpe-icon-close .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
 }
 
 .wpe-toast .wpe-icon-close:hover {

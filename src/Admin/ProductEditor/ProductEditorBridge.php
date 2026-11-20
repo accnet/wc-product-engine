@@ -682,9 +682,16 @@ class ProductEditorBridge
         wp_enqueue_media();
 
         wp_enqueue_style(
+            'wpe-admin-tokens',
+            Assets::url('assets/admin/tokens.css'),
+            [],
+            Assets::version('assets/admin/tokens.css')
+        );
+
+        wp_enqueue_style(
             'wpe-product-editor-css',
             Assets::url('assets/admin/product-editor.css'),
-            [],
+            ['wpe-admin-tokens'],
             Assets::version('assets/admin/product-editor.css')
         );
 

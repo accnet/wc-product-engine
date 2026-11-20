@@ -1,0 +1,115 @@
+/* WC Product Engine — Shared Admin Design Tokens (Stage 2, P025)
+ *
+ * Single source of truth for colors, surfaces, WCAG 2.2 AA control borders,
+ * spacing, radii, elevation shadows and z-index layers across all WPE admin screens
+ * (Product Editor, Settings, Shopify Import, Operations).
+ */
+
+:root {
+    /* Surfaces & Borders */
+    --wpe-bg: #f1f5f9;
+    --wpe-surface: #ffffff;
+    --wpe-surface-subdued: #f8fafc;
+    --wpe-surface-hover: #f1f5f9;
+    --wpe-surface-info: #f0f6fc;
+    --wpe-surface-info-strong: #e7f3fe;
+    --wpe-border: #cbd5e1;
+    --wpe-border-subdued: #e2e8f0;
+    --wpe-border-hover: #94a3b8;
+    /* WCAG 1.4.11 control borders (P022.2):
+     * --wpe-border-control (#8c8f94): 3.24:1 on white (Settings, Import)
+     * --wpe-border-control-tinted (#7e8287): 3.87:1 on white, 3.53:1 on #f1f5f9 (Product Editor) */
+    --wpe-border-control: #8c8f94;
+    --wpe-border-control-tinted: #7e8287;
+
+    /* Typography & Brand Colors */
+    --wpe-text: #0f172a;
+    --wpe-text-strong: #1e293b;
+    --wpe-text-secondary: #334155;
+    --wpe-text-subdued: #475569;
+    --wpe-text-muted: #64748b;
+    --wpe-wp-text: #50575e;
+    --wpe-wp-blue: #2271b1;
+    --wpe-wp-blue-dark: #135e96;
+    --wpe-focus: #005bd3;
+    --wpe-interactive: #005bd3;
+    --wpe-interactive-hover: #004299;
+    --wpe-accent-blue: #2563eb;
+    --wpe-accent-blue-dark: #1d4ed8;
+    --wpe-primary: #1e293b;
+    --wpe-primary-hover: #0f172a;
+    --wpe-brand: #008060;
+    --wpe-brand-hover: #006e52;
+
+    /* Semantic Status Colors (WCAG 2.2 AA) */
+    --wpe-ok: #0b6b4f;
+    --wpe-ok-bg: #e3f1df;
+    --wpe-success: #00a32a;
+    --wpe-success-dark: #008a20;
+    --wpe-success-text: #166534;
+    --wpe-success-bg: #dcfce7;
+    --wpe-success-surface: #f0fdf4;
+    --wpe-success-border: #bbf7d0;
+    --wpe-warning: #d97706;
+    --wpe-warning-text: #92400e;
+    --wpe-warning-bg: #fef3c7;
+    --wpe-warning-surface: #fffbeb;
+    --wpe-warning-border: #fde68a;
+    --wpe-critical: #dc2626;
+    --wpe-critical-text: #b91c1c;
+    --wpe-critical-bg: #fee2e2;
+    --wpe-error: #b02a10;
+    --wpe-error-bg: #fde7e4;
+    --wpe-danger-wp: #d63638;
+    --wpe-info: #0b4d8c;
+    --wpe-info-bg: #e5f1fb;
+
+    /* Dark Console Tokens (Shopify Import Live Terminal) */
+    --wpe-terminal-bg: #1e1e1e;
+    --wpe-terminal-text: #d4d4d4;
+    --wpe-terminal-muted: #aaaaaa;
+    --wpe-terminal-border: #333333;
+    --wpe-terminal-thumb: #444444;
+    --wpe-terminal-thumb-hover: #666666;
+    --wpe-terminal-log-success: #4ec9b0;
+    --wpe-terminal-log-info: #9cdcfe;
+    --wpe-terminal-log-warning: #dcdcaa;
+    --wpe-terminal-log-error: #f48771;
+    --wpe-terminal-dot-red: #ff5f56;
+    --wpe-terminal-dot-yellow: #ffbd2e;
+    --wpe-terminal-dot-green: #27c93f;
+
+    /* Spacing Scale (4px base) */
+    --wpe-space-1: 4px;
+    --wpe-space-2: 8px;
+    --wpe-space-3: 12px;
+    --wpe-space-4: 16px;
+    --wpe-space-5: 20px;
+    --wpe-space-6: 24px;
+
+    /* Radii */
+    --wpe-radius-xs: 4px;
+    --wpe-radius-sm: 6px;
+    --wpe-radius-md: 8px;
+    --wpe-radius-lg: 10px;
+    --wpe-radius-xl: 12px;
+    --wpe-radius-pill: 999px;
+
+    /* Elevation Shadows */
+    --wpe-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --wpe-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    --wpe-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    --wpe-shadow-floating: 0 12px 32px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.08);
+    --wpe-shadow-terminal: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    /* Z-Index Scale (above WP admin bar 99999, below WP media modal 160000) */
+    --wpe-z-sticky: 20;
+    --wpe-z-savebar: 99990;
+    --wpe-z-fullscreen: 100010;
+    --wpe-z-drawer: 100050;
+    --wpe-z-modal: 100100;
+    --wpe-z-toast: 100200;
+
+    /* Typography */
+    --wpe-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
