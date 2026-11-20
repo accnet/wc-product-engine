@@ -169,23 +169,34 @@ class OperationsPage
     public function getHealthReport(): array
     {
         // 1. Authority & Mode
-        $systemMode = $this->wpdb->get_var($this->wpdb->prepare(
+        $rawMode = $this->wpdb->get_var($this->wpdb->prepare(
             "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
             'system_mode'
-        )) ?: 'legacy';
+        ));
+        $systemMode = 'legacy';
+        if (is_string($rawMode) && $rawMode !== '') {
+            $decodedMode = json_decode($rawMode, true);
+            if (is_string($decodedMode) && $decodedMode !== '') {
+                $systemMode = $decodedMode;
+            } elseif (is_array($decodedMode) && !empty($decodedMode['mode'])) {
+                $systemMode = (string)$decodedMode['mode'];
+            } else {
+                $systemMode = trim($rawMode, "\" \t\n\r\0\x0B") ?: 'legacy';
+            }
+        }
 
         $epoch = $this->mirror->getGlobalEpoch();
 
-        // 2. Source Counts
-        $nativeCount = (int)$this->wpdb->get_var("SELECT COUNT(*) FROM {$this->tableProducts}");
+        // 2. Source Counts (exclude empty WordPress auto-draft shells and soft-deleted tombstones)
+        $nativeCount = (int)$this->wpdb->get_var("SELECT COUNT(*) FROM {$this->tableProducts} WHERE deleted_at IS NULL");
         $legacyCount = (int)$this->wpdb->get_var(
-            "SELECT COUNT(*) FROM {$this->wpdb->posts} WHERE post_type = 'product' AND post_status != 'trash'"
+            "SELECT COUNT(*) FROM {$this->wpdb->posts} WHERE post_type = 'product' AND post_status NOT IN ('trash', 'auto-draft')"
         );
         $nativeAuthCount = (int)$this->wpdb->get_var(
-            "SELECT COUNT(*) FROM {$this->tableObjectState} WHERE authority = 'native'"
+            "SELECT COUNT(*) FROM {$this->tableObjectState} WHERE kind = 'product' AND authority IN ('native', 'native_bridge', 'full_native') AND tombstone = 0"
         );
         $legacyAuthCount = (int)$this->wpdb->get_var(
-            "SELECT COUNT(*) FROM {$this->tableObjectState} WHERE authority = 'legacy'"
+            "SELECT COUNT(*) FROM {$this->tableObjectState} WHERE kind = 'product' AND authority = 'legacy' AND tombstone = 0"
         );
 
         // 3. Mismatches / Shadow Diff gaps (R165)
@@ -197,7 +208,7 @@ class OperationsPage
 
         // 4. Dead-Letter Queue (DLQ) count (R165, AC-T41-01)
         $dlqCount = (int)$this->wpdb->get_var(
-            "SELECT COUNT(*) FROM {$this->tableOutbox} WHERE state IN ('dead', 'failed')"
+            "SELECT COUNT(*) FROM {$this->tableOutbox} WHERE state IN ('dead', 'failed', 'dead_letter')"
         );
 
         // 5. Projection & Outbox Lag
@@ -378,9 +389,11 @@ class OperationsPage
             case 'rollback':
                 $cohortIds = array_map('intval', (array)($params['cohort_ids'] ?? []));
                 if (empty($cohortIds)) {
-                    // Default to all active native products
+                    // Default to all active native / native_bridge / full_native products
                     $cohortIds = array_map('intval', $this->wpdb->get_col(
-                        "SELECT object_id FROM {$this->tableObjectState} WHERE authority = 'native' LIMIT 500"
+                        "SELECT object_id FROM {$this->tableObjectState}
+                         WHERE kind = 'product' AND authority IN ('native', 'native_bridge', 'full_native') AND tombstone = 0
+                         LIMIT 500"
                     ));
                 }
                 $rollbackRes = $this->rollbackRunner->executeRollback($cohortIds, $params);
@@ -389,6 +402,100 @@ class OperationsPage
                     'rollback_result' => $rollbackRes,
                     'status'          => $rollbackRes['status'] ?? 'unknown',
                 ];
+                break;
+
+            case 'mode':
+                $targetMode = trim((string)($params['mode'] ?? ''));
+                if ($targetMode === '') {
+                    $result = [
+                        'action'      => 'mode',
+                        'system_mode' => \WPE\Bootstrap\PluginBootstrap::instance()->getSystemMode(),
+                        'cohort_mode' => \WPE\Bootstrap\PluginBootstrap::instance()->getFlags()['cohort_mode'] ?? 'legacy',
+                        'status'      => 'ok',
+                    ];
+                    break;
+                }
+                if (!in_array($targetMode, ['legacy', 'shadow', 'indexed'], true)) {
+                    throw new \InvalidArgumentException(
+                        "Direct switch to '{$targetMode}' is prohibited. Pre-cutover modes are: legacy, shadow, indexed. Use 'gates' and 'cutover' for native_bridge."
+                    );
+                }
+                if (\WPE\Bootstrap\PluginBootstrap::instance()->isNativeRuntimeActive()) {
+                    throw new \RuntimeException(
+                        "Cannot switch system_mode to '{$targetMode}' while native cohort authority is active. Run 'rollback' first."
+                    );
+                }
+                $this->wpdb->replace($this->tableControl, [
+                    'key'        => 'system_mode',
+                    'value'      => $targetMode,
+                    'version'    => 1,
+                    'updated_at' => gmdate('Y-m-d H:i:s.u'),
+                ]);
+                \WPE\Bootstrap\PluginBootstrap::instance()->setFlag('query_enabled', $targetMode === 'indexed');
+                $result = [
+                    'action'        => 'mode',
+                    'system_mode'   => $targetMode,
+                    'query_enabled' => ($targetMode === 'indexed'),
+                    'status'        => 'completed',
+                ];
+                break;
+
+            case 'outbox':
+                $worker = new \WPE\Application\Migration\OutboxProjectionWorker($this->wpdb);
+                $batchSize = max(1, (int)($params['batch_size'] ?? 100));
+                $maxBatches = max(1, (int)($params['max_batches'] ?? 100));
+                $productIds = array_values(array_filter(array_map('intval', (array)($params['product_ids'] ?? []))));
+                $drainRes = $worker->drainAll($batchSize, $maxBatches, $productIds);
+                $result = array_merge(['action' => 'outbox', 'status' => 'completed'], $drainRes);
+                break;
+
+            case 'gates':
+                $cohortId = trim((string)($params['cohort_id'] ?? 'all')) ?: 'all';
+                $gates = new \WPE\Application\Rollout\ReadinessGates($this->wpdb);
+                $manifest = $gates->buildCohortManifest($cohortId, $params);
+                $gateRes = $gates->validateAllGates($manifest);
+                // Strip filesystem paths from gate entries so REST callers never receive server paths (AC-T41-02)
+                $cleanGates = [];
+                foreach (($gateRes['gates'] ?? []) as $gId => $gInfo) {
+                    unset($gInfo['artifact']);
+                    $cleanGates[$gId] = $gInfo;
+                }
+                $result = [
+                    'action'             => 'gates',
+                    'status'             => $gateRes['all_passed'] ? 'passed' : 'blocked',
+                    'all_passed'         => $gateRes['all_passed'],
+                    'passed_count'       => $gateRes['passed_count'],
+                    'total_gates'        => $gateRes['total_gates'],
+                    'failed_gates'       => $gateRes['failed_gates'],
+                    'gates'              => $cleanGates,
+                    'cohort_id'          => $manifest['cohort_id'],
+                    'cohort_hash'        => $manifest['cohort_hash'],
+                    'epoch'              => $manifest['epoch'],
+                    'total_products'     => $manifest['total_products'],
+                    'total_variants'     => $manifest['total_variants'],
+                    'gate_receipt_token' => ($actorId === 0) ? $gateRes['gate_receipt_token'] : null,
+                ];
+                break;
+
+            case 'cutover':
+                $cohortId = trim((string)($params['cohort_id'] ?? 'all')) ?: 'all';
+                $token = trim((string)($params['gate_receipt_token'] ?? ''));
+                if ($token === '') {
+                    throw new \InvalidArgumentException("Missing gate_receipt_token for cutover.");
+                }
+                $productIds = array_values(array_filter(array_map('intval', (array)($params['product_ids'] ?? []))));
+                $runner = new \WPE\Application\Rollout\CutoverRunner($this->wpdb);
+                $jobId = $runner->startCutover($cohortId, $token, [
+                    'product_ids' => $productIds,
+                    'target_mode' => 'native_bridge',
+                ]);
+                $execRes = $runner->executeCheckpoint($jobId);
+                $result = array_merge(['action' => 'cutover'], $execRes);
+                break;
+
+            case 'hygiene':
+                $apply = !empty($params['apply']);
+                $result = $this->runPreCutoverHygiene($apply);
                 break;
 
             case 'export':
@@ -544,6 +651,118 @@ class OperationsPage
             </div>
         </div>
         <?php
+    }
+
+    /**
+     * Inspect or clean pre-cutover test/import residue without touching real products or order references (D06).
+     */
+    private function runPreCutoverHygiene(bool $apply = false): array
+    {
+        $prefix = $this->wpdb->prefix;
+        $orderItemMeta = "{$prefix}woocommerce_order_itemmeta";
+        $hasOrderItemMeta = ($this->wpdb->get_var($this->wpdb->prepare("SHOW TABLES LIKE %s", $orderItemMeta)) === $orderItemMeta);
+        $orderRefGuardProd = $hasOrderItemMeta
+            ? "AND wp.id NOT IN (SELECT CAST(meta_value AS UNSIGNED) FROM {$orderItemMeta} WHERE meta_key IN ('_product_id', '_variation_id'))"
+            : '';
+        $orderRefGuardPost = $hasOrderItemMeta
+            ? "AND p.ID NOT IN (SELECT CAST(meta_value AS UNSIGNED) FROM {$orderItemMeta} WHERE meta_key IN ('_product_id', '_variation_id'))"
+            : '';
+
+        // 1. Native rows missing a published/draft/private/pending/trash WP post shell (e.g. deleted shell or stranded auto-draft)
+        $shelllessNativeIds = array_values(array_map('intval', $this->wpdb->get_col(
+            "SELECT wp.id FROM {$this->tableProducts} wp
+             LEFT JOIN {$this->wpdb->posts} p ON p.ID = wp.id
+             WHERE (p.ID IS NULL OR p.post_status = 'auto-draft') {$orderRefGuardProd}"
+        )));
+
+        // 2. Empty WP auto-draft shells not backing any active native product/variant
+        $orphanAutoDraftIds = array_values(array_map('intval', $this->wpdb->get_col(
+            "SELECT p.ID FROM {$this->wpdb->posts} p
+             WHERE p.post_type IN ('product', 'product_variation')
+               AND p.post_status = 'auto-draft'
+               AND p.ID NOT IN (SELECT id FROM {$this->tableProducts})
+               AND p.ID NOT IN (SELECT id FROM {$this->tableVariants})
+               {$orderRefGuardPost}"
+        )));
+
+        // 3. Orphan object_state rows referencing nonexistent objects
+        $orphanStateIds = array_values(array_map('intval', $this->wpdb->get_col(
+            "SELECT os.object_id FROM {$this->tableObjectState} os
+             WHERE os.object_id NOT IN (SELECT id FROM {$this->tableProducts})
+               AND os.object_id NOT IN (SELECT id FROM {$this->tableVariants})
+               AND os.object_id NOT IN (SELECT ID FROM {$this->wpdb->posts})"
+        )));
+
+        $summary = [
+            'action'                   => 'hygiene',
+            'applied'                  => $apply,
+            'shellless_native_count'   => count($shelllessNativeIds),
+            'orphan_auto_draft_count'  => count($orphanAutoDraftIds),
+            'orphan_object_state_count'=> count($orphanStateIds),
+            'status'                   => $apply ? 'completed' : 'dry_run',
+        ];
+
+        if (!$apply) {
+            return $summary;
+        }
+
+        if (!empty($shelllessNativeIds)) {
+            $inP = implode(',', $shelllessNativeIds);
+            $varIds = array_values(array_map('intval', $this->wpdb->get_col(
+                "SELECT id FROM {$this->tableVariants} WHERE product_id IN ({$inP})"
+            )));
+            $allOwners = array_values(array_unique(array_merge($shelllessNativeIds, $varIds)));
+            $inOwners = implode(',', $allOwners);
+
+            if (!empty($varIds)) {
+                $inV = implode(',', $varIds);
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_values WHERE variant_id IN ({$inV})");
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_variant_media WHERE variant_id IN ({$inV})");
+                $this->wpdb->query("DELETE FROM {$prefix}wpe_catalog_facets WHERE variant_id IN ({$inV})");
+                $this->wpdb->query("DELETE FROM {$this->tableVariants} WHERE id IN ({$inV})");
+            }
+
+            $this->wpdb->query("DELETE ov FROM {$prefix}wpe_option_values ov INNER JOIN {$prefix}wpe_options o ON o.id = ov.option_id WHERE o.product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_options WHERE product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_catalog_facets WHERE product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_catalog WHERE product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_product_terms WHERE product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_product_media WHERE product_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_product_links WHERE product_id IN ({$inP}) OR target_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$this->tableInventory} WHERE owner_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$this->tableObjectState} WHERE object_id IN ({$inOwners}) OR parent_id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_sku_registry WHERE object_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$this->tableMeta} WHERE object_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$prefix}wpe_downloads WHERE object_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$this->tableProducts} WHERE id IN ({$inP})");
+            $this->wpdb->query("DELETE FROM {$this->wpdb->postmeta} WHERE post_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$this->wpdb->term_relationships} WHERE object_id IN ({$inOwners})");
+            $this->wpdb->query("DELETE FROM {$this->wpdb->posts} WHERE ID IN ({$inOwners}) AND post_status = 'auto-draft'");
+
+            foreach ($shelllessNativeIds as $spid) {
+                $this->wpdb->delete($this->tableControl, ['key' => 'shopify_import_fp:' . $spid]);
+            }
+        }
+
+        if (!empty($orphanAutoDraftIds)) {
+            foreach (array_chunk($orphanAutoDraftIds, 200) as $chunk) {
+                $inO = implode(',', $chunk);
+                $this->wpdb->query("DELETE FROM {$this->wpdb->postmeta} WHERE post_id IN ({$inO})");
+                $this->wpdb->query("DELETE FROM {$this->wpdb->term_relationships} WHERE object_id IN ({$inO})");
+                $this->wpdb->query("DELETE FROM {$this->wpdb->posts} WHERE ID IN ({$inO}) AND post_status = 'auto-draft'");
+            }
+        }
+
+        // Re-evaluate orphan object_state rows after product cleanup
+        $this->wpdb->query(
+            "DELETE FROM {$this->tableObjectState}
+             WHERE object_id NOT IN (SELECT id FROM {$this->tableProducts})
+               AND object_id NOT IN (SELECT id FROM {$this->tableVariants})
+               AND object_id NOT IN (SELECT ID FROM {$this->wpdb->posts})"
+        );
+
+        $this->logAudit('pre_cutover_hygiene_applied', 0, $summary);
+        return $summary;
     }
 
     private function logAudit(string $operation, int $targetId, array $payload, int $actorId = 0): void

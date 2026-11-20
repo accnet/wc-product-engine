@@ -140,22 +140,88 @@
             this.value = '';
         });
 
+        function setSelectedInfoStyle(variant) {
+            if (variant === 'error') {
+                selectedInfo.css({ background: '#fcf0f1', borderLeftColor: '#d63638' });
+            } else {
+                selectedInfo.css({ background: '#e7f3fe', borderLeftColor: '#2271b1' });
+            }
+        }
+
+        // Invalidate previously verified server path if user edits the input
+        serverPathInput.on('input', function () {
+            if (state.filePath !== null) {
+                state.filePath = null;
+                state.fileName = null;
+                if (!state.stagedFileId) {
+                    startBtn.prop('disabled', true);
+                    selectedInfo.slideUp();
+                }
+            }
+        });
+
         // Server path check button
         checkServerBtn.on('click', function () {
             var path = $.trim(serverPathInput.val());
             if (!path) {
-                alert('Please enter a valid file path on the server.');
+                state.filePath = null;
+                state.fileName = null;
+                if (!state.stagedFileId) {
+                    startBtn.prop('disabled', true);
+                }
+                setSelectedInfoStyle('error');
+                selectedFilename.text('Validation failed');
+                selectedMeta.text('Please enter a valid file path on the server.');
+                selectedInfo.slideDown();
                 return;
             }
 
-            state.filePath = path;
-            state.stagedFileId = null;
-            state.fileName = path.split('/').pop().split('\\').pop();
-
-            selectedFilename.text('Server File: ' + state.fileName);
-            selectedMeta.text('Path: ' + path);
+            checkServerBtn.prop('disabled', true);
+            startBtn.prop('disabled', true);
+            setSelectedInfoStyle('info');
+            selectedFilename.text('Validating server file...');
+            selectedMeta.text('Checking path and CSV headers: ' + path);
             selectedInfo.slideDown();
-            startBtn.prop('disabled', false);
+
+            $.ajax({
+                url: config.restUrl + 'shopify-import/validate-server-file',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ file_path: path }),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+                },
+                success: function (res) {
+                    checkServerBtn.prop('disabled', false);
+                    if (res.status === 'success') {
+                        state.filePath = res.file_path;
+                        state.stagedFileId = null;
+                        state.fileName = res.original_filename;
+
+                        setSelectedInfoStyle('info');
+                        selectedFilename.text('Server File Validated: ' + res.original_filename);
+                        selectedMeta.text('Size: ' + res.file_size_fmt + ' — ' + res.header_count + ' columns detected — Path: ' + res.file_path);
+                        startBtn.prop('disabled', false);
+                    } else {
+                        state.filePath = null;
+                        state.fileName = null;
+                        setSelectedInfoStyle('error');
+                        selectedFilename.text('Validation failed');
+                        selectedMeta.text(res.message || 'Server file validation failed.');
+                        startBtn.prop('disabled', true);
+                    }
+                },
+                error: function (xhr) {
+                    checkServerBtn.prop('disabled', false);
+                    state.filePath = null;
+                    state.fileName = null;
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not validate server file.';
+                    setSelectedInfoStyle('error');
+                    selectedFilename.text('Validation failed');
+                    selectedMeta.text(msg);
+                    startBtn.prop('disabled', true);
+                }
+            });
         });
 
         // Auto-check default server path if filled
@@ -169,6 +235,7 @@
                 return;
             }
 
+            setSelectedInfoStyle('info');
             selectedFilename.text('Uploading: ' + file.name + ' (' + formatBytes(file.size) + ')...');
             selectedMeta.text('Please wait...');
             selectedInfo.slideDown();

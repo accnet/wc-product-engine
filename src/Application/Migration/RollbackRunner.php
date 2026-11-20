@@ -410,7 +410,42 @@ class RollbackRunner
             }
         }
 
-        // 4. Release write barrier
+        // 4. Synchronize runtime routing & cohort_mode flags with remaining native cohorts (D05)
+        if (class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+            $routing = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, []);
+            if (is_array($routing) && !empty($routing['products']) && is_array($routing['products'])) {
+                foreach ($aggregateIds as $aggId) {
+                    unset($routing['products'][(int)$aggId]);
+                }
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $routing);
+            }
+
+            $remainingNative = (int)$this->wpdb->get_var(
+                "SELECT COUNT(*) FROM {$this->tableObjectState}
+                 WHERE kind = 'product' AND authority IN ('native_bridge', 'full_native') AND tombstone = 0"
+            );
+            $hasCategoryRules = is_array($routing) && !empty($routing['categories']);
+            $hasProductRules = is_array($routing) && !empty($routing['products']);
+
+            $flags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
+            if (is_array($flags)) {
+                if ($remainingNative === 0 && !$hasCategoryRules && !$hasProductRules) {
+                    $flags['cohort_mode'] = 'legacy';
+                } else {
+                    $flags['cohort_mode'] = 'cohort_canary';
+                    $this->wpdb->replace($this->tableControl, [
+                        'key'        => 'system_mode',
+                        'value'      => 'cohort_canary',
+                        'version'    => 1,
+                        'updated_at' => gmdate('Y-m-d H:i:s.u'),
+                    ]);
+                }
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, $flags);
+                \WPE\Bootstrap\PluginBootstrap::instance()->loadFlags();
+            }
+        }
+
+        // 5. Release write barrier
         $this->releaseWriteBarrier();
 
         // 5. Log audit

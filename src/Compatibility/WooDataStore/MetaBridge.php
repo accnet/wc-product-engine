@@ -125,17 +125,41 @@ class MetaBridge
             return false;
         }
 
+        // Never intercept legacy mirror projection writes (R160)
+        if (\WPE\Application\Migration\LegacyCapture::getOrigin() === 'native_projection') {
+            return false;
+        }
+
         // Check wpe_object_state first
         $state = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT authority, tombstone FROM {$this->tableObjectState} WHERE object_id = %d",
+            "SELECT authority, parent_id, tombstone FROM {$this->tableObjectState} WHERE object_id = %d",
             $objectId
         ), ARRAY_A);
 
         if ($state) {
-            return $state['authority'] === 'native' && empty($state['tombstone']);
+            if (!empty($state['tombstone'])) {
+                return false;
+            }
+            $auth = (string)($state['authority'] ?? 'legacy');
+            if ($auth === 'legacy') {
+                return false;
+            }
+            if (\WPE\Support\AuthorityResolver::isNativeAuthorityValue($auth)) {
+                $bootstrap = \WPE\Bootstrap\PluginBootstrap::instance();
+                if ($bootstrap->isNativeRuntimeActive()) {
+                    return \WPE\Support\AuthorityResolver::isNativeObject($objectId, $this->wpdb);
+                }
+                return true;
+            }
+            return false;
         }
 
-        // Check if exists in wpe_products or wpe_variants
+        $bootstrap = \WPE\Bootstrap\PluginBootstrap::instance();
+        if ($bootstrap->isNativeRuntimeActive()) {
+            return \WPE\Support\AuthorityResolver::isNativeObject($objectId, $this->wpdb);
+        }
+
+        // Standalone test fallback when no object_state row exists: check wpe_products / wpe_variants
         $isProd = (int)$this->wpdb->get_var($this->wpdb->prepare(
             "SELECT COUNT(1) FROM {$this->tableProducts} WHERE id = %d AND deleted_at IS NULL",
             $objectId

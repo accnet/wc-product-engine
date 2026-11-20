@@ -233,7 +233,7 @@ class CutoverRunner
         // Step 7: Activate Native & Release Barrier
         if ($this->shouldRunStep($checkpoint['step'], 'activate_native')) {
             $this->releaseBarrierLock($cohortId);
-            $this->registerCohortActivation($cohortId, (int)($config['new_epoch'] ?? 2));
+            $this->registerCohortActivation($cohortId, (int)($config['new_epoch'] ?? 2), $productIds, (string)($config['target_mode'] ?? 'native_bridge'));
             $this->updateJobStatus($jobId, 'completed', 'activate_native');
             $checkpoint['step'] = 'activate_native';
         }
@@ -405,11 +405,42 @@ class CutoverRunner
     }
 
     /**
-     * Final catch-up reconciliation for dirty aggregates.
+     * Final catch-up reconciliation for dirty or uncaptured legacy aggregates in the cohort.
      */
     private function reconcileFinalGaps(string $cohortId, array $productIds): void
     {
-        // Reconcile any dirty records before flipping
+        $ids = array_values(array_filter(array_map('intval', $productIds), static fn(int $v): bool => $v > 0));
+        if (!empty($ids)) {
+            $inSql = implode(',', $ids);
+            $missingLegacyIds = array_map('intval', $this->wpdb->get_col(
+                "SELECT p.ID FROM {$this->wpdb->posts} p
+                 WHERE p.ID IN ({$inSql})
+                   AND p.post_type = 'product'
+                   AND p.post_status = 'publish'
+                   AND p.ID NOT IN (SELECT id FROM {$this->tableProducts})"
+            ));
+        } elseif ($cohortId === 'all') {
+            $missingLegacyIds = array_map('intval', $this->wpdb->get_col(
+                "SELECT p.ID FROM {$this->wpdb->posts} p
+                 WHERE p.post_type = 'product'
+                   AND p.post_status = 'publish'
+                   AND p.ID NOT IN (SELECT id FROM {$this->tableProducts})"
+            ));
+        } else {
+            $missingLegacyIds = [];
+        }
+
+        foreach ($missingLegacyIds as $pid) {
+            $terms = function_exists('get_the_terms') ? get_the_terms($pid, 'product_type') : false;
+            $typeSlug = (is_array($terms) && !empty($terms)) ? (string)($terms[0]->slug ?? 'simple') : 'simple';
+            if (!in_array($typeSlug, ['simple', 'variable'], true)) {
+                continue;
+            }
+            if (LegacyOnlyProps::productsWithData($this->wpdb, [$pid]) !== []) {
+                continue;
+            }
+            $this->capture->captureProduct($pid);
+        }
     }
 
     /**
@@ -493,6 +524,20 @@ class CutoverRunner
                 'updated_at' => $now,
             ]);
 
+            // Keep global authority_epoch monotonic with cutover flips (D01 / D05)
+            $curGlobalEpoch = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+                'authority_epoch'
+            ));
+            if ($newEpoch >= $curGlobalEpoch) {
+                $this->wpdb->replace($this->tableControl, [
+                    'key'        => 'authority_epoch',
+                    'value'      => (string)$newEpoch,
+                    'version'    => 1,
+                    'updated_at' => $now,
+                ]);
+            }
+
             // Log security audit entry
             $this->wpdb->insert($this->tableAudit, [
                 'request_id' => wp_generate_uuid4(),
@@ -535,9 +580,9 @@ class CutoverRunner
     }
 
     /**
-     * Registers activated cohort in wpe_control.
+     * Registers activated cohort in wpe_control and synchronizes runtime routing/flags (D05).
      */
-    private function registerCohortActivation(string $cohortId, int $epoch): void
+    private function registerCohortActivation(string $cohortId, int $epoch, array $productIds = [], string $targetMode = 'native_bridge'): void
     {
         $now = gmdate('Y-m-d H:i:s.u');
         $regKey = "cohort_active_{$cohortId}";
@@ -545,7 +590,7 @@ class CutoverRunner
             'key'        => $regKey,
             'value'      => (string)wp_json_encode([
                 'cohort_id'  => $cohortId,
-                'mode'       => 'native_bridge',
+                'mode'       => $targetMode,
                 'epoch'      => $epoch,
                 'active'     => true,
                 'updated_at' => $now,
@@ -553,6 +598,54 @@ class CutoverRunner
             'version'    => 1,
             'updated_at' => $now,
         ]);
+
+        $isFullCatalog = ($cohortId === 'all' && empty($productIds));
+        $newSystemMode = $isFullCatalog ? $targetMode : 'cohort_canary';
+
+        // Do not downgrade system_mode if already global native_bridge / full_native
+        $existingMode = (string)($this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
+            'system_mode'
+        )) ?: 'legacy');
+        if (!in_array($existingMode, ['native_bridge', 'full_native'], true) || $isFullCatalog) {
+            $this->wpdb->replace($this->tableControl, [
+                'key'        => 'system_mode',
+                'value'      => $newSystemMode,
+                'version'    => 1,
+                'updated_at' => $now,
+            ]);
+        }
+
+        if (class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+            $routing = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, []);
+            if (!is_array($routing)) {
+                $routing = ['products' => [], 'categories' => []];
+            }
+            if (!isset($routing['products']) || !is_array($routing['products'])) {
+                $routing['products'] = [];
+            }
+
+            foreach ($productIds as $pid) {
+                $pid = (int)$pid;
+                if ($pid > 0) {
+                    $routing['products'][$pid] = $targetMode;
+                }
+            }
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $routing);
+
+            $flags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
+            if (!is_array($flags)) {
+                $flags = \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS;
+            }
+            $flags['native_writes_enabled'] = true;
+            if ($isFullCatalog) {
+                $flags['cohort_mode'] = $targetMode;
+            } elseif (!in_array($flags['cohort_mode'] ?? 'legacy', ['native_bridge', 'full_native'], true)) {
+                $flags['cohort_mode'] = 'cohort_canary';
+            }
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, $flags);
+            \WPE\Bootstrap\PluginBootstrap::instance()->loadFlags();
+        }
     }
 
     /**

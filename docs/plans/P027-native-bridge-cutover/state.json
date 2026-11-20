@@ -1,0 +1,696 @@
+{
+  "id": "P027",
+  "title": "Runtime wiring and governed cutover to native_bridge",
+  "status": "done",
+  "content_hash": "bc4ffc0feb445cb831d65e63f30e4bd819f768b0402faf390623c6ae1e5a7b4b",
+  "tasks": [
+    {
+      "id": "P027.1",
+      "title": "Unified AuthorityResolver, CohortRoutingDataStore, and conditional runtime bridge wiring in PluginBootstrap",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "src/Compatibility/WooDataStore/InventoryBridge.php"
+      ],
+      "files": [
+        "src/Support/AuthorityResolver.php",
+        "src/Compatibility/WooDataStore/CohortRoutingDataStore.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "src/Compatibility/WooDataStore/InventoryBridge.php",
+        "tests/integration/CohortRoutingDataStoreTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Support/AuthorityResolver.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/CohortRoutingDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/MetaBridge.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/InventoryBridge.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462147-74a7df26.log",
+          "time": "2026-11-20T11:17:42.148Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/CohortRoutingDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "1640b518e9090cb895bd30853d55aaaced54f3610e1f8c081a94ff3d71fa6931",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462239-49c24cf7.log",
+          "time": "2026-11-20T11:17:42.239Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462332-194f1909.log",
+          "time": "2026-11-20T11:17:42.333Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/MetaBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "ed63fd00d25ac4bf24f979d7602a6606319137f099e0de025696cf4a330768fb",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462425-66dd85d6.log",
+          "time": "2026-11-20T11:17:42.425Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/InventoryBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "dd2827a76dcf37a2e40bee7e8e4cd72b97197fa4687d9200e8570092972d4ff8",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462518-8487070b.log",
+          "time": "2026-11-20T11:17:42.519Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "07afcc13eb75e4899cfe580636eb382b59de8c65530ceac5f35600e7140e4e42",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462626-c8ba8645.log",
+          "time": "2026-11-20T11:17:42.626Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "b5f9d8abb4300c4ef1ae3757b15697865f932e70ee437720c0c081362bcdb7d0",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462731-bf50d20b.log",
+          "time": "2026-11-20T11:17:42.731Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "9df9a67ba6bf729f5d3e2ae5436a97f1684173503d6a7e93dff78392e53cb70a",
+          "output_sha256": "150503ba722be8d71137104491c0bec4fd7153b1c8a6af609ff92473a7e18ed9",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173462839-d0e86a7e.log",
+          "time": "2026-11-20T11:17:42.839Z"
+        }
+      ],
+      "started_at": "2026-11-20T11:11:39.549Z"
+    },
+    {
+      "id": "P027.2",
+      "title": "Outbox authority_epoch alignment, native_revision tracking, LegacyMirror native_bridge support, and OutboxProjectionWorker",
+      "depends_on": [
+        "P027.1"
+      ],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "docs/08-operations.md",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Infrastructure/Database/OutboxWorker.php",
+        "src/Application/Migration/LegacyMirror.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Application/Migration/LegacyMirror.php",
+        "src/Application/Migration/OutboxProjectionWorker.php",
+        "tests/integration/OutboxProjectionWorkerTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/ProductRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyMirror.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/OutboxProjectionWorker.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/OutboxProjectionWorkerTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741079-880eb477.log",
+          "time": "2026-11-20T11:22:21.079Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyMirror.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "6e720e35fe76e3f9603705ad6fb32e8976eebc6bad43ca7ef02ad922e4a82fbf",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741173-706908c8.log",
+          "time": "2026-11-20T11:22:21.173Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/OutboxProjectionWorker.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "c2295301f4273da40c3750f60e9b0f047bfd9eb7fb4dab49091edf89d785dbf2",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741264-1989481a.log",
+          "time": "2026-11-20T11:22:21.264Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/OutboxProjectionWorkerTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "1479acd2a8a68eb048b9197e8c5a6f74f7f84dc54f3d3905d7d2a24c48978a0f",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741355-1fa54401.log",
+          "time": "2026-11-20T11:22:21.355Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "b5f9d8abb4300c4ef1ae3757b15697865f932e70ee437720c0c081362bcdb7d0",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741465-07d0caaa.log",
+          "time": "2026-11-20T11:22:21.465Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "957173f04c43dd8894189b46db523ce532329c2ef5aa3bd554885ad1242fe681",
+          "output_sha256": "e6e0f26be720831753b470ff2530b774221878b9d579bf202889789e7816e21e",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795173741572-be47dde3.log",
+          "time": "2026-11-20T11:22:21.572Z"
+        }
+      ],
+      "started_at": "2026-11-20T11:17:42.959Z"
+    },
+    {
+      "id": "P027.3",
+      "title": "Synchronize CutoverRunner/RollbackRunner state, accurate OperationsPage health counts, and CLI rollout/hygiene commands",
+      "depends_on": [
+        "P027.2"
+      ],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/08-operations.md",
+        "src/Application/Rollout/CutoverRunner.php",
+        "src/Application/Migration/RollbackRunner.php",
+        "src/Admin/OperationsPage.php",
+        "src/Cli/Commands.php"
+      ],
+      "files": [
+        "src/Application/Rollout/CutoverRunner.php",
+        "src/Application/Migration/RollbackRunner.php",
+        "src/Admin/OperationsPage.php",
+        "src/Cli/Commands.php",
+        "tests/integration/NativeBridgeRolloutTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Rollout/CutoverRunner.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/RollbackRunner.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/OperationsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Cli/Commands.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/NativeBridgeRolloutTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Rollout/CutoverRunner.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "246c2360312827d593c9dfba68f20536eb1cb1b2fbe5b4360e17ef073a197c8b",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009290-666cd63f.log",
+          "time": "2026-11-20T11:26:49.291Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/RollbackRunner.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "192a53c8a851780f7cf7a0a201e9b5a8bfad39bc8cd0297107dab7d81cf69497",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009393-4f1c4a95.log",
+          "time": "2026-11-20T11:26:49.394Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009486-e9b86d75.log",
+          "time": "2026-11-20T11:26:49.487Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Cli/Commands.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "d5c3a973f82c7326baae8148e56db0c590b5df9b93679b99e5a97984bef9ccb4",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009580-bb6d8457.log",
+          "time": "2026-11-20T11:26:49.581Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/NativeBridgeRolloutTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "d54fbeadca92d0c3834eac300401b86760194d630383fd7a2595a47034bdb63c",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009674-1a852e3e.log",
+          "time": "2026-11-20T11:26:49.675Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "b5f9d8abb4300c4ef1ae3757b15697865f932e70ee437720c0c081362bcdb7d0",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009778-d1ca7295.log",
+          "time": "2026-11-20T11:26:49.779Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "06bd4b4bcdd991cf943349390f1716f869c92c14946211b84afb031b0bbf489c",
+          "output_sha256": "b76f6f2ac3098354be55672c627645d30f19fe903e0afb543b1acc9934702652",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174009881-d2cc7aaf.log",
+          "time": "2026-11-20T11:26:49.882Z"
+        }
+      ],
+      "started_at": "2026-11-20T11:22:21.694Z"
+    },
+    {
+      "id": "P027.4",
+      "title": "Isolated regression certification for T02/T06/T11/T12/T39/T40/T41/T43, end-to-end native_bridge drill, NOTES and report",
+      "depends_on": [
+        "P027.3"
+      ],
+      "read_first": [
+        "docs/07-testing.md",
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/evidence/T02/result.json",
+        "docs/evidence/T06/result.json",
+        "docs/evidence/T11/result.json",
+        "docs/evidence/T12/result.json",
+        "docs/evidence/T39/result.json",
+        "docs/evidence/T40/result.json",
+        "docs/evidence/T41/result.json",
+        "docs/evidence/T43/result.json",
+        "docs/NOTES.md",
+        "docs/plans/P027-native-bridge-cutover/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T02"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T06"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T11"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T12"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T39"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T40"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T41"
+        ],
+        [
+          "node",
+          "scripts/verify-task.mjs",
+          "T43"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/plan.mjs",
+          "check"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T02"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "ef8ccbb670a1a2ba25c56521ac0ecbdede1a200732582ae0ff9f7ef22edb6f95",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174190390-06c47e9d.log",
+          "time": "2026-11-20T11:29:50.391Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T06"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "14b403a6859f5fb0b2223a4e9f96c4a1a4ff2b87b7d1529120919bf6702000b2",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174191706-9032385d.log",
+          "time": "2026-11-20T11:29:51.707Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T11"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "783bc5e1b87eb04f8b38dd88f27b2d099a6de3b1c8fedfa8194f2d8e0b2760a7",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174192983-4280687a.log",
+          "time": "2026-11-20T11:29:52.983Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T12"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "fa7901893ecea6e8a4433d1b7cb65593c2319198b53031db04ee7f9bff4ddc69",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174194275-943758ec.log",
+          "time": "2026-11-20T11:29:54.276Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T39"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "ee79b6e48aa2b136ba4e515d6e077c0532c24ba6b9d4fa657cc11c504988173b",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174195599-566307ea.log",
+          "time": "2026-11-20T11:29:55.600Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T40"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "36e6c11cf28fade167fc4ef6c007e23fcdd14b296873893ba12f0abe59a6aabd",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174196910-cf280a18.log",
+          "time": "2026-11-20T11:29:56.911Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T41"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "92c5d5a59b786a0518181ea8b4f961d05009cb5c25cd3d87323182af57a78881",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174198223-0c6f1fbb.log",
+          "time": "2026-11-20T11:29:58.223Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/verify-task.mjs",
+            "T43"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "4e829ddcca9ffd6d67e69a1b065f538bd21dc61921b9609180b34e29ff985f05",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174199568-13a95905.log",
+          "time": "2026-11-20T11:29:59.568Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "b5f9d8abb4300c4ef1ae3757b15697865f932e70ee437720c0c081362bcdb7d0",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174199677-95bb3c18.log",
+          "time": "2026-11-20T11:29:59.677Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "61154a99d46af81b7e57c9e0aee7ebc09fba90805cb644e45015755e872ed62f",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174199784-a47b4ed4.log",
+          "time": "2026-11-20T11:29:59.784Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/plan.mjs",
+            "check"
+          ],
+          "exit_code": 0,
+          "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+          "content_digest": "b839a0c7ee29e47482262ad7228172facc30e4f7a240aa8dbb5af9d1e14fe3f7",
+          "output_sha256": "289ba20ae885f5d492ee9e69b9f7c3a89c17a8a30fd35e329557be9a464dec69",
+          "output_path": "docs/plans/P027-native-bridge-cutover/command-1795174199889-b804a006.log",
+          "time": "2026-11-20T11:29:59.889Z"
+        }
+      ],
+      "started_at": "2026-11-20T11:26:49.996Z"
+    }
+  ],
+  "approved_hash": "bc4ffc0feb445cb831d65e63f30e4bd819f768b0402faf390623c6ae1e5a7b4b",
+  "report_hash": "2173c27f4fa0bdae711c8cb0d418926c7448b931156eafadb66c8baa3abb0d83"
+}

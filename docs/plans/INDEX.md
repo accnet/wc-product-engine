@@ -26,3 +26,4 @@
 - P024 — P011 amendment: close out on local + fake provider scope (OD-19 Option B) (done)
 - P025 — UI stage 2: unified design tokens and inline styles to classes (done)
 - P026 — UI stage 3: native buttons, !important removal, dead CSS and theme isolation (done)
+- P027 — Runtime wiring and governed cutover to native_bridge (done)

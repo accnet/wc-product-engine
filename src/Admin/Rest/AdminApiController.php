@@ -70,6 +70,12 @@ class AdminApiController
             'permission_callback' => [$this, 'checkImportPermission'],
         ]);
 
+        register_rest_route($namespace, '/shopify-import/validate-server-file', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'validateServerFile'],
+            'permission_callback' => [$this, 'checkServerPathPermission'],
+        ]);
+
         register_rest_route($namespace, '/shopify-import/init', [
             'methods'             => 'POST',
             'callback'            => [$this, 'initImport'],
@@ -121,6 +127,11 @@ class AdminApiController
     public function checkImportPermission(): bool
     {
         return current_user_can('wpe_import_products') || current_user_can('manage_woocommerce');
+    }
+
+    public function checkServerPathPermission(): bool
+    {
+        return current_user_can('manage_options');
     }
 
     public function getSettings(WP_REST_Request $request): WP_REST_Response
@@ -285,6 +296,44 @@ class AdminApiController
             return new WP_REST_Response([
                 'status'  => 'error',
                 'message' => \WPE\Support\RestErrors::safeMessage($e, 'csv upload', __('The file could not be uploaded.', 'wc-product-engine')),
+            ], 400);
+        }
+    }
+
+    public function validateServerFile(WP_REST_Request $request): WP_REST_Response
+    {
+        $params = $request->get_json_params() ?: $request->get_params();
+        $serverPath = is_string($params['file_path'] ?? null) ? trim(wp_unslash($params['file_path'])) : '';
+
+        if ($serverPath === '') {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => __('Please enter a valid file path on the server.', 'wc-product-engine'),
+            ], 400);
+        }
+
+        try {
+            $filePath = $this->csvStager->resolveServerImportPath($serverPath);
+            $info = $this->batchImporter->inspectCsvFile($filePath);
+
+            return new WP_REST_Response([
+                'status'            => 'success',
+                'file_path'         => $info['file_path'],
+                'original_filename' => $info['filename'],
+                'file_size'         => $info['file_size'],
+                'file_size_fmt'     => $info['file_size_fmt'],
+                'header_count'      => $info['header_count'],
+                'has_bom'           => $info['has_bom'],
+            ], 200);
+        } catch (\InvalidArgumentException $e) {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => \WPE\Support\RestErrors::safeMessage($e, 'validate server file', __('Could not validate the server file.', 'wc-product-engine')),
             ], 400);
         }
     }

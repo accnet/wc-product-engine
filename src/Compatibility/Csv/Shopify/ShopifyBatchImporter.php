@@ -100,6 +100,85 @@ class ShopifyBatchImporter
     }
 
     /**
+     * Inspect a CSV file on disk to confirm it is readable, non-empty, and has valid Shopify headers.
+     * Uses O(1) memory by reading only the header row and confirming at least one data row exists.
+     *
+     * @param string $filePath Absolute path to CSV file.
+     * @return array{file_path: string, filename: string, file_size: int, file_size_fmt: string, has_bom: bool, header_count: int}
+     */
+    public function inspectCsvFile(string $filePath): array
+    {
+        if (!is_file($filePath) || !is_readable($filePath)) {
+            throw new InvalidArgumentException('Server file not found or not readable.');
+        }
+
+        $fileSize = filesize($filePath);
+        if ($fileSize === false || $fileSize === 0) {
+            throw new InvalidArgumentException('CSV file is empty.');
+        }
+
+        $handle = fopen($filePath, 'rb');
+        if ($handle === false) {
+            throw new RuntimeException('Cannot open CSV file for reading.');
+        }
+
+        try {
+            $bom = fread($handle, 3);
+            $hasBom = ($bom === "\xEF\xBB\xBF");
+            if (!$hasBom) {
+                rewind($handle);
+            }
+
+            $rawHeaders = fgetcsv($handle);
+            if ($rawHeaders === false || empty($rawHeaders)) {
+                throw new InvalidArgumentException('CSV file contains no header row.');
+            }
+
+            $normalized = [];
+            foreach ($rawHeaders as $idx => $rawH) {
+                $cleaned = trim((string)$rawH);
+                if ($idx === 0 && str_starts_with($cleaned, "\xEF\xBB\xBF")) {
+                    $cleaned = substr($cleaned, 3);
+                }
+                if ($cleaned !== '') {
+                    $normalized[] = $this->shopifyImporter->normalizeHeader($cleaned);
+                }
+            }
+
+            if ($normalized === []) {
+                throw new InvalidArgumentException('CSV file contains no header columns.');
+            }
+
+            if (!in_array('handle', $normalized, true) && !in_array('title', $normalized, true)) {
+                throw new InvalidArgumentException('CSV header does not match Shopify format (missing Handle or Title column).');
+            }
+
+            $hasDataRow = false;
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count(array_filter($row, static fn($cell): bool => trim((string)$cell) !== '')) > 0) {
+                    $hasDataRow = true;
+                    break;
+                }
+            }
+
+            if (!$hasDataRow) {
+                throw new InvalidArgumentException('CSV file contains headers only and no product rows.');
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return [
+            'file_path'     => $filePath,
+            'filename'      => basename($filePath),
+            'file_size'     => $fileSize,
+            'file_size_fmt' => size_format($fileSize),
+            'has_bom'       => $hasBom,
+            'header_count'  => count($rawHeaders),
+        ];
+    }
+
+    /**
      * Initialize an import job from a staged or local CSV file.
      *
      * @param string $filePath Absolute path to CSV file.

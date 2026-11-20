@@ -576,7 +576,8 @@ class LegacyMirror
              (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, legacy_hash, tombstone, updated_at)
              VALUES (%d, 'product', NULL, 'native', %d, %d, %d, %d, %d, %s, 0, %s)
              ON DUPLICATE KEY UPDATE
-             authority = 'native', native_revision = GREATEST(native_revision, VALUES(native_revision)),
+             authority = IF(authority IN ('native', 'native_bridge', 'full_native'), authority, 'native'),
+             native_revision = GREATEST(native_revision, VALUES(native_revision)),
              native_applied = VALUES(native_applied), legacy_applied = VALUES(legacy_applied),
              legacy_hash = VALUES(legacy_hash), updated_at = VALUES(updated_at)",
             $aggregateId,
@@ -642,7 +643,7 @@ class LegacyMirror
 
         // 2. Check authority: if native, reject unauthorized dual-writers (R159)
         $authority = $this->getAggregateAuthority($aggregateId);
-        if ($authority === 'native') {
+        if (\WPE\Support\AuthorityResolver::isNativeAuthorityValue($authority)) {
             if (!$isCertifiedPlugin) {
                 $this->logAuditAlert('dual_writer_rejected', $aggregateId, [
                     'reason'   => 'unauthorized_legacy_write_under_native_authority',
@@ -704,7 +705,7 @@ class LegacyMirror
         $rows = $this->wpdb->get_results(
             "SELECT object_id, native_revision, native_applied, updated_at\n" .
             "FROM {$this->tableObjectState}\n" .
-            "WHERE authority = 'native' AND native_revision > native_applied",
+            "WHERE authority IN ('native', 'native_bridge') AND native_revision > native_applied",
             ARRAY_A
         );
 
@@ -724,7 +725,7 @@ class LegacyMirror
 
         $totalMirrored = (int)$this->wpdb->get_var(
             "SELECT COUNT(*) FROM {$this->tableObjectState}\n" .
-            "WHERE authority = 'native' AND native_applied >= native_revision"
+            "WHERE authority IN ('native', 'native_bridge') AND native_applied >= native_revision"
         );
 
         return [

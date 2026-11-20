@@ -37,6 +37,11 @@ class Commands
         \WP_CLI::add_command('wpe export', [self::class, 'export']);
         \WP_CLI::add_command('wpe media', [self::class, 'media']);
         \WP_CLI::add_command('wpe lookup', [self::class, 'lookup']);
+        \WP_CLI::add_command('wpe mode', [self::class, 'mode']);
+        \WP_CLI::add_command('wpe outbox', [self::class, 'outbox']);
+        \WP_CLI::add_command('wpe gates', [self::class, 'gates']);
+        \WP_CLI::add_command('wpe cutover', [self::class, 'cutover']);
+        \WP_CLI::add_command('wpe hygiene', [self::class, 'hygiene']);
     }
 
     /**
@@ -300,5 +305,125 @@ class Commands
             \WP_CLI::log("Projected {$done} products...");
         });
         \WP_CLI::success("Rebuilt {$res['rows']} lookup rows for {$res['products']} products.");
+    }
+
+    /**
+     * Inspect or switch pre-cutover system mode (legacy | shadow | indexed).
+     *
+     * Usage:
+     *   wp wpe mode [<legacy|shadow|indexed>]
+     */
+    public static function mode(array $args, array $assocArgs): void
+    {
+        $ops = OperationsPage::getInstance();
+        $target = $args[0] ?? '';
+        $res = $ops->handleAction('mode', ['mode' => $target], 0);
+        \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+        if ($target !== '') {
+            \WP_CLI::success("System mode switched to '{$res['system_mode']}'.");
+        }
+    }
+
+    /**
+     * Drain outbox projections (LegacyMirror + incremental CatalogProjector).
+     *
+     * Usage:
+     *   wp wpe outbox [--batch-size=<int>] [--max-batches=<int>] [--product-ids=<ids>]
+     */
+    public static function outbox(array $args, array $assocArgs): void
+    {
+        $ops = OperationsPage::getInstance();
+        $productIds = !empty($assocArgs['product-ids'])
+            ? array_map('intval', explode(',', (string)$assocArgs['product-ids']))
+            : [];
+        $res = $ops->handleAction('outbox', [
+            'batch_size'  => (int)($assocArgs['batch-size'] ?? 100),
+            'max_batches' => (int)($assocArgs['max-batches'] ?? 100),
+            'product_ids' => $productIds,
+        ], 0);
+        \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+        \WP_CLI::success(sprintf(
+            "Outbox drained: %d completed (%d mirrored, %d retired stale), %d remaining.",
+            $res['completed'] ?? 0,
+            $res['mirrored'] ?? 0,
+            $res['retired_stale'] ?? 0,
+            $res['remaining_pending'] ?? 0
+        ));
+    }
+
+    /**
+     * Validate G01–G12 readiness gates and emit a short-lived gate_receipt_token.
+     *
+     * Usage:
+     *   wp wpe gates [--cohort=<all|id>] [--format=<table|json>]
+     */
+    public static function gates(array $args, array $assocArgs): void
+    {
+        $ops = OperationsPage::getInstance();
+        $cohortId = (string)($assocArgs['cohort'] ?? 'all');
+        $res = $ops->handleAction('gates', ['cohort_id' => $cohortId], 0);
+
+        if (($assocArgs['format'] ?? 'table') === 'json') {
+            \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+            return;
+        }
+
+        \WP_CLI::log("=== Readiness Gates ({$res['passed_count']}/{$res['total_gates']}) — Cohort: {$res['cohort_id']} ===");
+        foreach (($res['gates'] ?? []) as $gId => $g) {
+            \WP_CLI::log(sprintf("  %-16s %-10s %s", $gId, strtoupper((string)$g['status']), $g['name'] ?? ''));
+        }
+        if ($res['all_passed']) {
+            \WP_CLI::log("Token: " . ($res['gate_receipt_token'] ?? ''));
+            \WP_CLI::success("All readiness gates passed.");
+        } else {
+            \WP_CLI::error("Gates blocked: " . implode(', ', $res['failed_gates'] ?? []));
+        }
+    }
+
+    /**
+     * Execute governed cutover to native_bridge using a verified gate_receipt_token.
+     *
+     * Usage:
+     *   wp wpe cutover --token=<receipt> [--cohort=<all|id>] [--product-ids=<ids>]
+     */
+    public static function cutover(array $args, array $assocArgs): void
+    {
+        $token = (string)($assocArgs['token'] ?? '');
+        if ($token === '') {
+            \WP_CLI::error("Usage: wp wpe cutover --token=<receipt> [--cohort=<all|id>] [--product-ids=<ids>]");
+            return;
+        }
+        $cohortId = (string)($assocArgs['cohort'] ?? 'all');
+        $productIds = !empty($assocArgs['product-ids'])
+            ? array_map('intval', explode(',', (string)$assocArgs['product-ids']))
+            : [];
+
+        $ops = OperationsPage::getInstance();
+        $res = $ops->handleAction('cutover', [
+            'cohort_id'          => $cohortId,
+            'gate_receipt_token' => $token,
+            'product_ids'        => $productIds,
+        ], 0);
+        \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+        \WP_CLI::success("Cutover completed for cohort '{$cohortId}' at epoch " . ($res['new_epoch'] ?? '?') . ".");
+    }
+
+    /**
+     * Inspect (dry-run default) or clean pre-cutover orphan shells and state rows.
+     *
+     * Usage:
+     *   wp wpe hygiene [--apply]
+     */
+    public static function hygiene(array $args, array $assocArgs): void
+    {
+        $apply = !empty($assocArgs['apply']);
+        $ops = OperationsPage::getInstance();
+        $res = $ops->handleAction('hygiene', ['apply' => $apply], 0);
+        \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+        if ($apply) {
+            \WP_CLI::success("Pre-cutover hygiene cleanup applied.");
+        } else {
+            \WP_CLI::log("Dry-run only. Re-run with --apply to remove unreferenced residue.");
+        }
     }
 }

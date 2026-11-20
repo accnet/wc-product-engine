@@ -586,7 +586,7 @@ class InventoryBridge
     /**
      * Reduces stock for an order across all line items idempotently (R48, R50).
      */
-    public function reduceOrderStock(WC_Order $order): array
+    public function reduceOrderStock(WC_Order $order, bool $onlyNativeAuthority = false): array
     {
         $orderId = $order->get_id();
         $changes = [];
@@ -607,6 +607,9 @@ class InventoryBridge
             }
 
             $productId = $item->get_variation_id() ?: $item->get_product_id();
+            if ($onlyNativeAuthority && !\WPE\Support\AuthorityResolver::isNativeObject((int)$productId, $this->wpdb)) {
+                continue;
+            }
             $qty = (float)$item->get_quantity();
             $itemId = $item->get_id();
 
@@ -644,7 +647,7 @@ class InventoryBridge
     /**
      * Restores stock for an order when cancelled or refunded (R50).
      */
-    public function restoreOrderStock(WC_Order $order): array
+    public function restoreOrderStock(WC_Order $order, bool $onlyNativeAuthority = false): array
     {
         $orderId = $order->get_id();
         $changes = [];
@@ -660,6 +663,9 @@ class InventoryBridge
             }
 
             $productId = $item->get_variation_id() ?: $item->get_product_id();
+            if ($onlyNativeAuthority && !\WPE\Support\AuthorityResolver::isNativeObject((int)$productId, $this->wpdb)) {
+                continue;
+            }
             $itemId = $item->get_id();
 
             // Deterministic operation key per restore (INV06)
@@ -728,19 +734,19 @@ class InventoryBridge
 
     public function onReduceOrderStock(WC_Order $order): void
     {
-        $this->reduceOrderStock($order);
+        $this->reduceOrderStock($order, true);
     }
 
     public function onRestoreOrderStock(WC_Order $order): void
     {
-        $this->restoreOrderStock($order);
+        $this->restoreOrderStock($order, true);
     }
 
     public function onOrderStatusCancelled(int $orderId): void
     {
         $order = wc_get_order($orderId);
         if ($order instanceof WC_Order) {
-            $this->restoreOrderStock($order);
+            $this->restoreOrderStock($order, true);
         }
         $this->releaseStockForOrder($orderId);
     }

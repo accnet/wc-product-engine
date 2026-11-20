@@ -89,6 +89,29 @@ class PluginBootstrap
         \WPE\Compatibility\WooDataStore\PostShellBridge::getInstance()->boot();
         \WPE\Application\Variant\ResolverApi::register();
         \WPE\Compatibility\StoreApi\SelectorAdapter::register();
+
+        if ($this->isFlagEnabled('query_enabled')) {
+            \WPE\Application\Catalog\CatalogAdapters::init();
+            \WPE\Application\Catalog\CatalogQuery::init();
+        }
+
+        if ($this->isFlagEnabled('media_enabled')) {
+            \WPE\Compatibility\Gallery\ImageSurfaces::register();
+        }
+
+        $systemMode = $this->getSystemMode();
+        if (in_array($systemMode, ['shadow', 'indexed'], true)) {
+            \WPE\Application\Migration\LegacyCapture::getInstance()->registerHooks();
+        }
+
+        if ($this->isNativeRuntimeActive()) {
+            \WPE\Compatibility\WooDataStore\MetaBridge::register();
+            \WPE\Compatibility\WooDataStore\InventoryBridge::getInstance()->boot();
+            \WPE\Compatibility\WooDataStore\AdminApiBridge::getInstance()->boot();
+            \WPE\Application\Variant\CartValidation::register();
+            (new \WPE\Compatibility\Csv\Woo\WooImporter())->registerHooks();
+            (new \WPE\Compatibility\Csv\Woo\WooExporter())->registerHooks();
+        }
     }
 
     public function checkDependencies(): bool
@@ -322,6 +345,40 @@ class PluginBootstrap
         }
     }
 
+    public function isNativeRuntimeActive(): bool
+    {
+        if (!$this->dependencies_satisfied || !$this->isFlagEnabled('native_writes_enabled')) {
+            return false;
+        }
+        $cohortMode = (string)($this->flags['cohort_mode'] ?? 'legacy');
+        return in_array($cohortMode, ['cohort_canary', 'native_bridge', 'full_native'], true);
+    }
+
+    public function getSystemMode(): string
+    {
+        global $wpdb;
+        if ($wpdb instanceof \wpdb) {
+            $table = $wpdb->prefix . 'wpe_control';
+            $Suppress = $wpdb->suppress_errors(true);
+            $val = $wpdb->get_var($wpdb->prepare(
+                "SELECT value FROM {$table} WHERE `key` = %s",
+                'system_mode'
+            ));
+            $wpdb->suppress_errors($Suppress);
+            if (is_string($val) && $val !== '') {
+                $decoded = json_decode($val, true);
+                if (is_string($decoded) && $decoded !== '') {
+                    return $decoded;
+                }
+                if (is_array($decoded) && !empty($decoded['mode']) && is_string($decoded['mode'])) {
+                    return $decoded['mode'];
+                }
+                return trim($val, "\" \t\n\r\0\x0B");
+            }
+        }
+        return (string)($this->flags['cohort_mode'] ?? 'legacy');
+    }
+
     public function registerDataStores(): void
     {
         // Register Data Store filter only if native writes or query is active
@@ -330,13 +387,12 @@ class PluginBootstrap
 
     public function filterDataStores(array $stores): array
     {
-        // When native mode is off, keep standard WooCommerce data stores
-        if (!$this->isFlagEnabled('native_writes_enabled')) {
+        // Keep standard WooCommerce data stores unless native runtime authority is active
+        if (!$this->isNativeRuntimeActive()) {
             return $stores;
         }
 
-        // Future tasks (T10) attach native data store classes here
-        return $stores;
+        return \WPE\Compatibility\WooDataStore\CohortRoutingDataStore::registerDataStores($stores);
     }
 
     public function registerAdminMenu(): void

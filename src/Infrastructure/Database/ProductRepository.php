@@ -93,7 +93,7 @@ class ProductRepository
         }
 
         $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
-        $epoch = $this->outboxWorker->getCurrentEpoch();
+        $epoch = $this->resolveEffectiveEpoch($productId);
         $version = 1;
 
         // Start transaction
@@ -207,13 +207,15 @@ class ProductRepository
             }
 
             // Update wpe_object_state
+            $initialApplied = (!$isMigration && $this->isMirroringCohortActive()) ? 0 : $version;
+            $initialAuth = (!$isMigration && $this->isNativeBridgeCohortActive()) ? 'native_bridge' : 'native';
             $this->wpdb->query($this->wpdb->prepare(
                 "INSERT INTO {$this->tableObjectState}
                  (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, tombstone, updated_at)
-                 VALUES (%d, 'product', NULL, 'native', %d, 1, %d, 0, %d, 0, %s)
+                 VALUES (%d, 'product', NULL, %s, %d, 1, %d, 0, %d, 0, %s)
                  ON DUPLICATE KEY UPDATE
-                 epoch = VALUES(epoch), native_revision = VALUES(native_revision), native_applied = VALUES(native_applied), updated_at = VALUES(updated_at), tombstone = 0",
-                $productId, $epoch, $version, $version, $now
+                 epoch = GREATEST(epoch, VALUES(epoch)), native_revision = VALUES(native_revision), native_applied = VALUES(native_applied), updated_at = VALUES(updated_at), tombstone = 0",
+                $productId, $initialAuth, $epoch, $version, $initialApplied, $now
             ));
 
             // Record outbox event and audit log
@@ -272,7 +274,7 @@ class ProductRepository
         $hydrate = $options['hydrate'] ?? true;
         $savedVariations = [];
         $now = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s.u');
-        $epoch = $this->outboxWorker->getCurrentEpoch();
+        $epoch = $this->resolveEffectiveEpoch($productId);
 
         // Start transaction
         $this->wpdb->query("START TRANSACTION");
@@ -414,12 +416,21 @@ class ProductRepository
             }
 
             // Update wpe_object_state
-            $this->wpdb->query($this->wpdb->prepare(
-                "UPDATE {$this->tableObjectState}
-                 SET native_revision = %d, native_applied = %d, updated_at = %s, tombstone = 0
-                 WHERE object_id = %d",
-                $newVersion, $newVersion, $now, $productId
-            ));
+            if ($this->isMirroringCohortActive()) {
+                $this->wpdb->query($this->wpdb->prepare(
+                    "UPDATE {$this->tableObjectState}
+                     SET native_revision = GREATEST(native_revision, %d), epoch = GREATEST(epoch, %d), updated_at = %s, tombstone = 0
+                     WHERE object_id = %d",
+                    $newVersion, $epoch, $now, $productId
+                ));
+            } else {
+                $this->wpdb->query($this->wpdb->prepare(
+                    "UPDATE {$this->tableObjectState}
+                     SET native_revision = %d, native_applied = %d, epoch = GREATEST(epoch, %d), updated_at = %s, tombstone = 0
+                     WHERE object_id = %d",
+                    $newVersion, $newVersion, $epoch, $now, $productId
+                ));
+            }
 
             // Record outbox event and audit
             $this->outboxWorker->publishEvent(
@@ -553,7 +564,7 @@ class ProductRepository
     public function trash(int $productId): bool
     {
         $now = gmdate('Y-m-d H:i:s.u');
-        $epoch = $this->outboxWorker->getCurrentEpoch();
+        $epoch = $this->resolveEffectiveEpoch($productId);
 
         $this->wpdb->query("START TRANSACTION");
 
@@ -630,7 +641,7 @@ class ProductRepository
     public function restore(int $productId): bool
     {
         $now = gmdate('Y-m-d H:i:s.u');
-        $epoch = $this->outboxWorker->getCurrentEpoch();
+        $epoch = $this->resolveEffectiveEpoch($productId);
 
         $this->wpdb->query("START TRANSACTION");
 
@@ -1040,6 +1051,35 @@ class ProductRepository
             'deleted_at'        => $row['deleted_at'],
             'variations'        => $variations,
         ];
+    }
+
+    private function resolveEffectiveEpoch(int $productId): int
+    {
+        $outboxEpoch = $this->outboxWorker->getCurrentEpoch();
+        if (!class_exists(\WPE\Application\Migration\LegacyMirror::class)) {
+            return $outboxEpoch;
+        }
+        $authEpoch = \WPE\Application\Migration\LegacyMirror::getInstance()->getAggregateEpoch($productId);
+        return max($outboxEpoch, $authEpoch);
+    }
+
+    private function isMirroringCohortActive(): bool
+    {
+        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+            return false;
+        }
+        $flags = \WPE\Bootstrap\PluginBootstrap::instance()->getFlags();
+        $mode = (string)($flags['cohort_mode'] ?? 'legacy');
+        return in_array($mode, ['cohort_canary', 'native_bridge'], true);
+    }
+
+    private function isNativeBridgeCohortActive(): bool
+    {
+        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+            return false;
+        }
+        $flags = \WPE\Bootstrap\PluginBootstrap::instance()->getFlags();
+        return (($flags['cohort_mode'] ?? 'legacy') === 'native_bridge');
     }
 
     private function generateUuid(): string
