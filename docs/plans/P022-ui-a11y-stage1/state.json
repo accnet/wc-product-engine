@@ -389,8 +389,55 @@
           "tests/e2e/ProductPageSettingsLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "npx",
+            "--no-install",
+            "playwright",
+            "test",
+            "--config=playwright.config.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "b3884de8e466a8921dedd93c3ae636a2bed4240f",
+          "content_digest": "1022a34ed840621610177db003bc0e3fe2a80203df323956b4150c73cd18f5b4",
+          "output_sha256": "6a23d6b45f26add387c670d557df4d8f2bac46a6283ab4d9b42108ba0d3c6295",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163575850-a61d2ade.log",
+          "time": "2026-11-20T08:32:55.850Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "c96b0a61b2611cf202d48306dd7652287b90ee3e",
+          "content_digest": "1022a34ed840621610177db003bc0e3fe2a80203df323956b4150c73cd18f5b4",
+          "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163577860-7f99a83c.log",
+          "time": "2026-11-20T08:32:57.860Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductPageSettingsLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "c96b0a61b2611cf202d48306dd7652287b90ee3e",
+          "content_digest": "1022a34ed840621610177db003bc0e3fe2a80203df323956b4150c73cd18f5b4",
+          "output_sha256": "9d9ac0c49b5ca9b377182b3caab1d36e5fc1c7d5bb40964d806e8aa5a6cc2c50",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795163605746-d29b9a1a.log",
+          "time": "2026-11-20T08:33:25.747Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:32:38.972Z"
     },
     {
       "id": "P022.5",
