@@ -73,3 +73,9 @@
 .wpe-progress-pulsing {
     animation: wpePulse 1.5s infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .wpe-progress-pulsing {
+        animation: none;
+    }
+}

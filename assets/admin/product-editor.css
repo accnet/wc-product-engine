@@ -9,6 +9,9 @@
     --wpe-p-color-border: #cbd5e1;
     --wpe-p-color-border-subdued: #e2e8f0;
     --wpe-p-color-border-hover: #94a3b8;
+    /* Border of interactive controls (inputs, selects, buttons), WCAG 1.4.11 (P022.2):
+     * 3.87:1 on white and 3.53:1 on the tinted row-hover and card surfaces (#f1f5f9). */
+    --wpe-p-color-border-control: #7e8287;
 
     /* Typography & Semantic Color Tokens */
     --wpe-p-color-text: #0f172a;
@@ -246,7 +249,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     gap: 6px !important;
     cursor: pointer !important;
     transition: all 0.15s ease-in-out !important;
-    border: 1px solid var(--wpe-p-color-border-hover) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     background: #ffffff !important;
     color: var(--wpe-p-color-text) !important;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
@@ -502,7 +505,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     gap: 6px;
     padding: 6px 10px;
     background: #ffffff;
-    border: 1px solid var(--wpe-p-color-border);
+    border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     min-height: 40px;
     transition: all 0.15s ease;
@@ -545,7 +548,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-chip-remove {
     cursor: pointer;
     font-size: 15px;
-    color: #64748b;
+    color: #475569;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -601,10 +604,10 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     margin-bottom: 12px;
 }
 
-.wpe-option-name-input {
+input.wpe-option-name-input {
     font-weight: 600;
     font-size: 14px;
-    border: 1px solid var(--wpe-p-color-border);
+    border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     padding: 6px 12px;
     width: 200px;
@@ -613,7 +616,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     transition: all 0.15s ease;
 }
 
-.wpe-option-name-input:focus {
+input.wpe-option-name-input:focus {
     border-color: var(--wpe-p-color-interactive);
     box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
     outline: none;
@@ -660,7 +663,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     min-height: 32px !important;
     padding: 3px 8px !important;
     font-size: 12.5px !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: var(--wpe-p-border-radius-sm) !important;
     background: #ffffff !important;
 }
@@ -687,7 +690,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     padding: 1px 5px !important;
     font-size: 11px !important;
     font-family: monospace !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: 4px !important;
     background: #ffffff !important;
 }
@@ -705,7 +708,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     width: 100%;
     font-size: 13px;
     font-family: inherit;
-    border: 1px solid var(--wpe-p-color-border);
+    border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-sm);
     padding: 8px 10px;
     resize: vertical;
@@ -743,7 +746,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     height: 34px !important;
     min-height: 34px !important;
     padding: 4px 10px !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: var(--wpe-p-border-radius-base) !important;
     font-size: 12.5px !important;
     background: #ffffff !important;
@@ -764,7 +767,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     height: 34px !important;
     min-height: 34px !important;
     padding: 4px 24px 4px 8px !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: var(--wpe-p-border-radius-base) !important;
     font-size: 12.5px !important;
     line-height: 1.4 !important;
@@ -964,7 +967,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     width: 100%;
     height: 32px !important;
     min-height: 32px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     background-color: #ffffff !important;
     box-shadow: none !important;
     padding: 4px 8px !important;
@@ -993,7 +996,7 @@ select.wpe-editable-input {
 }
 
 .wpe-editable-input:hover:not(:disabled) {
-    border-color: var(--wpe-p-color-border-hover) !important;
+    border-color: var(--wpe-p-color-text-subdued) !important;
     background-color: #ffffff !important;
 }
 
@@ -1039,12 +1042,12 @@ select.wpe-editable-input {
 
 .wpe-stock-pill.instock {
     background: var(--wpe-p-color-success-subdued);
-    color: var(--wpe-p-color-brand);
+    color: #166534; /* 6.5:1 on #dcfce7 (P022.2) */
 }
 
 .wpe-stock-pill.outofstock {
     background: var(--wpe-p-color-critical-subdued);
-    color: var(--wpe-p-color-critical);
+    color: #b91c1c; /* 5.9:1 on #fee2e2 (P022.2) */
 }
 
 .wpe-stock-pill.parent-stock {
@@ -1188,7 +1191,7 @@ select.wpe-editable-input {
 .wpe-form-group textarea {
     font-size: 13px;
     padding: 7px 10px;
-    border: 1px solid var(--wpe-p-color-border);
+    border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     color: var(--wpe-p-color-text);
     background: #ffffff;
@@ -1469,7 +1472,7 @@ select.wpe-editable-input {
     height: 36px !important;
     min-height: 36px !important;
     padding: 4px 28px 4px 10px !important;
-    border: 1px solid var(--wpe-p-color-border) !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: var(--wpe-p-border-radius-base) !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
@@ -1529,11 +1532,11 @@ select.wpe-editable-input {
 .wpe-chip-move {
     cursor: pointer;
     font-size: 12px;
-    color: #64748b;
+    color: #475569;
     padding: 0 2px;
     line-height: 1;
     user-select: none;
-    opacity: 0.65;
+    opacity: 1;
     transition: opacity 0.15s, color 0.15s;
 }
 
@@ -1591,7 +1594,7 @@ select.wpe-editable-input {
 .wpe-btn-revert-shared-stock {
     background: transparent !important;
     border: none !important;
-    color: #94a3b8 !important;
+    color: #475569 !important;
     cursor: pointer !important;
     padding: 0 4px !important;
     font-size: 14px !important;
@@ -1929,7 +1932,7 @@ select.wpe-editable-input {
     padding: 4px 7px !important;
     min-height: 26px !important;
     height: 26px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: 5px !important;
     background: #f8fafc !important;
     color: var(--wpe-p-color-text) !important;
@@ -2010,7 +2013,7 @@ select.wpe-editable-input {
     min-height: 32px !important;
     font-size: 12.5px !important;
     padding: 4px 10px !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--wpe-p-color-border-control) !important;
     border-radius: 6px !important;
     background: #ffffff !important;
 }
@@ -2408,5 +2411,30 @@ select.wpe-editable-input {
 @media (hover: none) {
     .wpe-media-slot-wrap .wpe-media-remove {
         display: flex;
+    }
+}
+
+/* Visible keyboard focus for every button and link in the editor (P022.2, WCAG 2.4.7).
+ * The button skin above replaces WordPress' box-shadow focus ring, so draw an outline instead. */
+.wpe-editor-wrap :is(button, a[href], [tabindex="0"]):focus-visible,
+.wpe-fullscreen-container :is(button, a[href], [tabindex="0"]):focus-visible,
+.wpe-drawer-container :is(button, a[href], [tabindex="0"]):focus-visible,
+.wpe-modal-dialog :is(button, a[href], [tabindex="0"]):focus-visible,
+.wpe-toast :is(button, a[href]):focus-visible,
+.wpe-sticky-savebar :is(button, a[href]):focus-visible {
+    outline: 2px solid var(--wpe-p-color-interactive) !important;
+    outline-offset: 2px !important;
+}
+
+/* Respect the reduced-motion preference for every WPE layer (P022.2). */
+@media (prefers-reduced-motion: reduce) {
+    .wpe-editor-wrap *, .wpe-editor-wrap *::before, .wpe-editor-wrap *::after,
+    .wpe-fullscreen-overlay, .wpe-fullscreen-overlay *,
+    .wpe-drawer-overlay, .wpe-drawer-overlay *,
+    .wpe-modal-backdrop, .wpe-modal-backdrop *,
+    .wpe-toast, .wpe-sticky-savebar {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
     }
 }

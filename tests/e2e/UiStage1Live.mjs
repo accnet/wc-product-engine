@@ -110,6 +110,72 @@ async function openEditor(page, fx) {
     await page.waitForSelector(`${APP} .wpe-row-thumb-btn`, { timeout: 20000 });
 }
 
+/**
+ * Installs window.__wpeContrast(el, which) in the page. `which` is 'text' (color vs the
+ * effective background) or 'border' (top border color vs the background behind the element).
+ * Semi-transparent colours are composited over the ancestors' backgrounds, page white last.
+ */
+async function installContrast(page) {
+    await page.evaluate(() => {
+        const parse = (c) => {
+            const m = String(c).match(/rgba?\(([^)]+)\)/);
+            if (!m) return null;
+            const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+            return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+        };
+        const over = (top, under) => ({
+            r: top.r * top.a + under.r * (1 - top.a),
+            g: top.g * top.a + under.g * (1 - top.a),
+            b: top.b * top.a + under.b * (1 - top.a),
+            a: 1,
+        });
+        const bgBehind = (el) => {
+            const layers = [];
+            for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+                const c = parse(getComputedStyle(n).backgroundColor);
+                if (c && c.a > 0) layers.push(c);
+                if (c && c.a >= 1) break;
+            }
+            return layers.reverse().reduce((acc, c) => over(c, acc), { r: 255, g: 255, b: 255, a: 1 });
+        };
+        const lum = ({ r, g, b }) => {
+            const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+            return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+        window.__wpeContrast = (el, which) => {
+            const cs = getComputedStyle(el);
+            if (which === 'border') {
+                const under = el.parentElement ? bgBehind(el.parentElement) : { r: 255, g: 255, b: 255, a: 1 };
+                const own = parse(cs.backgroundColor);
+                const inside = own && own.a > 0 ? over(own, under) : under;
+                const bc = over(parse(cs.borderTopColor), under);
+                // A control boundary must stand out from the surface around it (and from its own fill).
+                const r = Math.round(Math.min(ratio(bc, under), ratio(bc, inside)) * 100) / 100;
+                const hex = (c) => '#' + [c.r, c.g, c.b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+                window.__wpeLastBorder = `${hex(bc)} on ${hex(under)} / fill ${hex(inside)}`;
+                return r;
+            }
+            const bg = bgBehind(el);
+            return Math.round(ratio(over(parse(cs.color), bg), bg) * 100) / 100;
+        };
+    });
+}
+
+/** Contrast of every element matching `selector` (visible ones only); returns [{cls, ratio}]. */
+async function contrastOf(page, selector, which) {
+    return page.evaluate(([s, w]) => [...document.querySelectorAll(s)]
+        .filter((el) => el.offsetParent !== null)
+        .map((el) => {
+            const ratio = window.__wpeContrast(el, w);
+            const out = { cls: String(el.className).split(' ').slice(0, 3).join('.'), ratio };
+            if (w === 'border') out.colors = window.__wpeLastBorder;
+            return out;
+        }), [selector, which]);
+}
+
+const minRatio = (list) => (list.length ? Math.min(...list.map((x) => x.ratio)) : 0);
+
 // ---------------------------------------------------------------- sections
 const sections = {
     /** K-01, K-02, K-04, I-01: keyboard-operable controls and accessible names. */
@@ -202,6 +268,95 @@ const sections = {
         const countAfter = await page.locator(`${APP} .wpe-chips-container[data-opt-idx="1"] .wpe-chip`).count();
         const onChipInput = (await activeClass(page)).includes('wpe-chip-input');
         check('Enter on "remove value" removes the chip and focus moves to the option value input', countAfter === countBefore - 1 && onChipInput, `count ${countBefore}->${countAfter} input=${onChipInput}`);
+    },
+
+    /** K-03, M-01: visible keyboard focus on editor buttons; reduced motion. */
+    async focus(page, fx) {
+        await openEditor(page, fx);
+        const targets = [
+            `${APP} .wpe-btn-open-drawer`,
+            `${APP} .wpe-row-thumb-btn`,
+            `${APP} .wpe-chip-move-next`,
+            `${APP} .wpe-clickable-stock`,
+            `${APP} .wpe-btn-open-fullscreen`,
+            `${APP} .wpe-matrix-toolbar .button`,
+        ];
+        // A key press first, so programmatic focus counts as keyboard focus (:focus-visible).
+        await page.keyboard.press('Shift');
+        const missing = [];
+        for (const sel of targets) {
+            const loc = page.locator(sel).first();
+            if (!(await loc.count())) { missing.push(sel + ' (not found)'); continue; }
+            await loc.focus();
+            const ring = await loc.evaluate((el) => {
+                const cs = getComputedStyle(el);
+                return { visible: el.matches(':focus-visible'), style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
+            });
+            if (!(ring.visible && ring.style !== 'none' && ring.width >= 2)) missing.push(`${sel} ${JSON.stringify(ring)}`);
+        }
+        check('Keyboard focus draws a 2px outline on editor buttons (row actions, thumbnail, chip, stock, toolbar, fullscreen)', missing.length === 0, missing.join(' | '));
+        await shot(page, 'focus-row-actions.png');
+
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.locator(`${APP} .wpe-btn-open-drawer`).first().click();
+        await page.waitForSelector('#wpe-variation-drawer-overlay', { state: 'visible', timeout: 5000 });
+        const motion = await page.evaluate(() => {
+            const overlay = document.getElementById('wpe-variation-drawer-overlay');
+            const drawer = overlay && overlay.querySelector('.wpe-drawer-container');
+            return {
+                overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null,
+                drawerAnimation: drawer ? getComputedStyle(drawer).animationName : null,
+            };
+        });
+        check('With prefers-reduced-motion the drawer opens without fade or slide animation', motion.overlayOpacity === '1' && motion.drawerAnimation === 'none', JSON.stringify(motion));
+    },
+
+    /** C-04, C-05: text and control contrast in the editor and the settings screen. */
+    async contrast(page, fx) {
+        await openEditor(page, fx);
+        await installContrast(page);
+        // One row with its own stock (in stock) and one with its own stock at 0 (out of stock).
+        // A row with its own stock renders the "In Stock" badge.
+        await page.locator(`${APP} tr[data-variant-id="${fx.variation_ids[0]}"] .wpe-clickable-stock`).click();
+        await page.waitForTimeout(150);
+        await installContrast(page);
+
+        const inStock = await contrastOf(page, `${APP} .wpe-stock-pill.instock`, 'text');
+        // "Out of Stock" comes from saved stock status; probe the same markup inside a matrix cell.
+        const outStock = await page.evaluate((app) => {
+            const cell = document.querySelector(`${app} .wpe-stock-cell`);
+            const pill = document.createElement('span');
+            pill.className = 'wpe-stock-pill outofstock';
+            pill.textContent = 'Out of Stock';
+            cell.appendChild(pill);
+            const r = window.__wpeContrast(pill, 'text');
+            pill.remove();
+            return [{ cls: 'wpe-stock-pill.outofstock', ratio: r }];
+        }, APP);
+        check('"In Stock" badge text is at least 4.5:1', inStock.length > 0 && minRatio(inStock) >= 4.5, JSON.stringify(inStock));
+        check('"Out of Stock" badge text is at least 4.5:1', outStock.length > 0 && minRatio(outStock) >= 4.5, JSON.stringify(outStock));
+
+        const smallText = await contrastOf(page, `${APP} :is(.wpe-chip-move, .wpe-chip-remove, .wpe-btn-revert-shared-stock)`, 'text');
+        check('Chip move/remove and "revert stock" glyphs are at least 4.5:1', smallText.length > 0 && minRatio(smallText) >= 4.5, JSON.stringify(smallText.filter((x) => x.ratio < 4.5)));
+
+        const borders = await contrastOf(page, `${APP} :is(.wpe-editable-input:not(:disabled), .wpe-search-input, .wpe-filter-select, .wpe-chips-container, .wpe-option-name-input, .wpe-matrix-toolbar .button:not(:disabled))`, 'border');
+        check('Editor control borders (table inputs, search, filters, option inputs, toolbar buttons) are at least 3:1', borders.length > 0 && minRatio(borders) >= 3, JSON.stringify(borders.filter((x) => x.ratio < 3)));
+        await shot(page, 'contrast-matrix.png');
+
+        await page.goto(`${SITE}/wp-admin/admin.php?page=wc-product-engine&tab=product-page`, { waitUntil: 'load' });
+        await page.waitForSelector('.wpe-admin', { timeout: 15000 });
+        await installContrast(page);
+        const settingsBorder = await page.evaluate(() => {
+            // Probe with a fresh control in case the site has no global attributes to configure.
+            const host = document.querySelector('.wpe-admin .wpe-card') || document.querySelector('.wpe-admin');
+            const input = document.createElement('input');
+            input.className = 'wpe-input';
+            host.appendChild(input);
+            const r = window.__wpeContrast(input, 'border');
+            input.remove();
+            return r;
+        });
+        check('Settings text inputs have a border of at least 3:1', settingsBorder >= 3, String(settingsBorder));
     },
 };
 

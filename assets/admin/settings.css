@@ -8,6 +8,7 @@
     --wpe-surface-subdued: #fafbfb;
     --wpe-border: #dcdfe3;
     --wpe-border-subdued: #ebebeb;
+    --wpe-border-control: #8c8f94; /* inputs: 3.24:1 on white, WCAG 1.4.11 (P022.2) */
     --wpe-text: #202223;
     --wpe-text-subdued: #5c5f62; /* >= 4.5:1 on white */
     --wpe-focus: #005bd3;
@@ -561,7 +562,7 @@
 .wpe-input {
     min-height: 34px;
     padding: 4px 10px;
-    border: 1px solid var(--wpe-border);
+    border: 1px solid var(--wpe-border-control);
     border-radius: var(--wpe-radius-sm);
     background: #fff;
     color: var(--wpe-text);
@@ -602,7 +603,7 @@
     width: 26px;
     height: 26px;
     padding: 0;
-    border: 1px solid var(--wpe-border);
+    border: 1px solid var(--wpe-border-control);
     border-radius: 4px;
     background: transparent;
     cursor: pointer;

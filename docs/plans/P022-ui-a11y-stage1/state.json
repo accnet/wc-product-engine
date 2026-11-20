@@ -168,8 +168,85 @@
           "tests/e2e/ProductPageSettingsLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "6eb6e6e030ced7d3de9d0dd9529a2cd511e7c8e2",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162274275-a2beac66.log",
+          "time": "2026-11-20T08:11:14.275Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "focus"
+          ],
+          "exit_code": 0,
+          "commit": "6eb6e6e030ced7d3de9d0dd9529a2cd511e7c8e2",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "0611d33b47d92bd4fe7f2ea67e784215440d17855b8d23ab6aeeba7aa62b6314",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162283593-5a584e3b.log",
+          "time": "2026-11-20T08:11:23.594Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "contrast"
+          ],
+          "exit_code": 0,
+          "commit": "6eb6e6e030ced7d3de9d0dd9529a2cd511e7c8e2",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "93561544fb81cb70654f579ee26099b79bc694c534815dd3f9edde600aa5cdf2",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162293560-9b90a664.log",
+          "time": "2026-11-20T08:11:33.561Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "6eb6e6e030ced7d3de9d0dd9529a2cd511e7c8e2",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "1f7fc6b9e90ee508d3c083738bd5c136b497f5ab1b83d459ba719b69d2832cd2",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162332017-3dc6f9ad.log",
+          "time": "2026-11-20T08:12:12.018Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductPageSettingsLive.mjs"
+          ],
+          "exit_code": 1,
+          "commit": "6eb6e6e030ced7d3de9d0dd9529a2cd511e7c8e2",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "bf386d2c9cf05342df49c285232753da71893145cf83cc825cdf306b4a311f7d",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162358118-babebd53.log",
+          "time": "2026-11-20T08:12:38.119Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/ProductPageSettingsLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "3438f8598757471f0e4b11e3cd0f6eb0c50d02f4",
+          "content_digest": "60784964675f7ccfeb27fa8a23ff9adddd455663b7f8617d0f65d5f2e7c67bc8",
+          "output_sha256": "9d9ac0c49b5ca9b377182b3caab1d36e5fc1c7d5bb40964d806e8aa5a6cc2c50",
+          "output_path": "docs/plans/P022-ui-a11y-stage1/command-1795162578244-5d4c018e.log",
+          "time": "2026-11-20T08:16:18.245Z"
+        }
+      ],
+      "started_at": "2026-11-20T08:04:19.575Z"
     },
     {
       "id": "P022.3",

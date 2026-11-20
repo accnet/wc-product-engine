@@ -525,7 +525,7 @@
             if ($el.hasClass('wpe-modal-backdrop')) {
                 $el.remove();
             } else {
-                $el.fadeOut(150);
+                $el.fadeOut(motionMs(150));
             }
         },
 
@@ -602,7 +602,7 @@
         $('body').append($modal);
         layers.open($modal, {
             onClose: function () {
-                $modal.fadeOut(150, function () {
+                $modal.fadeOut(motionMs(150), function () {
                     $modal.remove();
                 });
             }
@@ -613,6 +613,11 @@
     /**
      * Toast notifications
      */
+    /** Animation duration in ms, or 0 when the user prefers reduced motion (P022.2). */
+    function motionMs(ms) {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms;
+    }
+
     /** Icon-only close button for modals and the drawer; JS hooks are passed as extra classes. */
     function closeButtonHtml(extraClasses) {
         const label = (config.i18n && config.i18n.close) || 'Close';
@@ -634,7 +639,7 @@
         $('.wpe-toast').remove();
         const $toast = $(`<div class="wpe-toast ${type}" role="status"><span class="dashicons dashicons-${type === 'success' ? 'yes' : 'warning'}"></span><span>${escapeHtml(message)}</span></div>`);
         $('body').append($toast);
-        setTimeout(() => $toast.fadeOut(300, function () { $(this).remove(); }), 3500);
+        setTimeout(() => $toast.fadeOut(motionMs(300), function () { $(this).remove(); }), 3500);
     }
 
     function escapeHtml(str) {
@@ -2531,7 +2536,7 @@
                     <span class="wpe-ref-source">Giá tham chiếu từ biến thể ${escapeHtml(ref.label)}</span>
                 </div>
                 <div class="wpe-ref-amount">
-                    ${saleFormatted ? `<span style="text-decoration:line-through; color:#94a3b8; font-size:18px; margin-right:8px;">${regFormatted}</span><span>${saleFormatted}</span>` : `<span>${regFormatted}</span>`}
+                    ${saleFormatted ? `<span style="text-decoration:line-through; color:#64748b; font-size:18px; margin-right:8px;">${regFormatted}</span><span>${saleFormatted}</span>` : `<span>${regFormatted}</span>`}
                     ${ref.sale_active ? '<span class="wpe-ref-badge" style="background:#fee2e2; color:#b91c1c; margin-left:8px;">Sale</span>' : ''}
                 </div>
                 <div class="wpe-ref-help">
@@ -3870,7 +3875,7 @@
         `;
 
         $('#wpe-variation-drawer-app').html(html);
-        $('#wpe-variation-drawer-overlay').fadeIn(150);
+        $('#wpe-variation-drawer-overlay').fadeIn(motionMs(150));
         layers.open($('#wpe-variation-drawer-overlay'));
     }
 
@@ -4064,7 +4069,7 @@
                 existingCombos.forEach((ec) => {
                     const badgeText = Object.entries(ec.combination || ec.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(' / ');
                     listHtml += `
-                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; color:#94a3b8;">
+                        <label style="display:block; padding:8px 12px; border-bottom:1px solid #f1f5f9; color:#64748b;">
                             <input type="checkbox" checked disabled />
                             <span>${escapeHtml(badgeText)}</span>
                             <span style="font-size:11px; margin-left:8px;">[Existing - SKU: ${escapeHtml(ec.sku || '')}]</span>
@@ -4254,11 +4259,11 @@
         }
         const $overlay = $('#wpe-fullscreen-modal-overlay');
         if (!$overlay.length || $overlay.is(':visible')) return;
-        $overlay.fadeIn(150);
+        $overlay.fadeIn(motionMs(150));
         renderEditor('#wpe-product-editor-modal-app');
         layers.open($overlay, {
             onClose: function () {
-                $overlay.fadeOut(150);
+                $overlay.fadeOut(motionMs(150));
                 if ($('#wpe-product-editor-inline-app').length) renderVariantsApp('#wpe-product-editor-inline-app');
                 if ($('#wpe-product-info-app').length) renderProductInfoApp('#wpe-product-info-app');
             }
@@ -4597,7 +4602,7 @@
         });
 
         $container.find('.wpe-btn-cancel-bulk-paste').off('click').on('click', function () {
-            $(this).closest('.wpe-bulk-paste-box').slideUp(150);
+            $(this).closest('.wpe-bulk-paste-box').slideUp(motionMs(150));
         });
 
         $container.find('.wpe-btn-apply-bulk-paste').off('click').on('click', function () {
@@ -5013,9 +5018,9 @@
         // Drawer manage stock checkbox toggle
         $(document).on('change', '#wpe-drawer-manage-stock', function () {
             if ($(this).is(':checked')) {
-                $('#wpe-drawer-stock-fields').slideDown(150);
+                $('#wpe-drawer-stock-fields').slideDown(motionMs(150));
             } else {
-                $('#wpe-drawer-stock-fields').slideUp(150);
+                $('#wpe-drawer-stock-fields').slideUp(motionMs(150));
             }
         });
 
@@ -5436,7 +5441,7 @@
                         <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
-                `).slideDown(150);
+                `).slideDown(motionMs(150));
                 return;
             }
 
@@ -5457,7 +5462,7 @@
                         <thead><tr><th>Variant</th><th>Projected Changes</th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
-                `).slideDown(150);
+                `).slideDown(motionMs(150));
                 return;
             }
 
@@ -5500,7 +5505,7 @@
                                 <tbody>${rowsHtml}</tbody>
                             </table>
                         `;
-                        $('#wpe-bulk-diff-preview').html(tableHtml).slideDown(150);
+                        $('#wpe-bulk-diff-preview').html(tableHtml).slideDown(motionMs(150));
                     }
                 })
                 .fail(function () {
