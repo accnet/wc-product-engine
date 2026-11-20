@@ -529,13 +529,13 @@ class ProductEditorBridge
         global $post;
         $productId = $post instanceof WP_Post ? (int)$post->ID : 0;
         ?>
-        <div id="wpe-fullscreen-modal-overlay" class="wpe-fullscreen-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Fullscreen Variants Manager', 'wc-product-engine'); ?>">
+        <div id="wpe-fullscreen-modal-overlay" class="wpe-fullscreen-overlay" hidden role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Fullscreen Variants Manager', 'wc-product-engine'); ?>">
             <div class="wpe-fullscreen-container">
                 <div id="wpe-product-editor-modal-app" data-product-id="<?php echo esc_attr((string)$productId); ?>"></div>
             </div>
         </div>
 
-        <div id="wpe-variation-drawer-overlay" class="wpe-drawer-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Variation details', 'wc-product-engine'); ?>">
+        <div id="wpe-variation-drawer-overlay" class="wpe-drawer-overlay" hidden role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Variation details', 'wc-product-engine'); ?>">
             <div class="wpe-drawer-container">
                 <div id="wpe-variation-drawer-app"></div>
             </div>

@@ -469,55 +469,55 @@ class OperationsPage
             <div id="wpe-health-banner" class="notice <?php echo esc_attr($badgeClass); ?> inline">
                 <p>
                     <strong><?php echo esc_html__('System Health Status:', 'wc-product-engine'); ?></strong>
-                    <span id="wpe-status-text" style="text-transform: uppercase; font-weight: bold;">
+                    <span id="wpe-status-text" class="wpe-ops-status-text">
                         <?php echo esc_html($health['status']); ?>
                     </span>
                     (Mode: <code><?php echo esc_html($health['system_mode']); ?></code>, Epoch: <code><?php echo esc_html((string)$health['authority_epoch']); ?></code>)
                 </p>
             </div>
 
-            <div class="wpe-dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 20px 0;">
+            <div class="wpe-dashboard-grid wpe-ops-grid">
                 <div class="card">
                     <h2><?php echo esc_html__('Native Products', 'wc-product-engine'); ?></h2>
-                    <p style="font-size: 24px; font-weight: bold; margin: 5px 0;">
+                    <p class="wpe-ops-metric">
                         <?php echo esc_html((string)$health['counts']['native_products']); ?>
                     </p>
                     <small><?php echo esc_html__('Authority: ', 'wc-product-engine') . esc_html((string)$health['counts']['native_authority']); ?></small>
                 </div>
                 <div class="card">
                     <h2><?php echo esc_html__('Legacy Products', 'wc-product-engine'); ?></h2>
-                    <p style="font-size: 24px; font-weight: bold; margin: 5px 0;">
+                    <p class="wpe-ops-metric">
                         <?php echo esc_html((string)$health['counts']['legacy_products']); ?>
                     </p>
                     <small><?php echo esc_html__('Authority: ', 'wc-product-engine') . esc_html((string)$health['counts']['legacy_authority']); ?></small>
                 </div>
                 <div class="card">
                     <h2><?php echo esc_html__('Mismatches', 'wc-product-engine'); ?></h2>
-                    <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: <?php echo $health['mismatches'] > 0 ? '#d63638' : '#00a32a'; ?>;">
+                    <p class="wpe-ops-metric <?php echo $health['mismatches'] > 0 ? 'wpe-ops-metric--danger' : 'wpe-ops-metric--ok'; ?>">
                         <?php echo esc_html((string)$health['mismatches']); ?>
                     </p>
                     <small><?php echo esc_html__('Shadow diff gaps', 'wc-product-engine'); ?></small>
                 </div>
                 <div class="card">
                     <h2><?php echo esc_html__('DLQ Failures', 'wc-product-engine'); ?></h2>
-                    <p style="font-size: 24px; font-weight: bold; margin: 5px 0; color: <?php echo $health['dlq_count'] > 0 ? '#d63638' : '#00a32a'; ?>;">
+                    <p class="wpe-ops-metric <?php echo $health['dlq_count'] > 0 ? 'wpe-ops-metric--danger' : 'wpe-ops-metric--ok'; ?>">
                         <?php echo esc_html((string)$health['dlq_count']); ?>
                     </p>
                     <small><?php echo esc_html__('Dead-letter queue events', 'wc-product-engine'); ?></small>
                 </div>
                 <div class="card">
                     <h2><?php echo esc_html__('Projection Lag', 'wc-product-engine'); ?></h2>
-                    <p style="font-size: 24px; font-weight: bold; margin: 5px 0;">
+                    <p class="wpe-ops-metric">
                         <?php echo esc_html((string)($health['projection_lag']['pending_projections'] ?? 0)); ?>
                     </p>
                     <small><?php echo esc_html__('Pending legacy syncs', 'wc-product-engine'); ?></small>
                 </div>
             </div>
 
-            <div class="card" style="margin: 20px 0;">
+            <div class="card wpe-ops-card">
                 <h2><?php echo esc_html__('Operations Controls', 'wc-product-engine'); ?></h2>
                 <p><?php echo esc_html__('Trigger background catalog operations, index rebuilds, shadow diff audits, or emergency rollbacks.', 'wc-product-engine'); ?></p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div class="wpe-ops-actions">
                     <button class="button button-primary wpe-action-btn" data-action="audit">
                         <?php echo esc_html__('Run Shadow Diff Audit', 'wc-product-engine'); ?>
                     </button>
@@ -527,14 +527,14 @@ class OperationsPage
                     <button class="button button-secondary wpe-action-btn" data-action="migrate">
                         <?php echo esc_html__('Run Keyset Backfill Batch', 'wc-product-engine'); ?>
                     </button>
-                    <button class="button button-link-delete wpe-action-btn" data-action="rollback" style="margin-left: auto;">
+                    <button class="button button-link-delete wpe-action-btn wpe-ops-rollback-btn" data-action="rollback">
                         <?php echo esc_html__('Initiate Authority Rollback', 'wc-product-engine'); ?>
                     </button>
                 </div>
-                <div id="wpe-action-result" style="margin-top: 15px; display: none;" class="notice inline"></div>
+                <div id="wpe-action-result" class="notice inline wpe-ops-action-result wpe-hidden"></div>
             </div>
 
-            <div class="card" style="margin: 20px 0;">
+            <div class="card wpe-ops-card">
                 <h2><?php echo esc_html__('System Worker Guidance & Thresholds (08 §8)', 'wc-product-engine'); ?></h2>
                 <ul>
                     <li><strong><?php echo esc_html__('Worker Scheduling: ', 'wc-product-engine'); ?></strong><?php echo esc_html__('Run queue loop via dedicated systemd or Linux system cron (not WP page traffic).', 'wc-product-engine'); ?></li>

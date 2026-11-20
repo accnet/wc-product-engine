@@ -1171,9 +1171,14 @@ select.wpe-editable-input {
     bottom: 0;
     background: rgba(32, 34, 35, 0.45);
     backdrop-filter: blur(2px);
-    z-index: 100050;
+    z-index: var(--wpe-z-drawer, 100050);
     display: flex;
     justify-content: flex-end;
+}
+
+.wpe-drawer-overlay[hidden],
+.wpe-fullscreen-overlay[hidden] {
+    display: none;
 }
 
 .wpe-drawer-container {

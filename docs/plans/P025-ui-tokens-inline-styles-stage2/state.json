@@ -253,8 +253,136 @@
           "tests/e2e/VariantsBlockLive.mjs"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/ShopifyImportPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "15226f38bb09f5a4cf09d7a28a49ec105a9122d4a5ac4343133955b8063ba99a",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167437217-71d5e5be.log",
+          "time": "2026-11-20T09:37:17.217Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167437308-964a99dd.log",
+          "time": "2026-11-20T09:37:17.308Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/ProductEditor/ProductEditorBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "8aae923afc87728e4e160fcaa32635e3cfcb8973f99063d4dbf32ba97d49ce59",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167437397-46e033f2.log",
+          "time": "2026-11-20T09:37:17.398Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/shopify-import.js"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167437470-71ec7472.log",
+          "time": "2026-11-20T09:37:17.471Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/product-editor.js"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167437546-2ab00b58.log",
+          "time": "2026-11-20T09:37:17.547Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/ProductEditorBridgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "5ba8ee66a8ead0ec584a00974c61cc786facc15cea951f278a45934d8b473a5f",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167444357-fbbfacb3.log",
+          "time": "2026-11-20T09:37:24.358Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "eval-file",
+            "tests/integration/T41Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "611fff3353ba4a03c94b4929743e32f41269d8d3cabe94a78cc265375346347b",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167445865-38399799.log",
+          "time": "2026-11-20T09:37:25.866Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/UiStage1Live.mjs",
+            "import"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "afbc772f4b91b48ab43c815d5936cdb4b34d2dffb86d115665be7c57f8b6e7c2",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167454493-3274da66.log",
+          "time": "2026-11-20T09:37:34.494Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/VariantsBlockLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "5aaf6d1f816e9a1887894b9ddca88fa07167aecf",
+          "content_digest": "53362e39a02fc3e91e5d7e15934a1aab5c86293fbfae288405dba1417328f9ce",
+          "output_sha256": "1f7fc6b9e90ee508d3c083738bd5c136b497f5ab1b83d459ba719b69d2832cd2",
+          "output_path": "docs/plans/P025-ui-tokens-inline-styles-stage2/command-1795167495391-7d260b30.log",
+          "time": "2026-11-20T09:38:15.391Z"
+        }
+      ],
+      "started_at": "2026-11-20T09:34:55.626Z"
     },
     {
       "id": "P025.3",

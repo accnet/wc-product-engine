@@ -347,9 +347,9 @@
                 stopTimer();
                 progressSpinner.removeClass('is-active');
                 progressBarFill.removeClass('wpe-progress-pulsing');
-                statusDesc.html('<strong style="color: #008a20;">✓ Import and catalog rebuild completed successfully!</strong>');
+                statusDesc.html('<strong class="wpe-import-status-success">✓ Import and catalog rebuild completed successfully!</strong>');
                 pauseBtn.hide();
-                resumeBtn.hide();
+                resumeBtn.addClass('wpe-hidden').hide();
                 cancelBtn.hide();
                 return;
             }
@@ -362,7 +362,7 @@
                 progressBarFill.removeClass('wpe-progress-pulsing');
                 statusDesc.text('Process paused at checkpoint.');
                 pauseBtn.hide();
-                resumeBtn.show();
+                resumeBtn.removeClass('wpe-hidden').show();
                 return;
             }
 
@@ -402,7 +402,7 @@
                 beforeSend: function (xhr) { xhr.setRequestHeader('X-WP-Nonce', config.nonce); },
                 success: function () {
                     pauseBtn.prop('disabled', false).hide();
-                    resumeBtn.show();
+                    resumeBtn.removeClass('wpe-hidden').show();
                     progressSpinner.removeClass('is-active');
                     progressBarFill.removeClass('wpe-progress-pulsing');
                     statusDesc.text('Paused. Checkpoint saved securely.');

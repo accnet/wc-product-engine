@@ -525,7 +525,9 @@
             if ($el.hasClass('wpe-modal-backdrop')) {
                 $el.remove();
             } else {
-                $el.fadeOut(motionMs(150));
+                $el.fadeOut(motionMs(150), function () {
+                    $(this).prop('hidden', true);
+                });
             }
         },
 
@@ -1021,7 +1023,7 @@
                     <img src="${escapeHtml(asset.url)}" alt="${escapeHtml(altVal)}" loading="lazy" />
                     <div class="wpe-media-badges-top">
                         <div>
-                            ${isFeat ? '<span class="wpe-media-badge featured"><span class="dashicons dashicons-star-filled" style="font-size:11px; width:11px; height:11px;"></span> Featured</span>' : ''}
+                            ${isFeat ? '<span class="wpe-media-badge featured"><span class="dashicons dashicons-star-filled" aria-hidden="true"></span> Featured</span>' : ''}
                             ${asset.pending_link ? '<span class="wpe-media-badge pending" title="Uploaded in this session; save to finalize link">Pending</span>' : ''}
                         </div>
                         <span class="wpe-media-badge origin">${escapeHtml(originLabel)}</span>
@@ -1049,7 +1051,7 @@
                             <button type="button" class="button wpe-btn-media-move wpe-btn-media-move-next" data-order-idx="${idx}" ${!canMoveNext ? 'disabled' : ''} title="Move right">&rsaquo;</button>
                         </div>
                         <button type="button" class="button-link-delete wpe-btn-media-unlink" data-asset-id="${asset.asset_id}" title="Remove image from product" aria-label="Remove image #${asset.asset_id} from product">
-                            <span class="dashicons dashicons-trash" aria-hidden="true" style="font-size:15px; width:15px; height:15px;"></span>
+                            <span class="dashicons dashicons-trash" aria-hidden="true"></span>
                         </button>
                     </div>
                 </div>
@@ -1095,7 +1097,7 @@
         if (wpeVariantStore.isLoading && !wpeVariantStore.mediaLoaded) {
             $container.html(`
                 <div class="wpe-editor-loading">
-                    <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
+                    <span class="spinner is-active"></span>
                     <span>Loading product media library...</span>
                 </div>
             `);
@@ -1110,7 +1112,7 @@
         if (orderedAssets.length === 0) {
             cardsHtml = `
                 <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
-                    <span class="dashicons dashicons-format-gallery" style="font-size:28px; width:28px; height:28px; color:#94a3b8; margin-bottom:6px;"></span>
+                    <span class="dashicons dashicons-format-gallery" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; font-size:28px; width:28px; height:28px; line-height:1; color:#94a3b8; margin-bottom:6px;"></span>
                     <div style="font-weight:600; color:#334155;">No images in this product's media library yet</div>
                     <div style="font-size:12px; margin-top:2px;">Upload images from your computer or add via external CDN URL below. Images belong exclusively to this product.</div>
                 </div>
@@ -1251,7 +1253,7 @@
         if (orderedAssets.length === 0) {
             allCardsHtml = `
                 <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px;">
-                    <span class="dashicons dashicons-format-gallery" style="font-size:28px; width:28px; height:28px; color:#94a3b8; margin-bottom:6px;"></span>
+                    <span class="dashicons dashicons-format-gallery" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; font-size:28px; width:28px; height:28px; line-height:1; color:#94a3b8; margin-bottom:6px;"></span>
                     <div style="font-weight:600; color:#334155;">No images in this product's media library yet</div>
                 </div>
             `;
@@ -1908,7 +1910,7 @@
                                 <div>
                                     <input type="file" id="wpe-picker-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none;" />
                                     <button type="button" class="button wpe-btn-picker-upload-file">
-                                        <span class="dashicons dashicons-upload" style="margin-top:3px;"></span> Upload &amp; Assign
+                                        <span class="dashicons dashicons-upload" aria-hidden="true"></span> Upload &amp; Assign
                                     </button>
                                 </div>
                             </div>
@@ -2009,7 +2011,7 @@
                     <button type="button" class="wpe-picker-item ${isSel ? 'is-selected' : ''}" data-asset-id="${a.asset_id}" aria-pressed="${isSel ? 'true' : 'false'}" aria-label="${escapeHtml(itemLabel)}">
                         <span class="wpe-picker-item-thumb">
                             <img src="${escapeHtml(a.url)}" alt="" />
-                            <span class="wpe-picker-check" aria-hidden="true"><span class="dashicons dashicons-yes" style="font-size:15px; width:15px; height:15px;"></span></span>
+                            <span class="wpe-picker-check" aria-hidden="true"><span class="dashicons dashicons-yes"></span></span>
                         </span>
                         <span class="wpe-picker-item-meta">
                             ${a.isFeatured ? '<strong>[Featured]</strong> ' : ''}#${a.asset_id} ${escapeHtml(a.alt_text || getOriginBadgeLabel(a))}
@@ -2116,7 +2118,7 @@
                 .fail(function (xhr) {
                     const err = (xhr && xhr.responseJSON) || {};
                     showToast(err.message || 'Upload failed.', 'error');
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-upload" style="margin-top:3px;"></span> Upload &amp; Assign');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-upload" aria-hidden="true"></span> Upload &amp; Assign');
                 });
         });
 
@@ -2529,7 +2531,7 @@
                         Chưa có biến thể nào được tạo để tham chiếu giá.
                     </div>
                     <button type="button" class="button button-secondary wpe-btn-set-common-price">
-                        <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                        <span class="dashicons dashicons-money-alt" aria-hidden="true"></span> Thiết lập giá chung / Set common price
                     </button>
                 </div>
             `;
@@ -2550,7 +2552,7 @@
                         Giá tham chiếu chỉ phục vụ hiển thị tại block này, không tự ghi thành giá chung hoặc phân phối sang các biến thể khác.
                     </div>
                     <button type="button" class="button button-secondary wpe-btn-set-common-price">
-                        <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                        <span class="dashicons dashicons-money-alt" aria-hidden="true"></span> Thiết lập giá chung / Set common price
                     </button>
                 </div>
             `;
@@ -2573,7 +2575,7 @@
                     Giá tham chiếu chỉ phục vụ hiển thị tại block này, không tự ghi thành giá chung hoặc phân phối sang các biến thể khác. Mỗi biến thể tiếp tục sử dụng giá riêng đã lưu.
                 </div>
                 <button type="button" class="button button-secondary wpe-btn-set-common-price">
-                    <span class="dashicons dashicons-money-alt" style="margin-top:2px;"></span> Thiết lập giá chung / Set common price
+                    <span class="dashicons dashicons-money-alt" aria-hidden="true"></span> Thiết lập giá chung / Set common price
                 </button>
             </div>
         `;
@@ -2593,7 +2595,7 @@
                         <span style="font-size:13px; color:#166534; font-weight:500;">Áp dụng cho các biến thể ở chế độ "Dùng giá chung"</span>
                     </div>
                     <button type="button" class="button-link-delete wpe-btn-remove-common-price" title="Xóa cấu hình giá chung">
-                        <span class="dashicons dashicons-trash" style="font-size:16px;"></span> Xóa giá chung
+                        <span class="dashicons dashicons-trash" aria-hidden="true"></span> Xóa giá chung
                     </button>
                 </div>
                 <div class="wpe-form-grid-2">
@@ -2833,7 +2835,7 @@
         if (wpeVariantStore.isLoading) {
             $container.html(`
                 <div class="wpe-editor-loading">
-                    <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
+                    <span class="spinner is-active"></span>
                     <span>Đang tải thông tin sản phẩm...</span>
                 </div>
             `);
@@ -3044,7 +3046,7 @@
                 <h3>Sản phẩm đơn giản (Chưa có biến thể)</h3>
                 <p>Sản phẩm này hiện chưa có tùy chọn biến thể. Bạn có thể bán sản phẩm với các thuộc tính như Màu sắc, Kích thước bằng cách thêm tùy chọn biến thể đầu tiên.</p>
                 <button type="button" class="button button-primary button-hero wpe-btn-add-first-option">
-                    <span class="dashicons dashicons-plus-alt2" style="margin-top:4px;"></span> Thêm tùy chọn / Add Option
+                    <span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> Thêm tùy chọn / Add Option
                 </button>
             </div>
         `;
@@ -3070,7 +3072,7 @@
         if (wpeVariantStore.isLoading) {
             $container.html(`
                 <div class="wpe-editor-loading">
-                    <span class="spinner is-active" style="float:none; margin:0 8px 0 0;"></span>
+                    <span class="spinner is-active"></span>
                     <span>Loading variants...</span>
                 </div>
             `);
@@ -3421,7 +3423,7 @@
                                     <span class="dashicons dashicons-clipboard"></span> Paste Values
                                 </button>
                                 <button type="button" class="button-link-delete wpe-btn-delete-option" title="Delete option" aria-label="Delete option ${escapeHtml(opt.name || '')}">
-                                    <span class="dashicons dashicons-trash" aria-hidden="true" style="font-size:16px;"></span>
+                                    <span class="dashicons dashicons-trash" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>
@@ -3785,8 +3787,8 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <div class="wpe-drawer-nav">
-                        <button type="button" class="wpe-btn-drawer-nav wpe-btn-drawer-prev" data-current-id="${variant.id}" data-target-id="${prevVariant ? prevVariant.id : ''}" ${!prevVariant ? 'disabled' : ''} title="Previous variant">&lsaquo; Prev</button>
-                        <button type="button" class="wpe-btn-drawer-nav wpe-btn-drawer-next" data-current-id="${variant.id}" data-target-id="${nextVariant ? nextVariant.id : ''}" ${!nextVariant ? 'disabled' : ''} title="Next variant">Next &rsaquo;</button>
+                        <button type="button" class="button wpe-btn-drawer-nav wpe-btn-drawer-prev" data-current-id="${variant.id}" data-target-id="${prevVariant ? prevVariant.id : ''}" ${!prevVariant ? 'disabled' : ''} title="Previous variant">&lsaquo; Prev</button>
+                        <button type="button" class="button wpe-btn-drawer-nav wpe-btn-drawer-next" data-current-id="${variant.id}" data-target-id="${nextVariant ? nextVariant.id : ''}" ${!nextVariant ? 'disabled' : ''} title="Next variant">Next &rsaquo;</button>
                     </div>
                     ${closeButtonHtml('wpe-btn-close-drawer')}
                 </div>
@@ -3799,7 +3801,7 @@
                         <div style="width:68px; height:68px; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
                             ${variant.image_url
                                 ? `<img src="${escapeHtml(variant.image_url)}" alt="" style="width:100%; height:100%; object-fit:cover;" />`
-                                : '<span class="dashicons dashicons-format-image" style="color:#94a3b8; font-size:24px; width:24px; height:24px;"></span>'}
+                                : '<span class="dashicons dashicons-format-image" aria-hidden="true" style="display:inline-flex; align-items:center; justify-content:center; color:#94a3b8; font-size:24px; width:24px; height:24px; line-height:1;"></span>'}
                         </div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
                             <div style="font-size:12px; color:#475569;">
@@ -3809,7 +3811,7 @@
                             </div>
                             <div style="display:flex; gap:8px;">
                                 <button type="button" class="button button-small wpe-btn-drawer-pick-image" data-variant-id="${variant.id}">
-                                    <span class="dashicons dashicons-images-alt2" style="margin-top:2px;"></span> Choose Product Image
+                                    <span class="dashicons dashicons-images-alt2" aria-hidden="true"></span> Choose Product Image
                                 </button>
                                 ${variant.image_url ? `
                                     <button type="button" class="button button-small button-link-delete wpe-btn-drawer-clear-image" data-variant-id="${variant.id}">
@@ -3905,7 +3907,7 @@
         `;
 
         $('#wpe-variation-drawer-app').html(html);
-        $('#wpe-variation-drawer-overlay').fadeIn(motionMs(150));
+        $('#wpe-variation-drawer-overlay').prop('hidden', false).css('display', 'none').fadeIn(motionMs(150));
         layers.open($('#wpe-variation-drawer-overlay'));
     }
 
@@ -4210,7 +4212,7 @@
                         </div>
 
                         <button type="button" class="button wpe-btn-preview-bulk-diff">
-                            <span class="dashicons dashicons-visibility" style="margin-top:3px;"></span> Preview Changes
+                            <span class="dashicons dashicons-visibility" aria-hidden="true"></span> Preview Changes
                         </button>
 
                         <div id="wpe-bulk-diff-preview" style="margin-top:14px; max-height:220px; overflow-y:auto; display:none;">
@@ -4289,11 +4291,13 @@
         }
         const $overlay = $('#wpe-fullscreen-modal-overlay');
         if (!$overlay.length || $overlay.is(':visible')) return;
-        $overlay.fadeIn(motionMs(150));
+        $overlay.prop('hidden', false).css('display', 'none').fadeIn(motionMs(150));
         renderEditor('#wpe-product-editor-modal-app');
         layers.open($overlay, {
             onClose: function () {
-                $overlay.fadeOut(motionMs(150));
+                $overlay.fadeOut(motionMs(150), function () {
+                    $(this).prop('hidden', true);
+                });
                 if ($('#wpe-product-editor-inline-app').length) renderVariantsApp('#wpe-product-editor-inline-app');
                 if ($('#wpe-product-info-app').length) renderProductInfoApp('#wpe-product-info-app');
             }
