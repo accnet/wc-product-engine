@@ -193,6 +193,78 @@ class CatalogProjector
         return 'incremental';
     }
 
+    /** @var array<int, true> Products whose category/tag terms changed in this request. */
+    private static array $pendingTermRefresh = [];
+
+    private static bool $termSyncRegistered = false;
+
+    /**
+     * Keep category/tag facets in step with term assignments. Terms are often assigned after a
+     * product was projected (bulk edit, WP-CLI, imports that set terms later); without this the
+     * category archive filters on facets that were never written and shows no products.
+     */
+    public static function registerTermSync(): void
+    {
+        if (self::$termSyncRegistered || !function_exists('add_action')) {
+            return;
+        }
+        self::$termSyncRegistered = true;
+
+        $queue = static function ($objectId, $taxonomy): void {
+            if (in_array($taxonomy, ['product_cat', 'product_tag'], true) && (int)$objectId > 0) {
+                self::$pendingTermRefresh[(int)$objectId] = true;
+            }
+        };
+        add_action('set_object_terms', static function ($objectId, $terms, $ttIds, $taxonomy) use ($queue): void {
+            $queue($objectId, $taxonomy);
+        }, 30, 4);
+        add_action('deleted_term_relationships', static function ($objectId, $ttIds, $taxonomy) use ($queue): void {
+            $queue($objectId, $taxonomy);
+        }, 30, 3);
+        add_action('shutdown', [self::class, 'flushTermRefresh'], 5);
+    }
+
+    /**
+     * Re-project products queued by registerTermSync() that are already in the active generation.
+     * Never builds a generation: a product absent from the index is left to the next rebuild.
+     */
+    public static function flushTermRefresh(): void
+    {
+        if (self::$pendingTermRefresh === []) {
+            return;
+        }
+        $ids = array_keys(self::$pendingTermRefresh);
+        self::$pendingTermRefresh = [];
+
+        try {
+            $projector = new self();
+            $active = $projector->getActiveGeneration();
+            if ($active <= 0) {
+                return;
+            }
+            $reprojected = 0;
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $indexed = $projector->wpdb->get_col($projector->wpdb->prepare(
+                    "SELECT product_id FROM {$projector->tableCatalog} WHERE generation = %d AND product_id IN ("
+                    . implode(',', array_fill(0, count($chunk), '%d')) . ')',
+                    $active,
+                    ...$chunk
+                )) ?: [];
+                foreach ($indexed as $pid) {
+                    $projector->projectProduct((int)$pid, $active);
+                    $reprojected++;
+                }
+            }
+            if ($reprojected > 0) {
+                // Cached archive pages of this generation predate the new facets.
+                (new ContextCache($projector->wpdb, $projector))->invalidate(null, $active);
+            }
+        } catch (\Throwable $e) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator diagnostic
+            error_log('[WPE] catalog term refresh failed: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Ask the background worker (`wp wpe rebuild --if-requested`, run from system cron) for a full
      * rebuild instead of running one inside a web request.
@@ -253,6 +325,22 @@ class CatalogProjector
      * @param string|null $nowOverride Optional reference timestamp
      * @return bool
      */
+    /**
+     * SQL condition (on alias `p` of wpe_products) restricting products to those with a wp_posts shell.
+     */
+    private function shellExistsSql(): string
+    {
+        return "EXISTS (SELECT 1 FROM {$this->wpdb->posts} w WHERE w.ID = p.id AND w.post_type = 'product')";
+    }
+
+    private function hasProductShell(int $productId): bool
+    {
+        return (bool)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT 1 FROM {$this->wpdb->posts} WHERE ID = %d AND post_type = 'product'",
+            $productId
+        ));
+    }
+
     public function projectProduct(int $productId, ?int $generation = null, ?string $nowOverride = null): bool
     {
         $gen = $generation ?? $this->getActiveGeneration();
@@ -266,7 +354,9 @@ class CatalogProjector
 
         // R64 (Tombstone no resurrection):
         // If product does not exist, or is deleted / trashed, remove from index and facets immediately
-        if (!$prod || $prod['deleted_at'] !== null || $prod['status'] === 'trash') {
+        // A product without its wp_posts shell cannot be rendered by the storefront (get_post() is
+        // null), so it is not indexable: indexing it skews totals and empties archive pages.
+        if (!$prod || $prod['deleted_at'] !== null || $prod['status'] === 'trash' || !$this->hasProductShell($productId)) {
             $this->wpdb->delete($this->tableCatalog, [
                 'generation' => $gen,
                 'product_id' => $productId,
@@ -737,7 +827,9 @@ class CatalogProjector
 
         // 1. Initial full scan of active products
         $productIds = $this->wpdb->get_col(
-            "SELECT id FROM {$this->tableProducts} WHERE deleted_at IS NULL AND status != 'trash' ORDER BY id ASC"
+            "SELECT p.id FROM {$this->tableProducts} p
+             WHERE p.deleted_at IS NULL AND p.status != 'trash' AND " . $this->shellExistsSql() . "
+             ORDER BY p.id ASC"
         );
 
         $total = count($productIds);
@@ -763,6 +855,7 @@ class CatalogProjector
                  FROM {$this->tableProducts} p
                  LEFT JOIN {$this->tableCatalog} c ON (c.generation = %d AND c.product_id = p.id)
                  WHERE p.deleted_at IS NULL AND p.status != 'trash'
+                   AND " . $this->shellExistsSql() . "
                    AND (c.product_id IS NULL OR p.version > c.source_version OR p.updated_at >= %s)",
                 $newGen,
                 $rebuildStart
@@ -842,7 +935,7 @@ class CatalogProjector
         $sql = "SELECT p.id, p.version as product_version, c.source_version as catalog_version
                 FROM {$this->tableProducts} p
                 LEFT JOIN {$this->tableCatalog} c ON (c.generation = %d AND c.product_id = p.id)
-                WHERE p.deleted_at IS NULL AND p.status != 'trash'";
+                WHERE p.deleted_at IS NULL AND p.status != 'trash' AND " . $this->shellExistsSql();
 
         $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $gen), ARRAY_A);
 
@@ -889,6 +982,7 @@ class CatalogProjector
              FROM {$this->tableProducts} p
              LEFT JOIN {$this->tableCatalog} c ON (c.generation = %d AND c.product_id = p.id)
              WHERE p.deleted_at IS NULL AND p.status != 'trash'
+               AND " . $this->shellExistsSql() . "
                AND (c.product_id IS NULL OR p.version > c.source_version)",
             $gen
         ));

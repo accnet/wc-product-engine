@@ -77,6 +77,7 @@ class CatalogAdapters
         $strict = ($mode === 'full_native');
         $instance = new self(null, null, $strict);
         add_filter('posts_pre_query', [$instance, 'handlePostsPreQuery'], 10, 2);
+        CatalogProjector::registerTermSync();
     }
 
     /* -------------------------------------------------------------------------- */
@@ -600,27 +601,60 @@ class CatalogAdapters
         // Execute via engine
         $result = $this->executeAdaptedQuery($queryVars);
 
+        if (empty($result['ids'])) {
+            $query->found_posts = $result['total'];
+            $query->max_num_pages = $result['total_pages'];
+            return [];
+        }
+
+        // Prime post caches first so the shell check below costs no extra query per ID.
+        _prime_post_caches($result['ids'], true, true);
+        $posts = array_values(array_filter(array_map('get_post', $result['ids'])));
+
+        // An indexed product whose wp_posts shell is gone cannot be rendered. Serving the
+        // page anyway yields short or empty pages and wrong totals, so let core answer.
+        if (count($posts) !== count($result['ids'])) {
+            $this->reportMissingShells($result['ids'], $posts);
+            return null;
+        }
+
         // Set pagination totals on WP_Query (R75)
         $query->found_posts = $result['total'];
         $query->max_num_pages = $result['total_pages'];
-
-        if (empty($result['ids'])) {
-            return [];
-        }
 
         if ((string)$query->get('fields') === 'ids') {
             return $result['ids'];
         }
 
-        // Prime post caches, native authority probes, native product bundles, and thumbnail attachments in bulk (P028.3)
-        _prime_post_caches($result['ids'], true, true);
+        // Prime native authority probes, native product bundles, and thumbnail attachments in bulk (P028.3)
         \WPE\Support\AuthorityResolver::primeObjects($result['ids'], $this->wpdb);
         \WPE\Compatibility\WooDataStore\ProductDataStore::primeProducts($result['ids'], $this->wpdb);
         $this->primeAttachmentPostsFromBundles($result['ids']);
 
-        $posts = array_filter(array_map('get_post', $result['ids']));
+        return $posts;
+    }
 
-        return array_values($posts);
+    /**
+     * Log catalog rows that point at products without a wp_posts shell (once per request).
+     *
+     * @param int[] $ids
+     * @param \WP_Post[] $posts
+     */
+    private function reportMissingShells(array $ids, array $posts): void
+    {
+        static $reported = false;
+        if ($reported) {
+            return;
+        }
+        $reported = true;
+
+        $found = array_map(static fn($p): int => (int)$p->ID, $posts);
+        $missing = array_values(array_diff(array_map('intval', $ids), $found));
+        if (function_exists('do_action')) {
+            do_action('wpe_catalog_missing_post_shells', $missing);
+        }
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator diagnostic
+        error_log('[WPE] catalog index lists products without a post shell; archive served by core WP_Query. IDs: ' . implode(',', array_slice($missing, 0, 20)));
     }
 
     /**
