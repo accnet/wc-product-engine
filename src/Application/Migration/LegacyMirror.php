@@ -526,6 +526,22 @@ class LegacyMirror
 
             $this->flushQueuedMeta();
 
+            // Shells allocated as auto-draft keep post_date_gmt zeroed; the update branch above
+            // never set it, so derive it from post_date for this aggregate's variations.
+            $zeroGmt = $this->wpdb->get_results($this->wpdb->prepare(
+                "SELECT ID, post_date FROM {$this->wpdb->posts}
+                 WHERE post_parent = %d AND post_type = 'product_variation'
+                   AND post_date_gmt = '0000-00-00 00:00:00' AND post_date <> '0000-00-00 00:00:00'",
+                $aggregateId
+            ), ARRAY_A) ?: [];
+            foreach ($zeroGmt as $zg) {
+                $this->wpdb->update(
+                    $this->wpdb->posts,
+                    ['post_date_gmt' => get_gmt_from_date((string)$zg['post_date'])],
+                    ['ID' => (int)$zg['ID']]
+                );
+            }
+
             // Trash any old product_variation posts in wp_posts that were tombstoned in wpe_variants
             $trashedVarIds = $this->wpdb->get_col($this->wpdb->prepare(
                 "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NOT NULL",

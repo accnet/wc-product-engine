@@ -105,6 +105,9 @@ class PluginBootstrap
         }
 
         if ($this->isNativeRuntimeActive()) {
+            // Keep native state in step when core trashes, restores or deletes a product shell
+            // (wp-admin list table, bulk actions, WP-CLI, other plugins) instead of the data store.
+            \WPE\Compatibility\WooDataStore\ProductLifecycle::register();
             \WPE\Compatibility\WooDataStore\MetaBridge::register();
             \WPE\Compatibility\WooDataStore\InventoryBridge::getInstance()->boot();
             \WPE\Compatibility\WooDataStore\AdminApiBridge::getInstance()->boot();

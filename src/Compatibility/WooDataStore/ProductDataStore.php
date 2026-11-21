@@ -975,11 +975,13 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function untrash_variations($product_id): void
     {
-        $this->wpdb->update(
-            $this->tableVariants,
-            ['status' => 'publish', 'deleted_at' => null, 'active_combination_key' => 'combination_key'],
-            ['product_id' => $product_id]
-        );
+        // active_combination_key takes the column's value; $wpdb->update() would store the literal string.
+        $this->wpdb->query($this->wpdb->prepare(
+            "UPDATE {$this->tableVariants}
+             SET status = 'publish', deleted_at = NULL, active_combination_key = combination_key
+             WHERE product_id = %d",
+            $product_id
+        ));
     }
 
     /* -------------------------------------------------------------------------- */
@@ -1664,9 +1666,67 @@ class ProductVariationDataStore extends ProductDataStore
         $this->save_meta($product);
         $this->save_downloads($product);
 
+        $this->projectVariationShell($variantId, $parentId, [
+            'status'     => $product->get_status('edit') ?: 'publish',
+            'menu_order' => (int)$product->get_menu_order('edit'),
+        ], true);
+
         $product->apply_changes();
         $product->set_object_read(true);
         (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($parentId);
+    }
+
+    /**
+     * Keep the variation's wp_posts shell in step with the native row, as LegacyMirror does:
+     * post_parent, post_status, "Variation for <parent>" title and menu_order. Without it a
+     * variation created through the WC API keeps the allocator's auto-draft shell with
+     * post_parent 0, invisible to core lookups by parent until a mirror runs.
+     *
+     * @param array{status?: string, menu_order?: int} $fields
+     */
+    private function projectVariationShell(int $variantId, int $parentId, array $fields, bool $isCreate): void
+    {
+        if ($variantId <= 0) {
+            return;
+        }
+
+        $shell = [];
+        if (!empty($fields['status'])) {
+            $shell['status'] = (string)$fields['status'];
+        }
+        if (array_key_exists('menu_order', $fields)) {
+            $shell['menu_order'] = (int)$fields['menu_order'];
+        }
+        if ($isCreate && $parentId > 0) {
+            $parentTitle = (string)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT title FROM {$this->tableProducts} WHERE id = %d",
+                $parentId
+            ));
+            $shell['parent_id'] = $parentId;
+            $shell['post_type'] = 'product_variation';
+            $shell['title'] = 'Variation for ' . $parentTitle;
+        }
+        if ($shell === []) {
+            return;
+        }
+
+        ProductLifecycle::wrapProjection(function () use ($variantId, $shell): void {
+            PostShellBridge::getInstance()->projectShell($variantId, $shell);
+        });
+
+        if ($isCreate) {
+            // The allocator's auto-draft shell has post_date_gmt zeroed; stamp the creation date.
+            $nowGmt = gmdate('Y-m-d H:i:s');
+            $this->wpdb->query($this->wpdb->prepare(
+                "UPDATE {$this->wpdb->posts}
+                 SET post_date_gmt = %s, post_date = %s
+                 WHERE ID = %d AND post_date_gmt = '0000-00-00 00:00:00'",
+                $nowGmt,
+                get_date_from_gmt($nowGmt),
+                $variantId
+            ));
+            clean_post_cache($variantId);
+        }
     }
 
     public function read(&$product): void
@@ -1874,6 +1934,15 @@ class ProductVariationDataStore extends ProductDataStore
         $this->save_meta($product);
         $this->save_downloads($product);
 
+        $shellFields = [];
+        if (isset($changes['status'])) {
+            $shellFields['status'] = (string)$changes['status'];
+        }
+        if (isset($changes['menu_order'])) {
+            $shellFields['menu_order'] = (int)$changes['menu_order'];
+        }
+        $this->projectVariationShell($variantId, (int)$product->get_parent_id(), $shellFields, false);
+
         $product->apply_changes();
         (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache((int)$product->get_parent_id());
     }
@@ -1888,7 +1957,14 @@ class ProductVariationDataStore extends ProductDataStore
             $this->wpdb->delete($this->tableSkuRegistry, ['object_id' => $variantId]);
             $this->wpdb->delete($this->tableInventory, ['owner_id' => $variantId]);
             $this->wpdb->delete($this->tableVariants, ['id' => $variantId]);
+            // The CPT store removes the post; without this the shell outlives the variation.
+            if ($variantId > 0 && get_post_type($variantId) === 'product_variation') {
+                ProductLifecycle::wrapProjection(static function () use ($variantId): void {
+                    wp_delete_post($variantId, true);
+                });
+            }
         } else {
+            $this->projectVariationShell($variantId, $parentId, ['status' => 'trash'], false);
             $now = gmdate('Y-m-d H:i:s.u');
             $this->wpdb->update(
                 $this->tableVariants,

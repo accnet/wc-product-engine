@@ -77,8 +77,76 @@ class ProductLifecycle
         $instance = new self();
 
         add_action('wp_trash_post', [$instance, 'onWpTrashPost'], 10, 1);
-        add_action('untrashed_post', [$instance, 'onWpUntrashedPost'], 10, 1);
+        add_action('untrashed_post', [$instance, 'onWpUntrashedPost'], 10, 2);
         add_action('before_delete_post', [$instance, 'onWpBeforeDeletePost'], 10, 2);
+    }
+
+    /**
+     * Whether a post ID is a parent product stored natively (wpe_products). Legacy products and
+     * variations are left to WooCommerce / the variation data store.
+     */
+    private function isNativeProduct(int $postId): bool
+    {
+        return (bool)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT 1 FROM {$this->tableProducts} WHERE id = %d",
+            $postId
+        ));
+    }
+
+    /**
+     * Copy native variant status and parent onto the product's variation shells, as WooCommerce's
+     * CPT store trashes / restores variation posts with their parent.
+     */
+    private function syncVariationShellStatuses(int $productId): void
+    {
+        $collate = 'utf8mb4_unicode_ci';
+        $ids = $this->wpdb->get_col($this->wpdb->prepare(
+            "SELECT v.id FROM {$this->tableVariants} v
+             JOIN {$this->wpdb->posts} w ON w.ID = v.id AND w.post_type = 'product_variation'
+             WHERE v.product_id = %d
+               AND (w.post_parent <> v.product_id OR w.post_status COLLATE {$collate} <> v.status COLLATE {$collate})",
+            $productId
+        )) ?: [];
+        if ($ids === []) {
+            return;
+        }
+
+        self::wrapProjection(function () use ($productId, $ids): void {
+            $now = gmdate('Y-m-d H:i:s');
+            $this->wpdb->query($this->wpdb->prepare(
+                "UPDATE {$this->wpdb->posts} w
+                 JOIN {$this->tableVariants} v ON v.id = w.ID
+                 SET w.post_parent = v.product_id, w.post_status = v.status,
+                     w.post_modified = %s, w.post_modified_gmt = %s
+                 WHERE v.product_id = %d AND w.post_type = 'product_variation'",
+                get_date_from_gmt($now),
+                $now,
+                $productId
+            ));
+        });
+        foreach ($ids as $id) {
+            clean_post_cache((int)$id);
+        }
+    }
+
+    /**
+     * Re-project a product into the active catalog generation and bust cached archive pages, so a
+     * trashed, restored or deleted product leaves or re-enters the storefront index immediately.
+     */
+    private function refreshCatalog(int $productId): void
+    {
+        try {
+            $projector = new \WPE\Application\Catalog\CatalogProjector($this->wpdb);
+            $gen = $projector->getActiveGeneration();
+            if ($gen <= 0) {
+                return;
+            }
+            $projector->projectProduct($productId, $gen);
+            (new \WPE\Application\Catalog\ContextCache($this->wpdb, $projector))->invalidate($productId, $gen);
+        } catch (\Throwable $e) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator diagnostic
+            error_log(sprintf('[wc-product-engine] catalog refresh for product %d failed: %s', $productId, $e->getMessage()));
+        }
     }
 
     /* -------------------------------------------------------------------------- */
@@ -382,8 +450,10 @@ class ProductLifecycle
             self::wrapProjection(function () use ($productId) {
                 $this->shellBridge->projectShell($productId, ['status' => 'trash']);
             });
+            $this->syncVariationShellStatuses($productId);
 
             $this->invalidateProductCache($productId);
+            $this->refreshCatalog($productId);
 
             $this->dispatchLifecycleHook('woocommerce_trash_product', $productId);
             return true;
@@ -395,7 +465,7 @@ class ProductLifecycle
     /**
      * Restores a product and its variations from trash.
      */
-    public function untrashProduct(int $productId): bool
+    public function untrashProduct(int $productId, ?string $restoreStatus = null): bool
     {
         $guardKey = 'untrash_' . $productId;
         if (self::$inProjection || isset(self::$activeMutations[$guardKey])) {
@@ -404,13 +474,16 @@ class ProductLifecycle
         self::$activeMutations[$guardKey] = true;
 
         $now = gmdate('Y-m-d H:i:s');
+        $status = in_array($restoreStatus, ['publish', 'draft', 'pending', 'private', 'future'], true)
+            ? $restoreStatus
+            : 'publish';
 
         try {
             $this->wpdb->query("START TRANSACTION");
             try {
                 $this->wpdb->update(
                     $this->tableProducts,
-                    ['status' => 'publish', 'deleted_at' => null, 'updated_at' => $now],
+                    ['status' => $status, 'deleted_at' => null, 'updated_at' => $now],
                     ['id' => $productId]
                 );
 
@@ -435,11 +508,13 @@ class ProductLifecycle
             }
 
             // Project shell status
-            self::wrapProjection(function () use ($productId) {
-                $this->shellBridge->projectShell($productId, ['status' => 'publish']);
+            self::wrapProjection(function () use ($productId, $status) {
+                $this->shellBridge->projectShell($productId, ['status' => $status]);
             });
+            $this->syncVariationShellStatuses($productId);
 
             $this->invalidateProductCache($productId);
+            $this->refreshCatalog($productId);
 
             $this->dispatchLifecycleHook('woocommerce_untrash_product', $productId);
             return true;
@@ -473,9 +548,50 @@ class ProductLifecycle
             });
 
             $this->invalidateProductCache($productId);
+            $this->refreshCatalog($productId);
 
             $this->dispatchLifecycleHook('woocommerce_delete_product', $productId);
             return true;
+        } finally {
+            unset(self::$activeMutations[$guardKey]);
+        }
+    }
+
+    /**
+     * Remove native state when core is already deleting the shell (wp_delete_post). Unlike
+     * deleteProduct() it must not delete the post itself: the caller is mid-way through doing so.
+     */
+    private function purgeNativeForShellDelete(int $productId): void
+    {
+        $guardKey = 'delete_' . $productId;
+        if (isset(self::$activeMutations[$guardKey])) {
+            return;
+        }
+        self::$activeMutations[$guardKey] = true;
+
+        try {
+            // Native variants are the source of truth; their shells may not carry post_parent yet
+            // (the native variation store leaves it to the legacy mirror), so match both ways.
+            $variationIds = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare(
+                "SELECT ID FROM {$this->wpdb->posts}
+                 WHERE post_type = 'product_variation'
+                   AND (post_parent = %d OR ID IN (SELECT id FROM {$this->tableVariants} WHERE product_id = %d))",
+                $productId,
+                $productId
+            )) ?: []);
+
+            $this->prodRepo->delete($productId, true);
+
+            // The native variation store removes only native rows; drop the variation shells too.
+            self::wrapProjection(function () use ($variationIds): void {
+                foreach ($variationIds as $variationId) {
+                    wp_delete_post($variationId, true);
+                }
+            });
+
+            $this->invalidateProductCache($productId);
+            $this->refreshCatalog($productId);
+            $this->dispatchLifecycleHook('woocommerce_delete_product', $productId);
         } finally {
             unset(self::$activeMutations[$guardKey]);
         }
@@ -610,21 +726,23 @@ class ProductLifecycle
             return;
         }
 
-        $postType = get_post_type($postId);
-        if ($postType === 'product' || $postType === 'product_variation') {
+        if (get_post_type($postId) === 'product' && $this->isNativeProduct($postId)) {
             $this->trashProduct($postId);
         }
     }
 
-    public function onWpUntrashedPost(int $postId): void
+    /**
+     * Fires after core restored the shell; mirror the status core chose (WP 5.6+ restores to
+     * draft unless filtered) instead of forcing publish.
+     */
+    public function onWpUntrashedPost(int $postId, string $previousStatus = ''): void
     {
         if (self::$inProjection) {
             return;
         }
 
-        $postType = get_post_type($postId);
-        if ($postType === 'product' || $postType === 'product_variation') {
-            $this->untrashProduct($postId);
+        if (get_post_type($postId) === 'product' && $this->isNativeProduct($postId)) {
+            $this->untrashProduct($postId, (string)get_post_status($postId));
         }
     }
 
@@ -635,8 +753,8 @@ class ProductLifecycle
         }
 
         $postType = $post ? $post->post_type : get_post_type($postId);
-        if ($postType === 'product' || $postType === 'product_variation') {
-            $this->deleteProduct($postId, true);
+        if ($postType === 'product' && $this->isNativeProduct($postId)) {
+            $this->purgeNativeForShellDelete($postId);
         }
     }
 }
