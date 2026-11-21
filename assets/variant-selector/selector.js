@@ -30,6 +30,8 @@
           flags: {},
           options: [],
           defaultSelection: {},
+          autoSelection: null,
+          autoResolution: null,
           lowestPriceHtml: '',
           initialResolution: null,
           i18n: {
@@ -65,7 +67,13 @@
           this.form.closest('.wpe-product-instance, .product')) ||
         this.form;
 
-      this.currentSelection = Object.assign({}, this.config.defaultSelection || {});
+      // Opening state: the Auto-Select First Values selection when the server filled one (P029),
+      // otherwise the configured defaults. Clear (resetSelection) always returns to the defaults.
+      const autoSelection = this.config.autoSelection;
+      this.currentSelection = Object.assign(
+        {},
+        autoSelection && typeof autoSelection === 'object' ? autoSelection : this.config.defaultSelection || {}
+      );
       this.allowedValues = {};
       this.allowedDetails = {};
       this.valueThumbnails = {};
@@ -129,9 +137,26 @@
       this.createLiveRegion();
       this.updateOptionLabels();
 
-      // Apply initial server resolution metadata if provided
-      if (this.config.initialResolution && typeof this.config.initialResolution === 'object') {
-        const initRes = this.config.initialResolution;
+      // Cache the configured-default resolution under its own key so Clear can reuse it.
+      if (
+        this.config.autoResolution &&
+        typeof this.config.autoResolution === 'object' &&
+        this.config.initialResolution &&
+        typeof this.config.initialResolution === 'object'
+      ) {
+        this.resolutionCache.set(
+          this.getSelectionCacheKey(this.config.defaultSelection || {}),
+          Object.assign({ product_revision: this.productRevision }, this.config.initialResolution)
+        );
+      }
+
+      // Apply the server resolution of the opening state (auto selection, else defaults)
+      const openRes =
+        this.config.autoResolution && typeof this.config.autoResolution === 'object'
+          ? this.config.autoResolution
+          : this.config.initialResolution;
+      if (openRes && typeof openRes === 'object') {
+        const initRes = openRes;
         if (initRes.lowest_price_html) {
           this.lowestPriceHtml = String(initRes.lowest_price_html);
         }

@@ -260,6 +260,7 @@ class SelectorAdapter
             'color_swatches'           => !empty($flags['color_swatches']),
             'image_swatches'           => !empty($flags['image_swatches']),
             'mark_unavailable_options' => !empty($flags['mark_unavailable_options']),
+            'auto_select_first_values' => !empty($flags['auto_select_first_values']),
         ];
     }
 
@@ -473,7 +474,8 @@ class SelectorAdapter
     {
         if ($preferDefaultSelection || (function_exists('is_product') && is_product())) {
             $config = $this->getSelectorConfig($productId);
-            $initRes = $config['initialResolution'] ?? [];
+            // Price the state the page opens in: the auto selection when present (P029).
+            $initRes = is_array($config['autoResolution'] ?? null) ? $config['autoResolution'] : ($config['initialResolution'] ?? []);
             if (
                 ($initRes['state'] ?? '') === 'exact'
                 && !empty($initRes['variant']['purchasable'])
@@ -586,6 +588,28 @@ class SelectorAdapter
             $variationOptions
         );
         $lowestPriceHtml = (string)($initialRes['lowest_price_html'] ?? '');
+        // A default selection that conflicts with option priority is reconciled by the resolver;
+        // render the effective selection so the initial UI matches the resolved state.
+        if (isset($initialRes['selection']) && is_array($initialRes['selection'])) {
+            $defaultSelection = array_map('strval', $initialRes['selection']);
+        }
+
+        // Auto-Select First Values (P029): the page opens on a complete purchasable selection.
+        // defaultSelection/initialResolution keep describing the configured defaults (Clear target);
+        // the opening state is autoSelection/autoResolution.
+        $autoSelection = null;
+        $autoRes = null;
+        if (!empty($flags['auto_select_first_values'])) {
+            [$autoSelection, $autoRes] = $this->autoSelectFirstValues(
+                $productId,
+                $variationOptions,
+                $defaultSelection,
+                $initialRes,
+                is_array($productRow) ? $productRow : null
+            );
+        }
+        // Server-rendered option states follow the state the page opens in.
+        $openRes = $autoRes ?? $initialRes;
 
         // Identify the default Image Swatch option (1st variation option by position, or promoted option with distinct variation media)
         $defaultImageOptionId = $this->resolveDefaultImageOptionId(
@@ -619,8 +643,8 @@ class SelectorAdapter
             $helpText       = $displayMeta['help_text'];
             $globalValues   = $displayMeta['global_values'];
 
-            $optThumbs  = $initialRes['value_thumbnails'][$optIdStr] ?? [];
-            $optDetails = $initialRes['allowed_details'][$optIdStr] ?? [];
+            $optThumbs  = $openRes['value_thumbnails'][$optIdStr] ?? [];
+            $optDetails = $openRes['allowed_details'][$optIdStr] ?? [];
 
             $values = [];
             foreach ($opt['values'] as $val) {
@@ -701,6 +725,17 @@ class SelectorAdapter
                 'allowed_values'    => $initialRes['allowed_values'] ?? [],
                 'allowed_details'   => $initialRes['allowed_details'] ?? [],
                 'value_thumbnails'  => $initialRes['value_thumbnails'] ?? [],
+                'lowest_price_html' => $lowestPriceHtml,
+            ],
+            'autoSelection'     => $autoSelection,
+            'autoResolution'    => $autoRes === null ? null : [
+                'state'             => $autoRes['state'] ?? 'partial',
+                'variant'           => $autoRes['variant'] ?? null,
+                'candidate_image'   => $autoRes['candidate_image'] ?? null,
+                'reason'            => $autoRes['reason'] ?? null,
+                'allowed_values'    => $autoRes['allowed_values'] ?? [],
+                'allowed_details'   => $autoRes['allowed_details'] ?? [],
+                'value_thumbnails'  => $autoRes['value_thumbnails'] ?? [],
                 'lowest_price_html' => $lowestPriceHtml,
             ],
             'i18n' => [
@@ -1015,8 +1050,10 @@ class SelectorAdapter
         }
 
         $optId = (int)$matchedOption['id'];
-        if (($selected === false || $selected === '' || $selected === null) && isset($config['defaultSelection'][(string)$optId])) {
-            $selected = (string)$config['defaultSelection'][(string)$optId];
+        // The page opens on autoSelection when Auto-Select First Values filled it (P029), else on defaults.
+        $openSelection = is_array($config['autoSelection'] ?? null) ? $config['autoSelection'] : ($config['defaultSelection'] ?? []);
+        if (($selected === false || $selected === '' || $selected === null) && isset($openSelection[(string)$optId])) {
+            $selected = (string)$openSelection[(string)$optId];
         }
         $swatchType = (string)$matchedOption['swatch_type'];
         $helpText = (string)($matchedOption['help_text'] ?? '');
@@ -1571,6 +1608,68 @@ class SelectorAdapter
 
         $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
         return $luminance >= 0.82;
+    }
+
+    /**
+     * Fill options missing from the configured selection with their first available value (P029 D01-D02).
+     *
+     * Options are walked in saved position order; each takes the first value (saved value order)
+     * listed in the resolver's allowed_values for the selection so far, so the result always maps
+     * to a purchasable variation. An option with no allowed value stays empty.
+     *
+     * @return array{0: array<string,string>|null, 1: array|null} [selection, resolution], or nulls when nothing was filled
+     */
+    private function autoSelectFirstValues(
+        int $productId,
+        array $variationOptions,
+        array $selection,
+        array $resolution,
+        ?array $productRow
+    ): array {
+        $ordered = $variationOptions;
+        usort($ordered, static fn(array $a, array $b): int =>
+            [(int)($a['position'] ?? 0), (int)$a['id']] <=> [(int)($b['position'] ?? 0), (int)$b['id']]);
+
+        $filled = false;
+        foreach ($ordered as $opt) {
+            $optIdStr = (string)$opt['id'];
+            if (isset($selection[$optIdStr]) && $selection[$optIdStr] !== '') {
+                continue;
+            }
+            $allowed = array_map('strval', (array)($resolution['allowed_values'][$optIdStr] ?? []));
+            if ($allowed === []) {
+                continue;
+            }
+            // allowed_values only considers options BEFORE this one, so a candidate can still clash
+            // with a later option that is already selected (e.g. a configured default). Accept a
+            // candidate only if the resolver keeps every value already chosen.
+            foreach ((array)($opt['values'] ?? []) as $val) {
+                $candidate = (string)$val['id'];
+                if (!in_array($candidate, $allowed, true)) {
+                    continue;
+                }
+                $trial = $selection;
+                $trial[$optIdStr] = $candidate;
+                $trialRes = $this->resolver->resolve($productId, $trial, 1, null, 0, $productRow, $variationOptions);
+                $resolved = array_map('strval', is_array($trialRes['selection'] ?? null) ? $trialRes['selection'] : []);
+                $kept = true;
+                foreach ($trial as $k => $v) {
+                    if (($resolved[(string)$k] ?? null) !== (string)$v) {
+                        $kept = false;
+                        break;
+                    }
+                }
+                if (!$kept) {
+                    continue;
+                }
+                $selection = $resolved;
+                $resolution = $trialRes;
+                $filled = true;
+                break;
+            }
+        }
+
+        return $filled ? [$selection, $resolution] : [null, null];
     }
 
     /**

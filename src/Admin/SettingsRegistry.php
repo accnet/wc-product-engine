@@ -130,6 +130,14 @@ final class SettingsRegistry
                 'group'       => self::GROUP_PRODUCT_PAGE,
                 'section'     => self::SECTION_VARIANT_SELECTOR,
             ],
+            'auto_select_first_values' => [
+                'label'       => __('Auto-Select First Values', 'wc-product-engine'),
+                'description' => __('Open variable products with a complete, purchasable selection: each option without a configured default takes its first available value, so price, image and Add to cart are ready on load. Configured defaults always win; Clear returns to them.', 'wc-product-engine'),
+                'affects'     => __('Storefront variant selector', 'wc-product-engine'),
+                'runtime'     => self::RUNTIME_GATE,
+                'group'       => self::GROUP_PRODUCT_PAGE,
+                'section'     => self::SECTION_VARIANT_SELECTOR,
+            ],
         ];
     }
 

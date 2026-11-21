@@ -32,6 +32,7 @@ class PluginBootstrap
         'color_swatches'           => false,
         'image_swatches'           => false,
         'mark_unavailable_options' => false,
+        'auto_select_first_values' => false,
         'cohort_mode'              => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
     ];
 

@@ -111,6 +111,7 @@ class SettingsApiTest
             'color_swatches',
             'image_swatches',
             'mark_unavailable_options',
+            'auto_select_first_values',
         ];
         $this->check(array_keys($selectorFlags) === $expectedSelector, 'Variant Selector section keys mismatch');
 

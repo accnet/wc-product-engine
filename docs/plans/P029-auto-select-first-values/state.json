@@ -1,0 +1,293 @@
+{
+  "id": "P029",
+  "title": "Auto-select first variant values toggle",
+  "status": "done",
+  "content_hash": "829a904dd6a9ed92233cb8db20285fcddf33b0ea9e854162bda5efaddad56c7d",
+  "tasks": [
+    {
+      "id": "P029.1",
+      "title": "Document the auto_select_first_values product_page flag in the settings contract and UI spec",
+      "depends_on": [],
+      "read_first": [
+        "docs/04-api-contract.md",
+        "docs/09-ui.md"
+      ],
+      "files": [
+        "docs/04-api-contract.md",
+        "docs/09-ui.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "6615bba28ec64ae8ddae4ee8f207abfaf56dc78bb28ec378ec77269d9ee4937a",
+          "output_sha256": "a15802ca6f785adc31af09440f66bb7a87776d151db0bef74f463353264a9339",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257683026-582ce9ac.log",
+          "time": "2026-11-21T10:41:23.027Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "521d1e2a671485dcf59f368243459107456a1c528d4c0a1d6ca9136d03224e7f",
+          "output_sha256": "a8417c464762c218bd16fff9c95e8a91ec41558635c468909fb921d9a10cb214",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257756681-ca4ed4fb.log",
+          "time": "2026-11-21T10:42:36.682Z"
+        }
+      ],
+      "started_at": "2026-11-21T10:41:12.320Z"
+    },
+    {
+      "id": "P029.2",
+      "title": "Implement the toggle: registry/default flag, server-side first-available auto selection with SSR, selector.js opening state and Clear semantics, tests",
+      "depends_on": [
+        "P029.1"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "src/Admin/SettingsRegistry.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "assets/variant-selector/selector.js"
+      ],
+      "files": [
+        "src/Admin/SettingsRegistry.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "assets/variant-selector/selector.js",
+        "tests/integration/AutoSelectFirstValuesTest.php",
+        "tests/integration/SettingsApiTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Admin/SettingsRegistry.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/StoreApi/SelectorAdapter.php"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/variant-selector/selector.js"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/AutoSelectFirstValuesTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/T27Test.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsRegistry.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "2e8c80875138201dfe0c42d95385e57fe751f79ac1ac3d1d76c7965a9c592fb4",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257926860-4554b829.log",
+          "time": "2026-11-21T10:45:26.861Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257927043-6642a06b.log",
+          "time": "2026-11-21T10:45:27.043Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257927221-cff033c0.log",
+          "time": "2026-11-21T10:45:27.222Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/variant-selector/selector.js"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257927323-e872939a.log",
+          "time": "2026-11-21T10:45:27.324Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/AutoSelectFirstValuesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "e2a4e9e4253db27f3e58942b9f48bac28908375739c68bbc5da310f73d986fe8",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257929606-f46e7403.log",
+          "time": "2026-11-21T10:45:29.607Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "c4345c3a31c9b29a995c03b266779f4d8f411fd71d291c777cfd146b48d87f88",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257930819-a71dc403.log",
+          "time": "2026-11-21T10:45:30.819Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "d4da775415ebe70ddadf65956d018d98b8f8ce597cabb9ebde0a8a31eae1ffba",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257933054-fa01c8fe.log",
+          "time": "2026-11-21T10:45:33.054Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/T27Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "40d31bbc4ca2c0cdc753f3e716c3b60ca790e1504a23fb3bca81f148e927a98d",
+          "output_sha256": "c5d1351ae7cdda08ab515e8f72a5b3a680aa4e9c738772e1e41c8115e7a01337",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795257942553-80ad0d61.log",
+          "time": "2026-11-21T10:45:42.554Z"
+        }
+      ],
+      "started_at": "2026-11-21T10:42:36.782Z"
+    },
+    {
+      "id": "P029.3",
+      "title": "Live browser verification of opening state, Clear and toggle-off behavior; record NOTES",
+      "depends_on": [
+        "P029.2"
+      ],
+      "read_first": [
+        "tests/e2e/ProductPageSettingsLive.mjs"
+      ],
+      "files": [
+        "tests/e2e/AutoSelectFirstValuesLive.mjs",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "tests/e2e/AutoSelectFirstValuesLive.mjs"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "tests/e2e/AutoSelectFirstValuesLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "f970dc7be40305fb67b25781f20abc56edc8b6ab25070ca64daf5535be3a303a",
+          "output_sha256": "e8e28c4e2be3247980ca34d2f48c148c1367a7451225e4b03f9f28e83b87db1b",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795258019375-b7056039.log",
+          "time": "2026-11-21T10:46:59.375Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "11493db3d56698e4cbf2301e2d97b1f77a2783e148cfa067641f5c005ebc84fc",
+          "output_sha256": "a8417c464762c218bd16fff9c95e8a91ec41558635c468909fb921d9a10cb214",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795258039641-f3aab8af.log",
+          "time": "2026-11-21T10:47:19.641Z"
+        },
+        {
+          "argv": [
+            "node",
+            "tests/e2e/AutoSelectFirstValuesLive.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "11493db3d56698e4cbf2301e2d97b1f77a2783e148cfa067641f5c005ebc84fc",
+          "output_sha256": "e8e28c4e2be3247980ca34d2f48c148c1367a7451225e4b03f9f28e83b87db1b",
+          "output_path": "docs/plans/P029-auto-select-first-values/command-1795258067284-a52ff62b.log",
+          "time": "2026-11-21T10:47:47.284Z"
+        }
+      ],
+      "started_at": "2026-11-21T10:46:44.639Z"
+    }
+  ],
+  "approved_hash": "829a904dd6a9ed92233cb8db20285fcddf33b0ea9e854162bda5efaddad56c7d",
+  "report_hash": "79e966d7579e32692a3a527a100b9aa9cb125487b59118b867f8f0fb60f52ca8"
+}

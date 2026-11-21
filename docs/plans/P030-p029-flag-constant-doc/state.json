@@ -1,0 +1,46 @@
+{
+  "id": "P030",
+  "title": "P029 amendment: register DEFAULT_FLAGS in the architecture flag section",
+  "status": "done",
+  "content_hash": "87e6de4eec8cbaeabf8f61e7bb2931fcdaa2e1dd9d7c3da42a3da10b438d505c",
+  "tasks": [
+    {
+      "id": "P030.1",
+      "title": "State in docs/01 section 5 that default flag values live in the PluginBootstrap flag-default constant",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P029-auto-select-first-values/plan.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+          "content_digest": "521d1e2a671485dcf59f368243459107456a1c528d4c0a1d6ca9136d03224e7f",
+          "output_sha256": "a8417c464762c218bd16fff9c95e8a91ec41558635c468909fb921d9a10cb214",
+          "output_path": "docs/plans/P030-p029-flag-constant-doc/command-1795257748229-c533741f.log",
+          "time": "2026-11-21T10:42:28.230Z"
+        }
+      ],
+      "started_at": "2026-11-21T10:42:28.109Z"
+    }
+  ],
+  "approved_hash": "87e6de4eec8cbaeabf8f61e7bb2931fcdaa2e1dd9d7c3da42a3da10b438d505c",
+  "report_hash": "da88dcf1f9e32996eb579dd39ace9f2bca25c1b480bb9cfbb96c222a565c828c"
+}

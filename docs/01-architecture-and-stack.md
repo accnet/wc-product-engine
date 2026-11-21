@@ -18,7 +18,7 @@ Authority-aware commands validate epoch/CAS; transaction native + outbox; consum
 
 ## 5. Modes và flags
 
-Modes/allowed transitions chỉ tại 02 §4 và 02 §5. Default activate `legacy`; `shadow` do operator bật. Flags không được chuyển nguồn chuẩn trái epoch registry. Không feature flag bypass gate ở production.
+Modes/allowed transitions chỉ tại 02 §4 và 02 §5. Default activate `legacy`; `shadow` do operator bật. Flags không được chuyển nguồn chuẩn trái epoch registry. Không feature flag bypass gate ở production. Giá trị mặc định của mọi flag nằm trong hằng `DEFAULT_FLAGS` của `PluginBootstrap`; option đã lưu ghi đè từng key.
 
 ## 6. Đồng bộ và lỗi
 

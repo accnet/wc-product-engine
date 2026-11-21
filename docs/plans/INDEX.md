@@ -28,3 +28,5 @@
 - P026 — UI stage 3: native buttons, !important removal, dead CSS and theme isolation (done)
 - P027 — Runtime wiring and governed cutover to native_bridge (done)
 - P028 — Eliminate storefront N+1 hydration and filesorts on native catalog queries (done)
+- P029 — Auto-select first variant values toggle (done)
+- P030 — P029 amendment: register DEFAULT_FLAGS in the architecture flag section (done)
