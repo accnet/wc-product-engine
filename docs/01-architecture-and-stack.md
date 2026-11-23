@@ -18,7 +18,7 @@ Authority-aware commands validate epoch/CAS; transaction native + outbox; consum
 
 ## 5. Modes và flags
 
-Modes/allowed transitions chỉ tại 02 §4 và 02 §5. Default activate `legacy`; `shadow` do operator bật. Flags không được chuyển nguồn chuẩn trái epoch registry. Không feature flag bypass gate ở production. Giá trị mặc định của mọi flag nằm trong hằng `DEFAULT_FLAGS` của `PluginBootstrap`; option đã lưu ghi đè từng key.
+Modes/allowed transitions chỉ tại 02 §4 và 02 §5. Default activate `native_bridge` (bật sẵn nhóm flag engine và giao diện trang sản phẩm, tắt `media_enabled`, khởi tạo `system_mode` và `authority_epoch` nếu chưa có mà không ghi đè cấu hình đã lưu); operator chuyển mode hoặc rollback theo 02 §5. Flags không được chuyển nguồn chuẩn trái epoch registry. Không feature flag bypass gate ở production. Giá trị mặc định của mọi flag nằm trong hằng `DEFAULT_FLAGS` của `PluginBootstrap`; option đã lưu ghi đè từng key.
 
 ## 6. Đồng bộ và lỗi
 
@@ -60,7 +60,8 @@ Không thêm dependency runtime ngoài WC/WP trong V1 nếu không có task cont
 | `WPE_TEST_DB_PASSWORD` | không có | Test secret cung cấp ngoài git |
 | `WPE_TEST_DB` | `test_wpe_bench` | DB `test_*` dùng tạm trên cùng DB server/credentials của site cho benchmark và DoD integration; `tests/performance/use-test-db.php` (qua `wp --require`) đặt `DB_NAME` trước `wp-config.php`, từ chối tên không có tiền tố `test_` |
 | `WPE_WP_PATH` | `/var/www/site1.localhost` | WordPress root mà `scripts/evidence-lib.mjs`, `scripts/test-runtime.mjs`, `scripts/test-isolation.mjs`, `scripts/release/ReleasePackager.mjs` và test chạy trực tiếp bằng `php` (T07, T08) dùng; trỏ tới root cô lập (cùng core/plugins/themes, `wp-config.php` riêng với DB `test_*`) để snapshot/restore không chạm DB live mà phiên khác đang ghi (P020 D01) |
-| `WPE_VERSION` | theo bản plugin | Hằng số do `wc-product-engine.php` định nghĩa, không phải cấu hình site; Shopify CSV import đưa vào fingerprint sản phẩm để bản plugin mới không dùng lại fingerprint cũ (P017 D03) |
+| `WPE_VERSION` | theo bản plugin | Hằng số do `wc-product-engine.php` định nghĩa, không phải cấu hình site; CSV Import đưa vào fingerprint sản phẩm để bản plugin mới không dùng lại fingerprint cũ (P017 D03) |
+| `WPE_FEEDS_AUTORUN` | không định nghĩa (bật) | Hằng trong `wp-config.php`; `false` tắt fallback chạy tick feed ở cuối request web khi chưa có cron worker (P036 D03). Fallback tồn tại vì site1 đặt `DISABLE_WP_CRON` và page cache làm WP-Cron không tin cậy; nó giữ một khóa `GET_LOCK` toàn cục nên chỉ một tiến trình PHP chạy mỗi lúc |
 | `WPE_WORKER_BATCH_SIZE` | `100` | Adaptive bounded batch |
 | `WPE_WORKER_CONCURRENCY` | `1` | Tăng sau benchmark |
 | `WPE_IMPORT_MEMORY_MB` | `256` | Spill disk/group limit |

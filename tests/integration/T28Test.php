@@ -56,6 +56,9 @@ class T28Test
     public function run(): void
     {
         echo "Running T28 Integration Tests...\n";
+        // R112 stock enforcement presupposes store-wide stock management on;
+        // the site setting may be off, so pin it for the run (no DB write).
+        add_filter('pre_option_woocommerce_manage_stock', [$this, 'forceManageStockYes']);
         try {
             $this->testR111_tampered_cart_payload();
             $this->testR112_stock_changed_after_resolve();
@@ -76,8 +79,14 @@ class T28Test
         }
     }
 
+    public function forceManageStockYes(): string
+    {
+        return 'yes';
+    }
+
     private function tearDown(): void
     {
+        remove_filter('pre_option_woocommerce_manage_stock', [$this, 'forceManageStockYes']);
         $prefix = $this->wpdb->prefix;
         if (!empty($this->cleanProductIds)) {
             $ids = implode(',', array_map('intval', $this->cleanProductIds));
@@ -291,6 +300,21 @@ class T28Test
         // 3. Sufficient stock: Client requests 5 units (exact match)
         $resExactStock = $this->validator->validateItemForCart($f['parentId'], 5, $f['var1Id']);
         $this->assert($resExactStock['valid'] === true, "Exact stock request must be permitted (R112)");
+
+        // 3b. Store-wide stock management disabled: quantity is not enforced
+        // (WC_Product::managing_stock() === false), stock_status still is.
+        remove_filter('pre_option_woocommerce_manage_stock', [$this, 'forceManageStockYes']);
+        $forceNo = static fn() => 'no';
+        add_filter('pre_option_woocommerce_manage_stock', $forceNo);
+        try {
+            $resGlobalOff = $this->validator->validateItemForCart($f['parentId'], 6, $f['var1Id']);
+            $this->assert($resGlobalOff['valid'] === true, "Quantity must not be enforced when store stock management is off");
+            $resGlobalOffOos = $this->validator->validateItemForCart($f['parentId'], 1, $f['var2Id']);
+            $this->assert($resGlobalOffOos['code'] === 'out_of_stock', "stock_status=outofstock must still block when store stock management is off");
+        } finally {
+            remove_filter('pre_option_woocommerce_manage_stock', $forceNo);
+            add_filter('pre_option_woocommerce_manage_stock', [$this, 'forceManageStockYes']);
+        }
 
         // 4. Sold Individually limit
         $prefix = $this->wpdb->prefix;

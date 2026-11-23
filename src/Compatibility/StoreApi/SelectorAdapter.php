@@ -68,6 +68,9 @@ class SelectorAdapter
     /** @var array<int, string> Lowest-price cache key per product for this request. */
     private array $lowestKeyMemo = [];
 
+    /** @var array<string, array> Render configs with the request's deep-link selection applied (P035.2). */
+    private array $renderConfigCache = [];
+
     public function __construct(
         ?\wpdb $wpdb = null,
         ?OptionsRepository $optionsRepo = null,
@@ -247,9 +250,9 @@ class SelectorAdapter
      */
     public function getProductPageFlags(): array
     {
-        $flags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, []);
+        $flags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
         if (!is_array($flags)) {
-            $flags = [];
+            $flags = \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS;
         }
         return [
             'variant_selector_ui'      => array_key_exists('variant_selector_ui', $flags) ? (bool)$flags['variant_selector_ui'] : true,
@@ -369,7 +372,7 @@ class SelectorAdapter
             return;
         }
 
-        $config = $this->getSelectorConfig($productId);
+        $config = $this->getRenderConfig($productId);
         printf(
             '<script type="application/json" class="wpe-selector-instance-config" data-product-id="%d">%s</script>',
             $productId,
@@ -473,7 +476,7 @@ class SelectorAdapter
     public function buildSinglePriceDisplayHtml(int $productId, bool $preferDefaultSelection = false): string
     {
         if ($preferDefaultSelection || (function_exists('is_product') && is_product())) {
-            $config = $this->getSelectorConfig($productId);
+            $config = $this->getRenderConfig($productId);
             // Price the state the page opens in: the auto selection when present (P029).
             $initRes = is_array($config['autoResolution'] ?? null) ? $config['autoResolution'] : ($config['initialResolution'] ?? []);
             if (
@@ -728,16 +731,7 @@ class SelectorAdapter
                 'lowest_price_html' => $lowestPriceHtml,
             ],
             'autoSelection'     => $autoSelection,
-            'autoResolution'    => $autoRes === null ? null : [
-                'state'             => $autoRes['state'] ?? 'partial',
-                'variant'           => $autoRes['variant'] ?? null,
-                'candidate_image'   => $autoRes['candidate_image'] ?? null,
-                'reason'            => $autoRes['reason'] ?? null,
-                'allowed_values'    => $autoRes['allowed_values'] ?? [],
-                'allowed_details'   => $autoRes['allowed_details'] ?? [],
-                'value_thumbnails'  => $autoRes['value_thumbnails'] ?? [],
-                'lowest_price_html' => $lowestPriceHtml,
-            ],
+            'autoResolution'    => $autoRes === null ? null : $this->formatOpeningResolution($autoRes, $lowestPriceHtml),
             'i18n' => [
                 'unavailable'  => __('This combination is unavailable', 'wc-product-engine'),
                 'ambiguous'    => __('Selection cannot be resolved', 'wc-product-engine'),
@@ -746,6 +740,8 @@ class SelectorAdapter
                 'inStock'      => __('In stock', 'wc-product-engine'),
                 'outOfStock'   => __('Out of stock', 'wc-product-engine'),
                 'selectOption' => __('Choose an option', 'wc-product-engine'),
+                /* translators: 1: option name, e.g. Color. 2: value label, e.g. Black. */
+                'adjusted'     => __('%1$s changed to %2$s', 'wc-product-engine'),
             ],
         ];
 
@@ -753,6 +749,146 @@ class SelectorAdapter
         wp_cache_set('cfg_' . $cacheKey, $config, 'wpe_selector', 300);
 
         return $config;
+    }
+
+    /**
+     * Selector config for rendering the current request: the cached config, with the selection named
+     * by `attribute_*` query arguments applied as the opening state (P035.2, feed deep links).
+     *
+     * The overlay is computed per request and never cached with the shared config. It applies only to
+     * the page's main product, so related products and cards on the same page keep their own state.
+     * Unknown keys/values are ignored; a selection the resolver does not keep falls back to the normal
+     * opening state (Auto-Select or defaults).
+     *
+     * @param array<string, mixed>|null $query Query arguments; null reads the request when $productId is the queried product.
+     */
+    public function getRenderConfig(int $productId, ?array $query = null): array
+    {
+        $config = $this->getSelectorConfig($productId);
+
+        if ($query === null) {
+            if (empty($_GET) || !function_exists('get_queried_object_id') || (int)get_queried_object_id() !== $productId) {
+                return $config;
+            }
+            $query = wp_unslash($_GET); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display state
+        }
+
+        $selection = $this->selectionFromQuery((array)($config['options'] ?? []), $query);
+        if ($selection === []) {
+            return $config;
+        }
+
+        ksort($selection);
+        $memoKey = $productId . ':' . (string)($config['productRevision'] ?? '') . ':' . wp_json_encode($selection);
+        if (isset($this->renderConfigCache[$memoKey])) {
+            return $this->renderConfigCache[$memoKey];
+        }
+
+        $variationOptions = array_values(array_filter(
+            $this->optionsRepo->getOptionsByProductId($productId),
+            fn(array $o) => (int)($o['used_for_variation'] ?? 1) === 1
+        ));
+        $res = $this->resolver->resolve($productId, $selection, 1, null, 0, null, $variationOptions);
+        $resolved = array_map('strval', is_array($res['selection'] ?? null) ? $res['selection'] : []);
+        foreach ($selection as $optId => $valId) {
+            if (($resolved[(string)$optId] ?? null) !== (string)$valId) {
+                // The resolver replaced a linked value: the link no longer names a valid combination.
+                return $this->renderConfigCache[$memoKey] = $config;
+            }
+        }
+
+        // Fill options the link left open the same way the page would (P029), when enabled.
+        if (($res['state'] ?? '') !== 'exact' && !empty($config['flags']['auto_select_first_values'])) {
+            [$filledSel, $filledRes] = $this->autoSelectFirstValues($productId, $variationOptions, $resolved, $res, null);
+            if (is_array($filledSel) && is_array($filledRes)) {
+                $resolved = $filledSel;
+                $res = $filledRes;
+            }
+        }
+
+        $config['autoSelection'] = $resolved;
+        $config['autoResolution'] = $this->formatOpeningResolution($res, (string)($config['lowestPriceHtml'] ?? ''));
+        $config['requestSelection'] = true;
+
+        return $this->renderConfigCache[$memoKey] = $config;
+    }
+
+    /**
+     * Map `attribute_{option}` => value query arguments to {option_id: value_id}.
+     * Option names match the option key, `pa_{key}` or the slug of the option name; values match the
+     * value key, its slug, the slug of the label or the label itself (case-insensitive).
+     *
+     * @param array<int, array> $options Formatted selector options
+     * @param array<string, mixed> $query
+     * @return array<string, string>
+     */
+    public function selectionFromQuery(array $options, array $query): array
+    {
+        $args = [];
+        foreach ($query as $name => $value) {
+            $name = strtolower((string)$name);
+            if (!str_starts_with($name, 'attribute_') || !is_scalar($value) || (string)$value === '') {
+                continue;
+            }
+            $args[substr($name, 10)] = (string)$value;
+        }
+        if ($args === []) {
+            return [];
+        }
+
+        $selection = [];
+        foreach ($options as $opt) {
+            $key = strtolower((string)($opt['key'] ?? ''));
+            $candidates = array_unique(array_filter([
+                $key,
+                sanitize_title($key),
+                'pa_' . $key,
+                'pa_' . sanitize_title($key),
+                sanitize_title((string)($opt['name'] ?? '')),
+            ]));
+            $raw = null;
+            foreach ($candidates as $candidate) {
+                if (isset($args[$candidate])) {
+                    $raw = $args[$candidate];
+                    break;
+                }
+            }
+            if ($raw === null) {
+                continue;
+            }
+            $rawSlug = sanitize_title($raw);
+            foreach ((array)($opt['values'] ?? []) as $val) {
+                $valKey = (string)($val['key'] ?? ($val['value_key'] ?? ''));
+                $label = (string)($val['label'] ?? '');
+                if (
+                    $valKey === $raw
+                    || ($rawSlug !== '' && ($rawSlug === sanitize_title($valKey) || $rawSlug === sanitize_title($label)))
+                    || ($label !== '' && strcasecmp($label, $raw) === 0)
+                ) {
+                    $selection[(string)$opt['id']] = (string)$val['id'];
+                    break;
+                }
+            }
+        }
+
+        return $selection;
+    }
+
+    /**
+     * Resolution payload for the state the page opens in (auto selection or deep link).
+     */
+    private function formatOpeningResolution(array $res, string $lowestPriceHtml): array
+    {
+        return [
+            'state'             => $res['state'] ?? 'partial',
+            'variant'           => $res['variant'] ?? null,
+            'candidate_image'   => $res['candidate_image'] ?? null,
+            'reason'            => $res['reason'] ?? null,
+            'allowed_values'    => $res['allowed_values'] ?? [],
+            'allowed_details'   => $res['allowed_details'] ?? [],
+            'value_thumbnails'  => $res['value_thumbnails'] ?? [],
+            'lowest_price_html' => $lowestPriceHtml,
+        ];
     }
 
     /**
@@ -1022,7 +1158,7 @@ class SelectorAdapter
         $attrSlug = sanitize_title($attributeName);
         $selected = $args['selected'] ?? false;
 
-        $config = $this->getSelectorConfig($productId);
+        $config = $this->getRenderConfig($productId);
         $matchedOption = null;
 
         foreach ($config['options'] as $opt) {
@@ -1052,7 +1188,10 @@ class SelectorAdapter
         $optId = (int)$matchedOption['id'];
         // The page opens on autoSelection when Auto-Select First Values filled it (P029), else on defaults.
         $openSelection = is_array($config['autoSelection'] ?? null) ? $config['autoSelection'] : ($config['defaultSelection'] ?? []);
-        if (($selected === false || $selected === '' || $selected === null) && isset($openSelection[(string)$optId])) {
+        // A deep-link selection (P035.2) names the variation the page must open on, so it wins over
+        // the WooCommerce default attribute passed in $args['selected'].
+        $deepLinked = !empty($config['requestSelection']) && isset($openSelection[(string)$optId]);
+        if ($deepLinked || (($selected === false || $selected === '' || $selected === null) && isset($openSelection[(string)$optId]))) {
             $selected = (string)$openSelection[(string)$optId];
         }
         $swatchType = (string)$matchedOption['swatch_type'];

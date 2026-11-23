@@ -1,0 +1,206 @@
+{
+  "id": "P031",
+  "title": "Shopify import: default category, tags, ignored-column report",
+  "status": "done",
+  "content_hash": "279d777e16e648dedbcd53ddda3d952e5dd6f7967ff15ed191208a08a06829a7",
+  "tasks": [
+    {
+      "id": "P031.1",
+      "title": "Document Shopify tags, default category and ignored-column reporting in docs/10 section 7",
+      "depends_on": [],
+      "read_first": [
+        "docs/10-integrations.md"
+      ],
+      "files": [
+        "docs/10-integrations.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "2de9491d19f2827bdc9ffbc9712c69d39c852cb877446ce0d30cd8a710b27267",
+          "output_sha256": "de608eba5144e5a36558dd263d8e128354de615b3816218b90f83de3be9c8399",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795282755954-b6ac8a06.log",
+          "time": "2026-11-21T17:39:15.954Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:39:15.833Z"
+    },
+    {
+      "id": "P031.2",
+      "title": "ShopifyBatchImporter: tags to product_tag, default category when empty, ignored-column report, fingerprint bump; integration test",
+      "depends_on": [
+        "P031.1"
+      ],
+      "read_first": [
+        "docs/10-integrations.md",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "src/Compatibility/WooDataStore/PostShellBridge.php"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "tests/integration/ShopifyImportTaxonomyTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ShopifyImportTaxonomyTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "d651551a2b0b4d51b75ced58799cb0ae9bd1741c498fc384cefab9a952e0394f",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795282841565-a58430be.log",
+          "time": "2026-11-21T17:40:41.566Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ShopifyImportTaxonomyTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "d651551a2b0b4d51b75ced58799cb0ae9bd1741c498fc384cefab9a952e0394f",
+          "output_sha256": "0c0676388cac6fc8c5fb7757b0b464796bf39cd887bb97dccaaa6b65cbb2a254",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795282844508-0fa1fde1.log",
+          "time": "2026-11-21T17:40:44.509Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "d651551a2b0b4d51b75ced58799cb0ae9bd1741c498fc384cefab9a952e0394f",
+          "output_sha256": "01275881c7728ce2c374581e30ba038fb668a2a48b50bee667a0085b7f9fa6ad",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795282847224-68118ca7.log",
+          "time": "2026-11-21T17:40:47.225Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:39:16.052Z"
+    },
+    {
+      "id": "P031.3",
+      "title": "Backfill the default category on live products without one, verify storefront category coverage, record NOTES",
+      "depends_on": [
+        "P031.2"
+      ],
+      "read_first": [
+        "src/Application/Catalog/CatalogProjector.php"
+      ],
+      "files": [
+        "tests/integration/ProductCategoryCoverageLive.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ProductCategoryCoverageLive.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ProductCategoryCoverageLive.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ed3acbd716eeffb7c0ba292b6b4c163486ab3804b4cfd1ce972fb78a7f18463",
+          "output_sha256": "e8b13d36927570ae3ae129b832a2a59f1447536a91a462b87f48a16a0ba96d60",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795283008769-394428b3.log",
+          "time": "2026-11-21T17:43:28.770Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ed3acbd716eeffb7c0ba292b6b4c163486ab3804b4cfd1ce972fb78a7f18463",
+          "output_sha256": "30edb3a689edbd3efc51f6f430edd0e30ef0342e82f7843bc907acc482b84819",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795283008892-75db94d2.log",
+          "time": "2026-11-21T17:43:28.893Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "d0bcb441acb8793f83c02d9f808341bad2f895274ad1ecdf3a66d132fc7e2e8a",
+          "output_sha256": "de608eba5144e5a36558dd263d8e128354de615b3816218b90f83de3be9c8399",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795283016354-dee5e2f9.log",
+          "time": "2026-11-21T17:43:36.355Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ProductCategoryCoverageLive.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "d0bcb441acb8793f83c02d9f808341bad2f895274ad1ecdf3a66d132fc7e2e8a",
+          "output_sha256": "e8b13d36927570ae3ae129b832a2a59f1447536a91a462b87f48a16a0ba96d60",
+          "output_path": "docs/plans/P031-shopify-import-taxonomy/command-1795283018000-abd937c3.log",
+          "time": "2026-11-21T17:43:38.000Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:43:27.081Z"
+    }
+  ],
+  "approved_hash": "279d777e16e648dedbcd53ddda3d952e5dd6f7967ff15ed191208a08a06829a7",
+  "report_hash": "d9de9760bb98d6ee1885c097c564bec12e30f0e1a519e982a5427c55f0b305fd"
+}

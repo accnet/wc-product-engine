@@ -424,3 +424,55 @@ CREATE TABLE IF NOT EXISTS `{prefix}wpe_audit` (
   PRIMARY KEY (`id`),
   KEY `idx_target_created_id` (`target_id`, `created_at`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `{prefix}wpe_feeds` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `feed_key` VARCHAR(64) NOT NULL,
+  `name` VARCHAR(191) NOT NULL,
+  `platform` VARCHAR(16) NOT NULL,
+  `format` VARCHAR(8) NOT NULL,
+  `enabled` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `status` VARCHAR(16) NOT NULL DEFAULT 'new',
+  `config` LONGTEXT NOT NULL,
+  `config_hash` BINARY(32) NOT NULL,
+  `token_seed` BINARY(32) NOT NULL,
+  `version` BIGINT UNSIGNED NOT NULL DEFAULT 1,
+  `active_generation` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `build_generation` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `rebuild_reason` VARCHAR(64) NULL DEFAULT NULL,
+  `changes_first_at` DATETIME(6) NULL DEFAULT NULL,
+  `changes_last_at` DATETIME(6) NULL DEFAULT NULL,
+  `last_published_at` DATETIME(6) NULL DEFAULT NULL,
+  `stats` LONGTEXT NOT NULL,
+  `last_error` VARCHAR(255) NULL DEFAULT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_feed_key` (`feed_key`),
+  KEY `idx_enabled_status` (`enabled`, `status`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `{prefix}wpe_feed_items` (
+  `feed_id` BIGINT UNSIGNED NOT NULL,
+  `generation` BIGINT UNSIGNED NOT NULL,
+  `product_id` BIGINT UNSIGNED NOT NULL,
+  `variant_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `item_id` VARCHAR(100) NOT NULL,
+  `eligible` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+  `payload` LONGTEXT NOT NULL,
+  `payload_hash` BINARY(32) NOT NULL,
+  `issues` LONGTEXT NOT NULL,
+  `next_change` DATETIME(6) NULL DEFAULT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  PRIMARY KEY (`feed_id`, `generation`, `product_id`, `variant_id`),
+  KEY `idx_feed_next_change` (`feed_id`, `generation`, `next_change`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `{prefix}wpe_feed_dirty` (
+  `feed_id` BIGINT UNSIGNED NOT NULL,
+  `product_id` BIGINT UNSIGNED NOT NULL,
+  `first_marked_at` DATETIME(6) NOT NULL,
+  `last_marked_at` DATETIME(6) NOT NULL,
+  PRIMARY KEY (`feed_id`, `product_id`),
+  KEY `idx_feed_last_marked` (`feed_id`, `last_marked_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

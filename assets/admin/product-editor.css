@@ -2,41 +2,52 @@
  * Aliases map legacy --wpe-p-* editor tokens onto shared --wpe-* tokens (assets/admin/tokens.css). */
 
 :root {
-    /* Surface & Background Tokens */
-    --wpe-p-color-bg: var(--wpe-bg, #f1f5f9);
+    /* Neutral surfaces and dividers. Values follow the shared admin UI kit
+     * (assets/admin/admin-ui.css, --wpe-s-*): flat white cards, thin gray lines. */
+    --wpe-p-color-bg: #f7f7f8;
     --wpe-p-color-surface: var(--wpe-surface, #ffffff);
-    --wpe-p-color-surface-subdued: var(--wpe-surface-subdued, #f8fafc);
-    --wpe-p-color-surface-hover: var(--wpe-surface-hover, #f1f5f9);
-    --wpe-p-color-border: var(--wpe-border, #cbd5e1);
-    --wpe-p-color-border-subdued: var(--wpe-border-subdued, #e2e8f0);
-    --wpe-p-color-border-hover: var(--wpe-border-hover, #94a3b8);
+    --wpe-p-color-surface-subdued: #f7f7f8;
+    --wpe-p-color-surface-hover: #f1f1f2;
+    --wpe-p-color-surface-selected: #eef4fe;
+    --wpe-p-color-border: #e3e3e6;
+    --wpe-p-color-border-subdued: #ebebed;
+    --wpe-p-color-border-hover: #c9cacf;
     /* Border of interactive controls (inputs, selects, buttons), WCAG 1.4.11 (P022.2):
-     * 3.87:1 on white and 3.53:1 on the tinted row-hover and card surfaces (#f1f5f9). */
+     * 3.87:1 on white and 3.53:1 on the tinted row-hover and card surfaces. */
     --wpe-p-color-border-control: var(--wpe-border-control-tinted, #7e8287);
 
-    /* Typography & Semantic Color Tokens */
-    --wpe-p-color-text: var(--wpe-text, #0f172a);
-    --wpe-p-color-text-subdued: var(--wpe-text-subdued, #475569);
-    --wpe-p-color-text-muted: var(--wpe-text-muted, #64748b);
+    /* Text and accent */
+    --wpe-p-color-text: #1c1d20;
+    --wpe-p-color-text-subdued: #55585e;
+    --wpe-p-color-text-muted: #6b6e75;
     --wpe-p-color-interactive: var(--wpe-interactive, #005bd3);
-    --wpe-p-color-interactive-hover: var(--wpe-interactive-hover, #004299);
-    --wpe-p-color-primary: var(--wpe-primary, #1e293b);
-    --wpe-p-color-primary-hover: var(--wpe-primary-hover, #0f172a);
-    --wpe-p-color-brand: var(--wpe-brand, #008060);
-    --wpe-p-color-brand-hover: var(--wpe-brand-hover, #006e52);
-    --wpe-p-color-critical: var(--wpe-critical, #dc2626);
-    --wpe-p-color-critical-subdued: var(--wpe-critical-bg, #fee2e2);
-    --wpe-p-color-warning: var(--wpe-warning, #d97706);
-    --wpe-p-color-warning-subdued: var(--wpe-warning-bg, #fef3c7);
-    --wpe-p-color-success-subdued: var(--wpe-success-bg, #dcfce7);
+    --wpe-p-color-interactive-hover: #004cb1;
+    --wpe-p-color-primary: var(--wpe-interactive, #005bd3);
+    --wpe-p-color-primary-hover: #004cb1;
+    --wpe-p-color-brand: var(--wpe-interactive, #005bd3);
+    --wpe-p-color-brand-hover: #004cb1;
 
-    /* Radius & Elevation Tokens */
-    --wpe-p-border-radius-sm: var(--wpe-radius-sm, 6px);
-    --wpe-p-border-radius-base: var(--wpe-radius-md, 8px);
-    --wpe-p-border-radius-card: var(--wpe-radius-lg, 10px);
-    --wpe-p-shadow-card: var(--wpe-shadow-card);
-    --wpe-p-shadow-hover: var(--wpe-shadow-hover);
-    --wpe-p-shadow-floating: var(--wpe-shadow-floating);
+    /* Status (same hues as the Settings screen) */
+    --wpe-p-color-ok: #0e7a4f;
+    --wpe-p-color-ok-subdued: #e6f4ec;
+    --wpe-p-color-critical: #c4320a;
+    --wpe-p-color-critical-subdued: #fdf1ee;
+    --wpe-p-color-critical-border: #f3cfc4;
+    --wpe-p-color-warning: #d48a00;
+    --wpe-p-color-warning-text: #8a5a00;
+    --wpe-p-color-warning-subdued: #fdf5e3;
+    --wpe-p-color-success-subdued: #e6f4ec;
+
+    /* Shape, size and elevation: flat cards, small radii, one control height. */
+    --wpe-p-border-radius-xs: 4px;
+    --wpe-p-border-radius-sm: 6px;
+    --wpe-p-border-radius-base: 6px;
+    --wpe-p-border-radius-card: 8px;
+    --wpe-p-control-h: 32px;
+    --wpe-p-control-h-sm: 28px;
+    --wpe-p-shadow-card: none;
+    --wpe-p-shadow-hover: none;
+    --wpe-p-shadow-floating: 0 12px 32px rgba(28, 29, 32, 0.16), 0 0 0 1px rgba(28, 29, 32, 0.06);
 }
 
 /* 1. WooCommerce Product Data Tab Integration (Legacy and Recovery Mode) */
@@ -101,33 +112,80 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     padding-right: 8px;
 }
 
-.wpe-box-status {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-    padding: 4px 10px;
+/* Sync status pill, shared by the meta box header (.wpe-box-status) and the editor
+ * top bar (.wpe-dirty-badge). States: clean = In sync, dirty = Unsaved changes,
+ * syncing = save request in flight, error = load or save failed. Each state has a
+ * text label, so color is never the only signal. */
+.wpe-box-status,
+.wpe-dirty-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
     border-radius: 999px;
-    background: var(--wpe-p-color-surface-subdued, #f8fafc);
-    color: var(--wpe-p-color-text-subdued, #475569);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    background: var(--wpe-p-color-surface-hover);
+    color: var(--wpe-p-color-text-subdued);
+}
+
+.wpe-box-status::before,
+.wpe-dirty-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.wpe-dirty-badge .dashicons {
+    display: none;
 }
 
 .wpe-box-status:empty {
     display: none;
 }
 
-.wpe-box-status.dirty {
+/* While the open box shows the editor, its top bar carries the status: no second pill. */
+#wpe_variants_manager:not(.closed):has(.wpe-editor-wrap .wpe-dirty-badge) .postbox-header .wpe-box-status {
+    display: none;
+}
+
+.wpe-box-status.clean,
+.wpe-dirty-badge.clean {
+    background: var(--wpe-p-color-ok-subdued);
+    color: var(--wpe-p-color-ok);
+}
+
+.wpe-box-status.dirty,
+.wpe-dirty-badge.dirty {
     background: var(--wpe-p-color-warning-subdued);
-    color: #92400e;
+    color: var(--wpe-p-color-warning-text);
 }
 
-.wpe-box-status.clean {
-    background: var(--wpe-p-color-success-subdued);
-    color: #166534;
+.wpe-box-status.syncing,
+.wpe-dirty-badge.syncing {
+    background: var(--wpe-p-color-surface-selected);
+    color: var(--wpe-p-color-interactive);
 }
 
-.wpe-box-status.error {
+.wpe-box-status.syncing::before,
+.wpe-dirty-badge.syncing::before {
+    animation: wpeStatusPulse 1s ease-in-out infinite;
+}
+
+.wpe-box-status.error,
+.wpe-dirty-badge.error {
     background: var(--wpe-p-color-critical-subdued);
-    color: #991b1b;
+    color: var(--wpe-p-color-critical);
+}
+
+@keyframes wpeStatusPulse {
+    50% { opacity: 0.3; }
 }
 
 #wpe-box-fullscreen {
@@ -157,7 +215,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 
 /* 2. Main Editor Wrapper — Refined Commerce Canvas */
 .wpe-editor-wrap {
-    padding: 16px;
+    padding: 12px;
     background: var(--wpe-p-color-bg);
     color: var(--wpe-p-color-text);
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -177,7 +235,8 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-media-slot,
 .wpe-media-remove,
 .wpe-chip-remove,
-.wpe-chip-move,
+.wpe-chip-handle,
+.wpe-drag-handle,
 .wpe-clickable-stock,
 .wpe-icon-close {
     -webkit-appearance: none;
@@ -241,20 +300,21 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     border-radius: var(--wpe-p-border-radius-base);
     font-size: 13px;
     font-weight: 500;
-    padding: 6px 14px;
-    height: 36px;
-    min-height: 36px;
+    padding: 0 12px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
     line-height: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    white-space: nowrap;
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
     border: 1px solid var(--wpe-p-color-border-control);
     background: var(--wpe-surface);
     color: var(--wpe-p-color-text);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     text-shadow: none;
     box-sizing: border-box;
 }
@@ -266,7 +326,6 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     .wpe-btn-delete-variant,
     .wpe-btn-media-unlink,
     .wpe-btn-remove-common-price,
-    .wpe-dirty-badge,
     .wpe-section-title-wrap,
     .wpe-info-section-title,
     .wpe-ref-unpriced-warning,
@@ -293,10 +352,18 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     color: var(--wpe-p-color-text);
 }
 
-.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button:disabled {
-    opacity: 0.55;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button:disabled,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button.button-primary:disabled {
+    background: var(--wpe-p-color-surface-hover);
+    border-color: var(--wpe-p-color-border);
+    color: #8a8d93;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+/* Save in flight (aria-busy is set while the request runs). */
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .button[aria-busy="true"] {
+    cursor: progress;
 }
 
 /* Primary Button */
@@ -307,7 +374,7 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     border-color: var(--wpe-p-color-primary);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) .button.button-primary:hover,
@@ -333,9 +400,9 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container) .button.button-small {
-    height: 30px;
-    min-height: 30px;
-    padding: 2px 10px;
+    height: var(--wpe-p-control-h-sm);
+    min-height: var(--wpe-p-control-h-sm);
+    padding: 0 10px;
     font-size: 12px;
 }
 
@@ -369,13 +436,14 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container, .wpe-drawer-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-remove-common-price:hover {
     color: var(--wpe-p-color-critical);
     background: var(--wpe-p-color-critical-subdued);
-    border-color: #fecaca;
+    border-color: var(--wpe-p-color-critical-border);
 }
 
-.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-delete-desc-attr {
-    width: 30px;
-    height: 30px;
-    min-height: 30px;
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-info-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-delete-desc-attr,
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-delete-option {
+    width: var(--wpe-p-control-h-sm);
+    height: var(--wpe-p-control-h-sm);
+    min-height: var(--wpe-p-control-h-sm);
     padding: 0;
     flex-shrink: 0;
 }
@@ -398,9 +466,9 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 14px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .wpe-top-title-area {
@@ -410,49 +478,27 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-top-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
     color: var(--wpe-p-color-text);
     letter-spacing: -0.01em;
 }
 
-.wpe-dirty-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.wpe-dirty-badge.clean {
-    background: var(--wpe-p-color-success-subdued);
-    color: var(--wpe-p-color-brand);
-}
-
-.wpe-dirty-badge.dirty {
-    background: #fff8e5;
-    color: #8c5b00;
-    border: 1px solid #fed382;
-}
-
 .wpe-top-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 /* 4. Common Shopify Polaris Card Layout */
 .wpe-section {
     background: var(--wpe-p-color-surface);
     border-radius: var(--wpe-p-border-radius-card);
-    margin-bottom: 16px;
-    box-shadow: var(--wpe-p-shadow-card);
-    transition: box-shadow 0.2s ease;
+    margin-bottom: 12px;
     overflow: hidden;
-    border: 1px solid var(--wpe-p-color-border-subdued);
+    border: 1px solid var(--wpe-p-color-border);
 }
 
 .wpe-section:last-child {
@@ -466,19 +512,17 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     margin-bottom: 0;
 }
 
-.wpe-section:hover {
-    box-shadow: var(--wpe-p-shadow-card);
-}
-
 .wpe-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 20px;
+    min-height: 48px;
+    padding: 8px 16px;
+    box-sizing: border-box;
     background: var(--wpe-p-color-surface);
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 .wpe-section-title-wrap {
@@ -496,21 +540,26 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 }
 
 .wpe-section-count {
-    background: #f1f5f9;
+    background: var(--wpe-p-color-surface-hover);
     color: var(--wpe-p-color-text-subdued);
-    font-size: 11.5px;
-    padding: 2px 8px;
+    font-size: 11px;
+    line-height: 18px;
+    padding: 0 7px;
     border-radius: 9999px;
     font-weight: 600;
 }
 
+.wpe-section-title-wrap > .dashicons {
+    color: var(--wpe-p-color-text-muted);
+}
+
 .wpe-section-subtitle {
     font-size: 12px;
-    color: var(--wpe-p-color-text-subdued);
+    color: var(--wpe-p-color-text-muted);
 }
 
 .wpe-section-body {
-    padding: 18px 20px;
+    padding: 12px 16px;
 }
 
 /* Shopify Polaris Tag Input Component */
@@ -518,13 +567,14 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
+    gap: 4px;
+    padding: 3px 4px;
     background: #ffffff;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
-    min-height: 40px;
-    transition: all 0.15s ease;
+    min-height: var(--wpe-p-control-h);
+    box-sizing: border-box;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .wpe-chips-container:focus-within {
@@ -535,21 +585,35 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-chip {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--wpe-p-border-radius-sm);
-    padding: 3px 8px;
+    gap: 4px;
+    height: 24px;
+    box-sizing: border-box;
+    background: var(--wpe-p-color-surface-hover);
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-xs);
+    padding: 0 3px 0 0;
     font-size: 12px;
     font-weight: 500;
     color: var(--wpe-p-color-text);
-    line-height: 1.4;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    line-height: 1;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
-.wpe-chip:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+.wpe-chip-handle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 100%;
+    padding: 0 2px 0 7px;
+    border-radius: var(--wpe-p-border-radius-xs);
+    white-space: nowrap;
+}
+
+
+.wpe-chip:hover,
+.wpe-chip:focus-within {
+    background: #e9e9eb;
+    border-color: var(--wpe-p-color-border-hover);
 }
 
 .wpe-chip-color-dot {
@@ -564,19 +628,20 @@ body.wpe-mode-blocks.wpe-supported-product #woocommerce-product-images {
 .wpe-chip-remove {
     cursor: pointer;
     font-size: 15px;
-    color: #475569;
+    color: var(--wpe-p-color-text-subdued);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    transition: color 0.15s;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--wpe-p-border-radius-xs);
+    transition: color 0.12s, background-color 0.12s;
     line-height: 1;
 }
 
 .wpe-chip-remove:hover {
     color: var(--wpe-p-color-critical);
+    background: var(--wpe-p-color-critical-subdued);
 }
 
 body.wp-admin .wpe-chips-container input[type="text"].wpe-chip-input,
@@ -585,7 +650,9 @@ body.wp-admin .wpe-chips-container input.wpe-chip-input {
     background: transparent;
     box-shadow: none;
     outline: none;
-    padding: 4px 6px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0 6px;
     margin: 0;
     font-size: 13px;
     min-width: 150px;
@@ -594,46 +661,51 @@ body.wp-admin .wpe-chips-container input.wpe-chip-input {
 }
 
 /* 6. Section B: Variation Options (Shopify Polaris Option Cards) */
+/* Options are flat rows split by dividers (no card inside the section card). */
 .wpe-options-list {
     display: flex;
     flex-direction: column;
-    gap: 14px;
 }
 
 .wpe-option-card {
-    background: var(--wpe-p-color-surface-subdued);
-    border: 1px solid var(--wpe-p-color-border-subdued);
-    border-radius: var(--wpe-p-border-radius-base);
-    padding: 14px 18px;
-    transition: all 0.15s ease;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
-.wpe-option-card:hover {
-    border-color: var(--wpe-p-color-border);
-    background: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+.wpe-option-card:first-child {
+    padding-top: 0;
+}
+
+.wpe-option-card:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 .wpe-option-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-input.wpe-option-name-input {
+body.wp-admin input.wpe-option-name-input {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
-    padding: 6px 12px;
-    width: 200px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
+    padding: 0 10px;
+    width: 180px;
+    box-sizing: border-box;
     background: #ffffff;
     color: var(--wpe-p-color-text);
-    transition: all 0.15s ease;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-input.wpe-option-name-input:focus {
+body.wp-admin input.wpe-option-name-input:focus {
     border-color: var(--wpe-p-color-interactive);
     box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
     outline: none;
@@ -642,15 +714,25 @@ input.wpe-option-name-input:focus {
 .wpe-option-card-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.wpe-section-header > .wpe-inline-row,
+.wpe-media-url-bar {
+    flex-wrap: wrap;
+}
+
+.wp-core-ui .wpe-section-header select.wpe-add-taxonomy-select {
+    max-width: min(220px, 100%);
 }
 
 .wpe-bulk-paste-box {
-    margin-top: 10px;
+    margin-bottom: 8px;
     display: none;
-    padding: 12px 14px;
-    background: #ffffff;
-    border: 1px dashed var(--wpe-p-color-border-hover);
+    padding: 10px 12px;
+    background: var(--wpe-p-color-surface-subdued);
+    border: 1px solid var(--wpe-p-color-border);
     border-radius: var(--wpe-p-border-radius-base);
 }
 
@@ -677,7 +759,7 @@ input.wpe-option-name-input:focus {
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 8px 16px;
     background: #ffffff;
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
     flex-wrap: wrap;
@@ -691,11 +773,11 @@ input.wpe-option-name-input:focus {
 }
 
 body.wp-admin .wpe-matrix-toolbar input.wpe-search-input {
-    width: 180px;
+    width: 200px;
     min-width: 160px;
-    height: 34px;
-    min-height: 34px;
-    padding: 4px 10px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
+    padding: 0 10px;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     font-size: 12.5px;
@@ -713,10 +795,10 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 
 .wp-core-ui .wpe-matrix-toolbar select.wpe-filter-select {
     width: auto;
-    max-width: 150px;
-    height: 34px;
-    min-height: 34px;
-    padding: 4px 24px 4px 8px;
+    max-width: 160px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
+    padding: 0 24px 0 8px;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     font-size: 12.5px;
@@ -741,9 +823,6 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-toolbar-right .button {
-    height: 34px;
-    min-height: 34px;
-    padding: 4px 10px;
     font-size: 12.5px;
 }
 
@@ -752,9 +831,13 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
     display: none;
     align-items: center;
     justify-content: space-between;
-    background: #f0f7ff;
-    border-bottom: 1px solid #b4dbff;
-    padding: 10px 20px;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--wpe-p-color-surface-selected);
+    border-bottom: 1px solid #c6dbfa;
+    padding: 6px 16px;
+    min-height: 40px;
+    box-sizing: border-box;
     font-size: 13px;
     font-weight: 500;
     color: var(--wpe-p-color-interactive);
@@ -777,8 +860,11 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
     background: #ffffff;
 }
 
+/* Fixed columns; Combination takes the rest. Below min-width the container scrolls
+ * sideways while the select and actions columns stay pinned (P022.3). */
 .wpe-table {
     width: 100%;
+    min-width: 860px;
     table-layout: fixed;
     border-collapse: collapse;
     background: #ffffff;
@@ -788,7 +874,7 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 .wpe-table th {
     background: var(--wpe-p-color-surface-subdued);
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
-    padding: 10px 8px;
+    padding: 8px 6px;
     font-weight: 600;
     text-align: left;
     color: var(--wpe-p-color-text-subdued);
@@ -798,10 +884,9 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 }
 
 .wpe-table td {
-    padding: 8px 8px;
-    border-bottom: 1px solid #f1f2f4;
+    padding: 6px 6px;
+    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
     vertical-align: middle;
-    transition: background 0.1s ease;
 }
 
 .wpe-table th:first-child,
@@ -821,15 +906,15 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 }
 
 .wpe-table tr.selected td {
-    background: #f4f8fe;
+    background: var(--wpe-p-color-surface-selected);
 }
 
 /* Group header row */
 .wpe-table tr.wpe-group-row td {
-    background: #f6f6f7;
+    background: var(--wpe-p-color-surface-subdued);
     font-weight: 600;
     color: var(--wpe-p-color-text);
-    padding: 10px 14px;
+    padding: 6px 14px;
     border-top: 1px solid var(--wpe-p-color-border-subdued);
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
@@ -838,16 +923,17 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 .wpe-media-slot-wrap {
     position: relative;
     display: inline-block;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     vertical-align: middle;
 }
 
 .wpe-media-slot {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+    box-sizing: border-box;
     border: 1px solid var(--wpe-p-color-border);
-    border-radius: var(--wpe-p-border-radius-base);
+    border-radius: var(--wpe-p-border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -874,16 +960,21 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
     line-height: 1;
 }
 
+.wpe-media-slot:not(:has(img)) {
+    border-style: dashed;
+    border-color: var(--wpe-p-color-border-hover);
+}
+
 .wpe-media-slot:hover {
     border-color: var(--wpe-p-color-interactive);
-    background: #f0f7ff;
+    background: var(--wpe-p-color-surface-selected);
 }
 
 .wpe-media-remove {
     position: absolute;
     top: 2px;
     right: 2px;
-    background: rgba(32, 34, 35, 0.85);
+    background: rgba(28, 29, 32, 0.86);
     color: #ffffff;
     width: 16px;
     height: 16px;
@@ -900,12 +991,19 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
     display: flex;
 }
 
-/* Combination Badge (Polaris tags) */
+/* Combination: one line in the matrix ("Classic T-Shirt / Black / S"), badges in the drawer. */
 .wpe-combo-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    color: var(--wpe-p-color-text);
+}
+
+.wpe-combo-value + .wpe-combo-value::before {
+    content: " / ";
+    color: var(--wpe-p-color-text-muted);
+    font-weight: 400;
 }
 
 .wpe-combo-badge {
@@ -914,9 +1012,9 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
     gap: 4px;
     white-space: nowrap;
     background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--wpe-p-border-radius-sm);
-    padding: 3px 8px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-xs);
+    padding: 2px 6px;
     font-size: 12px;
     font-weight: 500;
     line-height: 1.4;
@@ -927,12 +1025,12 @@ body.wp-admin .wpe-matrix-toolbar input.wpe-search-input:focus {
 body.wp-admin .wpe-table .wpe-editable-input,
 .wp-core-ui .wpe-table select.wpe-editable-input {
     width: 100%;
-    height: 32px;
-    min-height: 32px;
+    height: 30px;
+    min-height: 30px;
     border: 1px solid var(--wpe-p-color-border-control);
     background-color: var(--wpe-surface);
     box-shadow: none;
-    padding: 4px 8px;
+    padding: 0 8px;
     font-size: 13px;
     line-height: 1.4;
     border-radius: var(--wpe-p-border-radius-sm);
@@ -974,10 +1072,10 @@ body.wp-admin .wpe-table .wpe-editable-input:focus,
 body.wp-admin .wpe-table .wpe-editable-input[readonly],
 body.wp-admin .wpe-table .wpe-editable-input:disabled,
 .wp-core-ui .wpe-table select.wpe-editable-input:disabled {
-    background-color: var(--wpe-surface-subdued);
-    color: var(--wpe-p-color-text-subdued);
+    background-color: var(--wpe-p-color-surface-subdued);
+    color: var(--wpe-p-color-text-muted);
     cursor: not-allowed;
-    border: 1px solid var(--wpe-border-subdued);
+    border: 1px solid var(--wpe-p-color-border);
 }
 
 /* Stock Cell & Status Badges */
@@ -997,27 +1095,29 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 9px;
+    height: 22px;
+    box-sizing: border-box;
+    padding: 0 8px;
     border-radius: 9999px;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.4;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1;
     white-space: nowrap;
 }
 
 .wpe-stock-pill.instock {
-    background: var(--wpe-p-color-success-subdued);
-    color: #166534; /* 6.5:1 on #dcfce7 (P022.2) */
+    background: var(--wpe-p-color-ok-subdued);
+    color: var(--wpe-p-color-ok); /* 5.0:1 on #e6f4ec (P022.2) */
 }
 
 .wpe-stock-pill.outofstock {
     background: var(--wpe-p-color-critical-subdued);
-    color: #b91c1c; /* 5.9:1 on #fee2e2 (P022.2) */
+    color: var(--wpe-p-color-critical); /* 5.3:1 on #fdf1ee (P022.2) */
 }
 
 .wpe-stock-pill.parent-stock {
-    background: #e4e5e7;
-    color: #5c5f62;
+    background: var(--wpe-p-color-surface-hover);
+    color: var(--wpe-p-color-text-subdued);
 }
 
 /* Row Actions */
@@ -1031,9 +1131,9 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 
 .wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-open-drawer,
 .wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-delete-variant {
-    width: 30px;
-    height: 30px;
-    min-height: 30px;
+    width: var(--wpe-p-control-h-sm);
+    height: var(--wpe-p-control-h-sm);
+    min-height: var(--wpe-p-control-h-sm);
     padding: 0;
     border-radius: var(--wpe-radius-sm);
 }
@@ -1043,7 +1143,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wp-core-ui .wpe-table .wpe-row-actions :is(button, .button).wpe-btn-delete-variant:hover {
-    border-color: #fecaca;
+    border-color: var(--wpe-p-color-critical-border);
 }
 
 /* Pagination Bar */
@@ -1051,10 +1151,12 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 16px;
     background: #ffffff;
     border-top: 1px solid var(--wpe-p-color-border-subdued);
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--wpe-p-color-text-subdued);
 }
 
@@ -1071,8 +1173,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(32, 34, 35, 0.45);
-    backdrop-filter: blur(2px);
+    background: rgba(28, 29, 32, 0.4);
     z-index: var(--wpe-z-drawer, 100050);
     display: flex;
     justify-content: flex-end;
@@ -1084,11 +1185,11 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wpe-drawer-container {
-    width: 640px;
+    width: 600px;
     max-width: 94vw;
     background: var(--wpe-p-color-bg);
     height: 100%;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--wpe-p-shadow-floating);
     display: flex;
     flex-direction: column;
     animation: wpeSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1103,20 +1204,21 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--wpe-p-color-border);
     background: #ffffff;
 }
 
 .wpe-drawer-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
     color: var(--wpe-p-color-text);
 }
 
 .wpe-drawer-body {
-    padding: 20px 24px;
+    padding: 16px 20px;
     overflow-y: auto;
     flex-grow: 1;
 }
@@ -1124,27 +1226,27 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 .wpe-drawer-section {
     background: #ffffff;
     border-radius: var(--wpe-p-border-radius-card);
-    padding: 18px 20px;
-    margin-bottom: 16px;
-    box-shadow: var(--wpe-p-shadow-card);
-    border: 1px solid var(--wpe-p-color-border-subdued);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--wpe-p-color-border);
 }
 
 .wpe-drawer-section-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    margin: 0 0 14px 0;
+    margin: 0 0 10px 0;
     color: var(--wpe-p-color-text);
 }
 
 .wpe-drawer-body .wpe-form-row {
     display: flex;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
 .wpe-form-group {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -1159,8 +1261,12 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 .wpe-form-group input,
 .wpe-form-group select,
 .wpe-form-group textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     font-size: 13px;
-    padding: 7px 10px;
+    min-height: var(--wpe-p-control-h);
+    padding: 4px 10px;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     color: var(--wpe-p-color-text);
@@ -1180,9 +1286,9 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 .wpe-drawer-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--wpe-p-color-border-subdued);
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--wpe-p-color-border);
     background: #ffffff;
 }
 
@@ -1215,8 +1321,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(32, 34, 35, 0.5);
-    backdrop-filter: blur(2px);
+    background: rgba(28, 29, 32, 0.4);
     z-index: 100100;
     display: flex;
     align-items: center;
@@ -1225,7 +1330,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 
 .wpe-modal-dialog {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 10px;
     width: 660px;
     max-width: 92vw;
     max-height: 86vh;
@@ -1249,9 +1354,10 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 24px;
+    gap: 8px;
+    padding: 12px 20px;
     background: #ffffff;
-    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
+    border-bottom: 1px solid var(--wpe-p-color-border);
 }
 
 .wpe-modal-header .dashicons {
@@ -1263,14 +1369,14 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wpe-modal-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
     color: var(--wpe-p-color-text);
 }
 
 .wpe-modal-body {
-    padding: 24px;
+    padding: 16px 20px;
     overflow-y: auto;
     font-size: 13px;
     color: var(--wpe-p-color-text);
@@ -1279,10 +1385,10 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 .wpe-modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 24px;
-    background: var(--wpe-p-color-surface-subdued);
-    border-top: 1px solid var(--wpe-p-color-border-subdued);
+    gap: 8px;
+    padding: 12px 20px;
+    background: #ffffff;
+    border-top: 1px solid var(--wpe-p-color-border);
 }
 
 /* Diff before / after preview table */
@@ -1329,8 +1435,8 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    padding: 10px 18px;
-    background: #202223;
+    padding: 8px 12px 8px 16px;
+    background: #1c1d20;
     color: #ffffff;
     border-radius: var(--wpe-p-border-radius-base);
     font-size: 13px;
@@ -1354,7 +1460,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wpe-toast.success {
-    background: #00503c;
+    background: #0b5c3c;
 }
 
 .wpe-toast.error {
@@ -1362,7 +1468,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wpe-toast.warning {
-    background: #8a6116;
+    background: #6e4800;
 }
 
 @keyframes wpeFadeIn {
@@ -1376,15 +1482,15 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: #1a1a1a;
+    background: #1c1d20;
     color: #ffffff;
-    border-radius: 12px;
-    padding: 10px 20px;
+    border-radius: 10px;
+    padding: 8px 8px 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: var(--wpe-p-shadow-floating);
     z-index: 100020;
     min-width: min(440px, calc(100vw - 24px));
     max-width: calc(100vw - 24px);
@@ -1409,23 +1515,23 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+    background: #f5b83d;
 }
 
 .wpe-sticky-savebar-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 .wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-discard {
     background: transparent;
-    border: none;
-    color: #e3e3e3;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
     font-size: 13px;
     cursor: pointer;
-    padding: 6px 12px;
+    height: var(--wpe-p-control-h);
+    padding: 0 12px;
     border-radius: var(--wpe-radius-sm);
     transition: background 0.15s;
 }
@@ -1441,11 +1547,11 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     border: none;
     font-size: 13px;
     font-weight: 600;
-    padding: 7px 16px;
-    border-radius: var(--wpe-radius-md);
+    height: var(--wpe-p-control-h);
+    padding: 0 14px;
+    border-radius: var(--wpe-p-border-radius-base);
     cursor: pointer;
     transition: background 0.15s;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .wp-core-ui .wpe-sticky-savebar .wpe-sticky-btn-save:hover {
@@ -1453,9 +1559,9 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) select.wpe-add-taxonomy-select {
-    height: 36px;
-    min-height: 36px;
-    padding: 4px 28px 4px 10px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
+    padding: 0 28px 0 10px;
     border: 1px solid var(--wpe-p-color-border-control);
     border-radius: var(--wpe-p-border-radius-base);
     font-size: 13px;
@@ -1466,65 +1572,96 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     max-width: 220px;
 }
 
-/* 13. UX Enhancements: Reordering, Interactive Stock & Group Controls */
-.wpe-option-reorder-btns {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
+/* 13. UX Enhancements: Drag & Drop Reordering, Interactive Stock & Group Controls
+ * Options move by a small grip handle, values by dragging the chip itself (Pointer Events:
+ * mouse, touch, pen). The drop position is a 2px accent line; the dragged item fades. */
+.wpe-drag-handle,
+.wpe-chip-handle {
+    cursor: grab;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-move-option {
-    width: 26px;
-    height: 26px;
-    min-height: 26px;
-    padding: 0;
-    line-height: 1;
-    border: 1px solid transparent;
-    background: transparent;
-    box-shadow: none;
-    color: var(--wpe-text-muted);
-    border-radius: var(--wpe-radius-xs);
+.wpe-is-reordering,
+.wpe-is-reordering * {
+    cursor: grabbing;
 }
 
-.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-move-option:hover:not(:disabled) {
-    background: var(--wpe-border-subdued);
-    color: var(--wpe-text);
-}
-
-.wpe-chip-move {
-    cursor: pointer;
-    font-size: 13px;
-    color: #475569;
+.wpe-drag-handle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
-    padding: 0;
+    flex-shrink: 0;
+    width: 20px;
+    height: var(--wpe-p-control-h);
+    border-radius: var(--wpe-p-border-radius-xs);
+    color: var(--wpe-p-color-text-muted);
+}
+
+.wpe-drag-handle .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
     line-height: 1;
-    user-select: none;
-    opacity: 1;
-    transition: opacity 0.15s, color 0.15s;
 }
 
-.wpe-chip:hover .wpe-chip-move {
-    opacity: 1;
+.wpe-drag-handle:hover {
+    background: var(--wpe-p-color-surface-hover);
+    color: var(--wpe-p-color-text);
 }
 
-.wpe-chip-move:hover {
-    color: #0f172a;
+.wpe-option-card.is-dragging,
+.wpe-chip.is-dragging {
+    opacity: 0.4;
+}
+
+.wpe-option-card.is-drop-before {
+    box-shadow: inset 0 2px 0 var(--wpe-p-color-interactive);
+}
+
+.wpe-option-card.is-drop-after {
+    box-shadow: inset 0 -2px 0 var(--wpe-p-color-interactive);
+}
+
+.wpe-chip {
+    position: relative;
+}
+
+.wpe-chip.is-drop-before::before,
+.wpe-chip.is-drop-after::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--wpe-p-color-interactive);
+}
+
+.wpe-chip.is-drop-before::before {
+    left: -4px;
+}
+
+.wpe-chip.is-drop-after::after {
+    right: -4px;
+}
+
+.wpe-option-card-title {
+    gap: 6px;
+    min-width: 0;
 }
 
 .wpe-stock-pill.parent-stock.wpe-clickable-stock {
     cursor: pointer;
-    border: 1px dashed #cbd5e1;
-    transition: all 0.15s ease;
+    border: 1px dashed var(--wpe-p-color-border-hover);
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .wpe-stock-pill.parent-stock.wpe-clickable-stock:hover {
-    background: #eff6ff;
-    border-color: #3b82f6;
-    color: #1d4ed8;
+    background: var(--wpe-p-color-surface-selected);
+    border-color: var(--wpe-p-color-interactive);
+    color: var(--wpe-p-color-interactive);
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) :is(button, .button).wpe-btn-revert-shared-stock {
@@ -1568,16 +1705,16 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     width: 24px;
     height: 24px;
     padding: 0;
-    color: #475569;
+    color: var(--wpe-p-color-text-subdued);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--wpe-p-border-radius-xs);
 }
 
 .wpe-group-collapse-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--wpe-p-color-border);
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-gen-filter-bar {
@@ -1619,72 +1756,69 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-selection-bar .button.wpe-btn-bulk-delete {
     color: var(--wpe-p-color-critical);
-    border-color: #fca5a5;
-    background: #fff5f5;
+    border-color: var(--wpe-p-color-critical-border);
+    background: #ffffff;
 }
 
 .wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container) .wpe-selection-bar .button.wpe-btn-bulk-delete:hover {
-    background: var(--wpe-critical-bg);
+    background: var(--wpe-p-color-critical-subdued);
     border-color: var(--wpe-p-color-critical);
 }
 
-/* 14. Per-Product Media Library & Variant Image Picker (P011) */
+/* 14. Per-Product Media Library & Variant Image Picker (P011)
+ * Inline view: 2 rows of 5 (INLINE_MEDIA_MAX_SLOTS in product-editor.js). Each card is the
+ * square image plus one row (alt text + remove). Reorder arrows and Set/Move Featured sit on
+ * the image and show on hover or keyboard focus; on touch screens they stay visible. */
 .wpe-media-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.wpe-media-grid--inline {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .wpe-media-grid--full {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 14px;
     padding: 2px;
-    margin-bottom: 16px;
+}
+
+/* Full library (modal, fullscreen tab): as many columns as fit, no fixed 2-row cap. */
+.wpe-media-grid.wpe-media-grid--full,
+.wpe-fullscreen-tab-body .wpe-media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 
 @media (max-width: 1280px) {
-    .wpe-media-grid,
-    .wpe-media-grid--inline,
-    .wpe-media-grid--full {
+    .wpe-media-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 960px) {
-    .wpe-media-grid,
-    .wpe-media-grid--inline,
-    .wpe-media-grid--full {
+    .wpe-media-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 .wpe-media-more-card {
     position: relative;
-    border: 2px dashed var(--wpe-p-color-interactive);
-    border-radius: 10px;
+    border: 1px solid var(--wpe-p-color-border);
+    border-radius: var(--wpe-p-border-radius-card);
     overflow: hidden;
     cursor: pointer;
-    background: #0f172a;
+    background: var(--wpe-p-color-surface-subdued);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 186px;
-    color: #ffffff;
+    aspect-ratio: 1 / 1;
+    color: var(--wpe-p-color-text);
     text-align: center;
-    padding: 16px 12px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    padding: 12px;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
 }
 
 .wpe-media-more-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.24);
-    border-color: #60a5fa;
+    border-color: var(--wpe-p-color-interactive);
+    background: var(--wpe-p-color-surface-selected);
 }
 
 .wpe-media-more-card-bg {
@@ -1693,8 +1827,7 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.28;
-    filter: blur(2px);
+    opacity: 0.12;
     pointer-events: none;
 }
 
@@ -1704,29 +1837,25 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
 }
 
 .wpe-media-more-count {
-    font-size: 20px;
-    font-weight: 800;
-    line-height: 1.1;
-    color: #ffffff;
-    background: rgba(37, 99, 235, 0.9);
-    padding: 5px 14px;
-    border-radius: 999px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-media-more-label {
     font-size: 13px;
-    font-weight: 700;
-    color: #f8fafc;
+    font-weight: 600;
+    color: var(--wpe-p-color-interactive);
 }
 
 .wpe-media-more-sub {
-    font-size: 11px;
-    color: #cbd5e1;
+    font-size: 11.5px;
+    color: var(--wpe-p-color-text-subdued);
 }
 
 .wpe-modal-dialog.wpe-modal-dialog-xl {
@@ -1742,47 +1871,65 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
 .wpe-media-card {
     background: #ffffff;
     border: 1px solid var(--wpe-p-color-border);
-    border-radius: 10px;
+    border-radius: var(--wpe-p-border-radius-card);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     position: relative;
+    transition: border-color 0.12s ease, opacity 0.12s ease;
+}
+
+/* Mouse drags start anywhere on the image; touch and pen drags start on the grip. */
+.wpe-media-thumb-wrap {
+    cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.wpe-media-thumb-wrap img {
+    -webkit-user-drag: none;
 }
 
 .wpe-media-card:hover {
     border-color: var(--wpe-p-color-border-hover);
-    box-shadow: var(--wpe-p-shadow-card);
 }
 
+/* Featured = first image: accent outline drawn inside the 1px border so cards stay aligned. */
 .wpe-media-card.is-featured {
-    border: 2px solid var(--wpe-p-color-brand);
-    box-shadow: 0 0 0 2px rgba(0, 128, 96, 0.12);
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: inset 0 0 0 1px var(--wpe-p-color-interactive);
 }
 
 .wpe-media-card.is-dragging {
-    opacity: 0.45;
+    opacity: 0.4;
     border-style: dashed;
 }
 
-.wpe-media-card.is-drag-over {
-    border-color: var(--wpe-p-color-interactive);
-    box-shadow: 0 0 0 2px rgba(44, 110, 203, 0.25);
+/* Drop position: a 2px accent line in the gap before or after the target card. */
+.wpe-media-card.is-drop-before {
+    box-shadow: -7px 0 0 -4px var(--wpe-p-color-interactive);
+}
+
+.wpe-media-card.is-drop-after {
+    box-shadow: 7px 0 0 -4px var(--wpe-p-color-interactive);
+}
+
+.wpe-media-card.is-featured.is-drop-after {
+    box-shadow: 7px 0 0 -4px var(--wpe-p-color-interactive), inset 0 0 0 1px var(--wpe-p-color-interactive);
 }
 
 .wpe-media-thumb-wrap {
     position: relative;
     width: 100%;
-    padding-top: 100%;
-    background: #f8fafc;
+    aspect-ratio: 1 / 1;
+    background: var(--wpe-p-color-surface-subdued);
     overflow: hidden;
     border-bottom: 1px solid var(--wpe-p-color-border-subdued);
 }
 
 .wpe-media-thumb-wrap img {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -1801,71 +1948,79 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     z-index: 2;
 }
 
+.wpe-media-badges-top > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .wpe-media-badge {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1.4;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    height: 18px;
+    padding: 0 6px;
+    border-radius: var(--wpe-p-border-radius-xs);
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .wpe-media-badge .dashicons {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 12px;
-    height: 12px;
-    font-size: 12px;
+    width: 11px;
+    height: 11px;
+    font-size: 11px;
     line-height: 1;
     flex-shrink: 0;
 }
 
 .wpe-media-badge.featured {
-    background: var(--wpe-p-color-brand);
+    background: var(--wpe-p-color-interactive);
     color: #ffffff;
 }
 
 .wpe-media-badge.pending {
-    background: #f59e0b;
-    color: #ffffff;
+    background: var(--wpe-p-color-warning-subdued);
+    color: var(--wpe-p-color-warning-text);
+    box-shadow: inset 0 0 0 1px #f0d9a8;
 }
 
 .wpe-media-badge.origin {
-    background: rgba(15, 23, 42, 0.78);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--wpe-p-color-text-subdued);
+    box-shadow: inset 0 0 0 1px var(--wpe-p-color-border);
 }
 
 .wpe-media-badge.usage {
     position: absolute;
     bottom: 6px;
     left: 6px;
-    background: rgba(37, 99, 235, 0.9);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--wpe-p-color-text);
+    box-shadow: inset 0 0 0 1px var(--wpe-p-color-border);
     z-index: 2;
     pointer-events: none;
-    text-transform: none;
-    font-weight: 600;
+    font-weight: 500;
 }
 
+/* Arrows on the left and right edges, Set/Move Featured centered at the bottom. */
 .wpe-media-hover-actions {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    display: flex;
-    flex-direction: column;
+    background: rgba(28, 29, 32, 0.32);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 4px;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.12s ease;
     z-index: 3;
-    padding: 8px;
+    padding: 6px;
 }
 
 .wpe-media-card:hover .wpe-media-hover-actions,
@@ -1873,65 +2028,109 @@ body.wp-admin .wpe-table input.wpe-inline-stock-qty {
     opacity: 1;
 }
 
+.wpe-media-card:is(:hover, :focus-within) .wpe-media-badge.usage {
+    opacity: 0;
+}
+
+.wpe-media-hover-actions > .wpe-media-drag-handle {
+    grid-area: 1 / 1 / 2 / 4;
+    justify-self: center;
+}
+
+.wpe-media-hover-actions > :not(.wpe-media-drag-handle) {
+    grid-area: 2 / 1 / 3 / 4;
+    justify-self: center;
+    max-width: 100%;
+}
+
+/* No hover on touch screens: the grip stays visible without dimming the image; Set/Move
+ * Featured appears once the card has focus (tapping the grip focuses it). */
+@media (hover: none) {
+    .wpe-media-hover-actions {
+        opacity: 1;
+        background: transparent;
+    }
+
+    .wpe-media-card:not(:focus-within) .wpe-media-hover-actions > :not(.wpe-media-drag-handle) {
+        visibility: hidden;
+    }
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) .wpe-media-hover-actions .button.button-small {
+    height: 26px;
+    min-height: 26px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) :is(button, .button).wpe-media-drag-handle {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    flex-shrink: 0;
+    line-height: 1;
+    border-radius: 50%;
+    border-color: var(--wpe-p-color-border);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--wpe-p-color-text);
+    cursor: grab;
+    touch-action: none;
+}
+
 .wpe-media-card-body {
-    padding: 8px 10px;
+    padding: 6px;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    gap: 4px;
     background: #ffffff;
 }
 
 body.wp-admin .wpe-media-card-body input.wpe-media-alt-input {
-    width: 100%;
-    font-size: 11.5px;
-    padding: 4px 7px;
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    padding: 0 7px;
     min-height: 26px;
     height: 26px;
-    border: 1px solid var(--wpe-p-color-border-control);
-    border-radius: 5px;
-    background: var(--wpe-surface-subdued);
+    border: 1px solid transparent;
+    border-radius: var(--wpe-p-border-radius-xs);
+    background: transparent;
     color: var(--wpe-p-color-text);
+    box-shadow: none;
     box-sizing: border-box;
+    text-overflow: ellipsis;
+}
+
+body.wp-admin .wpe-media-card-body input.wpe-media-alt-input:hover {
+    border-color: var(--wpe-p-color-border-control);
 }
 
 body.wp-admin .wpe-media-card-body input.wpe-media-alt-input:focus {
     background: var(--wpe-surface);
     border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
     outline: none;
 }
 
-.wpe-media-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-}
-
-.wpe-media-reorder-btns {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.wp-core-ui :is(.wpe-editor-wrap, .wpe-fullscreen-container, .wpe-modal-dialog) :is(button, .button).wpe-btn-media-move {
-    width: 26px;
-    height: 26px;
-    min-height: 26px;
-    padding: 0;
-    line-height: 1;
-    font-size: 14px;
-    border-radius: var(--wpe-radius-xs);
-}
-
+/* Dropzone: one slim row once the library has images, a short block when it is empty. */
 .wpe-media-upload-zone {
-    border: 2px dashed #cbd5e1;
-    border-radius: 10px;
-    background: #f8fafc;
-    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px dashed var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-card);
+    background: var(--wpe-p-color-surface-subdued);
+    padding: 16px;
     text-align: center;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
     cursor: pointer;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .wpe-media-upload-zone .dashicons {
@@ -1943,29 +2142,28 @@ body.wp-admin .wpe-media-card-body input.wpe-media-alt-input:focus {
 }
 
 .wpe-media-upload-zone--compact {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-width: 1px;
+    flex-direction: row;
+    gap: 8px;
+    min-height: 40px;
+    padding: 6px 12px;
+    box-sizing: border-box;
 }
 
 .wpe-media-upload-zone:hover,
 .wpe-media-upload-zone.is-dragover {
     border-color: var(--wpe-p-color-interactive);
-    background: #eff6ff;
+    background: var(--wpe-p-color-surface-selected);
+}
+
+.wpe-media-upload-zone.is-dragover {
+    border-style: solid;
 }
 
 .wpe-media-url-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 10px 12px;
-    border-radius: 8px;
 }
 
 .wpe-media-url-bar .dashicons,
@@ -1984,20 +2182,27 @@ body.wp-admin .wpe-media-url-bar input[type="url"],
 body.wp-admin .wpe-media-url-bar input[type="text"] {
     flex: 1;
     min-width: 180px;
-    height: 32px;
-    min-height: 32px;
-    font-size: 12.5px;
-    padding: 4px 10px;
+    height: var(--wpe-p-control-h);
+    min-height: var(--wpe-p-control-h);
+    font-size: 13px;
+    padding: 0 10px;
     border: 1px solid var(--wpe-p-color-border-control);
-    border-radius: var(--wpe-radius-sm);
+    border-radius: var(--wpe-p-border-radius-base);
     background: var(--wpe-surface);
+    box-sizing: border-box;
+}
+
+body.wp-admin .wpe-media-url-bar input:focus {
+    border-color: var(--wpe-p-color-interactive);
+    box-shadow: 0 0 0 1px var(--wpe-p-color-interactive);
+    outline: none;
 }
 
 .wpe-upload-queue-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 .wpe-upload-queue-item {
@@ -2005,17 +2210,19 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 4px 6px 4px 12px;
+    border-radius: var(--wpe-p-border-radius-base);
     font-size: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--wpe-p-color-surface-subdued);
+    border: 1px solid var(--wpe-p-color-border);
 }
 
 .wpe-upload-queue-item.is-error {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #991b1b;
+    background: var(--wpe-p-color-critical-subdued);
+    border-color: var(--wpe-p-color-critical-border);
+    color: var(--wpe-p-color-critical);
 }
 
 /* Variant Image Picker Grid */
@@ -2276,10 +2483,10 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 /* Fullscreen Navigation Tabs */
 .wpe-modal-nav {
     display: flex;
-    gap: 8px;
-    border-bottom: 1px solid var(--wpe-p-color-border-subdued);
-    padding: 0 20px;
-    background: #ffffff;
+    gap: 4px;
+    border-bottom: 1px solid var(--wpe-p-color-border);
+    padding: 0;
+    overflow-x: auto;
 }
 
 .wp-core-ui .wpe-modal-nav :is(button, .button).wpe-tab-btn {
@@ -2287,9 +2494,11 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
     border: none;
     border-bottom: 2px solid transparent;
     border-radius: 0;
-    padding: 10px 14px;
+    height: 40px;
+    padding: 0 12px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
+    white-space: nowrap;
     color: var(--wpe-p-color-text-subdued);
     cursor: pointer;
     box-shadow: none;
@@ -2298,8 +2507,13 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
     gap: 6px;
 }
 
+.wp-core-ui .wpe-modal-nav :is(button, .button).wpe-tab-btn:hover {
+    color: var(--wpe-p-color-text);
+}
+
 .wp-core-ui .wpe-modal-nav :is(button, .button).wpe-tab-btn.active {
     color: var(--wpe-p-color-interactive);
+    font-weight: 600;
     border-bottom-color: var(--wpe-p-color-interactive);
 }
 
@@ -2375,6 +2589,21 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 
 /* Save bar on small screens (P022.3): full width, wraps, sits closer to the edge. */
 @media (max-width: 782px) {
+    .wpe-section-header,
+    .wpe-matrix-toolbar,
+    .wpe-pagination {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .wpe-section-body {
+        padding: 12px;
+    }
+
+    body.wp-admin .wpe-media-url-bar input[type="url"] {
+        flex-basis: calc(100% - 30px);
+    }
+
     .wpe-sticky-savebar {
         min-width: 0;
         width: calc(100vw - 24px);
@@ -2414,7 +2643,7 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 
 .wpe-table .wpe-variant-row.selected > td:first-child,
 .wpe-table .wpe-variant-row.selected > td:last-child {
-    background: #f4f8fe;
+    background: var(--wpe-p-color-surface-selected);
 }
 
 /* Toasts (P022.3): close button on the dark surface. */
@@ -2508,8 +2737,8 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 }
 
 /* Semantic Icon & Text Colors */
-.wpe-icon-brand { color: var(--wpe-brand); }
-.wpe-icon-accent { color: var(--wpe-accent-blue); }
+.wpe-icon-brand { color: var(--wpe-p-color-interactive); }
+.wpe-icon-accent { color: var(--wpe-p-color-interactive); }
 .wpe-icon-muted { color: var(--wpe-text-muted); }
 .wpe-icon-subtle { color: var(--wpe-border-hover); }
 .wpe-icon-critical { color: var(--wpe-critical); }
@@ -2600,7 +2829,12 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
     font-size: 24px;
     width: 24px;
     height: 24px;
-    color: var(--wpe-accent-blue);
+    color: var(--wpe-p-color-text-muted);
+}
+
+.wpe-media-upload-zone:hover .wpe-media-dropzone-icon,
+.wpe-media-upload-zone.is-dragover .wpe-media-dropzone-icon {
+    color: var(--wpe-p-color-interactive);
 }
 
 .wpe-media-dropzone-icon--compact {
@@ -2610,15 +2844,15 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 }
 
 .wpe-media-dropzone-title {
-    font-weight: 600;
-    font-size: 12.5px;
-    color: var(--wpe-text-strong);
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--wpe-p-color-text);
 }
 
 .wpe-media-dropzone-hint {
-    font-size: 11.5px;
-    color: var(--wpe-text-muted);
-    margin-left: 6px;
+    font-size: 12px;
+    color: var(--wpe-p-color-text-muted);
+    margin-left: 8px;
 }
 
 .wpe-media-url-bar .wpe-media-ext-alt-input {
@@ -2791,7 +3025,6 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 .wpe-dialog-warning-banner.wpe-dialog-warning-banner--info {
     background: #eff6ff;
     border-color: #bfdbfe;
-    border-left: 3px solid #3b82f6;
     color: #1e40af;
 }
 
@@ -2877,7 +3110,7 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 
 /* Fullscreen Tabs, Options & Matrix Columns */
 .wpe-fullscreen-tab-body {
-    padding-top: var(--wpe-space-4);
+    padding-top: var(--wpe-space-3);
 }
 
 .wpe-option-count-label {
@@ -2894,9 +3127,14 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
     color: var(--wpe-text-subdued);
 }
 
-.wpe-option-default-value-select {
+.wp-core-ui select.wpe-option-default-value-select {
     font-size: 12px;
-    min-height: 28px;
+    height: var(--wpe-p-control-h-sm);
+    min-height: var(--wpe-p-control-h-sm);
+    padding: 0 24px 0 8px;
+    max-width: 160px;
+    border-color: var(--wpe-p-color-border-control);
+    border-radius: var(--wpe-p-border-radius-base);
 }
 
 .wpe-bulk-paste-hint {
@@ -2914,14 +3152,13 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 
 .wpe-col-check { width: 28px; }
 .wpe-col-image { width: 44px; }
-.wpe-col-combo { width: 180px; }
 .wpe-col-sku { width: 120px; }
-.wpe-col-price-mode { width: 100px; }
-.wpe-col-price { width: 110px; }
-.wpe-col-stock { width: 200px; }
+.wpe-col-price-mode { width: 92px; }
+.wpe-col-price { width: 92px; }
+.wpe-col-stock { width: 170px; }
 
 .wpe-table th.wpe-col-actions {
-    width: 84px;
+    width: 76px;
     text-align: right;
 }
 
@@ -2932,7 +3169,7 @@ body.wp-admin .wpe-media-url-bar input[type="text"] {
 
 .wpe-table-empty-cell {
     text-align: center;
-    padding: 36px;
+    padding: 24px;
     color: var(--wpe-text-muted);
 }
 

@@ -2208,7 +2208,6 @@
       ],
       "files": [
         "src/Admin/OperationsPage.php",
-        "assets/operations/operations.js",
         "src/Cli/Commands.php",
         "tests/integration/T41Test.php",
         "docs/evidence/T41/result.json"

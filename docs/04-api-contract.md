@@ -94,6 +94,16 @@ WP session + nonce hoặc Application Passwords HTTPS; custom caps có thể c�
 | `POST /admin/rollouts/{cohort}/validate` | evidence snapshot → gates pass/fail | không đổi authority |
 | `POST /admin/rollouts/{cohort}/cutover` | gate ID, expected epoch, manifest hash → job | operations cap; gates hết hạn/phát sinh write gap phải revalidate |
 | `POST /admin/rollouts/{cohort}/rollback` | expected epoch, reason, dry_run → job | explicit restore hiện tại, không restore snapshot làm mất đơn/stock mới |
+| `GET /admin/feeds` | search, platform, status, orderby, order → feed summaries (status, item counts, last publish, URL) | `manage_woocommerce`; URL kèm token chỉ trả cho `wpe_manage_operations` |
+| `POST /admin/feeds` | FeedWrite → FeedView (version 1, token mới, yêu cầu full rebuild) | `wpe_manage_operations`; config được chuẩn hóa, field lạ bị từ chối |
+| `GET /admin/feeds/{id}` | → FeedView gồm config, trạng thái, file tốt gần nhất, lần chạy gần đây | `manage_woocommerce` |
+| `PATCH /admin/feeds/{id}` | FeedWrite partial + `expected_version` → FeedView; field ảnh hưởng render đổi thì yêu cầu full rebuild | `wpe_manage_operations` + CAS version |
+| `DELETE /admin/feeds/{id}` | → xóa feed, items, dirty marks và file đã publish | `wpe_manage_operations` |
+| `POST /admin/feeds/{id}/duplicate` | → FeedView bản sao ở trạng thái tắt, token mới | `wpe_manage_operations` |
+| `POST /admin/feeds/{id}/regenerate` | `mode` publish/rebuild/continue → kết quả; feed nhỏ chạy ngay, feed lớn giao worker; `continue` chạy tiếp build đã yêu cầu hoặc đang dựng thêm một bước 20 giây | `wpe_manage_operations`; không chạy song song với build đang giữ lease |
+| `POST /admin/feeds/{id}/rotate-token` | → FeedView với URL mới; URL cũ ngừng hoạt động ngay | `wpe_manage_operations` |
+| `GET /admin/feeds/{id}/preview` | `limit` ≤ 50 → items đã render (payload + issues) và đoạn feed theo định dạng | `manage_woocommerce` |
+| `GET /admin/feeds/{id}/diagnostics` | → số issue theo mã + item mẫu, lịch sử chạy, heartbeat worker | `manage_woocommerce` |
 
 Admin/import/asset/rollout commands không có success nếu chưa commit/precondition/permission hợp lệ; async commands trả202 + job id. Product create trả201, read/update200, delete tombstone200. Canonical ProductWrite/VariantWrite/MediaPatch fields thuộc DB schema, unknown fields reject; T03 phát typed JSON schemas, không allow arbitrary client SQL/meta override.
 
@@ -208,3 +218,9 @@ Phản hồi của `POST /products/{id}/resolve` bổ sung:
 - `lowest_price_html`: HTML giá bán hiệu lực thấp nhất của các variations hợp lệ có thể mua của sản phẩm (chuỗi rỗng nếu không có variation hợp lệ có giá).
 - `value_thumbnails`: map `{option_id: {value_id: {src, alt, srcset}}}` cho các thuộc tính kiểu Image Swatch, được tính động theo candidate selection của từng value kết hợp với các lựa chọn hiện tại của các options khác theo đúng thứ tự `position` đã lưu.
 - `allowed_values` và `allowed_details`: phản ánh chính xác trạng thái `exists`, `purchasable` và `in_stock` sau khi kiểm tra cả `EffectivePriceResolver` và `wpe_inventory` (bao gồm chính sách `manage_stock` và `backorders`).
+- **Ưu tiên option theo `position`:** `allowed_values`/`allowed_details` của một option chỉ bị ràng buộc bởi lựa chọn của các option đứng trước nó (position nhỏ hơn); option đứng trước không bao giờ bị khóa bởi lựa chọn của option đứng sau.
+- `selection`: map `{option_id: value_id}` (chuỗi) là lựa chọn hiệu lực sau khi resolver đối soát theo thứ tự ưu tiên. Giá trị đã chọn của một option được giữ nếu tổ hợp với các option đứng trước vẫn tồn tại (kể cả khi hết hàng/không mua được); nếu tổ hợp không tồn tại, giá trị được thay bằng value đầu tiên theo thứ tự hiển thị có variation mua được, rồi value đầu tiên có variation tồn tại; không có thì option bị bỏ chọn. Option chưa chọn vẫn để trống. `state`/`variant` được tính trên `selection` này; client phải áp `selection` vào UI. `null` khi request bị từ chối (option/value không hợp lệ).
+
+## 10. Product feeds
+
+Route quản trị feed (10 §12) thuộc namespace `wpe/v1`, yêu cầu REST nonce. Đọc (danh sách, chi tiết, preview, diagnostics) cần `manage_woocommerce`; mọi thay đổi cần `wpe_manage_operations` vì feed công bố catalog ra ngoài. FeedWrite gồm `name`, `platform` (`google`, `microsoft`), `format` (`xml`, `tsv`; Microsoft chỉ `tsv` hoặc `xml` định dạng Google), `enabled`, `config` (filters, variation_mode, mapping, price, stock, images, shipping, market, schedule) và `expected_version` khi PATCH; sai version trả 412 `stale_version`, field hoặc giá trị không hợp lệ trả 422 `validation_failed` với `details` theo field. `regenerate` trả 202 kèm trạng thái `queued` khi giao worker, 200 `completed` khi đã chạy xong trong request (feed dưới 2000 sản phẩm). `continue` không bao giờ bắt đầu build mới: không có build chờ thì trả 200 `idle`, còn dở thì 202 `building` kèm tiến độ, xong thì 200 `completed` (đã publish); build đang bị worker giữ lock trả 409 `conflict`. URL công khai của feed không thuộc REST: `/wpe-feed/{feed_key}/{token}.{xml|tsv}[.gz]`, chỉ phục vụ file tốt gần nhất, không đọc DB sản phẩm trong request.

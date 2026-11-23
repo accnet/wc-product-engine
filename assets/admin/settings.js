@@ -182,6 +182,15 @@
         function refresh() {
             var n = totalChangesCount();
             var wasHidden = $savebar.prop('hidden');
+            // Presentation only: mark rows whose value differs from the saved state.
+            var dirtyFlags = changedKeys();
+            var dirtyAttrs = changedAttrIds();
+            $form.find('[data-flag-row]').each(function () {
+                $(this).toggleClass('is-dirty', dirtyFlags.indexOf($(this).data('flag-row')) !== -1);
+            });
+            $form.find('[data-attr-config-row]').each(function () {
+                $(this).toggleClass('is-dirty', dirtyAttrs.indexOf(String($(this).attr('data-attr-config-row'))) !== -1);
+            });
             $savebar.prop('hidden', n === 0);
             if (n > 0) {
                 $saveText.text(format(n === 1 ? t('unsavedOne', '%d unsaved change') : t('unsavedMany', '%d unsaved changes'), n));
@@ -580,11 +589,25 @@
             if (!res || typeof res !== 'object') {
                 return 'Operation completed.';
             }
+            if (res.action === 'outbox') {
+                return 'Legacy mirror synced: ' + String(res.completed || 0) +
+                    ' event(s) processed (' + String(res.mirrored || 0) +
+                    ' mirrored, ' + String(res.retired_stale || 0) +
+                    ' stale retired), ' + String(res.remaining_pending || 0) + ' remaining.';
+            }
+            if (res.action === 'import_legacy') {
+                return 'Legacy WooCommerce import completed: ' + String(res.imported || 0) +
+                    ' product(s) moved to native_bridge (' + String(res.skipped_unsupported || 0) +
+                    ' unsupported skipped, ' + String(res.remaining_eligible || 0) + ' eligible remaining).';
+            }
             if (res.action === 'audit') {
                 return 'Shadow diff audit completed: checked ' + String(res.total_checked || 0) +
                     ' product(s), ' + String(res.mismatch_count || 0) + ' mismatch(es) found.';
             }
             if (res.action === 'rebuild') {
+                if (res.status === 'queued') {
+                    return 'Catalog index rebuild queued for background worker.';
+                }
                 return 'Catalog index rebuilt: active generation #' + String(res.generation || '') + '.';
             }
             if (res.action === 'migrate') {

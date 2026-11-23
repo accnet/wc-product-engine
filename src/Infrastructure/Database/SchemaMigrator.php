@@ -14,7 +14,7 @@ class SchemaMigrator
      * 3: P028 workload sort indexes on wpe_catalog (idx_cat_menu_order, idx_cat_rating,
      *    idx_cat_title, idx_cat_price) per docs/03-database-schema.md §4.
      */
-    public const SCHEMA_VERSION = 3;
+    public const SCHEMA_VERSION = 4;
     public const OPTION_SCHEMA_VERSION = 'wpe_schema_version';
     public const OPTION_MIGRATION_CHECKPOINT = 'wpe_migration_checkpoint';
     /** @deprecated 1.1.1 The migration lock is a MySQL named lock now; kept for callers that reference it. */

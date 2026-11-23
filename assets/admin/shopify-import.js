@@ -284,6 +284,7 @@
             startBtn.prop('disabled', true);
             var updateMode = $('#wpe-opt-update-mode').val();
             var imageMode = $('#wpe-opt-image-mode').val();
+            var categoryMode = $('#wpe-opt-category-mode').val() || 'none';
             state.batchSize = parseInt($('#wpe-opt-batch-size').val(), 10) || 25;
 
             var initPayload = {
@@ -292,6 +293,7 @@
                 original_filename: state.fileName,
                 update_mode: updateMode,
                 image_mode: imageMode,
+                category_mode: categoryMode,
                 batch_size: state.batchSize
             };
 

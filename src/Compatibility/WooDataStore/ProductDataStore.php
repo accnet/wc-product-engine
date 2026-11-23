@@ -19,6 +19,7 @@ use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Compatibility\WordPress\PostIdAllocator;
 use WPE\Compatibility\WooDataStore\ProductLifecycle;
+use WPE\Compatibility\WooDataStore\PostShellBridge;
 use WPE\Application\Variant\EffectivePriceResolver;
 
 /**
@@ -315,6 +316,197 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         $product->apply_changes();
         $product->set_object_read(true);
         (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($productId);
+
+        // 03 §5 "Cấp ID và shell": after the canonical commit, project the preallocated
+        // auto-draft shell so WordPress discovery (status, title, slug, dates) matches the product.
+        $this->projectPostShell($productId, $created + ['reviews_allowed' => $product->get_reviews_allowed('edit')], true);
+        $this->projectDiscovery($product, null);
+    }
+
+    /**
+     * Projects WordPress-owned discovery data of a committed native product: product_cat,
+     * product_tag, product_type and product_visibility relationships, upsell/cross-sell links on
+     * create, the wpe_product_terms registry, and the wc_product_meta_lookup row.
+     *
+     * Taxonomy stays WordPress-owned (ADR-002 / T13 taxonomy bridge); visibility terms follow
+     * WC_Product_Data_Store_CPT::update_visibility() exactly so core tax_query consumers agree with
+     * native props. Runs inside the projection guard so LegacyCapture does not treat it as a legacy write.
+     *
+     * @param array<string, mixed>|null $changes Changed props on update; null on create (project everything).
+     */
+    protected function projectDiscovery(WC_Product $product, ?array $changes): void
+    {
+        $productId = (int)$product->get_id();
+        if ($productId <= 0 || $product->get_type() === 'variation') {
+            return;
+        }
+
+        $isCreate = $changes === null;
+        $changed  = static fn(string ...$keys): bool => $isCreate || array_intersect($keys, array_keys((array)$changes)) !== [];
+
+        ProductLifecycle::wrapProjection(function () use ($product, $productId, $isCreate, $changed): void {
+            $bridge     = PostShellBridge::getInstance();
+            $termsMoved = false;
+
+            if ($changed('category_ids')) {
+                $categoryIds = array_values(array_filter(array_map('intval', (array)$product->get_category_ids('edit'))));
+                if ($categoryIds === [] && $isCreate) {
+                    $default = (int)get_option('default_product_cat', 0);
+                    if ($default > 0) {
+                        $categoryIds = [$default];
+                    }
+                }
+                $bridge->setProductCategories($productId, $categoryIds);
+                $termsMoved = true;
+            }
+
+            if ($changed('tag_ids')) {
+                $bridge->setProductTags($productId, array_values(array_filter(array_map('intval', (array)$product->get_tag_ids('edit')))));
+                $termsMoved = true;
+            }
+
+            if ($isCreate) {
+                wp_set_object_terms($productId, $product->get_type(), 'product_type');
+                $termsMoved = true;
+            }
+
+            if ($changed('featured', 'stock_status', 'average_rating', 'catalog_visibility')) {
+                $visibility = [];
+                if ($product->get_featured('edit')) {
+                    $visibility[] = 'featured';
+                }
+                if ($product->get_stock_status('edit') === 'outofstock') {
+                    $visibility[] = 'outofstock';
+                }
+                $rating = min(5, (int)round((float)$product->get_average_rating('edit'), 0));
+                if ($rating > 0) {
+                    $visibility[] = 'rated-' . $rating;
+                }
+                switch ($product->get_catalog_visibility('edit')) {
+                    case 'hidden':
+                        $visibility[] = 'exclude-from-search';
+                        $visibility[] = 'exclude-from-catalog';
+                        break;
+                    case 'catalog':
+                        $visibility[] = 'exclude-from-search';
+                        break;
+                    case 'search':
+                        $visibility[] = 'exclude-from-catalog';
+                        break;
+                }
+                if (!is_wp_error(wp_set_post_terms($productId, $visibility, 'product_visibility', false))) {
+                    do_action('woocommerce_product_set_visibility', $productId, $product->get_catalog_visibility('edit'));
+                }
+                $termsMoved = true;
+            }
+
+            if ($isCreate) {
+                $upsells = array_values(array_filter(array_map('intval', (array)$product->get_upsell_ids('edit'))));
+                if ($upsells !== []) {
+                    $this->mediaRepo->setLinks($productId, 'upsell', $upsells);
+                }
+                $crossSells = array_values(array_filter(array_map('intval', (array)$product->get_cross_sell_ids('edit'))));
+                if ($crossSells !== []) {
+                    $this->mediaRepo->setLinks($productId, 'crosssell', $crossSells);
+                }
+            }
+
+            if ($termsMoved) {
+                $this->syncProductTermRegistry($productId);
+            }
+
+            if ($isCreate || $changed('regular_price', 'sale_price', 'date_on_sale_from', 'date_on_sale_to', 'stock_status', 'stock_quantity', 'manage_stock', 'sku', 'virtual', 'downloadable', 'tax_class', 'average_rating', 'rating_counts', 'review_count')) {
+                try {
+                    (new LookupTableProjector())->projectProduct($productId);
+                } catch (\Throwable $e) {
+                    // Lookup rows are a derived read model; `wp wpe lookup rebuild` repairs gaps.
+                }
+            }
+        });
+    }
+
+    /**
+     * Mirrors the product's WP term relationships into the wpe_product_terms registry
+     * (same shape LegacyCapture writes) so rollback and mirror projection stay consistent.
+     */
+    protected function syncProductTermRegistry(int $productId): void
+    {
+        $table = $this->wpdb->prefix . 'wpe_product_terms';
+        $rows  = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT tr.term_taxonomy_id, tt.taxonomy
+             FROM {$this->wpdb->term_relationships} tr
+             JOIN {$this->wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+             WHERE tr.object_id = %d",
+            $productId
+        ), ARRAY_A);
+
+        $this->wpdb->delete($table, ['product_id' => $productId]);
+        foreach ((array)$rows as $row) {
+            $this->wpdb->replace($table, [
+                'product_id'       => $productId,
+                'term_taxonomy_id' => (int)$row['term_taxonomy_id'],
+                'role'             => (string)$row['taxonomy'],
+            ]);
+        }
+    }
+
+    /**
+     * Projects discovery fields of a committed native product onto its real WP post shell.
+     *
+     * Only shell-owned columns are written (no price/stock/business props), through
+     * PostShellBridge inside the projection reentrancy guard so legacy capture hooks ignore it.
+     *
+     * @param array<string, mixed> $fields Canonical aggregate or changed fields (title/name, slug, status, description, short_description, menu_order).
+     * @param bool $isCreate Whether the shell is being published for the first time.
+     */
+    protected function projectPostShell(int $productId, array $fields, bool $isCreate): void
+    {
+        if ($productId <= 0) {
+            return;
+        }
+
+        $shell = [];
+        $title = $fields['title'] ?? ($fields['name'] ?? null);
+        if ($title !== null) {
+            $shell['title'] = (string)$title;
+        }
+        $slug = isset($fields['slug']) ? (string)$fields['slug'] : '';
+        if ($slug === '' && $isCreate && !empty($shell['title'])) {
+            $slug = sanitize_title($shell['title']);
+        }
+        if ($slug !== '') {
+            $shell['slug'] = $slug;
+        }
+        if (!empty($fields['status'])) {
+            $shell['status'] = (string)$fields['status'];
+        }
+        foreach (['description', 'short_description', 'menu_order'] as $key) {
+            if (array_key_exists($key, $fields) && $fields[$key] !== null) {
+                $shell[$key] = $fields[$key];
+            }
+        }
+        if (array_key_exists('reviews_allowed', $fields)) {
+            // WooCommerce stores reviews_allowed as the post's comment_status.
+            $shell['comment_status'] = $fields['reviews_allowed'] ? 'open' : 'closed';
+        }
+        if ($isCreate) {
+            // wp_insert_post() leaves post_date_gmt zeroed for auto-draft shells.
+            $currentGmt = (string)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT post_date_gmt FROM {$this->wpdb->posts} WHERE ID = %d",
+                $productId
+            ));
+            if ($currentGmt === '' || str_starts_with($currentGmt, '0000-00-00')) {
+                $shell['date_gmt'] = gmdate('Y-m-d H:i:s');
+            }
+        }
+
+        if (empty($shell)) {
+            return;
+        }
+
+        ProductLifecycle::wrapProjection(function () use ($productId, $shell): void {
+            PostShellBridge::getInstance()->projectShell($productId, $shell);
+        });
     }
 
     /**
@@ -530,6 +722,14 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         ]);
 
         $product->set_attributes($this->readNativeAttributes($productId));
+
+        // Taxonomy is WordPress-owned (T13 bridge); expose it through CRUD like WC_Product_Data_Store_CPT.
+        $shellPost = get_post($productId);
+        $product->set_props([
+            'category_ids'    => $this->get_term_ids($product, 'product_cat'),
+            'tag_ids'         => $this->get_term_ids($product, 'product_tag'),
+            'reviews_allowed' => $shellPost instanceof \WP_Post ? $shellPost->comment_status === 'open' : true,
+        ]);
 
         $this->read_meta($product);
         $this->read_downloads($product);
@@ -804,6 +1004,16 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
         $product->apply_changes();
         (new ProductLifecycle($this->prodRepo, null, $this->wpdb))->invalidateProductCache($productId);
+
+        // Keep the post shell's discovery fields in step with committed canonical changes.
+        $shellChanges = array_intersect_key($payload, array_flip([
+            'title', 'slug', 'status', 'description', 'short_description', 'menu_order',
+        ]));
+        if (array_key_exists('reviews_allowed', $changes)) {
+            $shellChanges['reviews_allowed'] = (bool)$changes['reviews_allowed'];
+        }
+        $this->projectPostShell((int)$productId, $shellChanges, false);
+        $this->projectDiscovery($product, $changes);
     }
 
     /**

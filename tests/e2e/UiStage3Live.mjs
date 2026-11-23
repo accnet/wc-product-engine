@@ -176,26 +176,26 @@ try {
     });
 
     check(
-        'Product Editor .button beats .wp-core-ui .button via scoped specificity (36px, flex/inline-flex, AA border)',
+        'Product Editor .button beats .wp-core-ui .button via scoped specificity (32px control height, flex/inline-flex, AA border)',
         peStyles.btn
-            && peStyles.btn.height === '36px'
+            && peStyles.btn.height === '32px'
             && (peStyles.btn.display === 'inline-flex' || peStyles.btn.display === 'flex')
             && peStyles.btn.borderColor === 'rgb(126, 130, 135)',
         JSON.stringify(peStyles.btn)
     );
     check(
-        'Matrix toolbar button (34px), filter select (34px) and table input (32px) keep exact sizing & AA border',
-        peStyles.toolbarBtn?.height === '34px'
-            && peStyles.filterSel?.height === '34px'
+        'Matrix toolbar button (32px), filter select (32px) and table input (30px) keep exact sizing & AA border',
+        peStyles.toolbarBtn?.height === '32px'
+            && peStyles.filterSel?.height === '32px'
             && peStyles.filterSel?.borderColor === 'rgb(126, 130, 135)'
-            && peStyles.tableInput?.height === '32px'
+            && peStyles.tableInput?.height === '30px'
             && peStyles.tableInput?.borderColor === 'rgb(126, 130, 135)',
         JSON.stringify({ toolbarBtn: peStyles.toolbarBtn, filterSel: peStyles.filterSel, tableInput: peStyles.tableInput })
     );
     check(
-        'Row drawer icon button (30x30) and ghost delete option button (transparent) beat WP defaults cleanly',
-        peStyles.drawerBtn?.width === '30px'
-            && peStyles.drawerBtn?.height === '30px'
+        'Row drawer icon button (28x28) and ghost delete option button (transparent) beat WP defaults cleanly',
+        peStyles.drawerBtn?.width === '28px'
+            && peStyles.drawerBtn?.height === '28px'
             && peStyles.delOptBtn?.bg === 'rgba(0, 0, 0, 0)'
             && peStyles.delOptBtn?.borderColor === 'rgba(0, 0, 0, 0)',
         JSON.stringify({ drawerBtn: peStyles.drawerBtn, delOptBtn: peStyles.delOptBtn })

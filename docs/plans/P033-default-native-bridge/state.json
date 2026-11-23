@@ -1,0 +1,607 @@
+{
+  "id": "P033",
+  "title": "Default native_bridge mode and feature flags on install",
+  "status": "done",
+  "content_hash": "1b93ffedc639ab4408a9f262fd7e3ee71e447be17bb34d232d124620b69ac27e",
+  "tasks": [
+    {
+      "id": "P033.1",
+      "title": "Update docs/01 section 5 to document native_bridge and DEFAULT_FLAGS activation defaults",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/02-domain.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "273e9a0487416ef1e8e732c264ac491d4ec121492a183dd300ef64920c69f36e",
+          "output_sha256": "af6ec248d76dc2669398c6f21089364417395f80a0e0ecb344da5bcda4d95463",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795290696086-2f6600a1.log",
+          "time": "2026-11-21T19:51:36.087Z"
+        }
+      ],
+      "started_at": "2026-11-21T19:51:19.484Z"
+    },
+    {
+      "id": "P033.2",
+      "title": "Set native_bridge and full flag defaults in PluginBootstrap and runtime readers; update and add integration tests; record NOTES",
+      "depends_on": [
+        "P033.1"
+      ],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Support/AuthorityResolver.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "tests/integration/T02Test.php",
+        "tests/integration/SettingsApiTest.php"
+      ],
+      "files": [
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Support/AuthorityResolver.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "tests/integration/T02Test.php",
+        "tests/integration/SettingsApiTest.php",
+        "tests/integration/DefaultNativeBridgeModeTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/OperationsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/SettingsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Support/AuthorityResolver.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/ProductRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/StoreApi/SelectorAdapter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T02Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/DefaultNativeBridgeModeTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/DefaultNativeBridgeModeTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T02Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/NativeBridgeRolloutTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T46Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030359-89c735ed.log",
+          "time": "2026-11-21T19:57:10.359Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030453-66ef5113.log",
+          "time": "2026-11-21T19:57:10.453Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "37fc1314642dbaa0122ba6a1e73e1f86205b0ed25f6b15abd40365299b07f88e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030544-5ccab1b5.log",
+          "time": "2026-11-21T19:57:10.545Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030635-8c440225.log",
+          "time": "2026-11-21T19:57:10.636Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030730-33af3e73.log",
+          "time": "2026-11-21T19:57:10.731Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030824-6a2f1bd2.log",
+          "time": "2026-11-21T19:57:10.825Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "de5681a51c811349d95cb0f6e128831b0a2ccac31cbad3bdf0f02abd036bd5fe",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291030915-8dca23ab.log",
+          "time": "2026-11-21T19:57:10.916Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "4d9a9b7b1438ba7a25d4a3651a91dab6a9b2edf58ddfda9bedfa6b1d9dc07c6c",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291031006-7df8b68a.log",
+          "time": "2026-11-21T19:57:11.007Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/DefaultNativeBridgeModeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "187a4125487a0fe90768b1bfd27a02b041a459b1039c71965d0b4539b51ea349",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291031117-04d5d794.log",
+          "time": "2026-11-21T19:57:11.117Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "af6ec248d76dc2669398c6f21089364417395f80a0e0ecb344da5bcda4d95463",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291031224-43e75e0b.log",
+          "time": "2026-11-21T19:57:11.224Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "b4dd8c89c224bcdf7f2706e9ff5f09ccb8707d750a9c80715fa9521a32f96992",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291031337-01c8a460.log",
+          "time": "2026-11-21T19:57:11.338Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/DefaultNativeBridgeModeTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "b5d17b6bc6cb13ac8b19db69e0fa77fbf9ca6da1166a78fce89292dead6998ab",
+          "output_sha256": "448a91c7162693e42a0cf66031102a985e54aa66b0a73599af65981c1232588a",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291042949-8d91a442.log",
+          "time": "2026-11-21T19:57:22.950Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/DefaultNativeBridgeModeTest.php"
+          ],
+          "exit_code": 255,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "e2999abce51bb53da2357c8cb12d67632a5896a12971a76acfaf114a0185944f",
+          "output_sha256": "2831429b88c96b2520f900a19e74446311afacc6793041eea97960c7e1c8323f",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291060348-ca14665d.log",
+          "time": "2026-11-21T19:57:40.349Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/DefaultNativeBridgeModeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "902ea6ea247afb6a5ad7a9b867c95af16dd7beefbd49ff6b56229dc52aeac556",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291097924-a576d60d.log",
+          "time": "2026-11-21T19:58:17.924Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "3c021c8e88b39d7e40dade85096846d66be123249ab75d85d7ba808be8ef4e7c",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291102227-0cb335a2.log",
+          "time": "2026-11-21T19:58:22.228Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "876f6093cc9485c37c153282c0d726cf50788b3acdb54539b9c86e9699ab3f46",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291103643-30c89935.log",
+          "time": "2026-11-21T19:58:23.644Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "a4cc9f83a824b8470872026ed0ed6bc6d2c808b789854eb78853d1fe9e89f946",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291106617-69d073b7.log",
+          "time": "2026-11-21T19:58:26.617Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291125994-ba4c6957.log",
+          "time": "2026-11-21T19:58:45.994Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/NativeBridgeRolloutTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "8a64123e7f02a1c90587ea978c7c8330c201509fba4899d777cc708e4da08073",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291127542-aa0c2683.log",
+          "time": "2026-11-21T19:58:47.543Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T46Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "f182ca08746f6a5105838a45eb395fc4c9c79ec30584ee00b02d6efdf88cea9e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129011-a51f90fe.log",
+          "time": "2026-11-21T19:58:49.012Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129104-aa0ea500.log",
+          "time": "2026-11-21T19:58:49.104Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129199-721bf952.log",
+          "time": "2026-11-21T19:58:49.199Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "37fc1314642dbaa0122ba6a1e73e1f86205b0ed25f6b15abd40365299b07f88e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129293-04486367.log",
+          "time": "2026-11-21T19:58:49.294Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129388-c0c52f36.log",
+          "time": "2026-11-21T19:58:49.388Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129488-362d9ee1.log",
+          "time": "2026-11-21T19:58:49.488Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129590-d5081cd1.log",
+          "time": "2026-11-21T19:58:49.591Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T02Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "de5681a51c811349d95cb0f6e128831b0a2ccac31cbad3bdf0f02abd036bd5fe",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129682-1fac3dff.log",
+          "time": "2026-11-21T19:58:49.682Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "4d9a9b7b1438ba7a25d4a3651a91dab6a9b2edf58ddfda9bedfa6b1d9dc07c6c",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129773-058a7499.log",
+          "time": "2026-11-21T19:58:49.773Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/DefaultNativeBridgeModeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "187a4125487a0fe90768b1bfd27a02b041a459b1039c71965d0b4539b51ea349",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129865-67745310.log",
+          "time": "2026-11-21T19:58:49.866Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "af6ec248d76dc2669398c6f21089364417395f80a0e0ecb344da5bcda4d95463",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291129972-e6e10259.log",
+          "time": "2026-11-21T19:58:49.972Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "0e522a755d7a741c121800d01ad763539a8250c9c0ab17ca18954d72d45be0d8",
+          "output_sha256": "c7e3e08d6938849567c09e41eb894cb34aba6fb6ac557772d4b1ad73f952d519",
+          "output_path": "docs/plans/P033-default-native-bridge/command-1795291130090-db0b4689.log",
+          "time": "2026-11-21T19:58:50.090Z"
+        }
+      ],
+      "started_at": "2026-11-21T19:51:36.179Z"
+    }
+  ],
+  "approved_hash": "1b93ffedc639ab4408a9f262fd7e3ee71e447be17bb34d232d124620b69ac27e",
+  "report_hash": "fe33d3b21bd019142b817a25600119094b1557d90696fcfaa7bd596f79a39187"
+}

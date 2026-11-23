@@ -65,20 +65,35 @@ class T02Test
     }
 
     /**
-     * R03: Activation must not mutate products, tables, or default legacy authority.
+     * R03: Activation must not mutate products, tables, or saved authority/settings;
+     * fresh install initializes native_bridge defaults (P033).
      */
     private function testActivationNoMutation(): bool
     {
-        echo "[R03] Verifying activation does not mutate products or change default authority...\n";
+        echo "[R03] Verifying activation does not mutate products or overwrite saved authority...\n";
         global $wpdb;
 
         $posts_count_before = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
 
         $optFlags = \WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS;
         $savedFlags = get_option($optFlags, null);
+        $controlTable = $wpdb->prefix . 'wpe_control';
+        $controlKeys = ['system_mode', 'authority_epoch', 'cohort_active_all'];
+        $savedControl = [];
+        foreach ($controlKeys as $ck) {
+            $savedControl[$ck] = $wpdb->get_row(
+                $wpdb->prepare("SELECT `key`, `value`, `version`, `updated_at` FROM {$controlTable} WHERE `key` = %s", $ck),
+                ARRAY_A
+            );
+        }
 
         try {
-            // 1. Activation on this site: no product rows and no change to the flags an admin saved.
+            // 1. Activation on an already-configured site: no product rows and no change to saved flags/control state.
+            if ($savedFlags === null) {
+                update_option($optFlags, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
+            }
+            $expectedFlagsAfterReactivate = get_option($optFlags, null);
+
             \WPE\Bootstrap\PluginBootstrap::onActivate();
 
             $posts_count_after = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
@@ -88,36 +103,66 @@ class T02Test
             }
             echo "  [OK] Posts table count intact ({$posts_count_after}).\n";
 
-            if (get_option($optFlags, null) !== $savedFlags) {
+            if (get_option($optFlags, null) !== $expectedFlagsAfterReactivate) {
                 echo "  [FAIL] Activation changed the saved feature flags.\n";
                 return false;
             }
             echo "  [OK] Activation keeps the saved feature flags.\n";
 
-            // 2. Fresh install (no saved flags): activation writes the defaults, legacy with every native flag off.
-            //    The site's own flags are not the subject here; they are restored below.
+            // 2. Fresh install (no saved flags or control rows): activation writes native_bridge defaults (P033).
             delete_option($optFlags);
+            foreach ($controlKeys as $ck) {
+                $wpdb->delete($controlTable, ['key' => $ck]);
+            }
             \WPE\Bootstrap\PluginBootstrap::onActivate();
             $this->bootstrap->loadFlags();
             $flags = $this->bootstrap->getFlags();
-            if (($flags['cohort_mode'] ?? '') !== 'legacy') {
-                echo "  [FAIL] Default cohort_mode must be 'legacy', found: " . ($flags['cohort_mode'] ?? 'null') . "\n";
+            if (($flags['cohort_mode'] ?? '') !== 'native_bridge') {
+                echo "  [FAIL] Default cohort_mode must be 'native_bridge', found: " . ($flags['cohort_mode'] ?? 'null') . "\n";
                 return false;
             }
-            echo "  [OK] Default cohort authority is legacy.\n";
+            echo "  [OK] Default cohort authority is native_bridge.\n";
 
-            foreach (['query_enabled', 'media_enabled', 'resolver_enabled', 'native_writes_enabled'] as $f) {
-                if (!empty($flags[$f])) {
-                    echo "  [FAIL] Flag {$f} must be false by default.\n";
+            if (!empty($flags['media_enabled'])) {
+                echo "  [FAIL] Flag media_enabled must be false by default.\n";
+                return false;
+            }
+            foreach ([
+                'variants_ui_enabled',
+                'query_enabled',
+                'resolver_enabled',
+                'native_writes_enabled',
+                'single_price_display',
+                'show_selected_value',
+                'show_help_text',
+                'button_selector',
+                'color_swatches',
+                'image_swatches',
+                'mark_unavailable_options',
+                'auto_select_first_values',
+            ] as $f) {
+                if (empty($flags[$f])) {
+                    echo "  [FAIL] Flag {$f} must be true by default.\n";
                     return false;
                 }
             }
-            echo "  [OK] All native feature flags are disabled by default.\n";
+            $seededSysMode = (string)$wpdb->get_var($wpdb->prepare("SELECT `value` FROM {$controlTable} WHERE `key` = %s", 'system_mode'));
+            if ($seededSysMode !== 'native_bridge') {
+                echo "  [FAIL] Seeded wpe_control system_mode must be 'native_bridge', found: {$seededSysMode}\n";
+                return false;
+            }
+            echo "  [OK] Default engine, Product Page flags, and control state initialized for native_bridge.\n";
         } finally {
             if ($savedFlags === null) {
                 delete_option($optFlags);
             } else {
                 update_option($optFlags, $savedFlags);
+            }
+            foreach ($controlKeys as $ck) {
+                $wpdb->delete($controlTable, ['key' => $ck]);
+                if (is_array($savedControl[$ck])) {
+                    $wpdb->insert($controlTable, $savedControl[$ck]);
+                }
             }
             $this->bootstrap->loadFlags();
         }
@@ -132,61 +177,74 @@ class T02Test
     {
         echo "[R04] Verifying individual flag scoping and deterministic cohort precedence...\n";
 
-        // 1. Individual flag toggling
-        $this->bootstrap->setFlag('query_enabled', false);
-        $this->bootstrap->setFlag('media_enabled', true);
+        $savedFlags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, null);
+        $savedRouting = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, null);
 
-        $flags = $this->bootstrap->getFlags();
-        if ($flags['query_enabled'] !== false || $flags['media_enabled'] !== true) {
-            echo "  [FAIL] Flag scoping failed.\n";
-            return false;
+        try {
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
+            $this->bootstrap->loadFlags();
+
+            // 1. Individual flag toggling
+            $this->bootstrap->setFlag('query_enabled', false);
+            $this->bootstrap->setFlag('media_enabled', true);
+
+            $flags = $this->bootstrap->getFlags();
+            if ($flags['query_enabled'] !== false || $flags['media_enabled'] !== true) {
+                echo "  [FAIL] Flag scoping failed.\n";
+                return false;
+            }
+            echo "  [OK] Individual flags scoped independently.\n";
+
+            // 2. Cohort routing deterministic precedence
+            // Precedence: Product ID rule > Category rule > Default mode
+            $test_product_id = 999999;
+            $routing_rules = [
+                'products' => [
+                    $test_product_id => 'full_native',
+                ],
+                'categories' => [
+                    1 => 'cohort_canary',
+                ],
+            ];
+            update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $routing_rules);
+
+            // Test rule 1: exact product match
+            $auth1 = $this->bootstrap->resolveProductAuthority($test_product_id);
+            if ($auth1 !== 'full_native') {
+                echo "  [FAIL] Exact product ID rule did not take precedence (got: {$auth1})\n";
+                return false;
+            }
+            echo "  [OK] Exact product rule has highest precedence (resolved: full_native).\n";
+
+            // Test rule 3: unspecified product falls back to default mode ('native_bridge')
+            $unspecified_id = 888888;
+            $auth3 = $this->bootstrap->resolveProductAuthority($unspecified_id);
+            if ($auth3 !== 'native_bridge') {
+                echo "  [FAIL] Unspecified product did not fall back to default native_bridge mode (got: {$auth3})\n";
+                return false;
+            }
+            echo "  [OK] Fallback to default cohort mode works deterministically (resolved: native_bridge).\n";
+
+            // Verify status reflects config
+            $status = $this->bootstrap->getRestStatus();
+            if ($status['status'] !== 'operational' || !isset($status['flags'])) {
+                echo "  [FAIL] Status endpoint does not reflect operational state.\n";
+                return false;
+            }
+            echo "  [OK] Status endpoint accurately reflects current configuration.\n";
+        } finally {
+            if ($savedFlags === null) {
+                delete_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS);
+            } else {
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, $savedFlags);
+            }
+            if ($savedRouting === null) {
+                delete_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING);
+            } else {
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $savedRouting);
+            }
+            $this->bootstrap->loadFlags();
         }
-        echo "  [OK] Individual flags scoped independently.\n";
-
-        // Reset query_enabled to false
-        $this->bootstrap->setFlag('query_enabled', false);
-        $this->bootstrap->setFlag('media_enabled', false);
-
-        // 2. Cohort routing deterministic precedence
-        // Precedence: Product ID rule > Category rule > Default mode
-        $test_product_id = 999999;
-        $routing_rules = [
-            'products' => [
-                $test_product_id => 'full_native',
-            ],
-            'categories' => [
-                1 => 'cohort_canary',
-            ],
-        ];
-        update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, $routing_rules);
-
-        // Test rule 1: exact product match
-        $auth1 = $this->bootstrap->resolveProductAuthority($test_product_id);
-        if ($auth1 !== 'full_native') {
-            echo "  [FAIL] Exact product ID rule did not take precedence (got: {$auth1})\n";
-            return false;
-        }
-        echo "  [OK] Exact product rule has highest precedence (resolved: full_native).\n";
-
-        // Test rule 3: unspecified product falls back to default mode
-        $unspecified_id = 888888;
-        $auth3 = $this->bootstrap->resolveProductAuthority($unspecified_id);
-        if ($auth3 !== 'legacy') {
-            echo "  [FAIL] Unspecified product did not fall back to default legacy mode (got: {$auth3})\n";
-            return false;
-        }
-        echo "  [OK] Fallback to default cohort mode works deterministically (resolved: legacy).\n";
-
-        // Clean up test routing option
-        delete_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING);
-
-        // Verify status reflects config
-        $status = $this->bootstrap->getRestStatus();
-        if ($status['status'] !== 'operational' || !isset($status['flags'])) {
-            echo "  [FAIL] Status endpoint does not reflect operational state.\n";
-            return false;
-        }
-        echo "  [OK] Status endpoint accurately reflects current configuration.\n";
 
         return true;
     }
@@ -297,14 +355,20 @@ class T02Test
         $restore();
         echo $ok1 ? "  [OK] Activation is inert; unsupported dependencies force legacy and block native flags.\n" : "  [FAIL] Activation mutated state or unsupported dependencies did not block native.\n";
 
-        // AC-T02-02: with the query feature off, WooCommerce still reads products at legacy authority.
-        $this->bootstrap->setFlag('query_enabled', false);
-        $this->bootstrap->setFlag('native_writes_enabled', false);
+        // AC-T02-02: with the query and native-write features off (and legacy cohort), WooCommerce reads products at legacy authority.
+        update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, array_merge(\WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS, [
+            'query_enabled'         => false,
+            'native_writes_enabled' => false,
+            'cohort_mode'           => 'legacy',
+        ]));
+        update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_ROUTING, []);
+        $this->bootstrap->loadFlags();
         $ids = wc_get_products(['limit' => 1, 'return' => 'ids']);
         $product = $ids ? wc_get_product($ids[0]) : null;
         $store = \WC_Data_Store::load('product');
         $ok2 = $product instanceof \WC_Product && $product->get_name() !== '' && is_numeric($product->get_price() === '' ? 0 : $product->get_price())
             && $this->bootstrap->resolveProductAuthority($ids[0]) === 'legacy'
+            && !$this->bootstrap->isNativeRuntimeActive()
             && $store->get_current_class_name() === 'WC_Product_Data_Store_CPT';
         $restore();
         echo $ok2 ? "  [OK] Query flag off: WooCommerce CPT data store reads products at legacy authority.\n" : "  [FAIL] Product read with query flag off did not stay on WooCommerce legacy.\n";

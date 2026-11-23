@@ -1,8 +1,8 @@
 {
   "task_id": "T39",
-  "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "qa_status": "passed",
-  "content_digest": "751e1af97988e23e08d2174b12c0c7181cb4097812e83d0d70ee0991d0040a03",
+  "content_digest": "9a4a80095f0047798347ed01bf4c785836cf2c93cfa1a7014672026bc11f7ae2",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.0",
@@ -13,7 +13,7 @@
     {
       "argv": [
         "wp",
-        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T39Test.php"
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T39/output.log",
       "output_sha256": "33327e5a1d7a53ba7a331e0f80e1b8e62b1f4309810272abc45729d7f922d44d",
-      "content_digest": "751e1af97988e23e08d2174b12c0c7181cb4097812e83d0d70ee0991d0040a03"
+      "content_digest": "9a4a80095f0047798347ed01bf4c785836cf2c93cfa1a7014672026bc11f7ae2"
     }
   ],
   "regression_results": [
@@ -107,15 +107,15 @@
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
-    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
     "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -124,9 +124,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -144,9 +144,9 @@
     "counts_after_test": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -155,9 +155,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -175,9 +175,9 @@
     "counts_after_restore": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -186,9 +186,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -226,7 +226,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "base_commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "file_hashes": {
     "src/Application/Migration/LegacyMirror.php": "b6f0f0534b994d37b9b74cd6fd0ef124c8b4081f60957c9fc54ea06571f90885",
     "tests/integration/T39Test.php": "963cd05f66e0f8eb175e0e751420167e60422a53653611ea8f955b2681a8730e"

@@ -12,6 +12,8 @@ T02 tạo lockfiles/harness, T49 package plugin reproducible; core checksum trư
 
 CLI queue loop do systemd/cron (system cron thường xuyên, không dựa page traffic); concurrency1 initial, batch100 adaptive. Lease60s heartbeat20s/retry policy 10 §8; job states 02 §5. Shutdown sau checkpoint, không SIGKILL giữa aggregate intentional trừ fault tests. Monitor backlog age/count/DLQ/index freshness/migration lag.
 
+Product feeds (10 §12) dùng một lệnh `wp wpe feeds tick` chạy mỗi phút từ system cron, cùng nhóm với `wp wpe outbox` và `wp wpe rebuild --if-requested`, ví dụ `* * * * * cd /path/to/site && wp wpe feeds tick --quiet`. Mỗi tick giữ lease theo feed, xử lý dirty marks, sale đến hạn, publish debounce, một lát đối soát và tối đa một lô full rebuild rồi thoát; tick ghi heartbeat vào `control`. Health cảnh báo khi heartbeat cũ hơn 5 phút trong khi có feed đang bật. Ngoại lệ có chủ đích với nguyên tắc không dựa page traffic (P036): khi heartbeat cũ, `FeedAutoRunner` chạy một tick giới hạn 20 giây sau khi request web đã trả response, chỉ khi có việc feed đang chờ, một tiến trình mỗi lúc, cách nhau ≥30 giây; đây là dự phòng, production vẫn cài cron. Tắt bằng hằng `WPE_FEEDS_AUTORUN=false`.
+
 ## 4. Secret và artifact handling
 
 Private staging outside webroot, path validate/sanitize, imports maximum configurable. Download job artifact auth từng request, expiry7days default. Không log signed URL credentials/token/import raw/PII. Cursor signing secret derive dedicated runtime secret có rotation window, không hardcode repo.
@@ -50,6 +52,8 @@ Backup phục hồi sau database hỏng là disaster recovery khác rollback aut
 | Worker starvation | No heartbeat/checkpoint>120s | Lease takeover, examine logs |
 | Checkout regression | p95>accepted budget window5min | Halt canary expansion; current-data rollback readiness check |
 | Disk headroom | Less than next generation+projection estimate | Stop rebuild, capacity plan |
+| Feed worker | Heartbeat >5 phút khi có feed bật | Kiểm tra system cron `wp wpe feeds tick` |
+| Feed publish | Publish gate lỗi hoặc file tốt gần nhất cũ hơn 48 giờ | Xem Diagnostics, sửa nguyên nhân, Full rebuild |
 
 Thresholds proposed baseline; not operational guarantees. Native read error returns dependency_unavailable/maintenance for cohort, không fall back stale price/stock.
 

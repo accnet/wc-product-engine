@@ -362,7 +362,7 @@ try {
     // ================================================================
     // Test 5: Fullscreen Modal with Shared Draft
     // ================================================================
-    await page.locator(`${VARS_APP} .wpe-btn-open-fullscreen`).click();
+    await page.locator('#wpe-box-fullscreen').click();
     await page.waitForSelector('#wpe-fullscreen-modal-overlay', { state: 'visible', timeout: 5000 });
     check('Fullscreen modal opens with role=dialog', (await page.locator('#wpe-fullscreen-modal-overlay').getAttribute('role')) === 'dialog');
 

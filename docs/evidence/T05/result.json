@@ -1,8 +1,8 @@
 {
   "task_id": "T05",
-  "commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+  "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "qa_status": "passed",
-  "content_digest": "0efde2370a55ac4c4b8ecd40baafd892af4c572eefd23a58692bd2d5a4991203",
+  "content_digest": "3fcac5bc25a98ca868071d0b3ccee81fc21c976121417a167a445e86c76302a4",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.0",
@@ -13,7 +13,7 @@
     {
       "argv": [
         "wp",
-        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T05Test.php"
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T05",
       "exit_code": 0,
       "output_path": "docs/evidence/T05/output.log",
-      "output_sha256": "afc17ad381766226435f53d790366aa34c7a18e9a56e2137af362b2281c55b1e",
-      "content_digest": "0efde2370a55ac4c4b8ecd40baafd892af4c572eefd23a58692bd2d5a4991203"
+      "output_sha256": "066f0f5fea4be4c186150abb9d2903f4555f30af4b221a0856ff3ef68970cb74",
+      "content_digest": "3fcac5bc25a98ca868071d0b3ccee81fc21c976121417a167a445e86c76302a4"
     }
   ],
   "regression_results": [
@@ -119,7 +119,7 @@
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
-    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
     "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
@@ -238,7 +238,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "9c460ada0be4befb2df733da54fbc4bc58b8c643",
+  "base_commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "file_hashes": {
     "contracts/database/schema.sql": "2d02006686427277edcd3e59795f04de0506ac2ba29f2e2a5e17f5ebdb496439",
     "src/Infrastructure/Database/SchemaMigrator.php": "ac7ee5020da4895903f6beeef2f4993ea81f5642a2e0f6cff8e19b7de4ebf3a2",

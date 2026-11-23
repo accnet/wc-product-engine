@@ -746,7 +746,20 @@ class ProductRepository
             $this->wpdb->delete($this->tableVariants, ['product_id' => $productId]);
             $this->wpdb->delete($this->tableProducts, ['id' => $productId]);
 
+            // Nothing is left to project for a purged aggregate; retire its queued events
+            // so they do not linger as pending outbox work.
+            $this->outboxWorker->retireAggregateEvents($allIds);
+
             $this->wpdb->query("COMMIT");
+
+            /**
+             * A product was permanently purged; it publishes no outbox event (P035 feeds drop its items).
+             *
+             * @param int $productId
+             */
+            if (function_exists('do_action')) {
+                do_action('wpe_product_purged', $productId);
+            }
             return true;
         } catch (\Throwable $e) {
             $this->wpdb->query("ROLLBACK");
@@ -1080,21 +1093,21 @@ class ProductRepository
 
     private function isMirroringCohortActive(): bool
     {
-        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class) || !function_exists('get_option')) {
             return false;
         }
         $flags = \WPE\Bootstrap\PluginBootstrap::instance()->getFlags();
-        $mode = (string)($flags['cohort_mode'] ?? 'legacy');
+        $mode = (string)($flags['cohort_mode'] ?? \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS['cohort_mode']);
         return in_array($mode, ['cohort_canary', 'native_bridge'], true);
     }
 
     private function isNativeBridgeCohortActive(): bool
     {
-        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+        if (!class_exists(\WPE\Bootstrap\PluginBootstrap::class) || !function_exists('get_option')) {
             return false;
         }
         $flags = \WPE\Bootstrap\PluginBootstrap::instance()->getFlags();
-        return (($flags['cohort_mode'] ?? 'legacy') === 'native_bridge');
+        return (($flags['cohort_mode'] ?? \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS['cohort_mode']) === 'native_bridge');
     }
 
     private function generateUuid(): string

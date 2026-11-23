@@ -1,0 +1,701 @@
+/* WC Product Engine — shared admin UI kit (Settings, CSV Import).
+ *
+ * Presentation only. A screen opts in with the `.wpe-ui` class on its `.wrap`.
+ * Token values follow the Theme Settings / Theme Builder system (--tb-*): flat
+ * cards, 8px radius, thin dividers, 32px controls, #005bd3 accent. Base tokens
+ * that other screens rely on stay in tokens.css; screen layout stays in the
+ * screen's own stylesheet (settings.css, admin.css).
+ */
+
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+.wpe-ui {
+    /* Neutrals (match --tb-gray-*) */
+    --wpe-s-text: #1c1d20;
+    --wpe-s-text-2: #55585e;          /* 7.0:1 on white */
+    --wpe-s-text-3: #6b6e75;          /* 5.1:1 on white */
+    --wpe-s-surface: #ffffff;
+    --wpe-s-surface-2: #f7f7f8;
+    --wpe-s-hover: #f1f1f2;
+    --wpe-s-border: #e3e3e6;
+    --wpe-s-divider: #ebebed;
+    --wpe-s-border-control: var(--wpe-border-control, #8c8f94);  /* WCAG 1.4.11 */
+    --wpe-s-border-control-hover: #6b6e75;
+
+    /* Accent & semantic status */
+    --wpe-s-accent: #005bd3;
+    --wpe-s-accent-hover: #004cb1;
+    --wpe-s-accent-subtle: #eef4fe;
+    --wpe-s-ok: #0e7a4f;
+    --wpe-s-ok-bg: #e6f4ec;
+    --wpe-s-warn: #8a5a00;
+    --wpe-s-warn-dot: #d48a00;
+    --wpe-s-warn-bg: #fdf5e3;
+    --wpe-s-danger: #c4320a;
+    --wpe-s-danger-hover: #a52807;
+    --wpe-s-danger-bg: #fdf1ee;
+    --wpe-s-off: #8a8d93;
+
+    /* Type scale */
+    --wpe-s-fs-xs: 11px;
+    --wpe-s-fs-sm: 12px;
+    --wpe-s-fs-md: 13px;
+    --wpe-s-fs-lg: 14px;
+    --wpe-s-fs-xl: 15px;
+    --wpe-s-lh: 1.5;
+
+    /* Spacing, radii, controls */
+    --wpe-s-gap: 16px;
+    --wpe-s-pad-x: 20px;
+    --wpe-s-pad-y: 14px;
+    --wpe-s-radius: 8px;
+    --wpe-s-radius-sm: 6px;
+    --wpe-s-radius-xs: 4px;
+    --wpe-s-control-h: 32px;
+    --wpe-s-control-h-sm: 28px;
+    --wpe-s-label-col: 240px;
+    --wpe-s-focus-ring: 0 0 0 2px #fff, 0 0 0 4px var(--wpe-s-accent);
+    --wpe-s-focus-input: 0 0 0 3px rgba(0, 91, 211, 0.16);
+
+    color: var(--wpe-s-text);
+    font-size: var(--wpe-s-fs-md);
+    line-height: var(--wpe-s-lh);
+}
+
+
+.wpe-ui *,
+.wpe-ui *::before,
+.wpe-ui *::after {
+    box-sizing: border-box;
+}
+
+.wpe-ui [hidden] {
+    display: none !important;
+}
+
+/* ==========================================================================
+   2. Page header & tabs
+   ========================================================================== */
+.wpe-page-header {
+    margin: 12px 0 8px;
+}
+
+.wpe-page-header__eyebrow {
+    margin: 0 0 2px;
+    color: var(--wpe-s-text-3);
+    font-size: var(--wpe-s-fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wrap.wpe-ui h1.wp-heading-inline {
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: var(--wpe-s-text);
+    font-size: 23px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.wpe-ui .wpe-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 24px;
+    padding: 0;
+    border-bottom: 1px solid #c3c4c7;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.wpe-ui .wpe-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.wpe-ui .wpe-tab {
+    flex: none;
+    margin: 0 0 -1px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: var(--wpe-s-radius-xs) var(--wpe-s-radius-xs) 0 0;
+    color: #3c434b;
+    font-size: var(--wpe-s-fs-lg);
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color 0.1s ease, background-color 0.1s ease;
+}
+
+.wpe-ui .wpe-tab:hover {
+    color: var(--wpe-s-text);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.wpe-ui .wpe-tab.is-active,
+.wpe-ui .wpe-tab.is-active:hover {
+    border-color: #c3c4c7;
+    border-bottom: 1px solid #f0f0f1;
+    background: #fff;
+    color: var(--wpe-s-text);
+    font-weight: 600;
+}
+
+/* Keyboard focus: one ring style for every interactive element on the screen. */
+.wpe-ui :where(a, button, select, textarea, input:not([type="checkbox"])):focus {
+    outline: none;
+}
+
+.wpe-ui :where(a, button, select, textarea, input):focus-visible,
+.wpe-ui .wpe-tab:focus-visible {
+    outline: none;
+    box-shadow: var(--wpe-s-focus-ring);
+}
+
+.wpe-ui .wpe-tab:focus-visible {
+    box-shadow: var(--wpe-s-focus-ring-inset, inset 0 0 0 2px var(--wpe-s-accent));
+}
+
+/* ==========================================================================
+   3. Layout primitives: panel, card, section header
+   ========================================================================== */
+.wpe-ui .wpe-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--wpe-s-gap);
+}
+
+.wpe-ui .wpe-card {
+    margin: 0;
+    padding: 18px var(--wpe-s-pad-x);
+    border: 1px solid var(--wpe-s-border);
+    border-radius: var(--wpe-s-radius);
+    background: var(--wpe-s-surface);
+    box-shadow: none;
+}
+
+.wpe-ui .wpe-card > h2,
+.wpe-ui .wpe-card > h3,
+.wpe-ui .wpe-action-row h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+    color: var(--wpe-s-text);
+    font-size: var(--wpe-s-fs-xl);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.wpe-ui .wpe-card p {
+    margin: 0 0 8px;
+}
+
+.wpe-ui .wpe-card > :last-child {
+    margin-bottom: 0;
+}
+
+.wpe-ui .wpe-help {
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-md);
+    line-height: var(--wpe-s-lh);
+}
+
+.wpe-ui .wpe-card__footnote {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--wpe-s-divider);
+}
+
+/* Grouped settings card: header strip + divided rows. */
+.wpe-ui .wpe-settings-group {
+    padding: 0;
+    overflow: hidden;
+}
+
+.wpe-ui .wpe-settings-group__header {
+    padding: 16px var(--wpe-s-pad-x) 12px;
+    border-bottom: 1px solid var(--wpe-s-divider);
+    background: var(--wpe-s-surface);
+}
+
+.wpe-ui .wpe-settings-group__header h3 {
+    margin: 0 0 2px;
+    font-size: var(--wpe-s-fs-xl);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.wpe-ui .wpe-settings-group__header .wpe-help {
+    max-width: 80ch;
+    margin: 0;
+}
+
+.wpe-ui .wpe-product-page-form {
+    display: grid;
+    gap: var(--wpe-s-gap);
+}
+
+.wpe-ui .wpe-empty-hint {
+    margin: 0;
+    padding: var(--wpe-s-pad-y) var(--wpe-s-pad-x);
+}
+
+/* Action row: label/value on the left, one action on the right. */
+.wpe-ui .wpe-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--wpe-s-divider);
+    border-radius: var(--wpe-s-radius-sm);
+    background: var(--wpe-s-surface-2);
+}
+
+.wpe-ui .wpe-action-row.is-flush {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
+.wpe-ui .wpe-action-row__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.wpe-ui .wpe-action-row__info p {
+    margin: 0;
+}
+
+.wpe-ui .wpe-action-row__label {
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-sm);
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-action-row__value {
+    font-size: 18px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+}
+
+/* ==========================================================================
+   4. Status language: dot + text (status), neutral tag, legacy badge
+   ========================================================================== */
+.wpe-ui .wpe-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-sm);
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.wpe-ui .wpe-status::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.wpe-ui .wpe-status.is-ok { color: var(--wpe-s-ok); }
+.wpe-ui .wpe-status.is-off { color: var(--wpe-s-text-3); }
+.wpe-ui .wpe-status.is-off::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--wpe-s-off); }
+.wpe-ui .wpe-status.is-pending { color: var(--wpe-s-warn); }
+.wpe-ui .wpe-status.is-pending::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--wpe-s-warn-dot); }
+.wpe-ui .wpe-status.is-warning { color: var(--wpe-s-warn); }
+.wpe-ui .wpe-status.is-warning::before { background: var(--wpe-s-warn-dot); }
+.wpe-ui .wpe-status.is-dirty { color: var(--wpe-s-accent); font-weight: 600; }
+.wpe-ui .wpe-status.is-locked { color: var(--wpe-s-text-3); }
+.wpe-ui .wpe-status.is-locked::before {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    content: "\f160"; /* dashicons-lock */
+    font: normal 14px/1 dashicons;
+}
+
+/* Neutral inline tag (e.g. "Read-only"). */
+.wpe-ui .wpe-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border: 1px solid var(--wpe-s-border);
+    border-radius: var(--wpe-s-radius-xs);
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+}
+
+/* Badge: kept for job status cells rendered by settings.js. */
+.wpe-ui .wpe-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: var(--wpe-s-radius-xs);
+    background: var(--wpe-s-hover);
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-sm);
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.wpe-ui .wpe-badge.is-ok { background: var(--wpe-s-ok-bg); color: var(--wpe-s-ok); }
+.wpe-ui .wpe-badge.is-warning { background: var(--wpe-s-warn-bg); color: var(--wpe-s-warn); }
+.wpe-ui .wpe-badge.is-muted { font-weight: 500; }
+
+/* ==========================================================================
+   5. Notices
+   ========================================================================== */
+.wpe-ui .wpe-notice {
+    margin: 0 0 var(--wpe-s-gap);
+    padding: 10px 14px;
+    border: 1px solid var(--wpe-s-border);
+    border-radius: var(--wpe-s-radius-sm);
+    background: var(--wpe-s-surface);
+    color: var(--wpe-s-text);
+}
+
+.wpe-ui .wpe-panel > .wpe-notice {
+    margin: 0;
+}
+
+.wpe-ui .wpe-notice.is-success { background: var(--wpe-s-ok-bg); border-color: #c7e3d2; }
+.wpe-ui .wpe-notice.is-warning { background: var(--wpe-s-warn-bg); border-color: #f0dfb5; }
+.wpe-ui .wpe-notice.is-error { background: var(--wpe-s-danger-bg); border-color: #f3cfc4; }
+.wpe-ui .wpe-notice ul { margin: 6px 0 0 18px; list-style: disc; }
+
+.wpe-ui .wpe-field-error {
+    margin: 6px 0 0;
+    color: var(--wpe-s-danger);
+    font-size: var(--wpe-s-fs-md);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   6. Buttons & form controls
+   ========================================================================== */
+.wpe-ui .wpe-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: var(--wpe-s-control-h);
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--wpe-s-border-control);
+    border-radius: var(--wpe-s-radius-sm);
+    background: var(--wpe-s-surface);
+    color: var(--wpe-s-text);
+    font-size: var(--wpe-s-fs-md);
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.wpe-ui .wpe-btn:hover {
+    border-color: var(--wpe-s-border-control-hover);
+    background: var(--wpe-s-hover);
+    color: var(--wpe-s-text);
+}
+
+.wpe-ui .wpe-btn.is-primary {
+    border-color: var(--wpe-s-accent);
+    background: var(--wpe-s-accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-btn.is-primary:hover {
+    border-color: var(--wpe-s-accent-hover);
+    background: var(--wpe-s-accent-hover);
+    color: #fff;
+}
+
+.wpe-ui .wpe-btn.is-danger {
+    border-color: var(--wpe-s-danger);
+    background: var(--wpe-s-surface);
+    color: var(--wpe-s-danger);
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-btn.is-danger:hover {
+    border-color: var(--wpe-s-danger-hover);
+    background: var(--wpe-s-danger-bg);
+    color: var(--wpe-s-danger-hover);
+}
+
+.wpe-ui .wpe-btn.is-ghost {
+    border-color: transparent;
+    background: transparent;
+}
+
+.wpe-ui .wpe-btn.is-large {
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: var(--wpe-s-fs-lg);
+}
+
+.wpe-ui .wpe-btn--sm {
+    min-height: var(--wpe-s-control-h-sm);
+    padding: 0 10px;
+    font-size: var(--wpe-s-fs-sm);
+}
+
+.wpe-ui .wpe-btn[disabled],
+.wpe-ui .wpe-btn[disabled]:hover {
+    border-color: var(--wpe-s-border);
+    background: var(--wpe-s-surface-2);
+    color: var(--wpe-s-text-3);
+    cursor: not-allowed;
+}
+
+.wpe-ui .wpe-btn .dashicons {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.wpe-ui .wpe-input,
+.wpe-ui select.wpe-input {
+    width: 100%;
+    min-height: var(--wpe-s-control-h);
+    max-width: none;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid var(--wpe-s-border-control);
+    border-radius: var(--wpe-s-radius-sm);
+    background-color: var(--wpe-s-surface);
+    color: var(--wpe-s-text);
+    font-size: var(--wpe-s-fs-md);
+    line-height: 30px;
+    box-shadow: none;
+}
+
+.wpe-ui select.wpe-input {
+    padding-right: 28px;
+    text-overflow: ellipsis;
+}
+
+.wpe-ui .wpe-input:hover {
+    border-color: var(--wpe-s-border-control-hover);
+}
+
+.wpe-ui .wpe-input:focus,
+.wpe-ui .wpe-input:focus-visible {
+    border-color: var(--wpe-s-accent);
+    box-shadow: var(--wpe-s-focus-input);
+}
+
+.wpe-ui .wpe-input:disabled {
+    background-color: var(--wpe-s-surface-2);
+    color: var(--wpe-s-text-3);
+}
+
+/* Stacked field: label, control, optional hint. */
+.wpe-ui .wpe-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.wpe-ui .wpe-field__label {
+    color: var(--wpe-s-text);
+    font-size: var(--wpe-s-fs-md);
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-input--hex {
+    width: 88px;
+    min-height: var(--wpe-s-control-h-sm);
+    padding: 0 8px;
+    font-family: var(--wpe-font-mono, monospace);
+    font-size: var(--wpe-s-fs-sm);
+    line-height: 26px;
+}
+
+/* ==========================================================================
+   7. Switch
+   ========================================================================== */
+/* Switch: 36x20 track drawn behind the real checkbox (name/id/value unchanged). */
+.wpe-ui .wpe-switch {
+    position: relative;
+    flex: none;
+    width: 36px;
+    height: 20px;
+}
+
+.wpe-ui .wpe-switch input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.wpe-ui .wpe-switch__track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--wpe-s-off);
+    transition: background-color 0.15s ease;
+}
+
+.wpe-ui .wpe-switch__track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(16, 17, 19, 0.24);
+    transition: transform 0.15s ease;
+}
+
+.wpe-ui .wpe-switch input:hover + .wpe-switch__track { background: var(--wpe-s-text-3); }
+.wpe-ui .wpe-switch input:checked + .wpe-switch__track { background: var(--wpe-s-accent); }
+.wpe-ui .wpe-switch input:checked:hover + .wpe-switch__track { background: var(--wpe-s-accent-hover); }
+.wpe-ui .wpe-switch input:checked + .wpe-switch__track::after { transform: translateX(16px); }
+.wpe-ui .wpe-switch input:focus-visible { box-shadow: none; }
+.wpe-ui .wpe-switch input:focus-visible + .wpe-switch__track { box-shadow: var(--wpe-s-focus-ring); }
+.wpe-ui .wpe-switch input:disabled { cursor: not-allowed; }
+.wpe-ui .wpe-switch input:disabled + .wpe-switch__track { opacity: 0.45; }
+.wpe-ui .wpe-switch input[aria-invalid="true"] + .wpe-switch__track { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--wpe-s-danger); }
+
+/* ==========================================================================
+   8. Description lists & dialogs
+   ========================================================================== */
+.wpe-ui .wpe-dl {
+    display: grid;
+    grid-template-columns: minmax(140px, max-content) 1fr;
+    margin: 8px 0;
+}
+
+.wpe-ui .wpe-dl dt,
+.wpe-ui .wpe-dl dd {
+    margin: 0;
+    padding: 7px 0;
+    border-top: 1px solid var(--wpe-s-divider);
+}
+
+.wpe-ui .wpe-dl dt {
+    padding-right: 24px;
+    color: var(--wpe-s-text-2);
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-dl dt:first-of-type,
+.wpe-ui .wpe-dl dt:first-of-type + dd {
+    border-top: 0;
+}
+
+.wpe-ui .wpe-dl ul {
+    margin: 0 0 0 18px;
+    list-style: disc;
+}
+
+/* Dialogs are rendered as siblings of the panel inside the screen wrapper. */
+.wpe-ui .wpe-dialog {
+    width: calc(100vw - 32px);
+    max-width: 440px;
+    padding: 20px 24px;
+    border: 1px solid var(--wpe-s-border);
+    border-radius: var(--wpe-s-radius);
+    background: var(--wpe-s-surface);
+    box-shadow: 0 16px 40px rgba(16, 17, 19, 0.18);
+    color: var(--wpe-s-text);
+}
+
+.wpe-ui .wpe-dialog::backdrop {
+    background: rgba(28, 29, 32, 0.45);
+}
+
+.wpe-ui .wpe-dialog h2 {
+    margin: 0 0 8px;
+    font-size: var(--wpe-s-fs-xl);
+    font-weight: 600;
+}
+
+.wpe-ui .wpe-dialog p {
+    margin: 0;
+    color: var(--wpe-s-text-2);
+}
+
+.wpe-ui .wpe-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* ==========================================================================
+   9. Responsive
+   ========================================================================== */
+@media (max-width: 782px) {
+    .wpe-ui {
+        --wpe-s-pad-x: 16px;
+        --wpe-s-control-h: 40px;   /* touch target */
+    }
+
+    .wpe-ui .wpe-tabs {
+        margin-bottom: 16px;
+    }
+
+    .wpe-ui .wpe-switch {
+        width: 40px;
+        height: 24px;
+    }
+
+    .wpe-ui .wpe-switch__track::after {
+        width: 20px;
+        height: 20px;
+    }
+
+    .wpe-ui .wpe-dl {
+        grid-template-columns: 1fr;
+    }
+
+    .wpe-ui .wpe-dl dd {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .wpe-ui .wpe-action-row .wpe-btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wpe-ui *,
+    .wpe-ui *::before,
+    .wpe-ui *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

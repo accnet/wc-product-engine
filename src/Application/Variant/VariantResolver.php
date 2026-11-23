@@ -155,6 +155,13 @@ class VariantResolver
             return $this->buildResponse('none', $requestSequence, $currentRevision, null, $emptyAllowed, 'no_variations_exist', $emptyDetails, $emptyThumbs, '');
         }
 
+        // 4b. Option priority (position order): an option is constrained only by the options before
+        // it. A selected value whose combination with the earlier selections does not exist falls
+        // back to the first purchasable value (then the first existing value) in display order, so
+        // choosing any value of an earlier option never dead-ends the form.
+        $variantEvalMap = $this->buildVariantEvalMap($productId, $variants, $parentInv, $quantity);
+        $normalizedSelection = $this->reconcileSelectionByPriority($normalizedSelection, $options, $allOptValues, $variants, $variantValues, $variantEvalMap);
+
         // 5. Match candidate variants against selection
         $matchingVariantIds = [];
         foreach ($variants as $varId => $var) {
@@ -173,7 +180,8 @@ class VariantResolver
             $variants,
             $parentInv,
             $quantity,
-            $allOptValues
+            $allOptValues,
+            $variantEvalMap
         );
         $allowedValues = $allowedResult['allowed_values'];
         $allowedDetails = $allowedResult['allowed_details'];
@@ -190,7 +198,7 @@ class VariantResolver
 
         // 7. Determine State: None, Partial, Exact, or Ambiguous
         if (empty($matchingVariantIds)) {
-            return $this->buildResponse('none', $requestSequence, $currentRevision, null, $allowedValues, 'no_matching_variation', $allowedDetails, $valueThumbnails, $lowestPriceHtml);
+            return $this->withSelection($normalizedSelection, $this->buildResponse('none', $requestSequence, $currentRevision, null, $allowedValues, 'no_matching_variation', $allowedDetails, $valueThumbnails, $lowestPriceHtml));
         }
 
         $allOptionsSelected = (count($normalizedSelection) === count($options));
@@ -200,7 +208,7 @@ class VariantResolver
             $candidateImage = !empty($normalizedSelection)
                 ? $this->resolveCandidatePreviewImage($matchingVariantIds, $mediaBundle['variant_primary_media'])
                 : null;
-            return $this->buildResponse(
+            return $this->withSelection($normalizedSelection, $this->buildResponse(
                 'partial',
                 $requestSequence,
                 $currentRevision,
@@ -211,7 +219,7 @@ class VariantResolver
                 $valueThumbnails,
                 $lowestPriceHtml,
                 $candidateImage
-            );
+            ));
         }
 
         // Full selection: evaluate single or multiple matches
@@ -229,7 +237,7 @@ class VariantResolver
                     'reason' => 'Duplicate overlapping Any detected without deterministic order',
                     'timestamp' => gmdate('Y-m-d H:i:s'),
                 ];
-                return $this->buildResponse('ambiguous', $requestSequence, $currentRevision, null, $allowedValues, 'ambiguous_match', $allowedDetails, $valueThumbnails, $lowestPriceHtml);
+                return $this->withSelection($normalizedSelection, $this->buildResponse('ambiguous', $requestSequence, $currentRevision, null, $allowedValues, 'ambiguous_match', $allowedDetails, $valueThumbnails, $lowestPriceHtml));
             }
             $winningVariant = $precedenceResult['variant'];
         }
@@ -237,7 +245,7 @@ class VariantResolver
         // 8. Hydrate Variant DTO with Price, Stock, Availability and Media (R101, AC-T25-01)
         $variantDto = $this->buildVariantDto($productId, $winningVariant, $quantity, $parentInv, $mediaBundle);
 
-        return $this->buildResponse('exact', $requestSequence, $currentRevision, $variantDto, $allowedValues, $variantDto['reason'], $allowedDetails, $valueThumbnails, $lowestPriceHtml);
+        return $this->withSelection($normalizedSelection, $this->buildResponse('exact', $requestSequence, $currentRevision, $variantDto, $allowedValues, $variantDto['reason'], $allowedDetails, $valueThumbnails, $lowestPriceHtml));
     }
 
     /**
@@ -539,7 +547,8 @@ class VariantResolver
         ?array $variants = null,
         ?array $parentInv = null,
         int $requestedQty = 1,
-        ?array $allOptValues = null
+        ?array $allOptValues = null,
+        ?array $variantEvalMap = null
     ): array {
         $allowedValues = [];
         $allowedDetails = [];
@@ -557,10 +566,13 @@ class VariantResolver
         }
 
         // Pre-evaluate availability and purchasability for all active variations of this product
-        $variantEvalMap = [];
-        foreach ($variants as $vId => $vRow) {
-            $variantEvalMap[(int)$vId] = $this->evaluateVariantAvailability($productId, $vRow, $parentInv, $requestedQty);
+        if ($variantEvalMap === null) {
+            $variantEvalMap = $this->buildVariantEvalMap($productId, $variants, $parentInv, $requestedQty);
         }
+
+        // Option priority: each option is constrained only by the selections of the options before
+        // it (position order), so earlier options stay selectable whatever later options hold.
+        $prefixSelection = [];
 
         // All existing option values for this product
         if ($allOptValues === null) {
@@ -581,7 +593,7 @@ class VariantResolver
 
                 $matchingForVal = [];
                 if ($normalizedSelection !== null) {
-                    $candidateSelection = $normalizedSelection;
+                    $candidateSelection = $prefixSelection;
                     $candidateSelection[$optId] = $vId;
                     foreach ($variants as $varId => $varRow) {
                         if ($this->doesVariantMatchSelection((int)$varId, $candidateSelection, $variantValues)) {
@@ -622,6 +634,10 @@ class VariantResolver
                 if ($purchasable) {
                     $allowedValues[$optIdStr][] = $vIdStr;
                 }
+            }
+
+            if ($normalizedSelection !== null && isset($normalizedSelection[$optId])) {
+                $prefixSelection[$optId] = $normalizedSelection[$optId];
             }
         }
 
@@ -867,6 +883,12 @@ class VariantResolver
                     $stockStatus = $parentInv['stock_status'] ?: 'instock';
                 }
             }
+        }
+
+        // Store-wide stock management disabled: quantities are not enforced
+        // (mirrors WC_Product::managing_stock()); stock_status still applies.
+        if ('yes' !== get_option('woocommerce_manage_stock', 'yes')) {
+            $quantity = null;
         }
 
         $available = true;
@@ -1118,6 +1140,103 @@ class VariantResolver
     /**
      * Build standardized resolver response matching DTO contract (docs/04-api-contract.md §3).
      */
+    /**
+     * Availability/purchasability of every candidate variation, evaluated once per resolve() call.
+     *
+     * @return array<int, array>
+     */
+    private function buildVariantEvalMap(int $productId, array $variants, ?array $parentInv, int $requestedQty): array
+    {
+        $map = [];
+        foreach ($variants as $vId => $vRow) {
+            $map[(int)$vId] = $this->evaluateVariantAvailability($productId, $vRow, $parentInv, $requestedQty);
+        }
+        return $map;
+    }
+
+    /**
+     * Re-validate a normalized selection in option priority order (position ASC).
+     *
+     * For each selected option, the value is kept when some variation matches the (already
+     * reconciled) earlier selections plus this value. Otherwise (the combination does not exist) it
+     * is replaced by the first value in display order that has a purchasable match, then by the first
+     * value with any existing match; with neither, the option is left unselected. Unselected options
+     * stay unselected.
+     *
+     * @param array<int, int> $selection [option_id => value_id]
+     * @return array<int, int>
+     */
+    public function reconcileSelectionByPriority(
+        array $selection,
+        array $options,
+        array $allOptValues,
+        array $variants,
+        array $variantValues,
+        array $variantEvalMap
+    ): array {
+        if (empty($selection)) {
+            return $selection;
+        }
+
+        $hasMatch = function (array $candidate, bool $purchasableOnly) use ($variants, $variantValues, $variantEvalMap): bool {
+            foreach ($variants as $varId => $_row) {
+                if (!$this->doesVariantMatchSelection((int)$varId, $candidate, $variantValues)) {
+                    continue;
+                }
+                if (!$purchasableOnly || !empty($variantEvalMap[(int)$varId]['purchasable'])) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $reconciled = [];
+        foreach ($options as $opt) {
+            $optId = (int)$opt['id'];
+            if (!isset($selection[$optId])) {
+                continue;
+            }
+
+            $current = $selection[$optId];
+            // Keep any value that still forms an existing combination with the earlier options (an
+            // out-of-stock or unpriced match stays selected and resolves as unavailable).
+            if ($hasMatch($reconciled + [$optId => $current], false)) {
+                $reconciled[$optId] = $current;
+                continue;
+            }
+
+            $fallback = null;
+            foreach ([true, false] as $purchasableOnly) {
+                foreach ($allOptValues[$optId] ?? [] as $valueRow) {
+                    $candidateValue = (int)$valueRow['id'];
+                    if ($hasMatch($reconciled + [$optId => $candidateValue], $purchasableOnly)) {
+                        $fallback = $candidateValue;
+                        break 2;
+                    }
+                }
+            }
+
+            if ($fallback !== null) {
+                $reconciled[$optId] = $fallback;
+            }
+        }
+
+        return $reconciled;
+    }
+
+    /**
+     * Attach the effective (reconciled) selection to a resolver response.
+     */
+    private function withSelection(array $selection, array $response): array
+    {
+        $out = [];
+        foreach ($selection as $optId => $valId) {
+            $out[(string)$optId] = (string)$valId;
+        }
+        $response['selection'] = $out;
+        return $response;
+    }
+
     private function buildResponse(
         string $state,
         int $requestSequence,

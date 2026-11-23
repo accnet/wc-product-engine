@@ -269,7 +269,7 @@ class AuthorityResolver
             }
         }
 
-        $cohortMode = (string)($bootstrap->getFlags()['cohort_mode'] ?? 'legacy');
+        $cohortMode = (string)($bootstrap->getFlags()['cohort_mode'] ?? PluginBootstrap::DEFAULT_FLAGS['cohort_mode']);
         $routing = get_option(PluginBootstrap::OPTION_ROUTING, []);
         if (is_array($routing) && isset($routing['products'][$objectId])) {
             return (string)$routing['products'][$objectId];
@@ -349,7 +349,7 @@ class AuthorityResolver
     public static function defaultNewObjectAuthority(): string
     {
         $flags = PluginBootstrap::instance()->getFlags();
-        $mode = (string)($flags['cohort_mode'] ?? 'legacy');
+        $mode = (string)($flags['cohort_mode'] ?? PluginBootstrap::DEFAULT_FLAGS['cohort_mode']);
         if (in_array($mode, ['native_bridge', 'full_native'], true)) {
             return $mode;
         }

@@ -447,6 +447,10 @@ class ResolverApi
             'value_thumbnails'  => $rawResult['value_thumbnails'] ?? [],
             'lowest_price_html' => (string)($rawResult['lowest_price_html'] ?? ''),
             'reason'            => $rawResult['reason'],
+            // Effective selection after option-priority reconciliation; null when the request was rejected.
+            'selection'         => isset($rawResult['selection']) && is_array($rawResult['selection'])
+                ? array_map('strval', $rawResult['selection'])
+                : null,
         ];
     }
 

@@ -1014,13 +1014,11 @@
             ? asset.alt_override
             : (asset.alt_text || '');
         const originLabel = getOriginBadgeLabel(asset);
-        const canMovePrev = idx > 0;
-        const canMoveNext = idx < totalCount - 1;
 
         return `
-            <div class="wpe-media-card ${isFeat ? 'is-featured' : ''}" data-asset-id="${asset.asset_id}" data-order-idx="${idx}" draggable="true">
+            <div class="wpe-media-card ${isFeat ? 'is-featured' : ''}" data-asset-id="${asset.asset_id}" data-order-idx="${idx}">
                 <div class="wpe-media-thumb-wrap">
-                    <img src="${escapeHtml(asset.url)}" alt="${escapeHtml(altVal)}" loading="lazy" />
+                    <img src="${escapeHtml(asset.url)}" alt="${escapeHtml(altVal)}" loading="lazy" draggable="false" />
                     <div class="wpe-media-badges-top">
                         <div>
                             ${isFeat ? '<span class="wpe-media-badge featured"><span class="dashicons dashicons-star-filled" aria-hidden="true"></span> Featured</span>' : ''}
@@ -1032,6 +1030,7 @@
                         <span class="wpe-media-badge usage">${asset.liveVariantCount} variant${asset.liveVariantCount > 1 ? 's' : ''}</span>
                     ` : ''}
                     <div class="wpe-media-hover-actions">
+                        ${totalCount > 1 ? `<button type="button" class="button wpe-media-drag-handle" data-order-idx="${idx}" title="Drag to reorder" aria-label="Reorder image #${asset.asset_id}, position ${idx + 1} of ${totalCount}. Drag, or press the arrow keys; Home and End move to the first or last place."><span class="dashicons dashicons-move" aria-hidden="true"></span></button>` : ''}
                         ${!isFeat ? `
                             <button type="button" class="button button-small button-primary wpe-btn-media-set-featured" data-asset-id="${asset.asset_id}">
                                 Set as Featured
@@ -1044,16 +1043,10 @@
                     </div>
                 </div>
                 <div class="wpe-media-card-body">
-                    <input type="text" class="wpe-media-alt-input" data-asset-id="${asset.asset_id}" value="${escapeHtml(altVal)}" placeholder="Alt text..." title="Image alt text" />
-                    <div class="wpe-media-card-footer">
-                        <div class="wpe-media-reorder-btns">
-                            <button type="button" class="button wpe-btn-media-move wpe-btn-media-move-prev" data-order-idx="${idx}" ${!canMovePrev ? 'disabled' : ''} title="Move left">&lsaquo;</button>
-                            <button type="button" class="button wpe-btn-media-move wpe-btn-media-move-next" data-order-idx="${idx}" ${!canMoveNext ? 'disabled' : ''} title="Move right">&rsaquo;</button>
-                        </div>
-                        <button type="button" class="button-link-delete wpe-btn-media-unlink" data-asset-id="${asset.asset_id}" title="Remove image from product" aria-label="Remove image #${asset.asset_id} from product">
-                            <span class="dashicons dashicons-trash" aria-hidden="true"></span>
-                        </button>
-                    </div>
+                    <input type="text" class="wpe-media-alt-input" data-asset-id="${asset.asset_id}" value="${escapeHtml(altVal)}" placeholder="Alt text..." title="Image alt text" aria-label="Alt text, image #${asset.asset_id}" />
+                    <button type="button" class="button-link-delete wpe-btn-media-unlink" data-asset-id="${asset.asset_id}" title="Remove image from product" aria-label="Remove image #${asset.asset_id} from product">
+                        <span class="dashicons dashicons-trash" aria-hidden="true"></span>
+                    </button>
                 </div>
             </div>
         `;
@@ -1095,9 +1088,9 @@
         const altIdAttr = opts.altId ? ` id="${opts.altId}"` : '';
         return `
             <div class="wpe-media-url-bar">
-                <span class="dashicons dashicons-admin-links wpe-icon-muted"></span>
-                <input type="url"${urlIdAttr} class="wpe-media-ext-url-input" placeholder="Add external image via HTTPS URL (e.g. https://cdn.example.com/photo.jpg)..." />
-                <input type="text"${altIdAttr} class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" />
+                <span class="dashicons dashicons-admin-links wpe-icon-muted" aria-hidden="true"></span>
+                <input type="url"${urlIdAttr} class="wpe-media-ext-url-input" placeholder="Add image from URL (https://...)" aria-label="External image URL (HTTPS)" />
+                <input type="text"${altIdAttr} class="wpe-media-ext-alt-input" placeholder="Alt text (optional)" aria-label="Alt text for the URL image (optional)" />
                 <button type="button" class="button wpe-btn-add-media-url">Add URL</button>
             </div>
         `;
@@ -1183,7 +1176,7 @@
                             <span class="dashicons dashicons-images-alt2 wpe-icon-brand"></span>
                             <h4 class="wpe-section-title">Product Media Library</h4>
                             <span class="wpe-section-count">${orderedAssets.length}</span>
-                            <span class="wpe-section-subtitle">(Product-scoped &bull; Max 2 rows inline &bull; First image is Featured)</span>
+                            <span class="wpe-section-subtitle">First image is featured &middot; drag to reorder</span>
                         </div>
                         <div class="wpe-inline-row">
                             ${orderedAssets.length > 0 ? `
@@ -1212,7 +1205,7 @@
                             <span class="dashicons dashicons-cloud-upload wpe-media-dropzone-icon${isCompactDropzone ? ' wpe-media-dropzone-icon--compact' : ''}"></span>
                             <div>
                                 <span class="wpe-media-dropzone-title">Drop product images here or click to browse</span>
-                                <span class="wpe-media-dropzone-hint">(JPG, PNG, WebP, GIF, AVIF &bull; Product-isolated library)</span>
+                                <span class="wpe-media-dropzone-hint">JPG, PNG, WebP, GIF, AVIF</span>
                             </div>
                         </div>
 
@@ -1382,8 +1375,6 @@
     }
 
     function bindProductMediaEvents($container) {
-        let dragSrcIdx = null;
-
         // Open full media library popup
         $container.find('.wpe-btn-open-full-media').off('click').on('click', function (e) {
             e.preventDefault();
@@ -1498,49 +1489,24 @@
         });
 
         // Reorder Left / Right buttons
-        $container.find('.wpe-btn-media-move-prev').off('click').on('click', function (e) {
-            e.stopPropagation();
-            const idx = parseInt($(this).attr('data-order-idx'), 10);
-            reorderProductAssets(idx, idx - 1);
+        // Reorder images: drag the image (mouse) or its grip (touch, pen), or arrow keys on the grip.
+        // The first image is the featured image, so dropping an image first makes it featured.
+        const mediaRootSel = $container.attr('id') ? '#' + $container.attr('id') : '#wpe-product-media-app';
+        bindReorderable($container, {
+            handle: '.wpe-media-thumb-wrap',
+            keyHandle: '.wpe-media-drag-handle',
+            touchHandle: '.wpe-media-drag-handle',
+            item: '.wpe-media-card',
+            axis: 'x',
+            group: () => null,
+            move: (from, to) => {
+                const ordered = getOrderedProductAssets();
+                const moved = ordered[from];
+                reorderProductAssets(from, to);
+                if (moved) announce(`Image moved to position ${to + 1} of ${ordered.length}${to === 0 ? ', now the featured image' : ''}.`);
+                focusAfterRender(mediaRootSel, [`.wpe-media-drag-handle[data-order-idx="${to}"]`]);
+            }
         });
-
-        $container.find('.wpe-btn-media-move-next').off('click').on('click', function (e) {
-            e.stopPropagation();
-            const idx = parseInt($(this).attr('data-order-idx'), 10);
-            reorderProductAssets(idx, idx + 1);
-        });
-
-        // Drag and Drop Card Reorder
-        $container.find('.wpe-media-card').off('dragstart dragover dragleave drop dragend')
-            .on('dragstart', function (e) {
-                dragSrcIdx = parseInt($(this).attr('data-order-idx'), 10);
-                $(this).addClass('is-dragging');
-                if (e.originalEvent && e.originalEvent.dataTransfer) {
-                    e.originalEvent.dataTransfer.effectAllowed = 'move';
-                    e.originalEvent.dataTransfer.setData('text/plain', String(dragSrcIdx));
-                }
-            })
-            .on('dragover', function (e) {
-                e.preventDefault();
-                $(this).addClass('is-drag-over');
-            })
-            .on('dragleave', function () {
-                $(this).removeClass('is-drag-over');
-            })
-            .on('drop', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('is-drag-over');
-                const targetIdx = parseInt($(this).attr('data-order-idx'), 10);
-                if (dragSrcIdx !== null && !isNaN(targetIdx) && dragSrcIdx !== targetIdx) {
-                    reorderProductAssets(dragSrcIdx, targetIdx);
-                }
-                dragSrcIdx = null;
-            })
-            .on('dragend', function () {
-                $(this).removeClass('is-dragging is-drag-over');
-                dragSrcIdx = null;
-            });
 
         // Inline Alt Text edit (non-destructive)
         $container.find('.wpe-media-alt-input').off('input change').on('input change', function () {
@@ -2666,6 +2632,12 @@
         `;
     }
 
+    function isStoreStockManagementEnabled() {
+        // wp_localize_script stringifies booleans: true -> "1", false -> "".
+        const v = config ? config.stockManagementEnabled : undefined;
+        return !(v === false || v === '' || v === '0' || v === 0);
+    }
+
     function renderProductInventory() {
         const prod = wpeVariantStore.product || {};
         const inv = prod.stock || prod.parent_stock || {};
@@ -2674,6 +2646,9 @@
         const stockQty = inv.stock_quantity !== null && inv.stock_quantity !== undefined ? inv.stock_quantity : (prod.stock_quantity !== null && prod.stock_quantity !== undefined ? prod.stock_quantity : '');
         const backorders = inv.backorders || prod.backorders || 'no';
         const stockStatus = inv.stock_status || prod.stock_status || 'instock';
+        // Store-wide stock management off: hide tracking controls like WooCommerce does.
+        // The checkbox stays in the DOM (hidden) so the stored per-product value is preserved.
+        const storeStock = isStoreStockManagementEnabled();
 
         return `
             <div class="wpe-form-row">
@@ -2683,7 +2658,7 @@
                     ${isVar ? 'SKU cấp sản phẩm cha. Phân biệt rõ với mã SKU riêng của từng biến thể.' : 'Mã định danh sản phẩm độc nhất cho quản lý kho và đơn hàng.'}
                 </span>
             </div>
-            <div class="wpe-form-row wpe-mt-3">
+            <div class="wpe-form-row wpe-mt-3${storeStock ? '' : ' wpe-hidden'}" id="wpe-info-manage-stock-row">
                 <label class="wpe-check-label wpe-check-label--inline">
                     <input type="checkbox" id="wpe-info-manage-stock" ${manageStock ? 'checked' : ''} />
                     <span><strong>Quản lý tồn kho cấp sản phẩm</strong> ${isVar ? '(Tồn kho chung)' : ''}</span>
@@ -2692,7 +2667,7 @@
                     ${isVar ? 'Khi bật, sản phẩm quản lý số lượng tồn kho chung thay vì quản lý theo từng biến thể riêng lẻ.' : 'Theo dõi số lượng hàng tồn kho cho sản phẩm này.'}
                 </span>
             </div>
-            <div id="wpe-info-stock-fields" class="wpe-info-stock-sub${manageStock ? '' : ' wpe-hidden'}">
+            <div id="wpe-info-stock-fields" class="wpe-info-stock-sub${manageStock && storeStock ? '' : ' wpe-hidden'}">
                 <div class="wpe-form-grid-2">
                     <div class="wpe-form-row">
                         <label for="wpe-info-stock-quantity">Số lượng tồn kho</label>
@@ -2708,7 +2683,7 @@
                     </div>
                 </div>
             </div>
-            <div id="wpe-info-stock-status-field" class="wpe-form-row wpe-info-stock-sub${manageStock ? ' wpe-hidden' : ''}">
+            <div id="wpe-info-stock-status-field" class="wpe-form-row wpe-info-stock-sub${manageStock && storeStock ? ' wpe-hidden' : ''}">
                 <label for="wpe-info-stock-status">Trạng thái kho</label>
                 <select id="wpe-info-stock-status" class="wpe-select wpe-info-stock-status-select">
                     <option value="instock" ${stockStatus === 'instock' ? 'selected' : ''}>Còn hàng (In stock)</option>
@@ -3110,9 +3085,6 @@
                         </span>
                     </div>
                     <div class="wpe-top-actions">
-                        <button type="button" class="button wpe-btn-open-fullscreen">
-                            <span class="dashicons dashicons-editor-expand"></span> Fullscreen Mode
-                        </button>
                         <button type="button" class="button button-primary wpe-btn-save-api" ${!wpeVariantStore.isDirty ? 'disabled' : ''}>
                             <span class="dashicons dashicons-saved"></span> Save Changes
                         </button>
@@ -3229,7 +3201,6 @@
             const $mount = $container.find('#wpe-fullscreen-media-mount');
             if ($mount.length) {
                 const assets = getOrderedProductAssets();
-                const featuredId = wpeVariantStore.mediaLibrary.featured_asset_id;
                 $mount.html(`
                     <div class="wpe-section">
                         <div class="wpe-section-header">
@@ -3240,7 +3211,7 @@
                         </div>
                         <div class="wpe-section-body">
                             <div class="wpe-media-grid">
-                                ${assets.map((asset, idx) => renderMediaCardHtml(asset, idx, assets.length, featuredId)).join('')}
+                                ${assets.map((asset, idx) => buildMediaCardHtml(asset, idx, assets.length)).join('')}
                             </div>
                         </div>
                     </div>
@@ -3291,6 +3262,18 @@
                 $bar.remove();
             }
         });
+    }
+
+    /**
+     * Show a transient sync state ("syncing" while the save request runs, "error" when it
+     * fails) on every status pill. Presentation only: the next store update restores
+     * In sync / Unsaved changes through updateDirtyChrome() and updateBoxHeader().
+     */
+    function showSyncState(cls, label) {
+        $('.wpe-dirty-badge, .wpe-box-status')
+            .removeClass('clean dirty idle syncing error')
+            .addClass(cls)
+            .text(label);
     }
 
     function addValuesToOption(optIdx, rawInput) {
@@ -3392,14 +3375,10 @@
                     const valColor = (typeof vObj === 'object' && vObj && vObj.color) ? vObj.color : (isColorOpt ? inferPodHexColor(valLabel) : '');
                     const colorDotHtml = valColor ? `<span class="wpe-chip-color-dot" aria-hidden="true" style="background-color:${escapeHtml(valColor)};"></span>` : '';
                     const chipName = escapeHtml(valLabel);
-                    const moveLeft = vIdx > 0 ? `<button type="button" class="wpe-chip-move wpe-chip-move-prev" data-opt-idx="${idx}" data-val-idx="${vIdx}" title="Move left" aria-label="Move ${chipName} left"><span aria-hidden="true">&lsaquo;</span></button>` : '';
-                    const moveRight = vIdx < rawValues.length - 1 ? `<button type="button" class="wpe-chip-move wpe-chip-move-next" data-opt-idx="${idx}" data-val-idx="${vIdx}" title="Move right" aria-label="Move ${chipName} right"><span aria-hidden="true">&rsaquo;</span></button>` : '';
+                    // The chip body is the drag handle (mouse, touch) and, focused, moves with the arrow keys.
                     return `
                         <span class="wpe-chip" data-opt-idx="${idx}" data-val-idx="${vIdx}">
-                            ${moveLeft}
-                            ${colorDotHtml}
-                            <span>${escapeHtml(valLabel)}</span>
-                            ${moveRight}
+                            <button type="button" class="wpe-chip-handle" data-opt-idx="${idx}" data-val-idx="${vIdx}" aria-label="${chipName}, value ${vIdx + 1} of ${rawValues.length}" aria-describedby="wpe-reorder-hint">${colorDotHtml}<span class="wpe-chip-label">${chipName}</span></button>
                             <button type="button" class="wpe-chip-remove" title="Remove value" aria-label="Remove ${chipName}"><span aria-hidden="true">&times;</span></button>
                         </span>
                     `;
@@ -3419,17 +3398,14 @@
                 cardsHtml += `
                     <div class="wpe-option-card" data-idx="${idx}">
                         <div class="wpe-option-card-header">
-                            <div class="wpe-inline-row wpe-inline-row--wrap">
-                                <div class="wpe-option-reorder-btns">
-                                    <button type="button" class="button wpe-btn-move-option wpe-btn-move-option-up" data-opt-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Move option up">&uarr;</button>
-                                    <button type="button" class="button wpe-btn-move-option wpe-btn-move-option-down" data-opt-idx="${idx}" ${idx === options.length - 1 ? 'disabled' : ''} title="Move option down">&darr;</button>
-                                </div>
-                                <input type="text" class="wpe-option-name-input" value="${escapeHtml(opt.name)}" placeholder="Option name (e.g. Size, Color)" />
-                                <span class="wpe-option-count-label">(${rawValues.length} values)</span>
+                            <div class="wpe-inline-row wpe-option-card-title">
+                                ${options.length > 1 ? `<button type="button" class="wpe-drag-handle wpe-option-drag-handle" data-opt-idx="${idx}" title="Drag to reorder" aria-label="Reorder option ${escapeHtml(opt.name || '')}, position ${idx + 1} of ${options.length}" aria-describedby="wpe-reorder-hint"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>` : ''}
+                                <input type="text" class="wpe-option-name-input" value="${escapeHtml(opt.name)}" placeholder="Option name (e.g. Size, Color)" aria-label="Option name" />
+                                <span class="wpe-option-count-label">${rawValues.length} ${rawValues.length === 1 ? 'value' : 'values'}</span>
                             </div>
                             <div class="wpe-option-card-actions">
                                 <label class="wpe-option-default-label">
-                                    <span>Default:</span>
+                                    <span>Default</span>
                                     <select class="wpe-option-default-value-select" data-opt-idx="${idx}">
                                         ${defaultOptionsHtml}
                                     </select>
@@ -3485,6 +3461,7 @@
                     </div>
                 </div>
                 <div class="wpe-section-body">
+                    <p id="wpe-reorder-hint" class="screen-reader-text">Drag to reorder, or press the arrow keys to move. Home and End move to the first or last place.</p>
                     <div class="wpe-options-list">
                         ${cardsHtml}
                     </div>
@@ -3569,7 +3546,7 @@
                             <option value="">Stock: All</option>
                             <option value="instock" ${filters.stockStatus === 'instock' ? 'selected' : ''}>In Stock</option>
                             <option value="outofstock" ${filters.stockStatus === 'outofstock' ? 'selected' : ''}>Out of Stock</option>
-                            <option value="parent_stock" ${filters.stockStatus === 'parent_stock' ? 'selected' : ''}>Shared Parent Stock</option>
+                            ${isStoreStockManagementEnabled() ? `<option value="parent_stock" ${filters.stockStatus === 'parent_stock' ? 'selected' : ''}>Shared Parent Stock</option>` : ''}
                         </select>
                         <select class="wpe-filter-select wpe-filter-attr">
                             ${attrFilterOptions}
@@ -3711,14 +3688,12 @@
                 : (v.sale_price !== null && v.sale_price !== undefined ? v.sale_price : '');
             const isParentStock = !v.manage_stock;
 
-            // Badges
-            const comboBadges = Object.entries(attrs).map(([opt, val]) => `
-                <span class="wpe-combo-badge"><strong>${escapeHtml(opt)}:</strong> ${escapeHtml(val)}</span>
-            `).join('');
-
             // Accessible names: icon-only buttons and table inputs say which variant they belong to.
             const comboText = Object.entries(attrs).map(([opt, val]) => `${opt}: ${val}`).join(', ') || `#${v.id}`;
             const rowName = escapeHtml(comboText);
+
+            // Compact one-line title ("Classic T-Shirt / Black / S"); the option names stay in the tooltip.
+            const comboValues = Object.values(attrs).map(val => `<span class="wpe-combo-value">${escapeHtml(val)}</span>`).join('');
 
             html += `
                 <tr class="wpe-variant-row ${isSelected ? 'selected' : ''}" data-variant-id="${v.id}">
@@ -3731,7 +3706,7 @@
                             ${v.image_url ? `<button type="button" class="wpe-media-remove" title="Unlink image" aria-label="Remove image from ${rowName}"><span aria-hidden="true">&times;</span></button>` : ''}
                         </div>
                     </td>
-                    <td><div class="wpe-combo-wrap">${comboBadges}</div></td>
+                    <td><div class="wpe-combo-wrap" title="${rowName}">${comboValues || rowName}</div></td>
                     <td>
                         <input type="text" class="wpe-editable-input wpe-inline-sku" value="${escapeHtml(v.sku || '')}" placeholder="SKU" aria-label="SKU, ${rowName}" />
                     </td>
@@ -3751,7 +3726,9 @@
                     </td>
                     <td>
                         <div class="wpe-stock-cell">
-                        ${isParentStock ? `
+                        ${!isStoreStockManagementEnabled() ? `
+                            <span class="wpe-stock-pill ${v.stock_status || 'instock'}">${v.stock_status === 'outofstock' ? 'Out of Stock' : 'In Stock'}</span>
+                        ` : isParentStock ? `
                             <button type="button" class="wpe-stock-pill parent-stock wpe-clickable-stock" title="Click to track stock quantity for this variant" aria-label="Shared stock, ${rowName}. Track stock for this variant">Shared Stock</button>
                         ` : `
                             <input type="number" step="any" class="wpe-editable-input wpe-inline-stock-qty" value="${escapeHtml(formatNumberForInput(v.stock_quantity !== null ? v.stock_quantity : ''))}" placeholder="Qty" aria-label="Stock quantity, ${rowName}" />
@@ -3860,7 +3837,7 @@
                 </div>
 
                 <!-- Inventory -->
-                <div class="wpe-drawer-section">
+                <div class="wpe-drawer-section${isStoreStockManagementEnabled() ? '' : ' wpe-hidden'}">
                     <h5 class="wpe-drawer-section-title">Inventory Management</h5>
                     <div class="wpe-mb-2-5">
                         <label class="wpe-check-label wpe-check-label--inline-sm">
@@ -4216,8 +4193,10 @@
                             <select id="wpe-bulk-field" class="wpe-full-width">
                                 <option value="regular_price">Regular Price</option>
                                 <option value="sale_price">Sale Price</option>
+                                ${isStoreStockManagementEnabled() ? `
                                 <option value="manage_stock">Stock Management</option>
                                 <option value="stock_quantity">Stock Quantity</option>
+                                ` : ''}
                                 <option value="sku_prefix">Auto-Generate SKUs by Prefix</option>
                             </select>
                         </div>
@@ -4319,6 +4298,144 @@
         });
     }
 
+    /** Move a variation option to a new position; marks the draft unsaved. */
+    function moveVariationOption(from, to, containerId) {
+        const list = wpeVariantStore.variationOptions;
+        if (from === to || !list[from] || to < 0 || to >= list.length) return;
+        const moved = list.splice(from, 1)[0];
+        list.splice(to, 0, moved);
+        list.forEach((o, i) => { o.position = i; });
+        wpeVariantStore.markDirty();
+        announce(`${moved.name || 'Option'} moved to position ${to + 1} of ${list.length}.`);
+        focusAfterRender(containerId, [`.wpe-option-drag-handle[data-opt-idx="${to}"]`]);
+    }
+
+    /** Move a value inside one option to a new position; marks the draft unsaved. */
+    function moveOptionValue(optIdx, from, to, containerId) {
+        const opt = wpeVariantStore.variationOptions[optIdx];
+        if (!opt || !Array.isArray(opt.values) || from === to || !opt.values[from] || to < 0 || to >= opt.values.length) return;
+        const moved = opt.values.splice(from, 1)[0];
+        opt.values.splice(to, 0, moved);
+        opt.values.forEach((v, i) => { if (typeof v === 'object' && v !== null) v.position = i; });
+        wpeVariantStore.markDirty();
+        const label = typeof moved === 'object' && moved !== null ? moved.label : moved;
+        announce(`${label} moved to position ${to + 1} of ${opt.values.length}.`);
+        focusAfterRender(containerId, [`.wpe-chip-handle[data-opt-idx="${optIdx}"][data-val-idx="${to}"]`]);
+    }
+
+    /**
+     * Pointer-based sortable for one kind of list (no library). Works with mouse, touch and pen
+     * through Pointer Events: press on a handle, move past a small threshold, and the drop
+     * position is shown with a line before or after the target item. Inputs, selects and other
+     * buttons never start a drag. Keyboard: arrow keys on the focused handle move one place,
+     * Home/End move to the first or last place.
+     *
+     * opts.handle / opts.item: selectors; opts.axis: 'x' (wrapping row or grid) or 'y' (column);
+     * opts.keyHandle: focusable control for the arrow keys (default: opts.handle);
+     * opts.touchHandle: touch and pen drags must start here, so swiping elsewhere still scrolls;
+     * opts.group($handle): list key (items may only move within the same key);
+     * opts.move(from, to, group): commits the new order.
+     */
+    function bindReorderable($container, opts) {
+        const root = $container[0];
+        if (!root) return;
+        const ns = '.wpeReorder' + opts.handle.replace(/[^a-z]/gi, '');
+
+        $container.off('keydown' + ns).on('keydown' + ns, opts.keyHandle || opts.handle, function (e) {
+            const $h = $(this);
+            const $item = $h.closest(opts.item);
+            const $siblings = $item.parent().children(opts.item);
+            const from = $siblings.index($item);
+            const last = $siblings.length - 1;
+            const back = opts.axis === 'y' ? 'ArrowUp' : 'ArrowLeft';
+            const fwd = opts.axis === 'y' ? 'ArrowDown' : 'ArrowRight';
+            let to = null;
+            if (e.key === back || (opts.axis === 'x' && e.key === 'ArrowUp')) to = from - 1;
+            else if (e.key === fwd || (opts.axis === 'x' && e.key === 'ArrowDown')) to = from + 1;
+            else if (e.key === 'Home') to = 0;
+            else if (e.key === 'End') to = last;
+            if (to === null) return;
+            e.preventDefault();
+            if (to < 0 || to > last || to === from) return;
+            opts.move(from, to, opts.group($h));
+        });
+
+        $container.off('pointerdown' + ns).on('pointerdown' + ns, opts.handle, function (e) {
+            const ev = e.originalEvent;
+            if (ev.button !== 0 || !ev.isPrimary) return;
+            // Controls inside a handle area (inputs, other buttons) keep their own behavior.
+            const control = ev.target.closest('button, input, select, textarea, a, label');
+            if (control && control !== this && !(opts.keyHandle && control.matches(opts.keyHandle))) return;
+            if (ev.pointerType !== 'mouse' && opts.touchHandle && !ev.target.closest(opts.touchHandle)) return;
+            const handle = this;
+            const item = handle.closest(opts.item);
+            const list = item && item.parentElement;
+            if (!list) return;
+            const items = () => [...list.children].filter((el) => el.matches(opts.item));
+            const from = items().indexOf(item);
+            const startX = ev.clientX;
+            const startY = ev.clientY;
+            let dragging = false;
+            let target = null;
+            let after = false;
+
+            const clearMarks = () => items().forEach((el) => el.classList.remove('is-drop-before', 'is-drop-after'));
+            const pick = (x, y) => {
+                let best = null;
+                let bestDist = Infinity;
+                items().forEach((el) => {
+                    const r = el.getBoundingClientRect();
+                    const dx = x < r.left ? r.left - x : (x > r.right ? x - r.right : 0);
+                    const dy = y < r.top ? r.top - y : (y > r.bottom ? y - r.bottom : 0);
+                    const d = opts.axis === 'y' ? dy : dy * 4 + dx;
+                    if (d < bestDist) { bestDist = d; best = el; }
+                });
+                if (!best) return;
+                const r = best.getBoundingClientRect();
+                target = best;
+                after = opts.axis === 'y' ? y > r.top + r.height / 2 : x > r.left + r.width / 2;
+                clearMarks();
+                if (best !== item) best.classList.add(after ? 'is-drop-after' : 'is-drop-before');
+            };
+            const onMove = (me) => {
+                if (me.pointerId !== ev.pointerId) return;
+                if (!dragging) {
+                    if (Math.abs(me.clientX - startX) < 4 && Math.abs(me.clientY - startY) < 4) return;
+                    dragging = true;
+                    item.classList.add('is-dragging');
+                    list.classList.add('is-sorting');
+                    document.body.classList.add('wpe-is-reordering');
+                    try { handle.setPointerCapture(ev.pointerId); } catch (err) { /* not supported */ }
+                }
+                me.preventDefault();
+                pick(me.clientX, me.clientY);
+            };
+            const end = (ue) => {
+                if (ue && ue.pointerId !== ev.pointerId) return;
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', end);
+                document.removeEventListener('pointercancel', cancel);
+                if (!dragging) return;
+                item.classList.remove('is-dragging');
+                list.classList.remove('is-sorting');
+                document.body.classList.remove('wpe-is-reordering');
+                clearMarks();
+                // Swallow the click that follows a drag (same task as pointerup) so nothing acts on release.
+                const swallow = (ce) => { ce.preventDefault(); ce.stopImmediatePropagation(); };
+                handle.addEventListener('click', swallow, true);
+                setTimeout(() => handle.removeEventListener('click', swallow, true), 0);
+                if (!ue || !target || target === item) return;
+                let to = items().indexOf(target) + (after ? 1 : 0);
+                if (to > from) to -= 1;
+                if (to !== from) opts.move(from, to, opts.group($(handle)));
+            };
+            const cancel = () => { target = null; end(null); };
+            document.addEventListener('pointermove', onMove, { passive: false });
+            document.addEventListener('pointerup', end);
+            document.addEventListener('pointercancel', cancel);
+        });
+    }
+
     /**
      * Bind all DOM events
      */
@@ -4326,12 +4443,6 @@
         if (!containerId) {
             containerId = '#' + ($container.attr('id') || 'wpe-product-editor-inline-app');
         }
-
-        // Fullscreen toggle
-        $container.find('.wpe-btn-open-fullscreen').off('click').on('click', function () {
-            const targetTab = $(this).attr('data-target-tab') || 'variants';
-            openFullscreen(targetTab);
-        });
 
         // Fullscreen tab switch
         $container.find('.wpe-modal-nav .wpe-tab-btn').off('click').on('click', function () {
@@ -4354,7 +4465,8 @@
         // Save via REST API
         $container.find('.wpe-btn-save-api').off('click').on('click', function () {
             const $btn = $(this);
-            $btn.prop('disabled', true).text(config.i18n.saving);
+            $btn.prop('disabled', true).attr('aria-busy', 'true').text(config.i18n.saving);
+            showSyncState('syncing', config.i18n.saving || 'Saving...');
 
             const payload = buildSavePayload();
 
@@ -4378,10 +4490,12 @@
                             showToast(config.i18n.saveSuccess, 'success');
                         }
                     } else {
+                        showSyncState('error', 'Save failed');
                         showToast(res.message || config.i18n.saveError, 'error');
                     }
                 })
                 .fail(function (xhr) {
+                    showSyncState('error', 'Save failed');
                     const res = xhr.responseJSON || {};
                     if (xhr.status === 409 && res.code === 'concurrency_conflict') {
                         alert(config.i18n.conflictError + '\n\n' + res.message);
@@ -4390,7 +4504,7 @@
                     }
                 })
                 .always(function () {
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Save Changes');
+                    $btn.prop('disabled', !wpeVariantStore.isDirty).removeAttr('aria-busy').html('<span class="dashicons dashicons-saved"></span> Save Changes');
                 });
         });
 
@@ -4473,60 +4587,20 @@
             }
         });
 
-        // Reorder Option Card Up / Down
-        $container.find('.wpe-btn-move-option-up').off('click').on('click', function () {
-            const idx = parseInt($(this).attr('data-opt-idx'), 10);
-            if (idx > 0 && wpeVariantStore.variationOptions[idx]) {
-                const temp = wpeVariantStore.variationOptions[idx - 1];
-                wpeVariantStore.variationOptions[idx - 1] = wpeVariantStore.variationOptions[idx];
-                wpeVariantStore.variationOptions[idx] = temp;
-                wpeVariantStore.variationOptions.forEach((o, i) => { o.position = i; });
-                wpeVariantStore.markDirty();
-            }
+        // Reorder options and values: drag (mouse, touch, pen) or arrow keys on the focused handle.
+        bindReorderable($container, {
+            handle: '.wpe-option-drag-handle',
+            item: '.wpe-option-card',
+            axis: 'y',
+            group: () => null,
+            move: (from, to) => moveVariationOption(from, to, containerId)
         });
-
-        $container.find('.wpe-btn-move-option-down').off('click').on('click', function () {
-            const idx = parseInt($(this).attr('data-opt-idx'), 10);
-            if (idx >= 0 && idx < wpeVariantStore.variationOptions.length - 1) {
-                const temp = wpeVariantStore.variationOptions[idx + 1];
-                wpeVariantStore.variationOptions[idx + 1] = wpeVariantStore.variationOptions[idx];
-                wpeVariantStore.variationOptions[idx] = temp;
-                wpeVariantStore.variationOptions.forEach((o, i) => { o.position = i; });
-                wpeVariantStore.markDirty();
-            }
-        });
-
-        // Reorder Chip Value Left / Right
-        $container.find('.wpe-chip-move-prev').off('click').on('click', function (e) {
-            e.stopPropagation();
-            const optIdx = parseInt($(this).attr('data-opt-idx'), 10);
-            const valIdx = parseInt($(this).attr('data-val-idx'), 10);
-            const opt = wpeVariantStore.variationOptions[optIdx];
-            if (opt && Array.isArray(opt.values) && valIdx > 0) {
-                const temp = opt.values[valIdx - 1];
-                opt.values[valIdx - 1] = opt.values[valIdx];
-                opt.values[valIdx] = temp;
-                opt.values.forEach((v, i) => { if (typeof v === 'object' && v !== null) v.position = i; });
-                wpeVariantStore.markDirty();
-                const chipSel = `.wpe-chip[data-opt-idx="${optIdx}"][data-val-idx="${valIdx - 1}"]`;
-                focusAfterRender(containerId, [`${chipSel} .wpe-chip-move-prev`, `${chipSel} .wpe-chip-move-next`]);
-            }
-        });
-
-        $container.find('.wpe-chip-move-next').off('click').on('click', function (e) {
-            e.stopPropagation();
-            const optIdx = parseInt($(this).attr('data-opt-idx'), 10);
-            const valIdx = parseInt($(this).attr('data-val-idx'), 10);
-            const opt = wpeVariantStore.variationOptions[optIdx];
-            if (opt && Array.isArray(opt.values) && valIdx >= 0 && valIdx < opt.values.length - 1) {
-                const temp = opt.values[valIdx + 1];
-                opt.values[valIdx + 1] = opt.values[valIdx];
-                opt.values[valIdx] = temp;
-                opt.values.forEach((v, i) => { if (typeof v === 'object' && v !== null) v.position = i; });
-                wpeVariantStore.markDirty();
-                const chipSel = `.wpe-chip[data-opt-idx="${optIdx}"][data-val-idx="${valIdx + 1}"]`;
-                focusAfterRender(containerId, [`${chipSel} .wpe-chip-move-next`, `${chipSel} .wpe-chip-move-prev`]);
-            }
+        bindReorderable($container, {
+            handle: '.wpe-chip-handle',
+            item: '.wpe-chip',
+            axis: 'x',
+            group: ($handle) => parseInt($handle.attr('data-opt-idx'), 10),
+            move: (from, to, optIdx) => moveOptionValue(optIdx, from, to, containerId)
         });
 
         // Add Variation Option (from Global Attribute template or inline Custom Option card)

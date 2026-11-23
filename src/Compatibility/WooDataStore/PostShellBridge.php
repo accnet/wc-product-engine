@@ -125,6 +125,17 @@ class PostShellBridge
             $postData['post_type'] = (string)$data['post_type'];
         }
 
+        if (isset($data['comment_status']) && in_array($data['comment_status'], ['open', 'closed'], true)) {
+            $postData['comment_status'] = (string)$data['comment_status'];
+        }
+
+        if (isset($data['date_gmt']) && $data['date_gmt'] !== '') {
+            $postData['post_date_gmt'] = (string)$data['date_gmt'];
+            $postData['post_date'] = function_exists('get_date_from_gmt')
+                ? get_date_from_gmt((string)$data['date_gmt'])
+                : (string)$data['date_gmt'];
+        }
+
         $updated = $this->wpdb->update($this->wpdb->posts, $postData, ['ID' => $productId]);
         clean_post_cache($productId);
 

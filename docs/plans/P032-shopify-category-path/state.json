@@ -1,0 +1,348 @@
+{
+  "id": "P032",
+  "title": "Shopify import: Product category path to WooCommerce category tree",
+  "status": "done",
+  "content_hash": "59ba71ef7375f965409f1a30ca08b019a18280ea95df325aa7914adde418bfff",
+  "tasks": [
+    {
+      "id": "P032.1",
+      "title": "Document the opt-in Product category path mapping in docs/10 section 7",
+      "depends_on": [],
+      "read_first": [
+        "docs/10-integrations.md"
+      ],
+      "files": [
+        "docs/10-integrations.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ce7b8a84d4330f205962bec377a0aa5dd3a2f0616e2eccf499ec8592add71763",
+          "output_sha256": "faae64b278b850f4fcfcebccecd38f3d143862ae8de35a815912893cfb55ce5a",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283241458-afafd9aa.log",
+          "time": "2026-11-21T17:47:21.459Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:47:21.329Z"
+    },
+    {
+      "id": "P032.2",
+      "title": "category_mode import option (importer, REST, import screen) and include_children in the catalog adapter; tests",
+      "depends_on": [
+        "P032.1"
+      ],
+      "read_first": [
+        "docs/10-integrations.md",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "src/Application/Catalog/CatalogAdapters.php"
+      ],
+      "files": [
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php",
+        "src/Admin/Rest/AdminApiController.php",
+        "src/Admin/ShopifyImportPage.php",
+        "assets/admin/shopify-import.js",
+        "src/Application/Catalog/CatalogAdapters.php",
+        "tests/integration/ShopifyImportCategoryPathTest.php",
+        "tests/integration/CatalogCategoryChildrenTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/Rest/AdminApiController.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/ShopifyImportPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Catalog/CatalogAdapters.php"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/admin/shopify-import.js"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ShopifyImportCategoryPathTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/CatalogCategoryChildrenTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ShopifyImportTaxonomyTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/CatalogAdapterScopeTest.php"
+        ],
+        [
+          "php",
+          "tests/integration/T19Test.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "b0531b905eac93ce89d1ec67a291ebe428749b45704f76358c773ccd480d1e02",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283362362-9962e4b3.log",
+          "time": "2026-11-21T17:49:22.362Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/Rest/AdminApiController.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "0996b187f3b2fab400925a7160d796a87be86424f6f79668ee20b5a2716cf8a0",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283362466-acda1dd9.log",
+          "time": "2026-11-21T17:49:22.467Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/ShopifyImportPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "15226f38bb09f5a4cf09d7a28a49ec105a9122d4a5ac4343133955b8063ba99a",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283362566-aae68717.log",
+          "time": "2026-11-21T17:49:22.567Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Catalog/CatalogAdapters.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "8a1fbfaade727487c25f159daf6052abccbd5f1488ac27ea0bdb2d3eccae1bb6",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283362680-c6ba8d18.log",
+          "time": "2026-11-21T17:49:22.681Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/shopify-import.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283362763-efc3d234.log",
+          "time": "2026-11-21T17:49:22.764Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ShopifyImportCategoryPathTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "ffe1dcc4ab547c0556158eb0b292cd43da83612a1f2b01349c32162f6de0c0be",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283368512-6cc0cecd.log",
+          "time": "2026-11-21T17:49:28.512Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/CatalogCategoryChildrenTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "d8abe7c5ccdcb26d15a4030cb34b7815910872f182fe73c2be27bf540a1bf495",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283370191-85663070.log",
+          "time": "2026-11-21T17:49:30.191Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ShopifyImportTaxonomyTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "0c0676388cac6fc8c5fb7757b0b464796bf39cd887bb97dccaaa6b65cbb2a254",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283373058-7728c18b.log",
+          "time": "2026-11-21T17:49:33.059Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "01275881c7728ce2c374581e30ba038fb668a2a48b50bee667a0085b7f9fa6ad",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283375821-a8bd1308.log",
+          "time": "2026-11-21T17:49:35.821Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/CatalogAdapterScopeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "e4e131fd6c373aee05a115677dedb3dfb4eb041fef05c7b6172b7e696933b565",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283376713-0c147b77.log",
+          "time": "2026-11-21T17:49:36.713Z"
+        },
+        {
+          "argv": [
+            "php",
+            "tests/integration/T19Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ac8cc9d6e98cd0f243d72d5b055b85a893ef08fcdd200099a7c9c871b5c22da3",
+          "output_sha256": "620c9e66492b1412403008a1b5313732404bb0679942a195cbca5163a98a5364",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283380623-090dfd58.log",
+          "time": "2026-11-21T17:49:40.623Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:47:21.563Z"
+    },
+    {
+      "id": "P032.3",
+      "title": "Backfill the category tree on the 21/11 12:29 import from its CSV; verify parent and leaf archives live; NOTES",
+      "depends_on": [
+        "P032.2"
+      ],
+      "read_first": [
+        "tests/integration/ProductCategoryCoverageLive.php"
+      ],
+      "files": [
+        "tests/integration/ShopifyCategoryPathLive.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ShopifyCategoryPathLive.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/ProductCategoryCoverageLive.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ShopifyCategoryPathLive.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "9181c5918668ea5e9f394f04f13f43c1bf46c096a3cb2eb6f7bdb4347248b701",
+          "output_sha256": "2c83117f704fcfae4cd11fb47a8554ad32d15cd0f970a0529327f1fd5e95df9a",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283730342-2237c012.log",
+          "time": "2026-11-21T17:55:30.343Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/ProductCategoryCoverageLive.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "9181c5918668ea5e9f394f04f13f43c1bf46c096a3cb2eb6f7bdb4347248b701",
+          "output_sha256": "e500398c2369420b432b1e4f50998e73d7bcbda8371aa064d0ba1277783b9527",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283731934-b040e715.log",
+          "time": "2026-11-21T17:55:31.934Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "9181c5918668ea5e9f394f04f13f43c1bf46c096a3cb2eb6f7bdb4347248b701",
+          "output_sha256": "faae64b278b850f4fcfcebccecd38f3d143862ae8de35a815912893cfb55ce5a",
+          "output_path": "docs/plans/P032-shopify-category-path/command-1795283732066-263b3b86.log",
+          "time": "2026-11-21T17:55:32.066Z"
+        }
+      ],
+      "started_at": "2026-11-21T17:55:28.820Z"
+    }
+  ],
+  "approved_hash": "59ba71ef7375f965409f1a30ca08b019a18280ea95df325aa7914adde418bfff",
+  "report_hash": "9d87e9a8a61bbfae1eb317398d7e373d39a3d897c05c71e9c1fb880b92c1b10f"
+}

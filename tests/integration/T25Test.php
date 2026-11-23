@@ -3,7 +3,9 @@
  * T25 Integration Test — Server resolver và allowed-values engine.
  *
  * Verifies:
- * - R99 (partial_allowed_values): Partial selection allowed values from compatible variants without Cartesian products.
+ * - R99 (partial_allowed_values): Partial selection allowed values from compatible variants without Cartesian products;
+ *   options follow priority order (each constrained only by earlier options) and conflicting later
+ *   selections are reconciled to their first purchasable value.
  * - R100 (wildcard_precedence_diff): Wildcard (ANY) precedence matching WooCommerce baseline order.
  * - R101 (stock_price_revision): Stock inheritance, scheduled price, free vs missing price, and revision echo.
  * - R102 (unknown_option_wrong_product): Graceful rejection of unknown options, invalid values, and non-variable products.
@@ -171,11 +173,27 @@ class T25Test
         $this->assert(in_array((string)$valM['id'], $allowedSizesForRed, true), "Size M must be allowed for Red");
         $this->assert(!in_array((string)$valL['id'], $allowedSizesForRed, true), "Size L must NOT be allowed for Red (no Cartesian generation)");
 
-        // 2. Partial selection: Size = L
+        // 2. Option priority: Color (position 0) is constrained only by earlier options, so a later
+        //    Size selection never disables a Color value.
         $resL = $this->resolver->resolve($parentId, [$sizeOptId => (int)$valL['id']]);
         $allowedColorsForL = $resL['allowed_values'][(string)$colorOptId];
-        $this->assert(in_array((string)$valBlue['id'], $allowedColorsForL, true), "Color Blue must be allowed for Size L");
-        $this->assert(!in_array((string)$valRed['id'], $allowedColorsForL, true), "Color Red must NOT be allowed for Size L");
+        $this->assert(in_array((string)$valBlue['id'], $allowedColorsForL, true), "Color Blue must be allowed with Size L selected");
+        $this->assert(in_array((string)$valRed['id'], $allowedColorsForL, true), "Color Red must stay selectable with Size L selected (earlier option)");
+        $this->assert($resL['selection'] === [(string)$sizeOptId => (string)$valL['id']], "Size-only selection is kept as-is");
+
+        // 3. Choosing an earlier value that does not fit a later one reconciles the later option to
+        //    its first purchasable value in display order: Red + L -> Red + S.
+        $resRedL = $this->resolver->resolve($parentId, [$colorOptId => (int)$valRed['id'], $sizeOptId => (int)$valL['id']]);
+        $this->assert($resRedL['state'] === 'exact', "Reconciled Red + L must resolve to an exact variant");
+        $this->assert(
+            $resRedL['selection'] === [(string)$colorOptId => (string)$valRed['id'], (string)$sizeOptId => (string)$valS['id']],
+            "Red + L must reconcile Size to S (first purchasable value for Red)"
+        );
+        $this->assert((int)$resRedL['variant']['id'] === (int)$var1Id, "Reconciled selection must resolve Red + S variant");
+
+        // 4. A later value that still fits is kept: Blue + L stays Blue + L.
+        $resBlueL = $this->resolver->resolve($parentId, [$colorOptId => (int)$valBlue['id'], $sizeOptId => (int)$valL['id']]);
+        $this->assert($resBlueL['selection'][(string)$sizeOptId] === (string)$valL['id'], "Blue + L keeps Size L");
 
         echo " OK\n";
     }
@@ -468,10 +486,12 @@ class T25Test
         $this->assert($resExact['state'] === 'exact', "State must be exact when Color and Size match");
         $this->assert($resExact['variant']['id'] === (string)$varId, "Must resolve to Var ID");
 
-        // State 3: None (combination Red + L does not exist)
+        // State 3: Red + L does not exist. Option priority keeps Color (earlier option) and
+        // reconciles Size to the first purchasable value for Red instead of dead-ending in 'none'.
         $resNone = $this->resolver->resolve($parentId, [$optAId => (int)$valRed['id'], $optBId => (int)$valL['id']]);
-        $this->assert($resNone['state'] === 'none', "State must be none when combination does not exist");
-        $this->assert($resNone['reason'] === 'no_matching_variation', "Reason must be 'no_matching_variation'");
+        $this->assert($resNone['state'] === 'exact', "Non-existent Red + L must reconcile to an exact variant");
+        $this->assert($resNone['selection'][(string)$optAId] === (string)$valRed['id'], "Reconciliation keeps the earlier option (Color Red)");
+        $this->assert($resNone['selection'][(string)$optBId] !== (string)$valL['id'], "Reconciliation replaces the non-matching later option (Size L)");
 
         echo " OK\n";
     }
@@ -778,15 +798,16 @@ class T25Test
         $this->assert($thumbsEmpty[$grayKey]['source'] === 'product_featured', "Gray fallback source must be product_featured");
 
         // Case 2: Size = L selected -> Black takes first Black+L variation with image (pos 1: black-l-tee.jpg);
-        // White has NO White+L combination -> exists=false, available=false, keeps representative thumbnail (white-m-tee.jpg)
+        // White has NO White+L combination. Color precedes Size (option priority), so White stays
+        // selectable (exists/available true; choosing it reconciles Size) and keeps its representative thumbnail.
         $resSizeL = $this->resolver->resolve($parentId, [$sizeOptId => (int)$valL['id']]);
         $thumbsSizeL = $resSizeL['value_thumbnails'][$colorKey];
         $this->assert(str_contains($thumbsSizeL[$blackKey]['src'], 'black-l-tee.jpg'), "Size=L: Black must use first Black+L variation image (black-l-tee.jpg)");
         $this->assert($thumbsSizeL[$blackKey]['available'] === true, "Size=L: Black must be available");
-        $this->assert($thumbsSizeL[$whiteKey]['exists'] === false, "Size=L: White must have exists=false");
-        $this->assert($thumbsSizeL[$whiteKey]['available'] === false, "Size=L: White must be marked unavailable");
-        $this->assert($thumbsSizeL[$whiteKey]['source'] === 'representative', "Size=L: Unavailable White must use representative thumbnail source");
-        $this->assert(str_contains($thumbsSizeL[$whiteKey]['src'], 'white-m-tee.jpg'), "Size=L: Unavailable White must keep representative thumbnail (white-m-tee.jpg)");
+        $this->assert($thumbsSizeL[$whiteKey]['exists'] === true, "Size=L: White (earlier option) must stay selectable (exists=true)");
+        $this->assert($thumbsSizeL[$whiteKey]['available'] === true, "Size=L: White (earlier option) must not be marked unavailable");
+        $this->assert($thumbsSizeL[$whiteKey]['source'] === 'representative', "Size=L: White without a White+L image must use representative thumbnail source");
+        $this->assert(str_contains($thumbsSizeL[$whiteKey]['src'], 'white-m-tee.jpg'), "Size=L: White must keep representative thumbnail (white-m-tee.jpg)");
 
         // Case 3: Size = L, Style = Hoodie -> Black takes exact Black+L+Hoodie image (black-l-hoodie.jpg)
         $resLHoodie = $this->resolver->resolve($parentId, [$sizeOptId => (int)$valL['id'], $styleOptId => (int)$valHoodie['id']]);

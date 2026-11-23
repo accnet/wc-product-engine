@@ -307,6 +307,57 @@ class CatalogAdapters
     }
 
     /**
+     * Resolve product_cat query values to category facet keys, adding descendant term IDs when
+     * include_children applies (WP_Tax_Query default). Unresolvable values pass through unchanged.
+     *
+     * @param array<int|string> $values
+     * @return string[]
+     */
+    private function expandCategoryTerms(array $values, string $field, bool $includeChildren): array
+    {
+        $out = [];
+        foreach ($values as $value) {
+            $value = trim((string)$value);
+            if ($value === '') {
+                continue;
+            }
+            $term = null;
+            if (function_exists('get_term_by')) {
+                switch ($field) {
+                    case 'slug':
+                        $term = get_term_by('slug', $value, 'product_cat');
+                        break;
+                    case 'name':
+                        $term = get_term_by('name', $value, 'product_cat');
+                        break;
+                    case 'term_taxonomy_id':
+                    case 'tt_id':
+                        $term = get_term_by('term_taxonomy_id', (int)$value, 'product_cat');
+                        break;
+                    default:
+                        $term = ctype_digit($value)
+                            ? get_term_by('id', (int)$value, 'product_cat')
+                            : get_term_by('slug', $value, 'product_cat');
+                }
+            }
+            if (!$term || is_wp_error($term)) {
+                $out[] = $value;
+                continue;
+            }
+            $out[] = (string)$term->term_id;
+            if ($includeChildren && function_exists('get_term_children')) {
+                $children = get_term_children((int)$term->term_id, 'product_cat');
+                if (is_array($children)) {
+                    foreach ($children as $childId) {
+                        $out[] = (string)(int)$childId;
+                    }
+                }
+            }
+        }
+        return array_values(array_unique($out));
+    }
+
+    /**
      * Translates WooCommerce query arguments into CatalogQuery parameters.
      *
      * @param array $queryVars
@@ -317,10 +368,19 @@ class CatalogAdapters
         $adapted = [];
 
         // 1. Categories
+        // Slugs; WordPress and WooCommerce include child categories by default (include_children).
         if (!empty($queryVars['category'])) {
-            $adapted['category'] = is_array($queryVars['category']) ? $queryVars['category'] : [$queryVars['category']];
+            $adapted['category'] = $this->expandCategoryTerms(
+                is_array($queryVars['category']) ? $queryVars['category'] : explode(',', (string)$queryVars['category']),
+                'slug',
+                true
+            );
         } elseif (!empty($queryVars['product_cat'])) {
-            $adapted['category'] = is_array($queryVars['product_cat']) ? $queryVars['product_cat'] : [$queryVars['product_cat']];
+            $adapted['category'] = $this->expandCategoryTerms(
+                is_array($queryVars['product_cat']) ? $queryVars['product_cat'] : explode(',', (string)$queryVars['product_cat']),
+                'slug',
+                true
+            );
         }
 
         // 2. Tags
@@ -359,7 +419,11 @@ class CatalogAdapters
                 }
 
                 if ($tax === 'product_cat') {
-                    $adapted['category'] = array_merge($adapted['category'] ?? [], $terms);
+                    $adapted['category'] = array_merge($adapted['category'] ?? [], $this->expandCategoryTerms(
+                        $terms,
+                        (string)($clause['field'] ?? 'term_id'),
+                        !array_key_exists('include_children', $clause) || !empty($clause['include_children'])
+                    ));
                 } elseif ($tax === 'product_tag') {
                     $adapted['tag'] = array_merge($adapted['tag'] ?? [], $terms);
                 } elseif (str_starts_with($tax, 'pa_')) {

@@ -137,6 +137,21 @@
       "name": "upload_items",
       "columns_contract": "`id ID AUTO`, `upload_key V64`, `user_id ID`, `session_id V64`, `product_id ID?`, `state V16`, `file_name V255`, `mime V100?`, `size_bytes BIGINT?`, `content_hash BINARY(32)?`, `storage_provider V32?`, `bucket V191`, `object_key TEXT?`, `object_key_hash BINARY(32)?`, `asset_id ID?`, `error_reason V64?`, `error_message TEXT?`, `attempts INT`, `created_at TS`, `updated_at TS`, `expires_at TS`",
       "keys_contract": "PK id; UNIQUE `(user_id,upload_key)`; `(session_id,state)`; `(state,updated_at)`; `(product_id,state)`. State receiving/stored/registered/failed/cleaned; không tạo asset trước khi object được xác nhận"
+    },
+    {
+      "name": "feeds",
+      "columns_contract": "`id ID AUTO`, `feed_key V64`, `name V191`, `platform V16`, `format V8`, `enabled B`, `status V16`, `config TEXT_JSON`, `config_hash BINARY(32)`, `token_seed BINARY(32)`, `version VER`, `active_generation VER`, `build_generation VER`, `rebuild_reason V64?`, `changes_first_at TS?`, `changes_last_at TS?`, `last_published_at TS?`, `stats TEXT_JSON`, `last_error V255?`, `created_at TS`, `updated_at TS`",
+      "keys_contract": "PK id; UNIQUE feed_key; `(enabled,status,id)`. Token = HMAC-SHA256 của `token_seed` ngẫu nhiên với salt của site, không lưu token dạng rõ; xoay token = đổi seed; `build_generation > 0` khi đang full rebuild; `config_hash` chỉ tính trên field ảnh hưởng render"
+    },
+    {
+      "name": "feed_items",
+      "columns_contract": "`feed_id ID`, `generation VER`, `product_id ID`, `variant_id ID` (0 cho item cấp sản phẩm), `item_id V100`, `eligible B`, `payload TEXT_JSON`, `payload_hash BINARY(32)`, `issues TEXT_JSON`, `next_change TS?`, `updated_at TS`",
+      "keys_contract": "PK `(feed_id,generation,product_id,variant_id)`; `(feed_id,generation,next_change)`. Payload trung lập định dạng; publish đọc tuần tự theo PK"
+    },
+    {
+      "name": "feed_dirty",
+      "columns_contract": "`feed_id ID`, `product_id ID`, `first_marked_at TS`, `last_marked_at TS`",
+      "keys_contract": "PK `(feed_id,product_id)`; `(feed_id,last_marked_at)`. Đánh dấu rẻ, idempotent; mất đánh dấu được reconciliation bắt lại"
     }
   ],
   "ddl_status": "T05_must_implement_and_verify"

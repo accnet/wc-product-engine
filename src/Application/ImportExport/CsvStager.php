@@ -1109,7 +1109,7 @@ class CsvStager
         // contract's unsupported_feature error until the commit worker exists.
         return new WP_REST_Response([
             'code'       => 'unsupported_feature',
-            'message'    => 'Committing a validated import through this route is not available in this build. Use WC Product Engine > Shopify CSV Import.',
+            'message'    => 'Committing a validated import through this route is not available in this build. Use WC Product Engine > CSV Import.',
             'details'    => [['pointer' => '/job', 'reason' => 'commit_worker_unavailable']],
             'request_id' => wp_generate_uuid4(),
             'retryable'  => false,

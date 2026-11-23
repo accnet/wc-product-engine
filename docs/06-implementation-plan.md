@@ -871,7 +871,7 @@ T01 có baseline smoke command thực ở fixture harness cơ bản; không ch�
 
 **Đọc trước:** 02 §4, 03 §5, 08 §6, 08 §7; artifacts của dependency. T01/T02 dùng draft contracts hiện có; T03 seal trước các consumer implementation.
 
-**Files:** `src/Admin/OperationsPage.php`, `assets/operations/operations.js`, `src/Cli/Commands.php`, `tests/integration/T41Test.php`, `docs/evidence/T41/result.json`.
+**Files:** `src/Admin/OperationsPage.php`, `src/Cli/Commands.php`, `tests/integration/T41Test.php`, `docs/evidence/T41/result.json`.
 
 **Deliverables:** Admin operations screen; WP-CLI migrate/rebuild/audit/rollback/export commands; health counters.
 

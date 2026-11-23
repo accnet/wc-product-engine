@@ -89,6 +89,16 @@ $o = [];
 foreach ($svc->getProductEditorData($id)['variations'] as $v) { $o[(int) $v['id']] = ['sku' => $v['sku'], 'price' => (string) $v['regular_price']]; }
 echo 'JSON:' . wp_json_encode($o);
 `);
+writeFileSync(path.join(work, 'options.php'), `<?php
+$id = (int) $args[0];
+wp_cache_flush();
+$svc = \\WPE\\Admin\\ProductEditor\\ProductEditorService::getInstance();
+$o = [];
+foreach ($svc->getProductEditorData($id)['variation_options'] as $opt) {
+    $o[] = ['name' => $opt['name'], 'values' => array_map(fn($v) => is_array($v) ? $v['label'] : $v, $opt['values'] ?? [])];
+}
+echo 'JSON:' . wp_json_encode($o);
+`);
 const evalFile = (file, ...args) => {
     const out = wp('eval-file', path.join(work, file), ...args);
     const m = out.match(/JSON:(.*)$/s);
@@ -341,6 +351,71 @@ try {
     await waitEditor();
     const defValAfterClear = await page.locator(`${INLINE} .wpe-option-default-value-select`).first().inputValue();
     check('Clearing option default value to -- No Default -- persists after Update', defValAfterClear === '', defValAfterClear);
+
+    // ================================================================ 8c. Drag & drop reorder of options and values persists
+    const optionNames = () => page.locator(`${INLINE} .wpe-option-name-input`).evaluateAll((els) => els.map((e) => e.value));
+    const chipLabels = (optIdx) => page.locator(`${INLINE} .wpe-chips-container[data-opt-idx="${optIdx}"] .wpe-chip-label`).allInnerTexts();
+    const drag = async (fromSel, toSel, edge) => {
+        // page.mouse works in viewport coordinates: bring the options list into view first.
+        await page.locator(`${INLINE} .wpe-options-list`).evaluate((el) => el.scrollIntoView({ block: 'center' }));
+        const a = await page.locator(fromSel).boundingBox();
+        const b = await page.locator(toSel).boundingBox();
+        const tx = edge === 'left' ? b.x + 2 : edge === 'right' ? b.x + b.width - 2 : b.x + b.width / 2;
+        const ty = edge === 'top' ? b.y + 2 : edge === 'bottom' ? b.y + b.height - 2 : b.y + b.height / 2;
+        await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(a.x + a.width / 2 + 6, a.y + a.height / 2 + 6, { steps: 2 });
+        await page.mouse.move(tx, ty, { steps: 8 });
+        await page.mouse.up();
+        await page.waitForTimeout(150);
+    };
+    check('No arrow move buttons are rendered for options or values', (await page.locator(`${INLINE} :is(.wpe-btn-move-option, .wpe-chip-move)`).count()) === 0);
+    check('Before reorder: options Size, Color; Size values S, M', JSON.stringify(await optionNames()) === '["Size","Color"]' && JSON.stringify(await chipLabels(0)) === '["S","M"]', JSON.stringify([await optionNames(), await chipLabels(0)]));
+
+    // Pressing on the option name input and moving never starts a drag.
+    await drag(`${INLINE} .wpe-option-card[data-idx="1"] .wpe-option-name-input`, `${INLINE} .wpe-option-card[data-idx="0"]`, 'top');
+    check('Dragging from the option name input does not reorder', JSON.stringify(await optionNames()) === '["Size","Color"]', JSON.stringify(await optionNames()));
+
+    await drag(`${INLINE} .wpe-chip[data-opt-idx="0"][data-val-idx="1"] .wpe-chip-handle`, `${INLINE} .wpe-chip[data-opt-idx="0"][data-val-idx="0"]`, 'left');
+    check('Dragging chip M before S reorders the values', JSON.stringify(await chipLabels(0)) === '["M","S"]', JSON.stringify(await chipLabels(0)));
+    check('Reordering marks the draft as Unsaved changes', (await badge()) === 'Unsaved changes', await badge());
+
+    await drag(`${INLINE} .wpe-option-card[data-idx="1"] .wpe-option-drag-handle`, `${INLINE} .wpe-option-card[data-idx="0"]`, 'top');
+    check('Dragging the Color handle above Size reorders the options', JSON.stringify(await optionNames()) === '["Color","Size"]', JSON.stringify(await optionNames()));
+
+    // Keyboard: arrow keys on the focused handle; focus stays on the moved item.
+    await page.locator(`${INLINE} .wpe-chip[data-opt-idx="0"][data-val-idx="0"] .wpe-chip-handle`).focus();
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(100);
+    const kbFocus = await page.evaluate(() => { const el = document.activeElement; return el && el.classList.contains('wpe-chip-handle') ? el.getAttribute('data-val-idx') + ':' + el.textContent.trim() : ''; });
+    check('ArrowRight on a focused value moves it one place and keeps focus on it', JSON.stringify(await chipLabels(0)) === '["Blue","Red"]' && kbFocus === '1:Red', `${JSON.stringify(await chipLabels(0))} focus=${kbFocus}`);
+    await page.locator(`${INLINE} .wpe-option-drag-handle[data-opt-idx="1"]`).focus();
+    await page.keyboard.press('Home');
+    await page.waitForTimeout(100);
+    await page.locator(`${INLINE} .wpe-option-drag-handle[data-opt-idx="0"]`).focus();
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(100);
+    check('Home / ArrowDown on the option handle move the option (Size, Color -> Color, Size)', JSON.stringify(await optionNames()) === '["Color","Size"]', JSON.stringify(await optionNames()));
+
+    // Add a value, move it to the front with End/Home, then delete-free save.
+    const sizeInput = page.locator(`${INLINE} .wpe-chips-container[data-opt-idx="1"] .wpe-chip-input`);
+    await sizeInput.fill('L');
+    await sizeInput.press('Enter');
+    await page.waitForTimeout(150);
+    await page.locator(`${INLINE} .wpe-chip[data-opt-idx="1"][data-val-idx="2"] .wpe-chip-handle`).focus();
+    await page.keyboard.press('Home');
+    await page.waitForTimeout(100);
+    check('A newly added value can be moved to the front (L, M, S)', JSON.stringify(await chipLabels(1)) === '["L","M","S"]', JSON.stringify(await chipLabels(1)));
+
+    await page.locator(`${INLINE} .wpe-btn-save-api`).click();
+    await page.waitForFunction(() => (document.getElementById('wpe-box-status') || {}).textContent === 'In sync', null, { timeout: 20000 }).catch(() => {});
+    check('Save Changes syncs the draft (badge In sync)', (await badge()) === 'In sync', await badge());
+    const savedOrder = evalFile('options.php', String(variable.id));
+    check('Saved order in the database: Color [Blue, Red], Size [L, M, S]', JSON.stringify(savedOrder) === JSON.stringify([{ name: 'Color', values: ['Blue', 'Red'] }, { name: 'Size', values: ['L', 'M', 'S'] }]), JSON.stringify(savedOrder));
+    await page.reload({ waitUntil: 'load' });
+    await waitEditor();
+    check('After reload the editor shows the saved order', JSON.stringify(await optionNames()) === '["Color","Size"]' && JSON.stringify(await chipLabels(0)) === '["Blue","Red"]' && JSON.stringify(await chipLabels(1)) === '["L","M","S"]', JSON.stringify([await optionNames(), await chipLabels(0), await chipLabels(1)]));
+    check('Variations keep their ids after a reorder', JSON.stringify([...evalFile('children.php', String(variable.id))].sort()) === JSON.stringify([...idsAfter].sort()));
 
     // ================================================================ 9. Failed save is never silent and keeps the draft
     await setInlinePrice(1, '44.44');

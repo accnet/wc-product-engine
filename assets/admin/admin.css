@@ -1,41 +1,90 @@
-/* WC Product Engine — Admin Styles */
+/* WC Product Engine — Admin Styles
+ *
+ * CSV Import screen layout. Tokens and shared
+ * components (header, cards, buttons, inputs, notices) come from
+ * assets/admin/admin-ui.css via the `.wpe-ui` class on the screen wrapper.
+ */
 
-.wpe-import-wrap {
-    max-width: 1200px;
-    margin: 20px 20px 0 0;
+/* ==========================================================================
+   CSV Import screen (P025.2)
+   ========================================================================== */
+.wrap.wpe-import-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+    box-sizing: border-box;
 }
 
-.wrap.wpe-import-wrap h1.wp-heading-inline,
-.wpe-import-wrap h1 {
-    display: inline-flex;
+.wpe-import-wrap .wpe-import-lead {
+    max-width: 80ch;
+    margin: 4px 0 0;
+}
+
+.wpe-import-wrap .wpe-page-header {
+    margin-bottom: 20px;
+}
+
+/* Resumable job banner: message left, actions right. */
+.wpe-import-wrap .wpe-import-banner {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+}
+
+.wpe-import-banner__text {
+    flex: 1 1 320px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.wpe-import-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    font-size: 23px;
-    font-weight: 600;
-    line-height: 1.3;
 }
 
-.wpe-import-wrap h1 .dashicons {
+/* Two-step setup: file (wider) | configuration. */
+.wpe-import-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--wpe-s-gap, 16px);
+    align-items: start;
+}
+
+.wpe-import-wrap .wpe-import-card > h2 {
+    margin-bottom: 14px;
+}
+
+.wpe-import-step {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    font-size: 28px;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--wpe-s-accent-subtle, #eef4fe);
+    color: var(--wpe-s-accent, #005bd3);
+    font-size: var(--wpe-s-fs-sm, 12px);
+    font-weight: 700;
     line-height: 1;
-    flex-shrink: 0;
 }
 
-/* Dropzone */
-#wpe-dropzone .dashicons {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    font-size: 48px;
-    line-height: 1;
-    color: var(--wpe-wp-blue, #2271b1);
+/* Dropzone (colors pinned by tests/e2e UiStage2/UiStage3). */
+.wpe-import-dropzone {
+    padding: 28px 20px;
+    border: 1px dashed var(--wpe-border-control, #8c8f94);
+    border-radius: var(--wpe-s-radius, 8px);
+    background: var(--wpe-s-surface-2, #f7f7f8);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.wpe-import-dropzone:hover {
+    border-color: var(--wpe-wp-blue, #2271b1);
 }
 
 .wpe-import-wrap #wpe-dropzone.dragover {
@@ -43,435 +92,334 @@
     background-color: var(--wpe-surface-info, #f0f6fc);
 }
 
-/* Buttons & Dashicons alignment (overrides WP 7.x buttons.css line-height offsets) */
-.wp-core-ui .wpe-import-wrap .button,
-.wpe-import-wrap .button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.wp-core-ui .wpe-import-wrap .wpe-import-start-btn,
-.wpe-import-wrap .wpe-import-start-btn {
-    width: 100%;
-    gap: 8px;
-}
-
-.wp-core-ui .wpe-import-wrap .button .dashicons,
-.wp-core-ui .wpe-import-wrap .button.button-hero .dashicons,
-.wp-core-ui .wpe-import-wrap .button.button-small .dashicons,
-.wp-core-ui .wpe-import-wrap .button.button-compact .dashicons,
-.wp-core-ui .wpe-import-wrap .button-primary .dashicons,
-.wp-core-ui .wpe-import-wrap .button-secondary .dashicons,
-.wpe-import-wrap .button .dashicons {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
+#wpe-dropzone .dashicons {
+    width: 36px;
+    height: 36px;
+    font-size: 36px;
     line-height: 1;
-    margin: 0;
-    padding: 0;
-    vertical-align: middle;
-    flex-shrink: 0;
+    color: var(--wpe-s-accent, #005bd3);
 }
 
-.wp-core-ui .wpe-import-wrap .button.button-hero .dashicons,
-.wpe-import-wrap .button.button-hero .dashicons {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
+.wpe-import-wrap .wpe-import-dropzone-title {
+    margin: 6px 0 2px;
+    font-size: var(--wpe-s-fs-lg, 14px);
 }
 
-/* Terminal Console */
-#wpe-terminal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-#wpe-terminal-body::-webkit-scrollbar-track {
-    background: var(--wpe-terminal-bg, #1e1e1e);
-}
-
-#wpe-terminal-body::-webkit-scrollbar-thumb {
-    background: var(--wpe-terminal-thumb, #444);
-    border-radius: var(--wpe-radius-xs, 4px);
-}
-
-#wpe-terminal-body::-webkit-scrollbar-thumb:hover {
-    background: var(--wpe-terminal-thumb-hover, #666);
-}
-
-.wpe-log-success {
-    color: var(--wpe-terminal-log-success, #4ec9b0);
-}
-
-.wpe-log-info {
-    color: var(--wpe-terminal-log-info, #9cdcfe);
-}
-
-.wpe-log-warning {
-    color: var(--wpe-terminal-log-warning, #dcdcaa);
-}
-
-.wpe-log-error {
-    color: var(--wpe-terminal-log-error, #f48771);
-}
-
-/* Utility visibility helper */
-.wpe-hidden,
-.wp-core-ui .wpe-import-wrap .button.wpe-hidden,
-.wpe-import-wrap .button.wpe-hidden {
-    display: none;
-}
-
-/* Shopify CSV Import Screen (P025.2) */
-.wpe-import-lead {
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.wpe-import-banner {
-    margin: 15px 0;
-}
-
-.wpe-import-banner-btn {
-    margin-left: 10px;
-}
-
-.wpe-import-banner-btn-secondary {
-    margin-left: 5px;
-}
-
-.wpe-import-grid {
-    display: flex;
-    gap: var(--wpe-space-5, 20px);
-    flex-wrap: wrap;
-    margin-top: 15px;
-}
-
-.wpe-import-col-main {
-    flex: 3;
-    min-width: 340px;
-}
-
-.wpe-import-col-side {
-    flex: 2;
-    min-width: 280px;
-}
-
-.wpe-import-card {
-    padding: var(--wpe-space-5, 20px);
-    max-width: 100%;
-}
-
-.wpe-import-dropzone {
-    border: 2px dashed var(--wpe-border-control, #8c8f94);
-    border-radius: var(--wpe-radius-sm, 6px);
-    padding: 30px;
-    text-align: center;
-    background: var(--wpe-surface-subdued, #f8fafc);
-    cursor: pointer;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.wpe-import-dropzone-title {
-    font-size: 15px;
-    margin: 10px 0 5px 0;
-}
-
-.wpe-import-dropzone-hint {
+.wpe-import-wrap .wpe-import-dropzone-hint {
     margin: 0;
 }
 
 .wpe-import-server-path {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid var(--wpe-border-subdued, #e2e8f0);
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--wpe-s-divider, #ebebed);
 }
 
 .wpe-import-server-path-row {
     display: flex;
-    gap: 10px;
-    margin-top: 5px;
+    gap: 8px;
+    margin: 4px 0 6px;
 }
 
+.wpe-import-server-path-row .wpe-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.wpe-import-wrap .wpe-import-server-path .wpe-help {
+    margin: 0;
+}
+
+/* Selected file: JS sets background/border-left color inline for ok/error. */
 .wpe-import-selected-file {
-    margin-top: 15px;
-    padding: var(--wpe-space-3, 12px);
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--wpe-s-divider, #ebebed);
+    border-radius: var(--wpe-s-radius-sm, 6px);
     background: var(--wpe-surface-info-strong, #e7f3fe);
-    border-left: 4px solid var(--wpe-wp-blue, #2271b1);
-    border-radius: 3px;
 }
 
 .wpe-import-selected-name {
-    font-weight: 700;
-    font-size: 14px;
+    font-size: var(--wpe-s-fs-lg, 14px);
+    font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .wpe-import-selected-meta {
-    font-size: 12px;
-    color: var(--wpe-wp-text, #50575e);
-    margin-top: 3px;
+    margin-top: 2px;
+    color: var(--wpe-s-text-2, #55585e);
+    font-size: var(--wpe-s-fs-sm, 12px);
 }
 
-.wpe-import-form-table {
-    margin-top: 0;
+/* Configuration fields: stacked label / control / hint. */
+.wpe-import-fields {
+    display: grid;
+    gap: 14px;
 }
 
-.wpe-import-form-table th,
-.wpe-import-form-table td {
-    padding: 10px 0;
-}
-
-.wpe-import-select {
-    width: 100%;
-}
-
-.wpe-import-field-hint {
-    margin-top: 5px;
+.wpe-import-wrap .wpe-field .wpe-help {
+    margin: 0;
 }
 
 .wpe-import-start-row {
-    margin-top: var(--wpe-space-5, 20px);
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--wpe-s-divider, #ebebed);
 }
 
+.wpe-import-wrap .wpe-import-start-btn {
+    width: 100%;
+}
+
+/* Progress dashboard -------------------------------------------------------- */
 .wpe-import-progress-section {
-    margin-top: var(--wpe-space-5, 20px);
+    display: grid;
+    gap: var(--wpe-s-gap, 16px);
+    margin-top: var(--wpe-s-gap, 16px);
 }
 
 .wpe-import-progress-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 16px;
 }
 
-.wpe-import-progress-title {
-    margin: 0;
-    display: inline-flex;
+.wpe-import-wrap .wpe-import-progress-title {
+    display: flex;
     align-items: center;
-    gap: var(--wpe-space-2, 8px);
+    gap: 8px;
+    margin: 0;
+    font-size: var(--wpe-s-fs-xl, 15px);
+    font-weight: 600;
 }
 
-.wpe-import-spinner {
+.wpe-import-wrap .wpe-import-spinner {
     float: none;
     margin: 0;
 }
 
-.wpe-import-status-desc {
-    margin: 5px 0 0 0;
+.wpe-import-wrap .wpe-import-status-desc {
+    margin: 2px 0 0;
 }
 
 .wpe-import-status-success {
-    color: var(--wpe-success-dark, #008a20);
+    color: var(--wpe-s-ok, #0e7a4f);
 }
 
 .wpe-import-actions {
     display: flex;
-    gap: var(--wpe-space-2, 8px);
     flex-wrap: wrap;
+    gap: 8px;
 }
 
 .wpe-import-progress-wrap {
-    margin: var(--wpe-space-5, 20px) 0 10px 0;
+    margin: 18px 0 0;
 }
 
 .wpe-import-progress-label {
     display: flex;
     justify-content: space-between;
-    font-weight: 700;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    color: var(--wpe-s-text-2, #55585e);
+    font-size: var(--wpe-s-fs-sm, 12px);
+    font-weight: 600;
+}
+
+#wpe-percent-text {
+    color: var(--wpe-s-text, #1c1d20);
+    font-variant-numeric: tabular-nums;
 }
 
 .wpe-import-progress-track {
-    width: 100%;
-    height: 24px;
-    background: var(--wpe-border-subdued, #e2e8f0);
-    border-radius: var(--wpe-radius-xl, 12px);
-    overflow: hidden;
     position: relative;
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--wpe-s-hover, #f1f1f2);
+    overflow: hidden;
 }
 
 .wpe-import-progress-fill {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, var(--wpe-wp-blue, #2271b1), var(--wpe-success, #00a32a));
+    border-radius: 999px;
+    background: var(--wpe-s-accent, #005bd3);
     transition: width 0.3s ease;
-    border-radius: var(--wpe-radius-xl, 12px);
 }
 
+/* Metrics: one divided strip, same pattern as Settings → Overview. */
 .wpe-import-metrics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 15px;
-    margin: 15px 0 5px 0;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 18px 0 0;
+    border: 1px solid var(--wpe-s-border, #e3e3e6);
+    border-radius: var(--wpe-s-radius, 8px);
+    overflow: hidden;
 }
 
 .wpe-import-metric {
-    background: var(--wpe-surface-info, #f0f6fc);
-    padding: var(--wpe-space-3, 12px);
-    border-radius: var(--wpe-radius-sm, 6px);
-    text-align: center;
+    min-width: 0;
+    margin: 0 0 -1px -1px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--wpe-s-divider, #ebebed);
+    border-left: 1px solid var(--wpe-s-divider, #ebebed);
 }
 
 .wpe-import-metric-label {
-    font-size: 12px;
-    color: var(--wpe-wp-text, #50575e);
+    color: var(--wpe-s-text-2, #55585e);
+    font-size: var(--wpe-s-fs-sm, 12px);
+    font-weight: 600;
 }
 
 .wpe-import-metric-value {
-    font-size: 22px;
-    font-weight: 700;
-    margin-top: var(--wpe-space-1, 4px);
+    margin-top: 2px;
+    color: var(--wpe-s-text, #1c1d20);
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
 }
 
-.wpe-import-metric-value--blue {
-    color: var(--wpe-wp-blue-dark, #135e96);
-}
-
-.wpe-import-metric-value--green {
-    color: var(--wpe-success-dark, #008a20);
-}
-
+/* Only the semantic values keep a color; counters stay neutral. */
+.wpe-import-metric-value--blue,
 .wpe-import-metric-value--muted {
-    color: var(--wpe-wp-text, #50575e);
+    color: var(--wpe-s-text, #1c1d20);
 }
 
+.wpe-import-metric-value--green,
 .wpe-import-metric-value--success {
-    color: var(--wpe-success, #00a32a);
+    color: var(--wpe-s-ok, #0e7a4f);
 }
 
-/* Live Terminal Console Card */
+/* Live terminal console (dark surface pinned by tests/e2e UiStage2). */
 .wpe-terminal-card {
-    padding: 15px;
-    margin-top: var(--wpe-space-5, 20px);
+    max-width: 100%;
+    padding: 0;
+    border: 1px solid var(--wpe-terminal-border, #333);
+    border-radius: var(--wpe-s-radius, 8px);
     background: var(--wpe-terminal-bg, #1e1e1e);
     color: var(--wpe-terminal-text, #d4d4d4);
-    border-radius: var(--wpe-radius-sm, 6px);
-    box-shadow: var(--wpe-shadow-terminal, 0 4px 12px rgba(0, 0, 0, 0.15));
+    overflow: hidden;
 }
 
 .wpe-terminal-header {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 8px 12px 8px 16px;
     border-bottom: 1px solid var(--wpe-terminal-border, #333);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
 }
 
 .wpe-terminal-title-group {
     display: flex;
     align-items: center;
-    gap: var(--wpe-space-2, 8px);
+    gap: 6px;
 }
 
 .wpe-terminal-dot {
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
 }
 
-.wpe-terminal-dot--red {
-    background: var(--wpe-terminal-dot-red, #ff5f56);
-}
-
-.wpe-terminal-dot--yellow {
-    background: var(--wpe-terminal-dot-yellow, #ffbd2e);
-}
-
-.wpe-terminal-dot--green {
-    background: var(--wpe-terminal-dot-green, #27c93f);
-}
+.wpe-terminal-dot--red { background: var(--wpe-terminal-dot-red, #ff5f56); }
+.wpe-terminal-dot--yellow { background: var(--wpe-terminal-dot-yellow, #ffbd2e); }
+.wpe-terminal-dot--green { background: var(--wpe-terminal-dot-green, #27c93f); }
 
 .wpe-terminal-title {
+    margin-left: 6px;
     color: var(--wpe-surface, #fff);
-    margin-left: 5px;
     font-family: var(--wpe-font-mono, monospace);
-    font-size: 13px;
+    font-size: var(--wpe-s-fs-sm, 12px);
+    font-weight: 600;
 }
 
 .wpe-terminal-controls {
     display: flex;
-    gap: 15px;
     align-items: center;
+    gap: 12px;
 }
 
 .wpe-terminal-autoscroll-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: var(--wpe-terminal-muted, #aaa);
-    font-size: 12px;
+    font-size: var(--wpe-s-fs-sm, 12px);
     cursor: pointer;
 }
 
-.wpe-terminal-checkbox {
-    margin-right: var(--wpe-space-1, 4px);
+.wpe-import-wrap .wpe-terminal-checkbox {
+    margin: 0;
 }
 
-.wp-core-ui .wpe-import-wrap .wpe-terminal-clear-btn,
-.wpe-terminal-clear-btn {
+.wpe-ui .wpe-btn.wpe-terminal-clear-btn {
+    border-color: var(--wpe-terminal-thumb-hover, #666);
+    background: transparent;
+    color: var(--wpe-terminal-text, #d4d4d4);
+}
+
+.wpe-ui .wpe-btn.wpe-terminal-clear-btn:hover {
+    border-color: var(--wpe-terminal-muted, #aaa);
     background: var(--wpe-terminal-border, #333);
-    color: var(--wpe-terminal-text, #eee);
-    border-color: var(--wpe-terminal-thumb-hover, #555);
+    color: var(--wpe-surface, #fff);
 }
 
 .wpe-terminal-body {
     height: 320px;
+    padding: 10px 16px;
     overflow-y: auto;
     font-family: var(--wpe-font-mono, monospace);
     font-size: 12px;
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-all;
-    padding: 5px;
 }
 
-/* Operations Dashboard Screen (P025.2) */
-.wpe-ops-status-text {
-    text-transform: uppercase;
-    font-weight: 700;
+#wpe-terminal-body::-webkit-scrollbar { width: 8px; }
+#wpe-terminal-body::-webkit-scrollbar-track { background: var(--wpe-terminal-bg, #1e1e1e); }
+#wpe-terminal-body::-webkit-scrollbar-thumb { background: var(--wpe-terminal-thumb, #444); border-radius: var(--wpe-radius-xs, 4px); }
+#wpe-terminal-body::-webkit-scrollbar-thumb:hover { background: var(--wpe-terminal-thumb-hover, #666); }
+
+.wpe-log-success { color: var(--wpe-terminal-log-success, #4ec9b0); }
+.wpe-log-info { color: var(--wpe-terminal-log-info, #9cdcfe); }
+.wpe-log-warning { color: var(--wpe-terminal-log-warning, #dcdcaa); }
+.wpe-log-error { color: var(--wpe-terminal-log-error, #f48771); }
+
+@media (max-width: 960px) {
+    .wpe-import-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
-.wpe-ops-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-    margin: var(--wpe-space-5, 20px) 0;
-}
+@media (max-width: 782px) {
+    .wrap.wpe-import-wrap {
+        padding: 4px 0 24px;
+        margin-right: 10px;
+    }
 
-.wpe-ops-metric {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 5px 0;
-}
+    .wpe-import-server-path-row {
+        flex-direction: column;
+    }
 
-.wpe-ops-metric--ok {
-    color: var(--wpe-success, #00a32a);
-}
+    .wpe-import-banner__actions,
+    .wpe-import-actions {
+        width: 100%;
+    }
 
-.wpe-ops-metric--danger {
-    color: var(--wpe-danger-wp, #d63638);
-}
+    .wpe-import-banner__actions .wpe-btn,
+    .wpe-import-actions .wpe-btn {
+        flex: 1 1 auto;
+    }
 
-.wpe-ops-card {
-    margin: var(--wpe-space-5, 20px) 0;
-}
-
-.wpe-ops-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.wpe-ops-rollback-btn {
-    margin-left: auto;
-}
-
-.wpe-ops-action-result {
-    margin-top: 15px;
+    .wpe-terminal-body {
+        height: 240px;
+    }
 }
 
 /* Progress bar pulse animation */
@@ -493,4 +441,11 @@
     .wpe-import-progress-fill {
         transition: none;
     }
+}
+
+/* Utility visibility helper. Kept last so it beats component display rules of equal
+ * specificity; jQuery slideDown()/show() inline styles still override it on purpose. */
+.wpe-hidden,
+.wpe-ui .wpe-hidden {
+    display: none;
 }

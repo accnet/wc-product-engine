@@ -226,6 +226,66 @@
       "path": "/admin/rollouts/{cohort}/rollback",
       "contract": "expected epoch, reason, dry_run → job",
       "permission": "explicit restore hiện tại, không restore snapshot làm mất đơn/stock mới"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/feeds",
+      "contract": "search, platform, status, orderby, order → feed summaries (status, item counts, last publish, URL)",
+      "permission": "`manage_woocommerce`; token chỉ trả dạng URL cho người có `wpe_manage_operations`"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/feeds",
+      "contract": "FeedWrite → FeedView (version 1, token mới, full rebuild được yêu cầu)",
+      "permission": "`wpe_manage_operations`; config được chuẩn hóa, field lạ bị từ chối"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/feeds/{id}",
+      "contract": "→ FeedView gồm config, trạng thái, file tốt gần nhất, lần chạy gần đây",
+      "permission": "`manage_woocommerce`"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/feeds/{id}",
+      "contract": "FeedWrite partial + expected version → FeedView; đổi field ảnh hưởng render thì yêu cầu full rebuild",
+      "permission": "`wpe_manage_operations` + CAS version, sai version trả 412 `stale_version`"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/feeds/{id}",
+      "contract": "→ xóa feed, items, dirty marks và file đã publish",
+      "permission": "`wpe_manage_operations`"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/feeds/{id}/duplicate",
+      "contract": "→ FeedView bản sao ở trạng thái tắt, token mới",
+      "permission": "`wpe_manage_operations`"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/feeds/{id}/regenerate",
+      "contract": "mode publish|rebuild|continue → FeedActionResult; feed nhỏ chạy ngay, feed lớn giao worker; continue chạy tiếp build đang chờ hoặc đang dựng thêm một bước giới hạn thời gian",
+      "permission": "`wpe_manage_operations`; không chạy song song với build đang có lease"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/feeds/{id}/rotate-token",
+      "contract": "→ FeedView với URL mới; URL cũ ngừng hoạt động ngay",
+      "permission": "`wpe_manage_operations`"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/feeds/{id}/preview",
+      "contract": "limit ≤ 50 → items đã render (payload + issues) theo định dạng feed",
+      "permission": "`manage_woocommerce`"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/feeds/{id}/diagnostics",
+      "contract": "→ issue counts theo mã + item mẫu, lịch sử chạy, heartbeat worker",
+      "permission": "`manage_woocommerce`"
     }
   ]
 }

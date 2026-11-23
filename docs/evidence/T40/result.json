@@ -1,8 +1,8 @@
 {
   "task_id": "T40",
-  "commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "qa_status": "passed",
-  "content_digest": "2529bf38cd444a6bb11aa91697171d0c2a656ea8548439455568fad5b72c90ba",
+  "content_digest": "dcd98f1772404f9706425cd7de0d234a36d448812115dfaeb45d093937a8eb14",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.0",
@@ -13,7 +13,7 @@
     {
       "argv": [
         "wp",
-        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T40Test.php"
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T40/output.log",
       "output_sha256": "3be395f81097739a4733f6339f0955de84c0b400a7ed29d0f3149557691e6d8c",
-      "content_digest": "2529bf38cd444a6bb11aa91697171d0c2a656ea8548439455568fad5b72c90ba"
+      "content_digest": "dcd98f1772404f9706425cd7de0d234a36d448812115dfaeb45d093937a8eb14"
     }
   ],
   "regression_results": [
@@ -130,15 +130,15 @@
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
-    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/7d4cbeb3-28c9-41cd-ac4b-236adc2bbea2/scratchpad/wptest",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
     "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -147,9 +147,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -167,9 +167,9 @@
     "counts_after_test": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7360,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7402,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -178,9 +178,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -198,9 +198,9 @@
     "counts_after_restore": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7323,
-      "wp_wpe_catalog": 259,
-      "wp_wpe_catalog_facets": 0,
+      "wp_wpe_audit": 7365,
+      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
@@ -209,9 +209,9 @@
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
       "wp_wpe_object_state": 5203,
-      "wp_wpe_option_values": 1041,
+      "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5199,
+      "wp_wpe_outbox": 5241,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
       "wp_wpe_product_terms": 0,
@@ -251,7 +251,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "17aec6bc2d975e24a5a9b1a18669955048a5eb83",
+  "base_commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
   "file_hashes": {
     "src/Application/Migration/RollbackRunner.php": "a614693d666dc26f94eee3ae7a794480dbd61cfbeaf245dd0bfa10a7f66f5163",
     "tests/integration/T40Test.php": "b068f81dba26545ead1fb4ec5aa6fcd9685775c08285383fce742270753e8c7b"

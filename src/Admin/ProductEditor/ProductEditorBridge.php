@@ -732,6 +732,9 @@ class ProductEditorBridge
             'currencySymbol'      => $currencySymbol,
             'productType'         => $productType,
             'restoredDraft'       => $draft,
+            // Store-wide "Enable stock management" (WooCommerce > Settings > Products > Inventory).
+            // When off, WooCommerce hides per-product/per-variation stock tracking controls.
+            'stockManagementEnabled' => 'yes' === get_option('woocommerce_manage_stock', 'yes'),
             'i18n'            => [
                 'saveSuccess'       => __('Variants saved successfully!', 'wc-product-engine'),
                 'saving'            => __('Saving changes...', 'wc-product-engine'),

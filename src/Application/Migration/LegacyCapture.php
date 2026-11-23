@@ -801,7 +801,7 @@ class LegacyCapture
             $productId
         ));
 
-        return ($authority === 'native');
+        return in_array((string)$authority, ['native', 'native_bridge', 'full_native'], true);
     }
 
     /**
@@ -809,7 +809,7 @@ class LegacyCapture
      */
     public function setAuthority(int $productId, string $authority): void
     {
-        if (!in_array($authority, ['legacy', 'native', 'shadow', 'indexed'], true)) {
+        if (!in_array($authority, ['legacy', 'native', 'native_bridge', 'full_native', 'shadow', 'indexed'], true)) {
             throw new InvalidArgumentException("Invalid authority: {$authority}");
         }
 

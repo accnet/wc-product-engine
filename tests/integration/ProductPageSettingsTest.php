@@ -547,8 +547,9 @@ class ProductPageSettingsTest
         $thumbsSizeL = $resSizeL['value_thumbnails'][$cId];
         $this->assert(str_contains($thumbsSizeL[$blackId]['src'], 'black-l-tee.jpg'), "Size=L: Black must resolve to 1st Black+L variation image (black-l-tee.jpg)");
         $this->assert(str_contains($thumbsSizeL[$whiteId]['src'], 'white-l-hoodie.jpg'), "Size=L: White must resolve to White+L variation image (white-l-hoodie.jpg)");
-        // Cobalt+L does not exist -> marked unavailable in allowed_details, but still has representative/fallback thumbnail so swatch doesn't vanish
-        $this->assert($resSizeL['allowed_details'][$cId][$cobaltId]['exists'] === false, "Size=L: Cobalt+L does not exist and must be marked exists=false");
+        // Cobalt+L does not exist, but Color precedes Size (option priority): Cobalt stays a selectable
+        // earlier-option value (choosing it reconciles Size) and keeps a representative/fallback thumbnail.
+        $this->assert($resSizeL['allowed_details'][$cId][$cobaltId]['exists'] === true, "Size=L: Cobalt (earlier option) must stay selectable (exists=true)");
         $this->assert(!empty($thumbsSizeL[$cobaltId]['src']), "Unavailable value must keep representative/fallback thumbnail so swatch never disappears");
 
         // Case C: Size=L, Style=Hoodie selected -> Black uses V3 (black-l-hoodie.jpg)

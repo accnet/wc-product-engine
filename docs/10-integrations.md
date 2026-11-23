@@ -73,7 +73,7 @@ Core Woo CSV thường tải URL ảnh vào Media Library; external mode là ph�
 | Nhóm | Mapping |
 |---|---|
 | Current/legacy headers | Current `URL handle`, `Description`, `SKU`, `Price`, `Product image URL`, `Variant image URL`; legacy `Handle`, `Body (HTML)`, `Variant SKU`, `Variant Price`, `Image Src`, `Variant Image`. Schema version/fingerprint được lưu trong job |
-| Handle / title / vendor / type / tags | Handle source grouping và external mapping; vendor/type custom meta/registered taxonomy theo config. Shopify Product category không tự map thành Woo category tùy ý |
+| Handle / title / vendor / type / tags | Handle source grouping và external mapping; vendor/type custom meta/registered taxonomy theo config. Shopify Product category không tự map thành Woo category tùy ý: mặc định (`category_mode=none`) cột này chỉ được báo trong `ignored_cols`; khi operator chọn `category_mode=path` cho job, đường dẫn `A > B > C` (giải mã HTML entity, tách theo `>`, bỏ đoạn rỗng) được tạo thành cây `product_cat` (khớp theo tên dưới cùng parent, tạo mới nếu chưa có) và sản phẩm được gán vào danh mục lá; danh mục mặc định bị thay bằng danh mục lá, các danh mục khác giữ nguyên; ô rỗng không thay đổi gì. Trang danh mục cha liệt kê sản phẩm của danh mục con (`include_children`) như WordPress. `Tags` (phân tách dấu phẩy) map thành `product_tag`: ô không rỗng thay thế tags của sản phẩm, ô rỗng không xóa tags hiện có. Sản phẩm import chưa có `product_cat` nào được gán `default_product_cat` như WooCommerce làm khi lưu sản phẩm không danh mục; không xóa danh mục đã có. Các cột có mặt nhưng chưa có mapping Woo (`Product category`, `Type`, `Vendor`) được liệt kê một lần trong job (`ignored_cols`) và dòng WARNING của log khởi tạo, không bỏ qua im lặng |
 | Options | Tối đa 3 để Shopify export; option/value rows tạo combinations thật; default title mapping thành Woo simple nếu không có option thực |
 | Price / Compare-at | Rule chuyển compare-at→regular, price→sale chỉ khi compare-at lớn hơn price; trường bất thường lưu source data + loss report, không đảo nghĩa tùy tiện |
 | Inventory | Product CSV single-location stock; multiple locations yêu cầu inventory CSV/API khác, ngoài phạm vi; tracker/continue-selling map có cảnh báo |
@@ -132,3 +132,53 @@ Các nguồn dưới đây xác nhận extension surfaces và dialect constraint
 
 
 Target release references: [WP releases](https://wordpress.org/download/releases/), [Woo releases](https://developer.woocommerce.com/releases/). T01 kiểm download checksums/release source exact versions; docs conversion không thay kết quả runtime certification.
+
+## 12. Product feeds cho Google và Microsoft Merchant Center
+
+Nguồn đặc tả (tra cứu 2026-11-23, phải đối chiếu lại khi nền tảng đổi đặc tả): [Google Product data specification](https://support.google.com/merchants/answer/7052112), [Google product file](https://support.google.com/merchants/answer/12631822), [Google scheduled fetch](https://support.google.com/merchants/answer/1219255), [Microsoft feed files](https://help.ads.microsoft.com/apex/index/3/en/60050), [Microsoft scheduled download](https://help.ads.microsoft.com/apex/index/3/en/56839), [Microsoft dùng file Google](https://help.ads.microsoft.com/apex/index/3/en/51110).
+
+**Định dạng.** Google: XML RSS 2.0 với namespace `xmlns:g="http://base.google.com/ns/1.0"` (`title`, `link`, `description` không prefix, các thuộc tính khác dùng `g:`; thuộc tính lặp như `additional_image_link` là nhiều phần tử; `shipping` là phần tử lồng `g:country`, `g:service`, `g:price`) hoặc TSV UTF-8 có dòng header. Microsoft: TSV là định dạng chính (tên cột giống Google), XML chỉ được nhận khi đúng định dạng XML của Google. Giới hạn file: Google 4 GB, Microsoft 3 GB sau giải nén; cả hai nhận `.gz`. Lịch tải tự động của cả hai nền tảng tối đa mỗi ngày một lần (cùng nút "fetch now" thủ công), nên làm mới file nhanh hơn chỉ có ích khi tải thủ công hoặc ở lần tải kế tiếp.
+
+**TSV.** Ký tự tab, CR, LF trong giá trị được thay bằng khoảng trắng; thuộc tính nhiều giá trị nối bằng dấu phẩy; `shipping` dùng dạng `country:region:service:price`. Tập cột cố định theo cấu hình feed để publish có thể stream mà không quét trước.
+
+**Mapping mặc định (mỗi thuộc tính có thể ghi đè bằng giá trị cố định, field sản phẩm, taxonomy, option hoặc meta):**
+
+| Thuộc tính | Nguồn |
+|---|---|
+| `id` | SKU của variation/sản phẩm; thiếu SKU dùng `wc_{id}`. Tối đa 50 ký tự |
+| `item_group_id` | ID sản phẩm cha (chỉ khi xuất theo variation) |
+| `title` | Tiêu đề sản phẩm, chế độ variation nối thêm nhãn các value (`Áo - Đỏ / XL`). Tối đa 150 ký tự |
+| `description` | Mô tả variation nếu có, không thì mô tả sản phẩm rồi mô tả ngắn; bỏ HTML/shortcode, tối đa 5000 ký tự |
+| `link` | `get_permalink()` của post shell; variation thêm `attribute_{option key}={value_key}` để trang mở đúng variation (09 §3) |
+| `image_link`, `additional_image_link` | Ảnh primary của variation, fallback ảnh featured của sản phẩm; ảnh phụ là gallery variation rồi gallery sản phẩm, tối đa 10. URL qua `getStableExportUrl()` và `sanitizePublicUrl()`, ảnh `health = broken` bị loại |
+| `price`, `sale_price`, `sale_price_effective_date` | `EffectivePriceResolver`: `price` là giá regular, `sale_price` chỉ khi sale đang hiệu lực, khoảng ngày ISO 8601 khi có lịch sale. Định dạng `12.00 USD` theo tiền tệ cửa hàng |
+| `availability` | `in_stock`, `out_of_stock`, `backorder` theo cùng quy tắc tồn kho với catalog index (`manage_stock`, `quantity`, `backorders`, `stock_status`) |
+| `condition` | Mặc định `new` |
+| `brand` | Taxonomy `product_brand`, option `brand`, hoặc giá trị cố định |
+| `gtin`, `mpn`, `identifier_exists` | `global_unique_id` trong `extra_props`; MPN mặc định là SKU; không có GTIN và MPN thì `identifier_exists = no` khi cấu hình cho phép |
+| `product_type` | Đường dẫn danh mục sâu nhất `A > B > C` |
+| `google_product_category` | Giá trị mặc định của feed, ghi đè theo danh mục |
+| `color`, `size`, `material`, `pattern`, `gender`, `age_group` | Option value của variation theo mapping option → thuộc tính |
+| `shipping_weight` | Cân nặng variation hoặc sản phẩm, đơn vị cửa hàng (`lbs` xuất là `lb`) |
+| `shipping` | Không xuất (dùng cài đặt tài khoản Merchant Center) hoặc giá cố định theo feed |
+| `custom_label_0`…`custom_label_4` | Giá trị cố định hoặc nguồn mapping |
+
+**Lọc và loại trừ.** Chỉ sản phẩm `publish`, `catalog_visibility` khác `hidden`, có post shell, loại `simple` hoặc `variable`. Grouped/external bị bỏ qua với lý do. Variation `status != publish` hoặc không có giá bị loại. Cấu hình có thể lọc theo danh mục gồm/loại, bỏ hàng hết hàng, bỏ item thiếu ảnh. Sản phẩm authority legacy được đọc qua WooCommerce CRUD; sản phẩm native không bao giờ đọc postmeta.
+
+**Validation (mã issue).** Lỗi chặn item (`eligible = 0`): `missing_id`, `missing_title`, `missing_link`, `missing_image`, `missing_price`, `invalid_price`, `missing_shell`, `unsupported_type`. Cảnh báo (vẫn xuất): `missing_brand`, `missing_identifier`, `missing_google_category`, `title_truncated`, `description_truncated`, `id_too_long`, `tax_inclusive_market`. Microsoft dùng cùng bộ luật bắt buộc. Diagnostics lưu số lượng theo mã kèm tối đa 50 item mẫu, không ghi log từng item.
+
+**Thị trường.** Mỗi feed một quốc gia đích, ngôn ngữ và tiền tệ; tiền tệ phải bằng tiền tệ cửa hàng. Plugin không quy đổi tiền tệ và không tính lại giá gồm thuế: với thị trường yêu cầu giá gồm thuế (EU, UK, AU…) mà cửa hàng lưu giá chưa thuế, validator gắn `tax_inclusive_market`.
+
+**Mô hình cập nhật.** Năm chế độ:
+- Manual Regenerate: "Publish now" xuất file từ items hiện có; "Full rebuild" dựng lại mọi item.
+- On Change: hook thay đổi đánh dấu sản phẩm bị ảnh hưởng vào `feed_dirty`; worker render lại item của các sản phẩm này.
+- Debounced Publish: xuất snapshot mới khi có item đổi hash và đã yên 2 phút hoặc thay đổi đầu tiên đã chờ 5 phút; hai lần publish cách nhau tối thiểu 15 phút; không có thay đổi thì không publish.
+- Scheduled Reconciliation: mỗi tick render lại một lát sản phẩm cuốn chiếu (phủ toàn catalog khoảng 24 giờ), so hash, dọn item của sản phẩm đã xóa hoặc không còn khớp bộ lọc; item có `next_change` đến hạn (sale bắt đầu/kết thúc) được render lại.
+- Full Rebuild: khi tạo feed, khi `config_hash` đổi, khi cài đặt cửa hàng ảnh hưởng render đổi (tiền tệ, đơn vị cân nặng, cấu trúc permalink), khi dirty vượt 20% số item hoặc drift của một vòng đối soát vượt 1%, hoặc khi người dùng yêu cầu. Build ghi generation mới rồi chuyển; generation và file cũ phục vụ cho tới khi chuyển xong. Màn hình Edit đang mở tự chạy tiếp build đã yêu cầu (sau Create, Save đổi cấu hình hoặc Full rebuild) bằng các bước `continue` 20 giây, nên feed được dựng và publish ngay mà không chờ worker; đóng trang thì worker làm nốt từ cursor đã lưu.
+- Chạy khi chưa có cron (P036): system cron `wp wpe feeds tick` là runner chính. Khi heartbeat worker vắng hoặc cũ hơn 5 phút mà có việc feed đang chờ (dirty, sale đến hạn, build đã yêu cầu/đang dựng, cửa sổ debounce), `FeedAutoRunner` chạy đúng một tick `FeedScheduler` tối đa 20 giây ở cuối request web, sau `fastcgi_finish_request()` nên người dùng không phải chờ; cùng lock theo feed, cùng luật debounce, publish gate và đối soát; một tiến trình PHP mỗi lúc, cách nhau tối thiểu 30 giây (request vừa đổi sản phẩm được chạy ngay). Fallback không ghi heartbeat, nên cảnh báo thiếu worker vẫn hiện; nó ghi lần chạy gần nhất vào `control` key `feed_autorun_last` (P038). Khi fallback bật, cảnh báo nói feed đang cập nhật từ request của site kèm lần cập nhật gần nhất và có thể publish trễ lúc site vắng; khi fallback tắt mới nói thay đổi không được publish. Tắt bằng `define('WPE_FEEDS_AUTORUN', false)` hoặc filter `wpe_feeds_autorun`. Không có request PHP nào thì không có gì chạy, nên publish sau cửa sổ yên có thể trễ hơn 5 phút trên site vắng; đối soát chỉ chạy kèm khi có việc khác.
+
+Tín hiệu thay đổi: `wpe_aggregate_changed` phát từ `OutboxWorker::publishEvent()` (create/update/trash/restore/meta/stock/type change), purge trong `ProductRepository::delete()`, `set_object_terms`, `deleted_term_relationships`, `edited_term` (danh mục, tag, brand), `wpe_product_media_changed`, và hook WooCommerce sản phẩm/stock cho sản phẩm authority legacy.
+
+**Publish gate.** File `.part` chỉ thay file hiện hành bằng `rename()` khi: XML well-formed (XMLReader stream) hoặc mọi dòng TSV đủ cột; số item lớn hơn 0; số item không giảm quá 50% so với file tốt gần nhất (cấu hình được). Gate lỗi giữ file cũ, ghi `last_error` và hiển thị trên Health.
+
+**URL công khai.** `/wpe-feed/{feed_key}/{token}.xml|.tsv` (thêm `.gz` cho bản nén), fallback `?wpe_feed={feed_key}&token=…`. Token là HMAC-SHA256 (64 ký tự hex) của `token_seed` ngẫu nhiên 32 byte với salt của site, không lưu dạng rõ, so sánh hằng thời gian; xoay token bằng cách đổi seed. Phản hồi gửi `ETag`, `Last-Modified`, hỗ trợ `304`, và `X-Accel-Expires: 0` để page cache FastCGI không lưu file lớn. Feed tắt hoặc chưa có file tốt trả 404. Không chặn Googlebot/AdsBot-Google/bingbot ở đường dẫn này.

@@ -1,0 +1,292 @@
+/* WC Product Engine — Product Feeds screen (09 §11).
+ * Builds on tokens.css + admin-ui.css (.wpe-ui kit); only layout for feed-specific pieces.
+ */
+
+.wpe-feeds .wpe-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.wpe-feeds .wpe-page-header .wpe-page-header__eyebrow {
+    flex-basis: 100%;
+}
+
+.wpe-feeds .wpe-feeds__create {
+    margin-left: auto;
+}
+
+/* Toolbar */
+.wpe-feeds .wpe-feeds-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.wpe-feeds .wpe-feeds-toolbar .wpe-input {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 160px;
+}
+
+.wpe-feeds .wpe-feeds-toolbar input[type="search"] {
+    flex: 1 1 260px;
+    max-width: 420px;
+}
+
+/* Tables */
+.wpe-feeds .wpe-feeds-table-wrap {
+    overflow-x: auto;
+    margin: 0 calc(var(--wpe-s-pad-x) * -1);
+    border-top: 1px solid var(--wpe-s-divider);
+}
+
+.wpe-feeds .wpe-feeds-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--wpe-s-fs-md);
+}
+
+.wpe-feeds .wpe-feeds-table th,
+.wpe-feeds .wpe-feeds-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--wpe-s-divider);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.wpe-feeds .wpe-feeds-table th:first-child,
+.wpe-feeds .wpe-feeds-table td:first-child {
+    padding-left: var(--wpe-s-pad-x);
+}
+
+.wpe-feeds .wpe-feeds-table thead th {
+    background: var(--wpe-s-surface-2);
+    color: var(--wpe-s-text-2);
+    font-size: var(--wpe-s-fs-sm);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wpe-feeds .wpe-feeds-table tbody tr:hover td {
+    background: var(--wpe-s-surface-2);
+}
+
+.wpe-feeds .wpe-feeds-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.wpe-feeds .wpe-feeds-table tr.is-ineligible td {
+    color: var(--wpe-s-text-3);
+}
+
+.wpe-feeds .wpe-sort {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.wpe-feeds th[aria-sort="ascending"] .wpe-sort::after { content: " \2191"; }
+.wpe-feeds th[aria-sort="descending"] .wpe-sort::after { content: " \2193"; }
+
+.wpe-feeds .wpe-feeds-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.wpe-feeds .wpe-feeds-actions .wpe-btn + .wpe-btn {
+    margin-left: 2px;
+}
+
+.wpe-feeds .wpe-feeds-delete {
+    color: var(--wpe-s-danger);
+}
+
+.wpe-feeds .wpe-badge.is-error {
+    background: var(--wpe-s-danger-bg);
+    color: var(--wpe-s-danger);
+}
+
+/* Status card */
+.wpe-feeds .wpe-feed-status__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.wpe-feeds .wpe-feed-status__head h2 {
+    margin: 0;
+    font-size: var(--wpe-s-fs-xl);
+}
+
+.wpe-feeds .wpe-feed-url {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.wpe-feeds .wpe-feed-url .wpe-input {
+    flex: 1 1 360px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--wpe-s-fs-sm);
+}
+
+.wpe-feeds .wpe-feed-error {
+    color: var(--wpe-s-danger);
+}
+
+.wpe-feeds .wpe-feed-status__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Form: grouped cards have no padding (admin-ui), so rows and blocks pad themselves. */
+.wpe-feeds .wpe-feed-field {
+    display: grid;
+    grid-template-columns: var(--wpe-s-label-col) minmax(0, 1fr);
+    gap: 4px 16px;
+    align-items: start;
+    padding: 12px var(--wpe-s-pad-x);
+    border-top: 1px solid var(--wpe-s-divider);
+}
+
+/* The switch is a sized inline box outside the Settings flex rows. */
+.wpe-feeds .wpe-switch {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 6px 0 2px;
+}
+
+.wpe-feeds .wpe-feed-field__control > .wpe-switch + .wpe-help {
+    margin-top: 6px;
+}
+
+.wpe-feeds .wpe-feeds-list .wpe-switch {
+    margin: 0;
+}
+
+.wpe-feeds .wpe-settings-group__header + .wpe-feed-field {
+    border-top: 0;
+}
+
+.wpe-feeds .wpe-feed-field .wpe-field__label {
+    padding-top: 6px;
+}
+
+.wpe-feeds .wpe-feed-field__control .wpe-help {
+    margin: 4px 0 0;
+}
+
+.wpe-feeds .wpe-feed-field__control > .wpe-input {
+    max-width: 480px;
+    width: 100%;
+}
+
+.wpe-feeds .wpe-input--short {
+    max-width: 120px;
+}
+
+.wpe-feeds .wpe-input--multi {
+    min-height: 120px;
+}
+
+.wpe-feeds .wpe-mapping-table .wpe-input {
+    width: 100%;
+    min-width: 160px;
+}
+
+.wpe-feeds .wpe-mapping-table th[scope="row"] {
+    white-space: nowrap;
+}
+
+.wpe-feeds .wpe-category-map,
+.wpe-feeds .wpe-feed-block {
+    padding: 12px var(--wpe-s-pad-x) 16px;
+    border-top: 1px solid var(--wpe-s-divider);
+}
+
+.wpe-feeds .wpe-category-map > .wpe-btn {
+    align-self: flex-start;
+}
+
+.wpe-feeds .wpe-settings-group > .wpe-feeds-table-wrap {
+    margin: 0;
+    border-top: 0;
+}
+
+.wpe-feeds .wpe-mapping-table td:last-child,
+.wpe-feeds .wpe-mapping-table th:last-child {
+    padding-right: var(--wpe-s-pad-x);
+}
+
+.wpe-feeds .wpe-category-map__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.wpe-feeds .wpe-feeds-savebar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    background: var(--wpe-s-surface-2);
+    border-top: 1px solid var(--wpe-s-border);
+}
+
+/* Preview & diagnostics */
+.wpe-feeds .wpe-issue-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    list-style: none;
+}
+
+.wpe-feeds .wpe-issue-list li {
+    padding: 0 6px;
+    border-radius: var(--wpe-s-radius-xs);
+    background: var(--wpe-s-surface-2);
+    font-size: var(--wpe-s-fs-xs);
+}
+
+.wpe-feeds .wpe-issue-list li.is-error { background: var(--wpe-s-danger-bg); color: var(--wpe-s-danger); }
+.wpe-feeds .wpe-issue-list li.is-warning { background: var(--wpe-s-warn-bg); color: var(--wpe-s-warn); }
+
+.wpe-feeds .wpe-feed-source {
+    max-height: 360px;
+    margin: 12px 0 0;
+    padding: 12px;
+    overflow: auto;
+    border: 1px solid var(--wpe-s-border);
+    border-radius: var(--wpe-s-radius-sm);
+    background: var(--wpe-s-surface-2);
+    font-size: var(--wpe-s-fs-sm);
+    white-space: pre;
+}
+
+@media (max-width: 782px) {
+    .wpe-feeds .wpe-feed-field {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wpe-feeds .wpe-category-map__row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wpe-feeds .wpe-feeds__create {
+        margin-left: 0;
+    }
+}

@@ -11,7 +11,6 @@ use WPE\Application\Migration\BackfillRunner;
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Application\ImportExport\SnapshotExporter;
 use WPE\Support\Singleton;
-use WPE\Support\Assets;
 use WPE\Support\Capabilities;
 
 /**
@@ -67,58 +66,14 @@ class OperationsPage
         $this->rollbackRunner = new RollbackRunner($this->wpdb, $this->mirror, $this->capture);
     }
 
+    /**
+     * Registers the operations REST routes. The admin UI lives in Settings →
+     * Operations & Health (SettingsPage); the former standalone `wpe-operations`
+     * screen was removed and its slug redirects there (PluginBootstrap).
+     */
     public function init(): void
     {
-        add_action('admin_menu', [$this, 'registerAdminMenu']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('rest_api_init', [$this, 'registerRestRoutes']);
-    }
-
-    public function registerAdminMenu(): void
-    {
-        add_submenu_page(
-            'woocommerce',
-            __('Product Engine Operations', 'wc-product-engine'),
-            __('Engine Operations', 'wc-product-engine'),
-            Capabilities::MANAGE_OPERATIONS,
-            'wpe-operations',
-            [$this, 'renderPage']
-        );
-    }
-
-    public function enqueueAssets(string $hook): void
-    {
-        if (strpos($hook, 'wpe-operations') === false) {
-            return;
-        }
-
-        wp_enqueue_style(
-            'wpe-admin-tokens',
-            Assets::url('assets/admin/tokens.css'),
-            [],
-            Assets::version('assets/admin/tokens.css')
-        );
-        wp_enqueue_style(
-            'wpe-admin-css',
-            Assets::url('assets/admin/admin.css'),
-            ['wpe-admin-tokens'],
-            Assets::version('assets/admin/admin.css')
-        );
-
-        wp_enqueue_script(
-            'wpe-operations-js',
-            Assets::url('assets/operations/operations.js'),
-            ['jquery'],
-            Assets::version('assets/operations/operations.js'),
-            true
-        );
-
-        // Sanitize localization: zero filesystem paths or private secrets (AC-T41-02)
-        wp_localize_script('wpe-operations-js', 'wpeOpsConfig', [
-            'restUrl' => esc_url_raw(rest_url('wpe/v1/operations/')),
-            'nonce'   => wp_create_nonce('wp_rest'),
-            'canManage' => Capabilities::canRunOperations(),
-        ]);
     }
 
     public function registerRestRoutes(): void
@@ -180,7 +135,9 @@ class OperationsPage
             "SELECT value FROM {$this->tableControl} WHERE `key` = %s",
             'system_mode'
         ));
-        $systemMode = 'legacy';
+        $systemMode = class_exists(\WPE\Bootstrap\PluginBootstrap::class)
+            ? \WPE\Bootstrap\PluginBootstrap::instance()->getSystemMode()
+            : 'native_bridge';
         if (is_string($rawMode) && $rawMode !== '') {
             $decodedMode = json_decode($rawMode, true);
             if (is_string($decodedMode) && $decodedMode !== '') {
@@ -188,7 +145,7 @@ class OperationsPage
             } elseif (is_array($decodedMode) && !empty($decodedMode['mode'])) {
                 $systemMode = (string)$decodedMode['mode'];
             } else {
-                $systemMode = trim($rawMode, "\" \t\n\r\0\x0B") ?: 'legacy';
+                $systemMode = trim($rawMode, "\" \t\n\r\0\x0B") ?: $systemMode;
             }
         }
 
@@ -418,7 +375,7 @@ class OperationsPage
                     $result = [
                         'action'      => 'mode',
                         'system_mode' => \WPE\Bootstrap\PluginBootstrap::instance()->getSystemMode(),
-                        'cohort_mode' => \WPE\Bootstrap\PluginBootstrap::instance()->getFlags()['cohort_mode'] ?? 'legacy',
+                        'cohort_mode' => \WPE\Bootstrap\PluginBootstrap::instance()->getFlags()['cohort_mode'] ?? \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS['cohort_mode'],
                         'status'      => 'ok',
                     ];
                     break;
@@ -450,11 +407,60 @@ class OperationsPage
 
             case 'outbox':
                 $worker = new \WPE\Application\Migration\OutboxProjectionWorker($this->wpdb);
-                $batchSize = max(1, (int)($params['batch_size'] ?? 100));
-                $maxBatches = max(1, (int)($params['max_batches'] ?? 100));
+                $defaultBatchSize = $actorId > 0 ? 200 : 100;
+                $defaultMaxBatches = $actorId > 0 ? 25 : 100;
+                $batchSize = max(1, (int)($params['batch_size'] ?? $defaultBatchSize));
+                $maxBatches = max(1, (int)($params['max_batches'] ?? $defaultMaxBatches));
                 $productIds = array_values(array_filter(array_map('intval', (array)($params['product_ids'] ?? []))));
                 $drainRes = $worker->drainAll($batchSize, $maxBatches, $productIds);
+
+                // When the outbox queue is empty, reconcile any residual wpe_object_state lag rows
+                // (e.g. aggregates whose outbox events were retired on delete or missed a projection mark).
+                if (empty($productIds) && (int)($drainRes['remaining_pending'] ?? 0) === 0) {
+                    $lagRows = $this->wpdb->get_results($this->wpdb->prepare(
+                        "SELECT os.object_id, os.kind, os.parent_id,
+                                (p.id IS NOT NULL) AS has_active_product,
+                                (v.id IS NOT NULL) AS has_active_variant
+                         FROM {$this->tableObjectState} os
+                         LEFT JOIN {$this->tableProducts} p ON p.id = os.object_id AND p.deleted_at IS NULL
+                         LEFT JOIN {$this->tableVariants} v ON v.id = os.object_id AND v.deleted_at IS NULL
+                         WHERE os.authority IN ('native', 'native_bridge')
+                           AND os.native_revision > os.native_applied
+                         LIMIT %d",
+                        $batchSize
+                    ), ARRAY_A) ?: [];
+
+                    $now = gmdate('Y-m-d H:i:s.u');
+                    foreach ($lagRows as $lr) {
+                        $oid = (int)$lr['object_id'];
+                        if (!empty($lr['has_active_product'])) {
+                            $this->mirror->mirrorAggregate($oid);
+                            $drainRes['mirrored'] = (int)($drainRes['mirrored'] ?? 0) + 1;
+                        } elseif (!empty($lr['has_active_variant']) && (int)($lr['parent_id'] ?? 0) > 0) {
+                            $this->mirror->mirrorAggregate((int)$lr['parent_id']);
+                            $this->wpdb->query($this->wpdb->prepare(
+                                "UPDATE {$this->tableObjectState} SET native_applied = native_revision, updated_at = %s WHERE object_id = %d",
+                                $now,
+                                $oid
+                            ));
+                            $drainRes['mirrored'] = (int)($drainRes['mirrored'] ?? 0) + 1;
+                        } else {
+                            // Deleted aggregate/variant: advance native_applied and mark tombstone so lag clears cleanly.
+                            $this->wpdb->query($this->wpdb->prepare(
+                                "UPDATE {$this->tableObjectState} SET native_applied = native_revision, tombstone = 1, updated_at = %s WHERE object_id = %d",
+                                $now,
+                                $oid
+                            ));
+                            $drainRes['retired_stale'] = (int)($drainRes['retired_stale'] ?? 0) + 1;
+                        }
+                    }
+                }
+
                 $result = array_merge(['action' => 'outbox', 'status' => 'completed'], $drainRes);
+                break;
+
+            case 'import_legacy':
+                $result = $this->importLegacyProducts($params, $actorId);
                 break;
 
             case 'gates':
@@ -571,94 +577,171 @@ class OperationsPage
     }
 
     /**
-     * Render WordPress Admin Operations Dashboard page.
+     * One-step import of eligible unmigrated WooCommerce simple/variable products directly into native_bridge (P034).
+     * Unsupported product types (grouped, external, bundles, subscriptions) and LegacyOnlyProps (_customs_*)
+     * remain untouched on WooCommerce CPT.
      */
-    public function renderPage(): void
+    private function importLegacyProducts(array $params, int $actorId = 0): array
     {
-        $health = $this->getHealthReport();
-        $isHealthy = $health['is_healthy'];
-        $badgeClass = $isHealthy ? 'notice-success' : 'notice-error';
-        ?>
-        <div class="wrap wpe-operations-wrap">
-            <h1><?php echo esc_html__('WC Product Engine — Operations & Health', 'wc-product-engine'); ?></h1>
-            <div id="wpe-health-banner" class="notice <?php echo esc_attr($badgeClass); ?> inline">
-                <p>
-                    <strong><?php echo esc_html__('System Health Status:', 'wc-product-engine'); ?></strong>
-                    <span id="wpe-status-text" class="wpe-ops-status-text">
-                        <?php echo esc_html($health['status']); ?>
-                    </span>
-                    (Mode: <code><?php echo esc_html($health['system_mode']); ?></code>, Epoch: <code><?php echo esc_html((string)$health['authority_epoch']); ?></code>)
-                </p>
-            </div>
+        $defaultLimit = $actorId > 0 ? 200 : 500;
+        $limit = max(1, (int)($params['limit'] ?? $defaultLimit));
 
-            <div class="wpe-dashboard-grid wpe-ops-grid">
-                <div class="card">
-                    <h2><?php echo esc_html__('Native Products', 'wc-product-engine'); ?></h2>
-                    <p class="wpe-ops-metric">
-                        <?php echo esc_html((string)$health['counts']['native_products']); ?>
-                    </p>
-                    <small><?php echo esc_html__('Authority: ', 'wc-product-engine') . esc_html((string)$health['counts']['native_authority']); ?></small>
-                </div>
-                <div class="card">
-                    <h2><?php echo esc_html__('Legacy Products', 'wc-product-engine'); ?></h2>
-                    <p class="wpe-ops-metric">
-                        <?php echo esc_html((string)$health['counts']['legacy_products']); ?>
-                    </p>
-                    <small><?php echo esc_html__('Authority: ', 'wc-product-engine') . esc_html((string)$health['counts']['legacy_authority']); ?></small>
-                </div>
-                <div class="card">
-                    <h2><?php echo esc_html__('Mismatches', 'wc-product-engine'); ?></h2>
-                    <p class="wpe-ops-metric <?php echo $health['mismatches'] > 0 ? 'wpe-ops-metric--danger' : 'wpe-ops-metric--ok'; ?>">
-                        <?php echo esc_html((string)$health['mismatches']); ?>
-                    </p>
-                    <small><?php echo esc_html__('Shadow diff gaps', 'wc-product-engine'); ?></small>
-                </div>
-                <div class="card">
-                    <h2><?php echo esc_html__('DLQ Failures', 'wc-product-engine'); ?></h2>
-                    <p class="wpe-ops-metric <?php echo $health['dlq_count'] > 0 ? 'wpe-ops-metric--danger' : 'wpe-ops-metric--ok'; ?>">
-                        <?php echo esc_html((string)$health['dlq_count']); ?>
-                    </p>
-                    <small><?php echo esc_html__('Dead-letter queue events', 'wc-product-engine'); ?></small>
-                </div>
-                <div class="card">
-                    <h2><?php echo esc_html__('Projection Lag', 'wc-product-engine'); ?></h2>
-                    <p class="wpe-ops-metric">
-                        <?php echo esc_html((string)($health['projection_lag']['pending_projections'] ?? 0)); ?>
-                    </p>
-                    <small><?php echo esc_html__('Pending legacy syncs', 'wc-product-engine'); ?></small>
-                </div>
-            </div>
+        $candidateIds = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare(
+            "SELECT p.ID
+             FROM {$this->wpdb->posts} p
+             LEFT JOIN {$this->tableObjectState} os ON os.object_id = p.ID
+             WHERE p.post_type = 'product'
+               AND p.post_status NOT IN ('trash', 'auto-draft')
+               AND (os.object_id IS NULL OR os.authority = 'legacy')
+             ORDER BY p.ID ASC
+             LIMIT %d",
+            $limit
+        )) ?: []);
 
-            <div class="card wpe-ops-card">
-                <h2><?php echo esc_html__('Operations Controls', 'wc-product-engine'); ?></h2>
-                <p><?php echo esc_html__('Trigger background catalog operations, index rebuilds, shadow diff audits, or emergency rollbacks.', 'wc-product-engine'); ?></p>
-                <div class="wpe-ops-actions">
-                    <button class="button button-primary wpe-action-btn" data-action="audit">
-                        <?php echo esc_html__('Run Shadow Diff Audit', 'wc-product-engine'); ?>
-                    </button>
-                    <button class="button button-secondary wpe-action-btn" data-action="rebuild">
-                        <?php echo esc_html__('Rebuild Index Generation', 'wc-product-engine'); ?>
-                    </button>
-                    <button class="button button-secondary wpe-action-btn" data-action="migrate">
-                        <?php echo esc_html__('Run Keyset Backfill Batch', 'wc-product-engine'); ?>
-                    </button>
-                    <button class="button button-link-delete wpe-action-btn wpe-ops-rollback-btn" data-action="rollback">
-                        <?php echo esc_html__('Initiate Authority Rollback', 'wc-product-engine'); ?>
-                    </button>
-                </div>
-                <div id="wpe-action-result" class="notice inline wpe-ops-action-result wpe-hidden"></div>
-            </div>
+        $legacyOnlyBlocked = $candidateIds !== []
+            ? array_flip(\WPE\Compatibility\WooDataStore\LegacyOnlyProps::productsWithData($this->wpdb, $candidateIds, count($candidateIds) + 1))
+            : [];
 
-            <div class="card wpe-ops-card">
-                <h2><?php echo esc_html__('System Worker Guidance & Thresholds (08 §8)', 'wc-product-engine'); ?></h2>
-                <ul>
-                    <li><strong><?php echo esc_html__('Worker Scheduling: ', 'wc-product-engine'); ?></strong><?php echo esc_html__('Run queue loop via dedicated systemd or Linux system cron (not WP page traffic).', 'wc-product-engine'); ?></li>
-                    <li><strong><?php echo esc_html__('Concurrency & Batches: ', 'wc-product-engine'); ?></strong><?php echo esc_html__('Initial concurrency = 1, batch size = 100, worker lease = 60s, heartbeat = 20s.', 'wc-product-engine'); ?></li>
-                    <li><strong><?php echo esc_html__('Starvation Alert: ', 'wc-product-engine'); ?></strong><?php echo esc_html__('Triggered when active worker has no heartbeat or checkpoint for > 120s.', 'wc-product-engine'); ?></li>
-                </ul>
-            </div>
-        </div>
-        <?php
+        $epoch = max(1, $this->mirror->getGlobalEpoch());
+        $now = gmdate('Y-m-d H:i:s.u');
+        $projector = new CatalogProjector($this->wpdb);
+        $activeGen = $projector->getActiveGeneration();
+        $hasCatalogRows = $activeGen > 0 && (bool)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT 1 FROM {$this->wpdb->prefix}wpe_catalog WHERE generation = %d LIMIT 1",
+            $activeGen
+        ));
+
+        $imported = 0;
+        $skippedUnsupported = 0;
+        $errors = 0;
+
+        foreach ($candidateIds as $productId) {
+            if (isset($legacyOnlyBlocked[$productId])) {
+                $skippedUnsupported++;
+                continue;
+            }
+
+            if (function_exists('get_the_terms')) {
+                $terms = get_the_terms($productId, 'product_type');
+                if (is_array($terms) && !empty($terms)) {
+                    $typeSlug = (string)($terms[0]->slug ?? '');
+                    if ($typeSlug !== '' && !in_array($typeSlug, ['simple', 'variable'], true)) {
+                        $skippedUnsupported++;
+                        continue;
+                    }
+                }
+            }
+
+            try {
+                $cap = $this->capture->captureLegacyProduct($productId, 'import_legacy');
+                if (($cap['status'] ?? '') !== 'captured') {
+                    if (($cap['status'] ?? '') === 'blocked_native_authority') {
+                        continue;
+                    }
+                    $skippedUnsupported++;
+                    continue;
+                }
+
+                $this->wpdb->update($this->tableObjectState, [
+                    'authority'      => 'native_bridge',
+                    'epoch'          => $epoch,
+                    'native_applied' => 1,
+                    'tombstone'      => 0,
+                    'updated_at'     => $now,
+                ], ['object_id' => $productId]);
+
+                $varIds = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare(
+                    "SELECT id FROM {$this->tableVariants} WHERE product_id = %d AND deleted_at IS NULL",
+                    $productId
+                )) ?: []);
+
+                foreach ($varIds as $vid) {
+                    $this->wpdb->query($this->wpdb->prepare(
+                        "INSERT INTO {$this->tableObjectState}
+                         (object_id, kind, parent_id, authority, epoch, legacy_revision, native_revision, legacy_applied, native_applied, tombstone, updated_at)
+                         VALUES (%d, 'variation', %d, 'native_bridge', %d, 1, 1, 1, 1, 0, %s)
+                         ON DUPLICATE KEY UPDATE
+                         parent_id = VALUES(parent_id), authority = 'native_bridge', epoch = GREATEST(epoch, VALUES(epoch)), native_applied = 1, tombstone = 0, updated_at = VALUES(updated_at)",
+                        $vid,
+                        $productId,
+                        $epoch,
+                        $now
+                    ));
+                    \WPE\Support\AuthorityResolver::evictObject($vid);
+                }
+
+                \WPE\Support\AuthorityResolver::evictObject($productId);
+
+                if ($hasCatalogRows) {
+                    $projector->projectProduct($productId);
+                }
+
+                $imported++;
+            } catch (\Throwable $e) {
+                $errors++;
+            }
+        }
+
+        if ($imported > 0) {
+            $this->wpdb->replace($this->tableControl, [
+                'key'        => 'system_mode',
+                'value'      => 'native_bridge',
+                'version'    => 1,
+                'updated_at' => $now,
+            ]);
+            if (class_exists(\WPE\Bootstrap\PluginBootstrap::class)) {
+                $flags = get_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS);
+                if (!is_array($flags)) {
+                    $flags = \WPE\Bootstrap\PluginBootstrap::DEFAULT_FLAGS;
+                }
+                $flags['native_writes_enabled'] = true;
+                $flags['cohort_mode'] = 'native_bridge';
+                update_option(\WPE\Bootstrap\PluginBootstrap::OPTION_FLAGS, $flags);
+                \WPE\Bootstrap\PluginBootstrap::instance()->loadFlags();
+            }
+
+            if (!$hasCatalogRows) {
+                $activeGen = $projector->rebuild();
+            }
+        }
+
+        $remainingCandidates = array_map('intval', $this->wpdb->get_col(
+            "SELECT p.ID
+             FROM {$this->wpdb->posts} p
+             LEFT JOIN {$this->tableObjectState} os ON os.object_id = p.ID
+             WHERE p.post_type = 'product'
+               AND p.post_status NOT IN ('trash', 'auto-draft')
+               AND (os.object_id IS NULL OR os.authority = 'legacy')"
+        ) ?: []);
+        $remainingBlocked = $remainingCandidates !== []
+            ? array_flip(\WPE\Compatibility\WooDataStore\LegacyOnlyProps::productsWithData($this->wpdb, $remainingCandidates, count($remainingCandidates) + 1))
+            : [];
+        $remainingEligible = 0;
+        foreach ($remainingCandidates as $cid) {
+            if (isset($remainingBlocked[$cid])) {
+                continue;
+            }
+            if (function_exists('get_the_terms')) {
+                $terms = get_the_terms($cid, 'product_type');
+                if (is_array($terms) && !empty($terms)) {
+                    $slug = (string)($terms[0]->slug ?? '');
+                    if ($slug !== '' && !in_array($slug, ['simple', 'variable'], true)) {
+                        continue;
+                    }
+                }
+            }
+            $remainingEligible++;
+        }
+
+        return [
+            'action'              => 'import_legacy',
+            'status'              => 'completed',
+            'imported'            => $imported,
+            'skipped_unsupported' => $skippedUnsupported,
+            'errors'              => $errors,
+            'remaining_eligible'  => $remainingEligible,
+            'generation'          => $activeGen,
+        ];
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * ImportBenchmark.php — end-to-end Shopify CSV import benchmark.
+ * ImportBenchmark.php — end-to-end CSV Import benchmark.
  *
  * Runs the real ShopifyBatchImporter (initJob + processBatch loop, same code
  * path as the admin screen) and reports throughput, query counts, DNS lookups,

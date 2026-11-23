@@ -214,6 +214,8 @@ class ShopifyBatchImporter
 
         $headers = [];
         $unsupportedColumns = [];
+        $ignoredColumns = [];
+        $categoryMode = self::normalizeCategoryMode($options['category_mode'] ?? 'none');
         foreach ($rawHeaders as $idx => $rawH) {
             $cleaned = trim((string)$rawH);
             if ($idx === 0 && str_starts_with($cleaned, "\xEF\xBB\xBF")) {
@@ -230,6 +232,10 @@ class ShopifyBatchImporter
                     $unsupportedColumns[] = $cleaned;
                     break;
                 }
+            }
+            // Present but not mapped to WooCommerce data (docs/10 §7): reported, not dropped silently.
+            if (in_array($normKey, self::IGNORED_COLUMN_KEYS, true) && !($normKey === 'category' && $categoryMode === 'path')) {
+                $ignoredColumns[] = $cleaned;
             }
         }
 
@@ -252,6 +258,17 @@ class ShopifyBatchImporter
             gmdate('Y-m-d H:i:s'), count($headers),
             gmdate('Y-m-d H:i:s'), $options['update_mode'] ?? 'merge', $options['image_mode'] ?? 'external'
         );
+        if ($categoryMode === 'path') {
+            $initialLog .= sprintf("[%s] [INFO] Product category: mapped to a WooCommerce category tree (leaf assigned)\n\n", gmdate('Y-m-d H:i:s'));
+        }
+        $ignoredColumns = array_values(array_unique($ignoredColumns));
+        if ($ignoredColumns !== []) {
+            $initialLog .= sprintf(
+                "[%s] [WARNING] Columns not imported (no WooCommerce mapping): %s. Products without a category get the default category.\n\n",
+                gmdate('Y-m-d H:i:s'),
+                implode(', ', $ignoredColumns)
+            );
+        }
         @file_put_contents($logFilePath, $initialLog);
 
         $config = [
@@ -263,6 +280,8 @@ class ShopifyBatchImporter
             'data_start_offset'  => $dataStartOffset,
             'headers'            => $headers,
             'unsupported_cols'   => array_values(array_unique($unsupportedColumns)),
+            'ignored_cols'       => $ignoredColumns,
+            'category_mode'      => $categoryMode,
             'update_mode'        => $options['update_mode'] ?? 'merge',
             'image_mode'         => $options['image_mode'] ?? 'external',
             'batch_size'         => (int)($options['batch_size'] ?? 25),
@@ -313,6 +332,8 @@ class ShopifyBatchImporter
             'file_size_fmt'     => size_format($fileSize),
             'headers_count'     => count($headers),
             'unsupported_cols'  => $config['unsupported_cols'],
+            'ignored_cols'      => $config['ignored_cols'],
+            'category_mode'     => $config['category_mode'],
             'initial_log'       => $initialLog,
         ];
     }
@@ -482,6 +503,8 @@ class ShopifyBatchImporter
                     'vendor'              => $row['vendor'] ?? '',
                     'product_type'        => $row['product_type'] ?? '',
                     'tags'                => $row['tags'] ?? '',
+                    'category'            => $row['category'] ?? '',
+                    'category_mode'       => self::normalizeCategoryMode($config['category_mode'] ?? 'none'),
                     'status'              => $this->mapStatus($row['status'] ?? $row['published'] ?? ''),
                     'options'             => [],
                     'option_names'        => [],
@@ -496,6 +519,9 @@ class ShopifyBatchImporter
                 }
                 if ($currentGroup['description'] === '' && !empty($row['description'])) {
                     $currentGroup['description'] = $row['description'];
+                }
+                if (($currentGroup['category'] ?? '') === '' && !empty($row['category'])) {
+                    $currentGroup['category'] = $row['category'];
                 }
             }
 
@@ -1057,6 +1083,13 @@ class ShopifyBatchImporter
             // Non-fatal legacy mirror catch
         }
 
+        $this->applyProductTaxonomy(
+            $productId,
+            (string)($group['tags'] ?? ''),
+            ($group['category_mode'] ?? 'none') === 'path' ? (string)($group['category'] ?? '') : '',
+            $warnings
+        );
+
         return [
             'product_id'    => $productId,
             'title'         => $title,
@@ -1065,6 +1098,148 @@ class ShopifyBatchImporter
             'warnings'      => $warnings,
             'mirrored'      => $mirrored,
         ];
+    }
+
+    /** Normalized header keys present in Shopify files that have no WooCommerce mapping (P031 D04). */
+    private const IGNORED_COLUMN_KEYS = ['category', 'product_type', 'vendor'];
+
+    /**
+     * Tags -> product_tag and default category when the product has none (P031, docs/10 §7).
+     *
+     * Terms are WordPress-owned and written on the shell before the product is projected into the
+     * catalog. A non-empty Tags cell replaces the product's tags; an empty one leaves them. The
+     * default category is added only when the product has no product_cat at all.
+     */
+    private function applyProductTaxonomy(int $productId, string $rawTags, string $categoryPath, array &$warnings): void
+    {
+        if ($productId <= 0 || get_post_type($productId) !== 'product') {
+            return;
+        }
+
+        $tags = [];
+        foreach (explode(',', $rawTags) as $tag) {
+            $tag = trim(html_entity_decode($tag, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            // Case-insensitive de-dup keeps the first spelling, as WordPress term lookup is case-insensitive.
+            if ($tag !== '' && !isset($tags[mb_strtolower($tag)])) {
+                $tags[mb_strtolower($tag)] = $tag;
+            }
+        }
+        if ($tags !== []) {
+            $res = wp_set_object_terms($productId, array_values($tags), 'product_tag');
+            if (is_wp_error($res)) {
+                $warnings[] = 'Tags not saved: ' . $res->get_error_message();
+            }
+        }
+
+        if (trim($categoryPath) !== '') {
+            try {
+                $this->applyCategoryPath($productId, $categoryPath);
+            } catch (\Throwable $e) {
+                $warnings[] = 'Category path not saved: ' . $e->getMessage();
+            }
+        }
+
+        $hasCategory = wp_get_object_terms($productId, 'product_cat', ['fields' => 'ids']);
+        if (!is_wp_error($hasCategory) && $hasCategory === []) {
+            $default = (int)get_option('default_product_cat', 0);
+            if ($default > 0 && term_exists($default, 'product_cat')) {
+                $res = wp_set_object_terms($productId, [$default], 'product_cat');
+                if (is_wp_error($res)) {
+                    $warnings[] = 'Default category not saved: ' . $res->get_error_message();
+                }
+            }
+        }
+    }
+
+    /** @var array<string, int> Resolved category paths -> leaf term ID (per request). */
+    private array $categoryPathCache = [];
+
+    public static function normalizeCategoryMode($mode): string
+    {
+        return $mode === 'path' ? 'path' : 'none';
+    }
+
+    /**
+     * File a product under the leaf of a Shopify `A > B > C` category path (P032, docs/10 §7).
+     *
+     * Segments are matched by name under their parent (WordPress term_exists) or created. The
+     * product's categories become the leaf plus every existing category except the default one.
+     *
+     * @return int|null Leaf term ID, or null when the path is empty.
+     */
+    public function applyCategoryPath(int $productId, string $rawPath): ?int
+    {
+        $leaf = $this->ensureCategoryPath($rawPath);
+        if ($leaf === null || $productId <= 0) {
+            return $leaf;
+        }
+
+        $default = (int)get_option('default_product_cat', 0);
+        $current = wp_get_object_terms($productId, 'product_cat', ['fields' => 'ids']);
+        $current = is_wp_error($current) ? [] : array_map('intval', $current);
+        $keep = array_values(array_filter($current, static fn(int $id): bool => $id !== $default && $id !== $leaf));
+        $target = array_merge($keep, [$leaf]);
+
+        sort($current);
+        $sortedTarget = $target;
+        sort($sortedTarget);
+        if ($current !== $sortedTarget) {
+            $res = wp_set_object_terms($productId, $target, 'product_cat');
+            if (is_wp_error($res)) {
+                throw new RuntimeException($res->get_error_message());
+            }
+        }
+        return $leaf;
+    }
+
+    /**
+     * Find or create each segment of `A > B > C` under its parent; return the leaf term ID.
+     */
+    private function ensureCategoryPath(string $rawPath): ?int
+    {
+        $decoded = $rawPath;
+        // Exports can double-escape (`&amp;amp;`); decode until stable.
+        for ($i = 0; $i < 3; $i++) {
+            $next = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($next === $decoded) {
+                break;
+            }
+            $decoded = $next;
+        }
+        $segments = array_values(array_filter(
+            array_map(static fn(string $seg): string => trim(preg_replace('/\s+/u', ' ', $seg) ?? $seg), explode('>', $decoded)),
+            static fn(string $seg): bool => $seg !== ''
+        ));
+        if ($segments === []) {
+            return null;
+        }
+
+        $cacheKey = mb_strtolower(implode(' > ', $segments));
+        if (isset($this->categoryPathCache[$cacheKey]) && term_exists($this->categoryPathCache[$cacheKey], 'product_cat')) {
+            return $this->categoryPathCache[$cacheKey];
+        }
+
+        $parent = 0;
+        foreach ($segments as $segment) {
+            $found = term_exists($segment, 'product_cat', $parent);
+            if (is_array($found) && !empty($found['term_id'])) {
+                $parent = (int)$found['term_id'];
+                continue;
+            }
+            $created = wp_insert_term($segment, 'product_cat', ['parent' => $parent]);
+            if (is_wp_error($created)) {
+                // A concurrent request may have created it: use the existing term.
+                $existing = $created->get_error_data('term_exists');
+                if (!$existing) {
+                    throw new RuntimeException($created->get_error_message());
+                }
+                $parent = (int)$existing;
+                continue;
+            }
+            $parent = (int)$created['term_id'];
+        }
+
+        return $this->categoryPathCache[$cacheKey] = $parent;
     }
 
     private ?CatalogProjector $catalogProjector = null;
@@ -1101,7 +1276,8 @@ class ShopifyBatchImporter
     }
 
     /** Bump when the CSV-to-product mapping changes so stored fingerprints never match (P017 D03). */
-    private const FINGERPRINT_FORMAT = 1;
+    /** 2: imports write tags and the default category (P031), so format-1 fingerprints must not skip. */
+    private const FINGERPRINT_FORMAT = 2;
 
     /** wpe_control key prefix for per-product import fingerprints (P017 D05). */
     private const FINGERPRINT_KEY_PREFIX = 'shopify_import_fp:';

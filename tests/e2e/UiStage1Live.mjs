@@ -3,7 +3,9 @@
  *
  * Each section is a list of checks run against http://site1.localhost with a fixture product
  * created and deleted through WP-CLI, like the other *Live.mjs scripts. Nothing is snapshotted
- * or restored.
+ * or restored, except one store setting: the stock checks need WooCommerce "Enable stock
+ * management" (woocommerce_manage_stock) on, so the run switches it on and puts the previous
+ * value back at the end.
  *
  * Usage:
  *   node tests/e2e/UiStage1Live.mjs            # every section
@@ -183,10 +185,10 @@ const sections = {
         await openEditor(page, fx);
 
         const fakeControls = await page.evaluate((app) => {
-            const sel = '.wpe-picker-item, .wpe-media-slot, .wpe-media-remove, .wpe-chip-remove, .wpe-chip-move, .wpe-clickable-stock';
+            const sel = '.wpe-picker-item, .wpe-media-slot, .wpe-media-remove, .wpe-chip-remove, .wpe-chip-handle, .wpe-drag-handle, .wpe-clickable-stock';
             return [...document.querySelectorAll(`${app} :is(${sel})`)].filter((el) => el.tagName !== 'BUTTON').map((el) => el.tagName + '.' + el.className);
         }, APP);
-        check('Clickable editor controls are native buttons (thumb, remove, chip move/remove, shared stock)', fakeControls.length === 0, fakeControls.join(', '));
+        check('Clickable editor controls are native buttons (thumb, remove, chip and option drag handles, chip remove, shared stock)', fakeControls.length === 0, fakeControls.join(', '));
 
         const unnamed = await page.evaluate((app) => {
             const nameOf = (el) => (el.getAttribute('aria-label') || '').trim()
@@ -239,18 +241,18 @@ const sections = {
         const focusBack = await page.evaluate((id) => document.activeElement && document.activeElement.matches(`.wpe-row-thumb-btn[data-id="${id}"]`), firstVar);
         check('Enter removes the image and focus returns to the row thumbnail', removed === 0 && focusBack, `removed=${removed === 0} focus=${focusBack}`);
 
-        // Move a value chip right with the keyboard; focus follows the moved chip.
-        const chipsBefore = await page.locator(`${APP} .wpe-chips-container[data-opt-idx="0"] .wpe-chip > span:not(.wpe-chip-color-dot)`).allInnerTexts();
-        await page.locator(`${APP} .wpe-chip[data-opt-idx="0"][data-val-idx="0"] .wpe-chip-move-next`).focus();
-        await page.keyboard.press('Enter');
+        // Move a value chip right with the keyboard (arrow key on the focused chip); focus follows the moved chip.
+        const chipsBefore = await page.locator(`${APP} .wpe-chips-container[data-opt-idx="0"] .wpe-chip-label`).allInnerTexts();
+        await page.locator(`${APP} .wpe-chip[data-opt-idx="0"][data-val-idx="0"] .wpe-chip-handle`).focus();
+        await page.keyboard.press('ArrowRight');
         await page.waitForTimeout(100);
-        const chipsAfter = await page.locator(`${APP} .wpe-chips-container[data-opt-idx="0"] .wpe-chip > span:not(.wpe-chip-color-dot)`).allInnerTexts();
+        const chipsAfter = await page.locator(`${APP} .wpe-chips-container[data-opt-idx="0"] .wpe-chip-label`).allInnerTexts();
         const movedFocus = await page.evaluate(() => {
             const el = document.activeElement;
             const chip = el && el.closest('.wpe-chip');
             return chip ? chip.getAttribute('data-val-idx') + ':' + el.className : '';
         });
-        check('Enter on "move right" reorders the values and keeps focus on the moved chip', chipsBefore.join('|') === 'Red|Blue' && chipsAfter.join('|') === 'Blue|Red' && movedFocus.startsWith('1:'), `${chipsBefore.join('|')} -> ${chipsAfter.join('|')} focus=${movedFocus}`);
+        check('ArrowRight on a focused value chip reorders the values and keeps focus on the moved chip', chipsBefore.join('|') === 'Red|Blue' && chipsAfter.join('|') === 'Blue|Red' && movedFocus.startsWith('1:'), `${chipsBefore.join('|')} -> ${chipsAfter.join('|')} focus=${movedFocus}`);
 
         // Shared stock pill is a button: Enter switches the row to its own stock and focuses the quantity.
         await page.locator(`${APP} tr[data-variant-id="${fx.variation_ids[1]}"] .wpe-clickable-stock`).focus();
@@ -276,9 +278,10 @@ const sections = {
         const targets = [
             `${APP} .wpe-btn-open-drawer`,
             `${APP} .wpe-row-thumb-btn`,
-            `${APP} .wpe-chip-move-next`,
+            `${APP} .wpe-chip-handle`,
+            `${APP} .wpe-option-drag-handle`,
             `${APP} .wpe-clickable-stock`,
-            `${APP} .wpe-btn-open-fullscreen`,
+            '#wpe-box-fullscreen',
             `${APP} .wpe-matrix-toolbar .button`,
         ];
         // A key press first, so programmatic focus counts as keyboard focus (:focus-visible).
@@ -336,8 +339,8 @@ const sections = {
         check('"In Stock" badge text is at least 4.5:1', inStock.length > 0 && minRatio(inStock) >= 4.5, JSON.stringify(inStock));
         check('"Out of Stock" badge text is at least 4.5:1', outStock.length > 0 && minRatio(outStock) >= 4.5, JSON.stringify(outStock));
 
-        const smallText = await contrastOf(page, `${APP} :is(.wpe-chip-move, .wpe-chip-remove, .wpe-btn-revert-shared-stock)`, 'text');
-        check('Chip move/remove and "revert stock" glyphs are at least 4.5:1', smallText.length > 0 && minRatio(smallText) >= 4.5, JSON.stringify(smallText.filter((x) => x.ratio < 4.5)));
+        const smallText = await contrastOf(page, `${APP} :is(.wpe-chip-handle, .wpe-chip-remove, .wpe-btn-revert-shared-stock)`, 'text');
+        check('Chip label/remove and "revert stock" glyphs are at least 4.5:1', smallText.length > 0 && minRatio(smallText) >= 4.5, JSON.stringify(smallText.filter((x) => x.ratio < 4.5)));
 
         const borders = await contrastOf(page, `${APP} :is(.wpe-editable-input:not(:disabled), .wpe-search-input, .wpe-filter-select, .wpe-chips-container, .wpe-option-name-input, .wpe-matrix-toolbar .button:not(:disabled))`, 'border');
         check('Editor control borders (table inputs, search, filters, option inputs, toolbar buttons) are at least 3:1', borders.length > 0 && minRatio(borders) >= 3, JSON.stringify(borders.filter((x) => x.ratio < 3)));
@@ -408,7 +411,7 @@ const sections = {
             for (const folded of [false, true]) {
                 if (w < 960 && folded) continue;
                 await page.evaluate((f) => document.body.classList.toggle('folded', f), folded);
-                await page.locator(`${APP} .wpe-btn-open-fullscreen`).first().click();
+                await page.locator('#wpe-box-fullscreen').click();
                 await page.waitForSelector('#wpe-fullscreen-modal-overlay', { state: 'visible', timeout: 5000 });
                 await page.waitForTimeout(250);
                 const fs = await page.evaluate(() => {
@@ -495,7 +498,12 @@ if (unknown.length) {
 const created = [];
 let browser;
 let exitCode = 0;
+// The "Shared Stock" checks need store-wide stock management; the editor hides per-variant
+// stock when it is off. null = option did not exist.
+let originalManageStock = null;
+try { originalManageStock = wp('option', 'get', 'woocommerce_manage_stock'); } catch (_) { originalManageStock = null; }
 try {
+    if (originalManageStock !== 'yes') wp('option', 'update', 'woocommerce_manage_stock', 'yes');
     const hash = wp('eval', 'echo COOKIEHASH;');
     const logged = wp('eval', 'echo wp_generate_auth_cookie(1, time()+3600, "logged_in");');
     const auth = wp('eval', 'echo wp_generate_auth_cookie(1, time()+3600, "auth");');
@@ -506,6 +514,9 @@ try {
         const fx = evalFile('fixture.php');
         created.push(fx.id);
         const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+        // Fixture images point at a placeholder CDN host (93.184.216.34). Serve them from memory so
+        // the page 'load' event never waits on a real outbound connection, which can hang for 30 s.
+        await ctx.route('https://93.184.216.34/**', (r) => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64') }));
         await ctx.addCookies([
             { name: `wordpress_logged_in_${hash}`, value: logged, domain: HOST, path: '/' },
             { name: `wordpress_sec_${hash}`, value: auth, domain: HOST, path: '/wp-admin' },
@@ -528,6 +539,13 @@ try {
     if (browser) await browser.close();
     if (created.length) {
         try { evalFile('cleanup.php', ...created.map(String)); } catch (_) {}
+    }
+    try {
+        if (originalManageStock === null) wp('option', 'delete', 'woocommerce_manage_stock');
+        else if (originalManageStock !== 'yes') wp('option', 'update', 'woocommerce_manage_stock', originalManageStock);
+    } catch (e) {
+        console.error('Could not restore woocommerce_manage_stock:', e.message);
+        exitCode = 1;
     }
 }
 

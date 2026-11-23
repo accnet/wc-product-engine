@@ -1,0 +1,1258 @@
+{
+  "id": "P035",
+  "title": "Product Feeds for Google and Microsoft Merchant Center",
+  "status": "done",
+  "content_hash": "4f3784e5f57e6391c03d6d8ed06ae79337ac2537c0ebc63b1b48fe1a983b3892",
+  "tasks": [
+    {
+      "id": "P035.1",
+      "title": "Document feed specification, schema, API, UI and update model contracts",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/10-integrations.md",
+        "docs/08-operations.md"
+      ],
+      "files": [
+        "docs/10-integrations.md",
+        "docs/03-database-schema.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "docs/08-operations.md",
+        "contracts/database/schema.sql",
+        "contracts/database/schema-contract.json",
+        "contracts/api/endpoints.json",
+        "contracts/openapi/wpe-v1.json"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "95beb9c010513be8accc5ed31fc2719604dd9eafdd3a384407634ce5e4c3dfe2",
+          "output_sha256": "402e2637cdb58f502ba21c9c29142a06c7fd565ded8a469406e51f97ac731294",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388243500-a7be69bf.log",
+          "time": "2026-11-22T22:57:23.501Z"
+        }
+      ],
+      "started_at": "2026-11-22T22:54:47.027Z"
+    },
+    {
+      "id": "P035.2",
+      "title": "Open the product page on the variation named by attribute query arguments",
+      "depends_on": [],
+      "read_first": [
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "assets/variant-selector/selector.js",
+        "tests/integration/AutoSelectFirstValuesTest.php"
+      ],
+      "files": [
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "tests/integration/PdpUrlSelectionTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/StoreApi/SelectorAdapter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/PdpUrlSelectionTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/PdpUrlSelectionTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/AutoSelectFirstValuesTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "a1211c59c4e18b917b447c199dc20caaee49f2ba8f5d6b3d0decff8a5ecd5e82",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388342153-21f7db6b.log",
+          "time": "2026-11-22T22:59:02.154Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/PdpUrlSelectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "a1211c59c4e18b917b447c199dc20caaee49f2ba8f5d6b3d0decff8a5ecd5e82",
+          "output_sha256": "fcbc504d7c58cc045e8224ad66efc750c5eabe5d14a428374ccab805a4596be2",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388342247-a523ab73.log",
+          "time": "2026-11-22T22:59:02.247Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PdpUrlSelectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "a1211c59c4e18b917b447c199dc20caaee49f2ba8f5d6b3d0decff8a5ecd5e82",
+          "output_sha256": "1a542f301f830fb6b7287a9e1cfaf433a806a43713d0d6e196614b947152cb68",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388343918-b1e452b9.log",
+          "time": "2026-11-22T22:59:03.919Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/AutoSelectFirstValuesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "a1211c59c4e18b917b447c199dc20caaee49f2ba8f5d6b3d0decff8a5ecd5e82",
+          "output_sha256": "2a7589cb0a3d54d873c7729897095a8a6185686ed3bdd3622e857aad76fa8f49",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388345406-cf81632f.log",
+          "time": "2026-11-22T22:59:05.407Z"
+        }
+      ],
+      "started_at": "2026-11-22T22:57:30.679Z"
+    },
+    {
+      "id": "P035.3",
+      "title": "Add feed tables, feed repository, config normalization and admin REST CRUD",
+      "depends_on": [
+        "P035.1"
+      ],
+      "read_first": [
+        "contracts/database/schema.sql",
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Admin/Rest/AdminApiController.php",
+        "src/Support/Capabilities.php",
+        "src/Support/RestErrors.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Application/Feeds/FeedConfig.php",
+        "src/Application/Feeds/FeedRepository.php",
+        "src/Admin/Rest/FeedsApiController.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/FeedsApiTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedConfig.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/Rest/FeedsApiController.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedsApiTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedsApiTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SchemaVersionTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedConfig.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "ea27cdfde5aa158524853be2533c4326fa68285664b2243e0a120d01c9b4aa83",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388600691-13a00a54.log",
+          "time": "2026-11-22T23:03:20.692Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "d1af92894905b760f6af54315c6fd013c4cf0b456896b5588147f6e44270be2e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388600782-ed6258ee.log",
+          "time": "2026-11-22T23:03:20.782Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/Rest/FeedsApiController.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "10fcfa520ef793b4841caacb83a3890271731c45cd055913a11bbb06f48361ce",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388600874-1e2f7f96.log",
+          "time": "2026-11-22T23:03:20.875Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388600976-0711f52d.log",
+          "time": "2026-11-22T23:03:20.977Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "57be395c43bf67a265146eab6fadb47acd7718d2bde641005af68168ba089130",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388601070-475f7320.log",
+          "time": "2026-11-22T23:03:21.070Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "53ed5206320a5b4c22bf2ff86eacf4d6bff75d16f3f175043490bb009a34abb4",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388602516-7e509ee3.log",
+          "time": "2026-11-22T23:03:22.516Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SchemaVersionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "746c045d8e5ae561aaf4630c2d65d3e2c15631fd5ce11238663d13f324c6daef",
+          "output_sha256": "d2de1d06eb047daad1b01a9f1799d06c303b297d6ae3aa9cfdd9b2f9f6670eec",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388604494-b3bc5501.log",
+          "time": "2026-11-22T23:03:24.495Z"
+        }
+      ],
+      "started_at": "2026-11-22T22:59:26.113Z"
+    },
+    {
+      "id": "P035.4",
+      "title": "Build feed items from native and legacy sources with mapping and validation",
+      "depends_on": [
+        "P035.3"
+      ],
+      "read_first": [
+        "src/Application/Catalog/CatalogProjector.php",
+        "src/Application/Variant/EffectivePriceResolver.php",
+        "src/Compatibility/Gallery/GalleryAdapter.php",
+        "src/Compatibility/Gallery/ImageSurfaces.php",
+        "src/Support/AuthorityResolver.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedItemSource.php",
+        "src/Application/Feeds/FeedMapper.php",
+        "src/Application/Feeds/FeedValidator.php",
+        "tests/integration/FeedItemSourceTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedItemSource.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedMapper.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedValidator.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedItemSourceTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedItemSourceTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedItemSource.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "90b6d84fc9ffa48684f8232ed84cda60f0125e3a2263fb52c62c418f2c2aaf9a",
+          "output_sha256": "a8e99679b1e705df6d6ee1d07999f7122290c3c785554dc018ab6db8094c840b",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388931858-54e1e56e.log",
+          "time": "2026-11-22T23:08:51.859Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedMapper.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "90b6d84fc9ffa48684f8232ed84cda60f0125e3a2263fb52c62c418f2c2aaf9a",
+          "output_sha256": "a6e9fcda42915438c430a2594a5d02b75a266e790d83f4bec43e90128c4e858f",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388931956-a386d330.log",
+          "time": "2026-11-22T23:08:51.956Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedValidator.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "90b6d84fc9ffa48684f8232ed84cda60f0125e3a2263fb52c62c418f2c2aaf9a",
+          "output_sha256": "5c4bfffb7762d0ee2566952dce0b3ac966a6cbbe1fb32d8971beecdd5bfd733b",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388932049-924db190.log",
+          "time": "2026-11-22T23:08:52.050Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedItemSourceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "90b6d84fc9ffa48684f8232ed84cda60f0125e3a2263fb52c62c418f2c2aaf9a",
+          "output_sha256": "a13c825e94f2c70dde88db8e7a149d33432e059ca552009ea3ae3401e031ce28",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388932149-6ee04df0.log",
+          "time": "2026-11-22T23:08:52.150Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedItemSourceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "90b6d84fc9ffa48684f8232ed84cda60f0125e3a2263fb52c62c418f2c2aaf9a",
+          "output_sha256": "dddc6525bb8e8c015e6e86bcd3bbc46f72bd67a08a44523d3d7118c7c65e62dd",
+          "output_path": "docs/plans/P035-product-feeds/command-1795388934490-6f1efa69.log",
+          "time": "2026-11-22T23:08:54.490Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:03:28.565Z"
+    },
+    {
+      "id": "P035.5",
+      "title": "Store item generations, run full rebuilds and publish validated feed files",
+      "depends_on": [
+        "P035.4"
+      ],
+      "read_first": [
+        "src/Application/ImportExport/SnapshotExporter.php",
+        "src/Application/Feeds/FeedRepository.php",
+        "src/Application/Feeds/FeedItemSource.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedItemStore.php",
+        "src/Application/Feeds/FeedWriter.php",
+        "src/Application/Feeds/FeedBuilder.php",
+        "src/Cli/Commands.php",
+        "tests/integration/FeedBuildPublishTest.php",
+        "tests/performance/FeedBuildBenchmark.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedItemStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedWriter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedBuilder.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Cli/Commands.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedBuildPublishTest.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/performance/FeedBuildBenchmark.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedBuildPublishTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedItemStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "df3f9b284a91664efad24bed264db9960ab07f4f066acd5540379e737f089148",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455088-0b4e5e5b.log",
+          "time": "2026-11-22T23:17:35.089Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedWriter.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "0767a2337f191eeade05e822563cc2bab225d90e5bac0b79837c2f4b689f3408",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455185-61956f7c.log",
+          "time": "2026-11-22T23:17:35.186Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedBuilder.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "475f2bb368881f3d8da78adb5b2c6c45dda7f1155ab0ccd8b27805ad0b1619ec",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455279-4e0a54b9.log",
+          "time": "2026-11-22T23:17:35.279Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Cli/Commands.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "d5c3a973f82c7326baae8148e56db0c590b5df9b93679b99e5a97984bef9ccb4",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455370-e7ca7e3b.log",
+          "time": "2026-11-22T23:17:35.371Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedBuildPublishTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "16a3e5e6f7c39b1f014308819aa4c1d10c0ba643efcf5c0716912a4acc2bb88c",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455462-61c9a0a0.log",
+          "time": "2026-11-22T23:17:35.463Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/performance/FeedBuildBenchmark.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "ba197abd22a70c34a68609871eeae2d4682201d319372c921ab7319528868f42",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389455554-1cfa533b.log",
+          "time": "2026-11-22T23:17:35.554Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedBuildPublishTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "1857c7e210ba9fbef7a2da90cbbbadf7e2d7dc438348408748a46def55676bce",
+          "output_sha256": "c814f541d82b6e0e113049fc26f265face1d7fd8eeed17f38aee7d153920ff05",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389509267-ef2316a5.log",
+          "time": "2026-11-22T23:18:29.267Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:09:17.605Z"
+    },
+    {
+      "id": "P035.6",
+      "title": "Mark changed products dirty and publish debounced incremental updates",
+      "depends_on": [
+        "P035.5"
+      ],
+      "read_first": [
+        "src/Infrastructure/Database/OutboxWorker.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Application/Catalog/CatalogProjector.php",
+        "src/Compatibility/WooDataStore/ProductLifecycle.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedChangeTracker.php",
+        "src/Application/Feeds/FeedScheduler.php",
+        "src/Infrastructure/Database/OutboxWorker.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "tests/integration/FeedIncrementalTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedChangeTracker.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedScheduler.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/OutboxWorker.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/ProductRepository.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedIncrementalTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedIncrementalTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPurgeOutboxTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/OutboxProjectionWorkerTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedChangeTracker.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "f97bd74db725b390e107614138ddf67b9c71449c480963d727c2c445895b5824",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389731449-02e3bf13.log",
+          "time": "2026-11-22T23:22:11.450Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedScheduler.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "4a13666ff0b446ff57bce359ce157b1b056216e4626c560f00e7c1b17ee0bc22",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389731542-6e11bff2.log",
+          "time": "2026-11-22T23:22:11.542Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/OutboxWorker.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "01598dde1233d42a8429c6fc44e951705b0849d5d8d40bae1591a5457c00d4a6",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389731635-56260bee.log",
+          "time": "2026-11-22T23:22:11.636Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/ProductRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "50dbb18f4d148279481440a11ec53078e61e1457568cd523953e11f9ae23142e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389731733-5c96d748.log",
+          "time": "2026-11-22T23:22:11.733Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedIncrementalTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "c8eb92ecef814f3860c1baf422eb5b42064d421e84fc57e83a20b2a6cd4c0268",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389731827-19faad97.log",
+          "time": "2026-11-22T23:22:11.827Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedIncrementalTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "8d1f7fea005e25b069dab9ef7257c6c8d7f4dc8954f3e92dc61f5b8a1191fe51",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389766276-59a42dc0.log",
+          "time": "2026-11-22T23:22:46.276Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPurgeOutboxTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "356b95e3211b925ce783b5580dc972973a9df620506237d1fb7af8050a0e2aee",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389767631-c8648e0a.log",
+          "time": "2026-11-22T23:22:47.632Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/OutboxProjectionWorkerTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "31070f136ca69e08aa99f4b1966bc7e324ebce6a062e6ceac831d69714c57ffb",
+          "output_sha256": "976d5cb75fb7d309a74cd508c03ad38e8e363decf98912899b0f381c91ab36bf",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389769139-11cb459e.log",
+          "time": "2026-11-22T23:22:49.140Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:18:53.243Z"
+    },
+    {
+      "id": "P035.7",
+      "title": "Reconcile feed items on a rolling schedule, escalate drift and record worker heartbeat",
+      "depends_on": [
+        "P035.6"
+      ],
+      "read_first": [
+        "src/Application/Feeds/FeedScheduler.php",
+        "src/Application/Feeds/FeedItemStore.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedScheduler.php",
+        "tests/integration/FeedReconcileTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedScheduler.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedReconcileTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedReconcileTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedScheduler.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "651be9cd71d34c89f4164c5571d9e9c01eb4bc5bd37c7b3a2aca4ead3349ac54",
+          "output_sha256": "4a13666ff0b446ff57bce359ce157b1b056216e4626c560f00e7c1b17ee0bc22",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389858907-150bedcc.log",
+          "time": "2026-11-22T23:24:18.907Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedReconcileTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "651be9cd71d34c89f4164c5571d9e9c01eb4bc5bd37c7b3a2aca4ead3349ac54",
+          "output_sha256": "19b3bef7cd312bedb85be8f9bf3f80acbfdb796f7581204fc179d71b678753de",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389859000-0efa261c.log",
+          "time": "2026-11-22T23:24:19.000Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedReconcileTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "651be9cd71d34c89f4164c5571d9e9c01eb4bc5bd37c7b3a2aca4ead3349ac54",
+          "output_sha256": "4012c60fcad98973ced3a46ea89aa90e4dcfbb3e66ebd401188170c3734fbeb6",
+          "output_path": "docs/plans/P035-product-feeds/command-1795389866176-f333d29e.log",
+          "time": "2026-11-22T23:24:26.176Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:23:31.472Z"
+    },
+    {
+      "id": "P035.8",
+      "title": "Serve feed files from a token-protected public URL",
+      "depends_on": [
+        "P035.5"
+      ],
+      "read_first": [
+        "src/Application/Feeds/FeedRepository.php",
+        "src/Bootstrap/PluginBootstrap.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedEndpoint.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/FeedEndpointTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Feeds/FeedEndpoint.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedEndpointTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedEndpointTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Feeds/FeedEndpoint.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "449c841a01dd0e7ef0a407af00be1a564e5a46e6bceac0e320022b0405048766",
+          "output_sha256": "ab4615c06e13a9e366e0551bbd36898bbf23cbc0d4adb32deb29f94c7d76cef2",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390061742-609bba3d.log",
+          "time": "2026-11-22T23:27:41.742Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "449c841a01dd0e7ef0a407af00be1a564e5a46e6bceac0e320022b0405048766",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390061834-14d09e98.log",
+          "time": "2026-11-22T23:27:41.834Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedEndpointTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "449c841a01dd0e7ef0a407af00be1a564e5a46e6bceac0e320022b0405048766",
+          "output_sha256": "39bbbea2016925f2d4af483ad03a72d98bdb352e2931e79703f70831871ae7dc",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390061926-6885c48e.log",
+          "time": "2026-11-22T23:27:41.926Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedEndpointTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "449c841a01dd0e7ef0a407af00be1a564e5a46e6bceac0e320022b0405048766",
+          "output_sha256": "d9ac3113d2c5d7b154ff1006ba6647c6cc095084dd9f373d0b83cca49b94dff8",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390064752-97c0dcbc.log",
+          "time": "2026-11-22T23:27:44.752Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:25:35.263Z"
+    },
+    {
+      "id": "P035.9",
+      "title": "Build the Product Feeds list and Create/Edit admin screens",
+      "depends_on": [
+        "P035.3",
+        "P035.5",
+        "P035.8"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "src/Admin/SettingsPage.php",
+        "assets/admin/admin-ui.css",
+        "assets/admin/settings.js",
+        "src/Bootstrap/PluginBootstrap.php"
+      ],
+      "files": [
+        "src/Admin/FeedsPage.php",
+        "src/Admin/Rest/FeedsApiController.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "assets/admin/feeds.js",
+        "assets/admin/feeds.css",
+        "tests/integration/FeedsPageTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Admin/FeedsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/Rest/FeedsApiController.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/PluginBootstrap.php"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/admin/feeds.js"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedsPageTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedsPageTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedsApiTest.php"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/FeedsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "1bd0426b9a0c406adb175a31b2c8a64efb7ac027036c7d9c6ff72e467439fedb",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390897671-b77a572a.log",
+          "time": "2026-11-22T23:41:37.672Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/Rest/FeedsApiController.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "10fcfa520ef793b4841caacb83a3890271731c45cd055913a11bbb06f48361ce",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390897767-536ef954.log",
+          "time": "2026-11-22T23:41:37.767Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Bootstrap/PluginBootstrap.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "921c62203b1b1650a156058b363e168291ac117cf2a4d7e48883e8d319f24b2e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390897862-db742a69.log",
+          "time": "2026-11-22T23:41:37.862Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/feeds.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390897941-49fc51f0.log",
+          "time": "2026-11-22T23:41:37.942Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedsPageTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "ed9edd87df595b9a1d93f9db1dcdb4648f340a67a85b123dc6b2e371a8f6f5f1",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390898033-37280ea8.log",
+          "time": "2026-11-22T23:41:38.033Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedsPageTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "eea791e4335288bb4af169e9d6e4e344eec0651241d058f2881211e2031cc1a2",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390914193-91e98ea8.log",
+          "time": "2026-11-22T23:41:54.193Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "fe4802e29813ec4e26065b9d425c3fc05f42e89a6030fc4bafaf778e732aaba9",
+          "output_sha256": "723894f573e9e838755ceff4fcd92bb588a4f246450140cfe94cf16274e111d1",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390915676-106e9f53.log",
+          "time": "2026-11-22T23:41:55.677Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:27:53.534Z"
+    },
+    {
+      "id": "P035.10",
+      "title": "Surface feed health on Overview and record operations notes",
+      "depends_on": [
+        "P035.7",
+        "P035.9"
+      ],
+      "read_first": [
+        "src/Admin/SettingsPage.php",
+        "docs/08-operations.md"
+      ],
+      "files": [
+        "src/Admin/SettingsPage.php",
+        "tests/integration/FeedHealthTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Admin/SettingsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/FeedHealthTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedHealthTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "37fc1314642dbaa0122ba6a1e73e1f86205b0ed25f6b15abd40365299b07f88e",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390960555-9d18c64d.log",
+          "time": "2026-11-22T23:42:40.556Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/FeedHealthTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "b8f3ff9a51a546496e70430711d2291a92e41526af3fbfa83918d6b9e3c2b786",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390960646-ca1ba06c.log",
+          "time": "2026-11-22T23:42:40.647Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedHealthTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "b21984a651d1dfe9105813bc0aa6109874c173222c1130bd85271ba1a44bd4e8",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390961928-384d5b57.log",
+          "time": "2026-11-22T23:42:41.929Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "876f6093cc9485c37c153282c0d726cf50788b3acdb54539b9c86e9699ab3f46",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390963320-a19ce12e.log",
+          "time": "2026-11-22T23:42:43.321Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "402e2637cdb58f502ba21c9c29142a06c7fd565ded8a469406e51f97ac731294",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390963437-9f1e381e.log",
+          "time": "2026-11-22T23:42:43.438Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "28f7d4f46f10905deffdeab90718c6b68f81cb31758e05ac0cd44b4e27cf8c26",
+          "output_sha256": "34c4bb6dbaaa50a912beb16ec98b2a985b3d54d66437de0c266b74760f04f37b",
+          "output_path": "docs/plans/P035-product-feeds/command-1795390963552-10b02438.log",
+          "time": "2026-11-22T23:42:43.553Z"
+        }
+      ],
+      "started_at": "2026-11-22T23:41:59.251Z"
+    }
+  ],
+  "approved_hash": "4f3784e5f57e6391c03d6d8ed06ae79337ac2537c0ebc63b1b48fe1a983b3892",
+  "report_hash": "1adde4a4e9abbd7cf91cf88d28f7db59017fac2afbec1a51c53d5c14289cfc7d"
+}

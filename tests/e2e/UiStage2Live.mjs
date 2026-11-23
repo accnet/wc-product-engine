@@ -165,6 +165,9 @@ try {
     });
 
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    // Fixture images point at a placeholder CDN host (93.184.216.34). Serve them from memory so
+    // the page 'load' event never waits on a real outbound connection, which can hang for 30 s.
+    await ctx.route('https://93.184.216.34/**', (r) => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64') }));
     await ctx.addCookies([
         { name: `wordpress_logged_in_${hash}`, value: logged, domain: HOST, path: '/' },
         { name: `wordpress_sec_${hash}`, value: auth, domain: HOST, path: '/wp-admin' },

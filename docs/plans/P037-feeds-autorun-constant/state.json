@@ -1,0 +1,46 @@
+{
+  "id": "P037",
+  "title": "Register the P036 feed fallback constants in docs/01",
+  "status": "done",
+  "content_hash": "b1960866c60d6e9e5a7d18e1d4439abcde7dede0c2fcd59dc9f60952aa91a3d6",
+  "tasks": [
+    {
+      "id": "P037.1",
+      "title": "Register the feed fallback opt-out constant and the host terms P036 relies on in docs/01 section 9",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P036-feeds-without-cron/plan.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "de3d603ba489c7dfa75f97e5d66c0c5fc993410ef77cae85c9b31c43fdb483f4",
+          "output_sha256": "fe84b7cada561413efafcd959754e1805a073c3ccd6a30406d91801afe226006",
+          "output_path": "docs/plans/P037-feeds-autorun-constant/command-1795420498313-bc73c60a.log",
+          "time": "2026-11-23T07:54:58.314Z"
+        }
+      ],
+      "started_at": "2026-11-23T07:54:47.400Z"
+    }
+  ],
+  "approved_hash": "b1960866c60d6e9e5a7d18e1d4439abcde7dede0c2fcd59dc9f60952aa91a3d6",
+  "report_hash": "330e38a3bfcfb99ebf47d575176cb3607f6d92a8caf7cc36ca427b0995466649"
+}

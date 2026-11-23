@@ -18,22 +18,22 @@ class PluginBootstrap
     public const OPTION_ATTR_DISPLAY = 'wpe_attribute_display_config';
     public const OPTION_PRODUCT_PAGE_VER = 'wpe_product_page_settings_ver';
 
-    /** Feature flag defaults: native features off, legacy authority (AC-T02-01). */
+    /** Feature flag defaults: native_bridge authority, core engine + storefront UI enabled, external media off (P033). */
     public const DEFAULT_FLAGS = [
         'variants_ui_enabled'      => true,
-        'query_enabled'            => false,
+        'query_enabled'            => true,
         'media_enabled'            => false,
-        'resolver_enabled'         => false,
-        'native_writes_enabled'    => false,
-        'single_price_display'     => false,
-        'show_selected_value'      => false,
-        'show_help_text'           => false,
-        'button_selector'          => false,
-        'color_swatches'           => false,
-        'image_swatches'           => false,
-        'mark_unavailable_options' => false,
-        'auto_select_first_values' => false,
-        'cohort_mode'              => 'legacy', // 'legacy' | 'cohort_canary' | 'full_native'
+        'resolver_enabled'         => true,
+        'native_writes_enabled'    => true,
+        'single_price_display'     => true,
+        'show_selected_value'      => true,
+        'show_help_text'           => true,
+        'button_selector'          => true,
+        'color_swatches'           => true,
+        'image_swatches'           => true,
+        'mark_unavailable_options' => true,
+        'auto_select_first_values' => true,
+        'cohort_mode'              => 'native_bridge', // 'legacy' | 'cohort_canary' | 'native_bridge' | 'full_native'
     ];
 
     public static function instance(): self
@@ -90,6 +90,11 @@ class PluginBootstrap
         \WPE\Compatibility\WooDataStore\PostShellBridge::getInstance()->boot();
         \WPE\Application\Variant\ResolverApi::register();
         \WPE\Compatibility\StoreApi\SelectorAdapter::register();
+
+        // Product feeds (P035): public feed URL and change tracking for the feed worker.
+        \WPE\Application\Feeds\FeedEndpoint::register();
+        \WPE\Application\Feeds\FeedChangeTracker::register();
+        \WPE\Application\Feeds\FeedAutoRunner::register();
 
         if ($this->isFlagEnabled('query_enabled')) {
             \WPE\Application\Catalog\CatalogAdapters::init();
@@ -334,7 +339,7 @@ class PluginBootstrap
         }
 
         // Rule 3: Default cohort mode
-        return $this->flags['cohort_mode'] ?? 'legacy';
+        return $this->flags['cohort_mode'] ?? self::DEFAULT_FLAGS['cohort_mode'];
     }
 
     public function registerCapabilities(): void
@@ -354,7 +359,7 @@ class PluginBootstrap
         if (!$this->dependencies_satisfied || !$this->isFlagEnabled('native_writes_enabled')) {
             return false;
         }
-        $cohortMode = (string)($this->flags['cohort_mode'] ?? 'legacy');
+        $cohortMode = (string)($this->flags['cohort_mode'] ?? self::DEFAULT_FLAGS['cohort_mode']);
         return in_array($cohortMode, ['cohort_canary', 'native_bridge', 'full_native'], true);
     }
 
@@ -380,7 +385,7 @@ class PluginBootstrap
                 return trim($val, "\" \t\n\r\0\x0B");
             }
         }
-        return (string)($this->flags['cohort_mode'] ?? 'legacy');
+        return (string)($this->flags['cohort_mode'] ?? self::DEFAULT_FLAGS['cohort_mode']);
     }
 
     public function registerDataStores(): void
@@ -422,14 +427,27 @@ class PluginBootstrap
 
         add_submenu_page(
             'wc-product-engine',
-            __('Shopify CSV Import', 'wc-product-engine'),
-            __('Shopify CSV Import', 'wc-product-engine'),
+            __('Product Feeds', 'wc-product-engine'),
+            __('Product Feeds', 'wc-product-engine'),
+            'manage_woocommerce',
+            \WPE\Admin\FeedsPage::SLUG,
+            [\WPE\Admin\FeedsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'wc-product-engine',
+            __('CSV Import', 'wc-product-engine'),
+            __('CSV Import', 'wc-product-engine'),
             Capabilities::IMPORT_PRODUCTS,
             'wpe-shopify-import',
             [\WPE\Admin\ShopifyImportPage::class, 'render']
         );
     }
 
+    /**
+     * Old bookmarks to the removed standalone `wpe-operations` screen land on
+     * Settings → Operations & Health, the only operations UI.
+     */
     public function redirectLegacyOperationsPage(): void
     {
         if (!is_admin()) {
@@ -444,12 +462,76 @@ class PluginBootstrap
 
     public function enqueueAdminAssets(string $hook): void
     {
-        if (strpos($hook, 'wc-product-engine') === false && strpos($hook, 'wpe-shopify-import') === false) {
+        if (strpos($hook, 'wc-product-engine') === false && strpos($hook, 'wpe-shopify-import') === false && strpos($hook, \WPE\Admin\FeedsPage::SLUG) === false) {
             return;
         }
 
         wp_enqueue_style('wpe-admin-tokens', Assets::url('assets/admin/tokens.css'), [], Assets::version('assets/admin/tokens.css'));
-        wp_enqueue_style('wpe-admin-css', Assets::url('assets/admin/admin.css'), ['wpe-admin-tokens'], Assets::version('assets/admin/admin.css'));
+        // Shared admin UI kit (Settings + CSV Import); screens opt in with `.wpe-ui`.
+        wp_enqueue_style('wpe-admin-ui', Assets::url('assets/admin/admin-ui.css'), ['wpe-admin-tokens'], Assets::version('assets/admin/admin-ui.css'));
+        wp_enqueue_style('wpe-admin-css', Assets::url('assets/admin/admin.css'), ['wpe-admin-tokens', 'wpe-admin-ui'], Assets::version('assets/admin/admin.css'));
+
+        if (strpos($hook, \WPE\Admin\FeedsPage::SLUG) !== false) {
+            wp_enqueue_style('wpe-feeds-css', Assets::url('assets/admin/feeds.css'), ['wpe-admin-css'], Assets::version('assets/admin/feeds.css'));
+            wp_enqueue_script('wpe-feeds-js', Assets::url('assets/admin/feeds.js'), ['jquery'], Assets::version('assets/admin/feeds.js'), true);
+            wp_localize_script('wpe-feeds-js', 'wpeFeedsConfig', [
+                'restUrl'   => esc_url_raw(rest_url('wpe/v1/admin/feeds')),
+                'nonce'     => wp_create_nonce('wp_rest'),
+                'listUrl'   => \WPE\Admin\FeedsPage::url(),
+                'canManage' => Capabilities::canRunOperations(),
+                'i18n'      => [
+                    'saving'        => __('Saving…', 'wc-product-engine'),
+                    'saved'         => __('Feed saved.', 'wc-product-engine'),
+                    'created'       => __('Feed created. The first build starts with the next worker run.', 'wc-product-engine'),
+                    'saveFailed'    => __('The feed could not be saved. Check the highlighted fields.', 'wc-product-engine'),
+                    'requestFailed' => __('The request failed.', 'wc-product-engine'),
+                    'copied'        => __('Feed URL copied.', 'wc-product-engine'),
+                    'publishing'    => __('Publishing…', 'wc-product-engine'),
+                    'published'     => __('Feed published.', 'wc-product-engine'),
+                    'rebuilding'    => __('Rebuilding…', 'wc-product-engine'),
+                    'queued'        => __('Full rebuild started. Keep this page open to finish it now, or the worker completes it.', 'wc-product-engine'),
+                    'rebuilt'       => __('Rebuild finished and published.', 'wc-product-engine'),
+                    'deleted'       => __('Feed deleted.', 'wc-product-engine'),
+                    'duplicated'    => __('Feed duplicated (disabled).', 'wc-product-engine'),
+                    'confirmRotate' => __('Create a new URL? The current URL stops working and Merchant Center must be updated.', 'wc-product-engine'),
+                    'rotated'       => __('New URL created. Update it in Merchant Center.', 'wc-product-engine'),
+                    'edit'          => __('Edit', 'wc-product-engine'),
+                    'copyUrl'       => __('Copy URL', 'wc-product-engine'),
+                    'publishNow'    => __('Publish now', 'wc-product-engine'),
+                    'rebuild'       => __('Full rebuild', 'wc-product-engine'),
+                    'duplicate'     => __('Duplicate', 'wc-product-engine'),
+                    'delete'        => __('Delete', 'wc-product-engine'),
+                    'never'         => __('Never', 'wc-product-engine'),
+                    'noItems'       => __('No items yet. Run a full rebuild or wait for the worker.', 'wc-product-engine'),
+                    'noIssues'      => __('No issues in the last published file.', 'wc-product-engine'),
+                    'noRuns'        => __('No runs recorded yet.', 'wc-product-engine'),
+                    'live'          => __('Rendered live from the first products (not built yet).', 'wc-product-engine'),
+                    'rebuildHint'   => __('Saving will rebuild all items.', 'wc-product-engine'),
+                    'statuses'      => (new \WPE\Admin\FeedsPage())->statusLabels(),
+                    'colTitle'      => __('Title', 'wc-product-engine'),
+                    'colPrice'      => __('Price', 'wc-product-engine'),
+                    'colAvailability' => __('Availability', 'wc-product-engine'),
+                    'colIssues'     => __('Issues', 'wc-product-engine'),
+                    'colIssue'      => __('Issue', 'wc-product-engine'),
+                    'colSeverity'   => __('Severity', 'wc-product-engine'),
+                    'colItems'      => __('Items', 'wc-product-engine'),
+                    'colExamples'   => __('Examples', 'wc-product-engine'),
+                    'colRun'        => __('Run', 'wc-product-engine'),
+                    'colStatus'     => __('Status', 'wc-product-engine'),
+                    'colStarted'    => __('Started', 'wc-product-engine'),
+                    'colFinished'   => __('Finished', 'wc-product-engine'),
+                    'runs'          => __('Runs', 'wc-product-engine'),
+                    'itemsExported' => __('items exported', 'wc-product-engine'),
+                    'productsWaiting' => __('products waiting to be re-rendered', 'wc-product-engine'),
+                    'worker'        => __('Worker', 'wc-product-engine'),
+                    'building'      => __('Building', 'wc-product-engine'),
+                    'starting'      => __('Starting build…', 'wc-product-engine'),
+                    'items'         => __('items', 'wc-product-engine'),
+                    'upToDate'      => __('Up to date with the item store', 'wc-product-engine'),
+                ],
+            ]);
+            return;
+        }
 
         if (strpos($hook, 'wpe-shopify-import') !== false) {
             wp_enqueue_script(
@@ -527,6 +609,7 @@ class PluginBootstrap
             \WPE\Admin\Rest\AdminApiController::getInstance()->registerRoutes();
             \WPE\Admin\ProductEditor\ProductEditorApiController::getInstance()->registerRoutes();
             \WPE\Admin\ProductEditor\ProductMediaApiController::getInstance()->registerRoutes();
+            \WPE\Admin\Rest\FeedsApiController::getInstance()->registerRoutes();
         });
     }
 
@@ -540,7 +623,7 @@ class PluginBootstrap
                 'wordpress' => defined('WP_VERSION') ? WP_VERSION : (get_bloginfo('version') ?: 'unknown'),
                 'woocommerce' => defined('WC_VERSION') ? WC_VERSION : 'unknown',
                 'php' => PHP_VERSION,
-                'authority_mode' => $this->flags['cohort_mode'] ?? 'legacy',
+                'authority_mode' => $this->flags['cohort_mode'] ?? self::DEFAULT_FLAGS['cohort_mode'],
             ],
         ];
     }
@@ -554,19 +637,22 @@ class PluginBootstrap
 
     public static function onActivate(): void
     {
-        // AC-T02-01: Activation does not mutate data, products, or default authority
+        // AC-T02-01: Activation does not mutate existing products or overwrite saved flags/control state
         $instance = self::instance();
         $instance->loadFlags();
         $instance->registerCapabilities();
 
         // Expand-only schema install: creates missing wpe_* tables. Does not
-        // touch products or authority (AC-T02-01).
+        // touch products or saved authority (AC-T02-01).
         self::ensureSchema();
 
         // Ensure default flags exist without modifying any existing products
         if (get_option(self::OPTION_FLAGS) === false) {
             update_option(self::OPTION_FLAGS, self::DEFAULT_FLAGS);
+            $instance->loadFlags();
         }
+
+        self::ensureDefaultControlState();
     }
 
     /**
@@ -582,9 +668,56 @@ class PluginBootstrap
         }
 
         $result = (new \WPE\Infrastructure\Database\SchemaMigrator())->migrate();
-        if (empty($result['success']) && function_exists('error_log')) {
-            error_log('[wc-product-engine] Schema migration failed: ' . ($result['error'] ?? 'unknown error'));
+        if (empty($result['success'])) {
+            if (function_exists('error_log')) {
+                error_log('[wc-product-engine] Schema migration failed: ' . ($result['error'] ?? 'unknown error'));
+            }
+            return;
         }
+
+        if ($installed === 0) {
+            self::ensureDefaultControlState();
+        }
+    }
+
+    /**
+     * Seed default native_bridge control entries when absent without overwriting existing records (P033).
+     */
+    public static function ensureDefaultControlState(): void
+    {
+        global $wpdb;
+        if (!($wpdb instanceof \wpdb)) {
+            return;
+        }
+
+        $table = $wpdb->prefix . 'wpe_control';
+        $now = gmdate('Y-m-d H:i:s.u');
+        $defaultMode = (string) self::DEFAULT_FLAGS['cohort_mode'];
+        $cohortPayload = [
+            'cohort_id'  => 'all',
+            'mode'       => $defaultMode,
+            'epoch'      => 1,
+            'active'     => true,
+            'updated_at' => $now,
+        ];
+        $cohortJson = function_exists('wp_json_encode')
+            ? (string) wp_json_encode($cohortPayload)
+            : (string) json_encode($cohortPayload);
+
+        $suppress = $wpdb->suppress_errors(true);
+        foreach ([
+            'system_mode'       => $defaultMode,
+            'authority_epoch'   => '1',
+            'cohort_active_all' => $cohortJson,
+        ] as $key => $value) {
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO {$table} (`key`, `value`, `version`, `updated_at`) VALUES (%s, %s, 1, %s)",
+                $key,
+                $value,
+                $now
+            ));
+        }
+        $wpdb->suppress_errors($suppress);
     }
 
     public static function onDeactivate(): void

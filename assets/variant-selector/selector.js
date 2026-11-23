@@ -41,7 +41,8 @@
             reset: 'Clear selection',
             inStock: 'In stock',
             outOfStock: 'Out of stock',
-            selectOption: 'Choose an option'
+            selectOption: 'Choose an option',
+            adjusted: '%1$s changed to %2$s'
           }
         },
         mergedConfig
@@ -901,6 +902,8 @@
 
       this.allowedValues = data.allowed_values || {};
       this.allowedDetails = data.allowed_details || {};
+      // Option priority: the server may replace later options that no longer fit an earlier choice.
+      const adjustedOptions = this.applyResolvedSelection(data.selection);
       this.updateAllowedSwatches();
       this.syncControlsWithSelection();
 
@@ -946,6 +949,67 @@
         default:
           this.updateUiState(state);
           break;
+      }
+
+      // After the state handlers so the adjustment is not overwritten by their announcement.
+      this.announceAdjustedOptions(adjustedOptions);
+    }
+
+    /**
+     * Adopt the effective selection returned by the resolver (option-priority reconciliation).
+     * @param {Object|null|undefined} selection - [option_id => value_id] map, or null when absent
+     * @returns {Array<{optionId: string, from: string, to: string}>} options whose value changed
+     */
+    applyResolvedSelection(selection) {
+      if (!selection || typeof selection !== 'object' || Array.isArray(selection)) {
+        return [];
+      }
+
+      const next = {};
+      Object.keys(selection).forEach((optionId) => {
+        const value = selection[optionId];
+        if (value !== null && value !== undefined && String(value) !== '') {
+          next[String(optionId)] = String(value);
+        }
+      });
+
+      const changes = [];
+      const keys = new Set(Object.keys(this.currentSelection).concat(Object.keys(next)));
+      keys.forEach((optionId) => {
+        const before = this.currentSelection[optionId] ? String(this.currentSelection[optionId]) : '';
+        const after = next[optionId] || '';
+        if (before !== after) {
+          changes.push({ optionId, from: before, to: after });
+        }
+      });
+
+      if (changes.length) {
+        this.currentSelection = next;
+      }
+      return changes;
+    }
+
+    announceAdjustedOptions(changes) {
+      if (!Array.isArray(changes) || !changes.length) return;
+      const options = Array.isArray(this.config.options) ? this.config.options : [];
+      const template = (this.config.i18n && this.config.i18n.adjusted) || '%1$s changed to %2$s';
+      const messages = [];
+      changes.forEach((change) => {
+        if (!change.to) return;
+        const optCfg = options.find((o) => String(o.id) === String(change.optionId));
+        const valCfg =
+          optCfg && Array.isArray(optCfg.values)
+            ? optCfg.values.find((v) => String(v.id) === String(change.to))
+            : null;
+        const optLabel = (optCfg && (optCfg.name || optCfg.label)) || '';
+        const valLabel = (valCfg && valCfg.label) || '';
+        if (optLabel && valLabel) {
+          messages.push(template.replace('%1$s', optLabel).replace('%2$s', valLabel));
+        }
+      });
+      if (messages.length) {
+        const existing = this.liveRegion && this.liveRegion.textContent ? this.liveRegion.textContent.trim() : '';
+        this.announce(messages.join('. ') + (existing ? '. ' + existing : ''));
       }
     }
 

@@ -39,9 +39,85 @@ class Commands
         \WP_CLI::add_command('wpe lookup', [self::class, 'lookup']);
         \WP_CLI::add_command('wpe mode', [self::class, 'mode']);
         \WP_CLI::add_command('wpe outbox', [self::class, 'outbox']);
+        \WP_CLI::add_command('wpe import-legacy', [self::class, 'importLegacy']);
         \WP_CLI::add_command('wpe gates', [self::class, 'gates']);
         \WP_CLI::add_command('wpe cutover', [self::class, 'cutover']);
         \WP_CLI::add_command('wpe hygiene', [self::class, 'hygiene']);
+        \WP_CLI::add_command('wpe feeds', [self::class, 'feeds']);
+    }
+
+    /**
+     * Product feeds (P035, 10 §12).
+     *
+     * Usage:
+     *   wp wpe feeds list
+     *   wp wpe feeds tick [--seconds=<int>] [--quiet]      (system cron, every minute)
+     *   wp wpe feeds build <id> [--seconds=<int>]          (full rebuild; 0 = until done)
+     *   wp wpe feeds publish <id> [--force]
+     *   wp wpe feeds status <id>
+     */
+    public static function feeds(array $args, array $assocArgs): void
+    {
+        $sub = (string)($args[0] ?? 'list');
+        $builder = new \WPE\Application\Feeds\FeedBuilder();
+        $repo = $builder->feeds();
+        $id = (int)($args[1] ?? 0);
+
+        if ($sub === 'list') {
+            $rows = array_map(static fn(array $f): array => [
+                'id' => $f['id'], 'name' => $f['name'], 'platform' => $f['platform'], 'format' => $f['format'],
+                'enabled' => $f['enabled'] ? 'yes' : 'no', 'status' => $f['status'],
+                'items' => (int)($f['stats']['published']['items'] ?? 0), 'published' => (string)$f['last_published_at'],
+            ], $repo->list());
+            \WP_CLI\Utils\format_items('table', $rows, ['id', 'name', 'platform', 'format', 'enabled', 'status', 'items', 'published']);
+            return;
+        }
+
+        if ($sub === 'tick') {
+            if (!class_exists(\WPE\Application\Feeds\FeedScheduler::class)) {
+                \WP_CLI::error('Feed scheduler is not available.');
+            }
+            $res = (new \WPE\Application\Feeds\FeedScheduler($builder))->tick((float)($assocArgs['seconds'] ?? 50));
+            if (empty($assocArgs['quiet'])) {
+                \WP_CLI::log((string)json_encode($res, JSON_PRETTY_PRINT));
+            }
+            return;
+        }
+
+        if ($id <= 0 || !$repo->get($id)) {
+            \WP_CLI::error('Pass an existing feed ID.');
+        }
+
+        if ($sub === 'build') {
+            $feed = $repo->get($id);
+            if ((int)$feed['build_generation'] === 0) {
+                $repo->requestRebuild($id, 'cli');
+            }
+            $seconds = (float)($assocArgs['seconds'] ?? 0);
+            do {
+                $res = $builder->buildStep($id, $seconds > 0 ? $seconds : 30.0);
+                \WP_CLI::log(sprintf('%s: %d/%d products', $res['status'], $res['done'], $res['total']));
+            } while ($seconds <= 0 && $res['status'] === 'building');
+            if (isset($res['published'])) {
+                \WP_CLI::log((string)json_encode($res['published']));
+            }
+            \WP_CLI::success('Build step finished: ' . $res['status']);
+            return;
+        }
+
+        if ($sub === 'publish') {
+            $res = $builder->publish($id, !empty($assocArgs['force']));
+            \WP_CLI::log((string)json_encode($res));
+            $res['status'] === 'published' ? \WP_CLI::success('Published.') : \WP_CLI::warning('Not published: ' . ($res['reason'] ?? $res['status']));
+            return;
+        }
+
+        if ($sub === 'status') {
+            \WP_CLI::log((string)json_encode($repo->view($repo->get($id), false) + ['runs' => $builder->runs($id, 5)], JSON_PRETTY_PRINT));
+            return;
+        }
+
+        \WP_CLI::error("Unknown subcommand '{$sub}'.");
     }
 
     /**
@@ -348,6 +424,26 @@ class Commands
             $res['mirrored'] ?? 0,
             $res['retired_stale'] ?? 0,
             $res['remaining_pending'] ?? 0
+        ));
+    }
+
+    /**
+     * One-step import of eligible unmigrated WooCommerce simple/variable products directly into native_bridge (P034).
+     *
+     * Usage:
+     *   wp wpe import-legacy [--limit=<int>]
+     */
+    public static function importLegacy(array $args, array $assocArgs): void
+    {
+        $ops = OperationsPage::getInstance();
+        $limit = isset($assocArgs['limit']) ? max(1, (int)$assocArgs['limit']) : 500;
+        $res = $ops->handleAction('import_legacy', ['limit' => $limit], 0);
+        \WP_CLI::log(json_encode($res, JSON_PRETTY_PRINT));
+        \WP_CLI::success(sprintf(
+            "Imported %d legacy product(s) into native_bridge (%d unsupported skipped, %d eligible remaining).",
+            $res['imported'] ?? 0,
+            $res['skipped_unsupported'] ?? 0,
+            $res['remaining_eligible'] ?? 0
         ));
     }
 

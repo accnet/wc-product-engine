@@ -1,0 +1,300 @@
+{
+  "id": "P036",
+  "title": "Product feeds update without a system cron",
+  "status": "done",
+  "content_hash": "96cbf5b7617a764064ef1a0e834f938204b3f91a9f781e5ce783290a296f014e",
+  "tasks": [
+    {
+      "id": "P036.1",
+      "title": "Document build-on-create and the in-request fallback runner for feed updates without a system cron",
+      "depends_on": [],
+      "read_first": [
+        "docs/10-integrations.md",
+        "docs/08-operations.md",
+        "docs/04-api-contract.md"
+      ],
+      "files": [
+        "docs/10-integrations.md",
+        "docs/08-operations.md",
+        "docs/04-api-contract.md",
+        "docs/09-ui.md",
+        "contracts/api/endpoints.json",
+        "contracts/openapi/wpe-v1.json",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 1,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "c6048fa357ce121811afd79a10311d9a7ff2275248ceb89a7d11c87b2b0f6c81",
+          "output_sha256": "2bad18c3afecd7ad429347ddea65e90f0ed5820d2ed9a25eb604f82000f3b3ab",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420431728-639721ff.log",
+          "time": "2026-11-23T07:53:51.728Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "ed24da047037a54fc3cd1213fdd2aca8800ce89a9f7a55fc0788bafc6ee05404",
+          "output_sha256": "fe84b7cada561413efafcd959754e1805a073c3ccd6a30406d91801afe226006",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420498466-dd67dadf.log",
+          "time": "2026-11-23T07:54:58.466Z"
+        }
+      ],
+      "started_at": "2026-11-23T07:53:31.833Z"
+    },
+    {
+      "id": "P036.2",
+      "title": "Keep build-on-create (regenerate continue mode driven by the Edit screen)",
+      "depends_on": [
+        "P036.1"
+      ],
+      "read_first": [
+        "src/Admin/Rest/FeedsApiController.php",
+        "assets/admin/feeds.js"
+      ],
+      "files": [
+        "src/Admin/Rest/FeedsApiController.php",
+        "assets/admin/feeds.js",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/FeedsPageTest.php"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedsPageTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedsPageTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "374cfc2da316edc38cf7ed3ce68d210a9f5526f6a264434f9e4ae012131b8b2c",
+          "output_sha256": "1ddf08c1a29222ea3521599a37367904bcd940cbe43a343b582ee22137a1dafe",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420527700-9c1e9e5b.log",
+          "time": "2026-11-23T07:55:27.700Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "374cfc2da316edc38cf7ed3ce68d210a9f5526f6a264434f9e4ae012131b8b2c",
+          "output_sha256": "723894f573e9e838755ceff4fcd92bb588a4f246450140cfe94cf16274e111d1",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420529244-06852225.log",
+          "time": "2026-11-23T07:55:29.244Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "374cfc2da316edc38cf7ed3ce68d210a9f5526f6a264434f9e4ae012131b8b2c",
+          "output_sha256": "fe84b7cada561413efafcd959754e1805a073c3ccd6a30406d91801afe226006",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420529352-377dce53.log",
+          "time": "2026-11-23T07:55:29.352Z"
+        }
+      ],
+      "started_at": "2026-11-23T07:54:58.554Z"
+    },
+    {
+      "id": "P036.3",
+      "title": "Product changes update feeds without a system cron: FeedAutoRunner runs a bounded scheduler tick after the response when no worker heartbeat is fresh",
+      "depends_on": [
+        "P036.2"
+      ],
+      "read_first": [
+        "src/Application/Feeds/FeedScheduler.php",
+        "src/Application/Feeds/FeedChangeTracker.php",
+        "src/Bootstrap/PluginBootstrap.php"
+      ],
+      "files": [
+        "src/Application/Feeds/FeedAutoRunner.php",
+        "src/Application/Feeds/FeedScheduler.php",
+        "src/Application/Feeds/FeedChangeTracker.php",
+        "src/Bootstrap/PluginBootstrap.php",
+        "tests/integration/FeedAutoRunTest.php"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedAutoRunTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedIncrementalTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedReconcileTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedHealthTest.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedAutoRunTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "5af4ae69666a5e91e9c2b338524cf148061f8889870fdfbfe5aa4dd9533c901f",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420909760-e42df9fa.log",
+          "time": "2026-11-23T08:01:49.761Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedIncrementalTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "8d1f7fea005e25b069dab9ef7257c6c8d7f4dc8954f3e92dc61f5b8a1191fe51",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420920388-f4bdaf51.log",
+          "time": "2026-11-23T08:02:00.388Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedReconcileTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "4012c60fcad98973ced3a46ea89aa90e4dcfbb3e66ebd401188170c3734fbeb6",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420927651-ac495820.log",
+          "time": "2026-11-23T08:02:07.652Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedHealthTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "b21984a651d1dfe9105813bc0aa6109874c173222c1130bd85271ba1a44bd4e8",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420928998-63fe4e40.log",
+          "time": "2026-11-23T08:02:08.998Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "457e57b31008f1487b2c9f4ed3018344a2a8ba9b93fc766065d46d05c0670b8a",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420929117-dfd68efd.log",
+          "time": "2026-11-23T08:02:09.118Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "8220345841796372418876a36ee1a45274aa5cec5b29225c92bf6ab013413202",
+          "output_sha256": "fe84b7cada561413efafcd959754e1805a073c3ccd6a30406d91801afe226006",
+          "output_path": "docs/plans/P036-feeds-without-cron/command-1795420929225-ba16e7fa.log",
+          "time": "2026-11-23T08:02:09.225Z"
+        }
+      ],
+      "started_at": "2026-11-23T07:55:29.454Z"
+    }
+  ],
+  "approved_hash": "96cbf5b7617a764064ef1a0e834f938204b3f91a9f781e5ce783290a296f014e",
+  "report_hash": "7c0dc9766df6526b4cd46dd7ac30904127ef1c6614e694a95554b7b016971b4b"
+}

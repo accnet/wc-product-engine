@@ -95,7 +95,7 @@ class SettingsApiTest
 
     private function testProductPageFlagGroupsAndDefaults(): void
     {
-        echo ' product_page flags are grouped under Price Display and Variant Selector and default to false...';
+        echo ' product_page flags are grouped under Price Display and Variant Selector and default to native_bridge suite...';
         delete_option(PluginBootstrap::OPTION_FLAGS);
         PluginBootstrap::instance()->loadFlags();
         $flags = PluginBootstrap::instance()->getFlags();
@@ -115,8 +115,13 @@ class SettingsApiTest
         ];
         $this->check(array_keys($selectorFlags) === $expectedSelector, 'Variant Selector section keys mismatch');
 
+        $this->check(($flags['cohort_mode'] ?? null) === 'native_bridge', 'Default cohort_mode must be native_bridge');
+        $this->check(($flags['media_enabled'] ?? null) === false, 'Default media_enabled must be false');
+        foreach (['variants_ui_enabled', 'query_enabled', 'resolver_enabled', 'native_writes_enabled'] as $key) {
+            $this->check(($flags[$key] ?? null) === true, "Default for {$key} must be true");
+        }
         foreach (array_merge(['single_price_display'], $expectedSelector) as $key) {
-            $this->check(($flags[$key] ?? null) === false, "Default for {$key} must be false to preserve existing behavior");
+            $this->check(($flags[$key] ?? null) === true, "Default for {$key} must be true");
         }
         echo " OK\n";
     }

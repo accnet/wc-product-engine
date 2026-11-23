@@ -51,6 +51,17 @@ class OutboxWorker
             throw new \RuntimeException("Failed to publish outbox event: " . $this->wpdb->last_error);
         }
 
+        /**
+         * An aggregate (product or variation) changed. Listeners only record the ID (product feeds,
+         * P035); they must not write inside the caller's transaction.
+         *
+         * @param int    $aggregateId Product or variation ID
+         * @param string $eventType   Outbox event type
+         */
+        if (function_exists('do_action')) {
+            do_action('wpe_aggregate_changed', $aggregateId, $eventType);
+        }
+
         return $eventId;
     }
 
@@ -121,6 +132,38 @@ class OutboxWorker
             ['%s', null, null],
             ['%s']
         );
+    }
+
+    /**
+     * Retire every not-yet-delivered event of permanently purged aggregates.
+     *
+     * A purged aggregate has nothing left to project, so its pending/failed events would only
+     * sit in the queue and keep the health report degraded. Events currently leased by a worker
+     * are left alone: that worker retires them itself once it finds the aggregate gone.
+     *
+     * @param int[] $aggregateIds
+     * @return int Number of events retired
+     */
+    public function retireAggregateEvents(array $aggregateIds, string $reason = 'aggregate_purged'): int
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $aggregateIds), static fn(int $id): bool => $id > 0)));
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $affected = $this->wpdb->query($this->wpdb->prepare(
+            "UPDATE {$this->tableOutbox}
+             SET state = 'completed', lease_owner = NULL, lease_until = NULL, last_error = %s
+             WHERE aggregate_id IN ({$placeholders}) AND state IN ('pending', 'failed')",
+            array_merge(['retired: ' . $reason], $ids)
+        ));
+
+        if ($affected === false) {
+            throw new \RuntimeException('Failed to retire outbox events: ' . $this->wpdb->last_error);
+        }
+
+        return (int)$affected;
     }
 
     /**

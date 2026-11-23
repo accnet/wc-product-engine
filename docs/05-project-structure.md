@@ -29,7 +29,6 @@ Support chứa helper WordPress-native dùng chung (singleton accessor, asset UR
 AGENTS.md
 CLAUDE.md
 README.md
-assets/operations/operations.js
 assets/variant-selector/selector.css
 assets/variant-selector/selector.js
 composer.json

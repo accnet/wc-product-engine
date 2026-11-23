@@ -9,7 +9,8 @@
  *    clicking Retry reuses the same upload_key and succeeds without duplicate asset or silent fallback.
  * 4. External CDN URL addition (#wpe-media-ext-url + .wpe-btn-add-media-url) adds CDN card to product draft.
  * 5. Set as Featured (.wpe-btn-media-set-featured) promotes gallery image to Featured and moves previous Featured to gallery.
- * 6. Gallery reorder (.wpe-btn-media-move-next / .wpe-btn-media-move-prev) and inline alt text edit (.wpe-media-alt-input).
+ * 6. Drag & drop reorder (mouse drag on the image; arrow keys / Home / End on .wpe-media-drag-handle; dropping an
+ *    image first makes it Featured) and inline alt text edit (.wpe-media-alt-input).
  * 7. Save & reload persistence: Featured, gallery order, and alt text persist across page reload; Pending badge clears;
  *    WordPress _thumbnail_id and _product_image_gallery are projected.
  * 8. Safe Unlink with Impact Preview (#wpe-media-unlink-modal): removing Featured image shows impact warning,
@@ -132,6 +133,9 @@ try {
         args: ['--no-sandbox', `--host-resolver-rules=MAP ${HOST} 127.0.0.1`],
     });
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 1050 } });
+    // Fixture images point at a placeholder CDN host (93.184.216.34). Serve them from memory so
+    // the page 'load' event never waits on a real outbound connection, which can hang for 30 s.
+    await ctx.route('https://93.184.216.34/**', (r) => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64') }));
     await ctx.addCookies([
         { name: `wordpress_logged_in_${hash}`, value: logged, domain: HOST, path: '/' },
         { name: `wordpress_sec_${hash}`, value: auth, domain: HOST, path: '/wp-admin' },
@@ -241,11 +245,36 @@ try {
     check('Setting 2nd image as Featured moves it to index 0', newFirstCardId === secondCardId);
     check('Old Featured image moves to front of gallery (index 1) instead of being dropped', newSecondCardId === firstCardId);
 
-    // Reorder gallery cards (move index 1 right to index 2)
-    await page.locator('#wpe-product-media-app .wpe-media-card').nth(1).locator('.wpe-btn-media-move-next').click();
+    // Reorder by drag & drop. Order now: [second, first, third].
+    const cardIds = () => page.locator('#wpe-product-media-app .wpe-media-card').evaluateAll((els) => els.map((e) => e.getAttribute('data-asset-id')));
+    const thirdCardId = (await cardIds())[2];
+    check('No arrow move buttons on media cards', (await page.locator('#wpe-product-media-app .wpe-btn-media-move').count()) === 0);
+    await page.locator('#wpe-product-media-app .wpe-media-grid').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    const fromBox = await page.locator('#wpe-product-media-app .wpe-media-card').nth(2).locator('.wpe-media-thumb-wrap').boundingBox();
+    const toBox = await page.locator('#wpe-product-media-app .wpe-media-card').nth(0).boundingBox();
+    await page.mouse.move(fromBox.x + 20, fromBox.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(fromBox.x + 30, fromBox.y + 30, { steps: 2 });
+    await page.mouse.move(toBox.x + 4, toBox.y + toBox.height / 2, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    const afterDrag = await cardIds();
+    check('Mouse drag of the 3rd image before the 1st reorders the cards', JSON.stringify(afterDrag) === JSON.stringify([thirdCardId, secondCardId, firstCardId]), JSON.stringify(afterDrag));
+    check('An image dropped first becomes the Featured image', (await page.locator('#wpe-product-media-app .wpe-media-card').nth(0).locator('.wpe-media-badge.featured').count()) === 1);
+    check('After a drag the unsaved draft offers Save Media', (await page.locator('#wpe-product-media-app .wpe-btn-save-media-direct').count()) === 1);
+
+    // Keyboard: End on the first card's grip, then ArrowRight on the second.
+    await page.locator('#wpe-product-media-app .wpe-media-card').nth(0).locator('.wpe-media-drag-handle').focus();
+    await page.keyboard.press('End');
     await page.waitForTimeout(150);
-    const afterMoveLastId = await page.locator('#wpe-product-media-app .wpe-media-card').nth(2).getAttribute('data-asset-id');
-    check('Gallery reorder button moves card to expected position', afterMoveLastId === firstCardId);
+    await page.locator('#wpe-product-media-app .wpe-media-card').nth(1).locator('.wpe-media-drag-handle').focus();
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(150);
+    const afterKeys = await cardIds();
+    const keyFocus = await page.evaluate(() => { const el = document.activeElement; return el && el.classList.contains('wpe-media-drag-handle') ? el.getAttribute('data-order-idx') : ''; });
+    check('End / ArrowRight on the grip move the image and keep focus on it', JSON.stringify(afterKeys) === JSON.stringify([secondCardId, thirdCardId, firstCardId]) && keyFocus === '2', `${JSON.stringify(afterKeys)} focus=${keyFocus}`);
+    const afterMoveLastId = afterKeys[2];
+    check('Gallery reorder moves card to expected position', afterMoveLastId === firstCardId);
 
     // Edit alt text on Featured card
     const featAltInput = page.locator('#wpe-product-media-app .wpe-media-card').nth(0).locator('.wpe-media-alt-input');

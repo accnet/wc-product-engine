@@ -354,7 +354,10 @@ class CartValidation
         }
 
         $stockStatus = (string)($invRow['stock_status'] ?? 'instock');
-        $manageStock = (int)($invRow['manage_stock'] ?? 0) === 1;
+        // Store-wide "Enable stock management" off: WooCommerce ignores per-item
+        // quantities (managing_stock() === false), so only stock_status applies.
+        $manageStock = (int)($invRow['manage_stock'] ?? 0) === 1
+            && 'yes' === get_option('woocommerce_manage_stock', 'yes');
         $stockQty = $invRow['quantity'] !== null ? (float)$invRow['quantity'] : 0.0;
         $backorders = (string)($invRow['backorders'] ?? 'no');
 

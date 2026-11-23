@@ -1,0 +1,502 @@
+{
+  "id": "P034",
+  "title": "Streamline Settings and Operations UI for single-mode native_bridge",
+  "status": "done",
+  "content_hash": "b169067814f7626e60ef307f93d31e52b1ba46f2aa10d292ce04f2b9d58efb3d",
+  "tasks": [
+    {
+      "id": "P034.1",
+      "title": "Update docs/09 section 6 for streamlined single-mode Operations controls and Danger Zone rollback",
+      "depends_on": [],
+      "read_first": [
+        "docs/09-ui.md",
+        "docs/02-domain.md"
+      ],
+      "files": [
+        "docs/09-ui.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "dc16eae61cc2393a3b3781af3f2ee3d7fa5623d8dcd4c1972f1a821cd35a3746",
+          "output_sha256": "c4f28711ad571bed0bbb383bedb48abcfbcbff14a1a07ebf4440c72769ef6393",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795292130288-ae8a339f.log",
+          "time": "2026-11-21T20:15:30.289Z"
+        }
+      ],
+      "started_at": "2026-11-21T20:14:57.592Z"
+    },
+    {
+      "id": "P034.2",
+      "title": "Implement import_legacy action, fix LegacyCapture native_bridge guard, streamline Settings/Operations UI and JS/CSS, add tests, and record NOTES",
+      "depends_on": [
+        "P034.1"
+      ],
+      "read_first": [
+        "docs/09-ui.md",
+        "src/Application/Migration/LegacyCapture.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Cli/Commands.php",
+        "assets/admin/settings.js",
+        "assets/operations/operations.js",
+        "assets/admin/settings.css",
+        "assets/admin/admin.css",
+        "tests/integration/T41Test.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyCapture.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Cli/Commands.php",
+        "assets/admin/settings.js",
+        "assets/operations/operations.js",
+        "assets/admin/settings.css",
+        "assets/admin/admin.css",
+        "tests/integration/SingleModeOperationsTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyCapture.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/OperationsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Admin/SettingsPage.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Cli/Commands.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/SingleModeOperationsTest.php"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/admin/settings.js"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/operations/operations.js"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SingleModeOperationsTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T41Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T37Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/AccessControlTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SettingsApiTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyCapture.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "09e9561bd662a63fb9995ac880b942e1a5d0aff17e7cc3159c30f0de18ad3f5c",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293496756-29d9b95c.log",
+          "time": "2026-11-21T20:38:16.757Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293496873-8b312092.log",
+          "time": "2026-11-21T20:38:16.873Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "37fc1314642dbaa0122ba6a1e73e1f86205b0ed25f6b15abd40365299b07f88e",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293496986-5651263d.log",
+          "time": "2026-11-21T20:38:16.987Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Cli/Commands.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "d5c3a973f82c7326baae8148e56db0c590b5df9b93679b99e5a97984bef9ccb4",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497110-81553400.log",
+          "time": "2026-11-21T20:38:17.111Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/SingleModeOperationsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "e5717464bf9b9506f103ff9690a88c0cb96dc0a1ea57a8587bac74539fecdeb9",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497245-cf18787b.log",
+          "time": "2026-11-21T20:38:17.246Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/settings.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497371-61431fc8.log",
+          "time": "2026-11-21T20:38:17.371Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/operations/operations.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497479-06aa64ce.log",
+          "time": "2026-11-21T20:38:17.480Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "c4f28711ad571bed0bbb383bedb48abcfbcbff14a1a07ebf4440c72769ef6393",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497646-6f55d45d.log",
+          "time": "2026-11-21T20:38:17.646Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "78f10b7553da936ef330493eba8b343dca422f6af87f78f03d5c00c36b7a76ab",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293497787-4175855d.log",
+          "time": "2026-11-21T20:38:17.788Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SingleModeOperationsTest.php"
+          ],
+          "exit_code": 255,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "164cc585a92f839f26492432febfde3ce229060d69680f9ac91ce777f2d01eb5",
+          "output_sha256": "4aa136fdf0937d27ca50d9b42181b43dcedf6ae5cab6337bae118cab31ba3280",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293534675-62c8f059.log",
+          "time": "2026-11-21T20:38:54.676Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SingleModeOperationsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "08ef91a9747d4e3d6fcc94c72fd789a6144077e0efa8c07223d6f3f5ee6cdf7e",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293561945-c92f5808.log",
+          "time": "2026-11-21T20:39:21.946Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T41Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "ce700c1a2a5d0160a8ea43bf38870afe0a8f1d1c1791e498e47ee1eb2243dcac",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293570252-831534c0.log",
+          "time": "2026-11-21T20:39:30.253Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T37Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "8ecf23e213397ddd8a22b6cb9bf2f44bc83fdc6369b98745ec4d652f81f7ca3c",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293622407-5c1a7a8b.log",
+          "time": "2026-11-21T20:40:22.407Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/AccessControlTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "7335dd0e63d1d0fae61e0a31d9ef6d550e620a8bfe51a636bad3e251c090d1d1",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293623836-8ef4b9a8.log",
+          "time": "2026-11-21T20:40:23.836Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/AccessControlTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "810ddfd6358792173c9f0ff74f550b29c3aad9df712a0c12e3479250c9ab60ec",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293649939-d2e27101.log",
+          "time": "2026-11-21T20:40:49.940Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SettingsApiTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "876f6093cc9485c37c153282c0d726cf50788b3acdb54539b9c86e9699ab3f46",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293651420-fb40442a.log",
+          "time": "2026-11-21T20:40:51.421Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyCapture.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "09e9561bd662a63fb9995ac880b942e1a5d0aff17e7cc3159c30f0de18ad3f5c",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293672707-4134b30f.log",
+          "time": "2026-11-21T20:41:12.708Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/OperationsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "38159bbb6018e2c92cb8117fdd0c781489e568b5820bfcce9469c16dac5576a0",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293672805-b71a774f.log",
+          "time": "2026-11-21T20:41:12.806Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Admin/SettingsPage.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "37fc1314642dbaa0122ba6a1e73e1f86205b0ed25f6b15abd40365299b07f88e",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293672903-bcc4e6b1.log",
+          "time": "2026-11-21T20:41:12.904Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Cli/Commands.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "d5c3a973f82c7326baae8148e56db0c590b5df9b93679b99e5a97984bef9ccb4",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673001-11964687.log",
+          "time": "2026-11-21T20:41:13.002Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/SingleModeOperationsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "e5717464bf9b9506f103ff9690a88c0cb96dc0a1ea57a8587bac74539fecdeb9",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673101-2d2b2026.log",
+          "time": "2026-11-21T20:41:13.102Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/settings.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673182-2612f70b.log",
+          "time": "2026-11-21T20:41:13.182Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/operations/operations.js"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673263-5537001f.log",
+          "time": "2026-11-21T20:41:13.264Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "c4f28711ad571bed0bbb383bedb48abcfbcbff14a1a07ebf4440c72769ef6393",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673376-e082bf0d.log",
+          "time": "2026-11-21T20:41:13.377Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "80e3e320dee14c3919ac010943c05e82dd1a1d2b",
+          "content_digest": "5ee0d13fb5c0d442588b24541e9f70fa261f9b00cb7f50d7b6df026391c4db49",
+          "output_sha256": "44355a7a0bbe7bbca81020fbb7d0fe1b33e12ca296a26d9cbee9d1541e791f48",
+          "output_path": "docs/plans/P034-streamline-single-mode-operations/command-1795293673493-33050a51.log",
+          "time": "2026-11-21T20:41:13.493Z"
+        }
+      ],
+      "started_at": "2026-11-21T20:15:30.386Z"
+    }
+  ],
+  "approved_hash": "b169067814f7626e60ef307f93d31e52b1ba46f2aa10d292ce04f2b9d58efb3d",
+  "report_hash": "7a4a01a4ac8712a22fc6f58238ffdd688c49062f7877d6e3dadbd5c0fa9fe243"
+}

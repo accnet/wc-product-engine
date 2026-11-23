@@ -86,11 +86,11 @@ class SettingsPage
         $labels = self::tabLabels();
 
         ?>
-        <div class="wrap wpe-admin wpe-settings" id="wpe-settings-app" data-tab="<?php echo esc_attr($tab); ?>">
-            <h1 class="wp-heading-inline">
-                <span class="dashicons dashicons-performance" aria-hidden="true"></span>
-                <?php echo esc_html__('WC Product Engine', 'wc-product-engine'); ?>
-            </h1>
+        <div class="wrap wpe-admin wpe-ui wpe-settings" id="wpe-settings-app" data-tab="<?php echo esc_attr($tab); ?>">
+            <header class="wpe-page-header">
+                <p class="wpe-page-header__eyebrow"><?php echo esc_html__('WooCommerce', 'wc-product-engine'); ?></p>
+                <h1 class="wp-heading-inline"><?php echo esc_html__('WC Product Engine', 'wc-product-engine'); ?></h1>
+            </header>
             <hr class="wp-header-end">
 
             <nav class="wpe-tabs" aria-label="<?php echo esc_attr__('Settings sections', 'wc-product-engine'); ?>">
@@ -218,6 +218,13 @@ class SettingsPage
                     'text'  => sprintf(__('%d event(s) are in the dead-letter queue.', 'wc-product-engine'), (int)$health['dlq_count']),
                 ];
             }
+            if ((int)($health['outbox_pending'] ?? 0) >= 50) {
+                $items[] = [
+                    'level' => 'warning',
+                    /* translators: %d: number of pending outbox sync events */
+                    'text'  => sprintf(__('%d legacy mirror event(s) are pending in the outbox. Run "Sync Legacy Mirror" in Operations & Health.', 'wc-product-engine'), (int)$health['outbox_pending']),
+                ];
+            }
         }
 
         $unwired = 0;
@@ -227,6 +234,10 @@ class SettingsPage
                 $unwired++;
             }
         }
+        foreach ($this->feedAttentionItems() as $item) {
+            $items[] = $item;
+        }
+
         if ($unwired > 0) {
             $items[] = [
                 'level' => 'info',
@@ -246,6 +257,60 @@ class SettingsPage
         return $items;
     }
 
+    /**
+     * Product feed health (P035, 08 §8): worker not running while feeds are enabled, feeds in error,
+     * and feeds whose last good file is older than 48 hours.
+     *
+     * @return array<int,array{level:string,text:string}>
+     */
+    private function feedAttentionItems(): array
+    {
+        $items = [];
+        try {
+            $feeds = (new \WPE\Application\Feeds\FeedRepository())->enabledFeeds();
+        } catch (\Throwable $e) {
+            return [];
+        }
+        if ($feeds === []) {
+            return [];
+        }
+
+        $hb = \WPE\Application\Feeds\FeedScheduler::lastHeartbeat();
+        if ($hb === null || $hb['age'] > \WPE\Admin\FeedsPage::WORKER_STALE_SECONDS) {
+            $items[] = [
+                'level' => 'warning',
+                'text'  => \WPE\Application\Feeds\FeedAutoRunner::enabled()
+                    ? __('No system cron runs the product feed worker. Feeds are updated from site requests instead and can publish late while the site is quiet. Schedule "wp wpe feeds tick" every minute in the system cron.', 'wc-product-engine')
+                    : __('The product feed worker is not running, so feeds are not updated. Schedule "wp wpe feeds tick" every minute in the system cron.', 'wc-product-engine'),
+            ];
+        }
+
+        $errors = [];
+        $stale = [];
+        foreach ($feeds as $feed) {
+            if ($feed['status'] === \WPE\Application\Feeds\FeedRepository::STATUS_ERROR) {
+                $errors[] = $feed['name'];
+            } elseif ($feed['last_published_at'] !== null && strtotime($feed['last_published_at'] . ' UTC') < time() - 2 * DAY_IN_SECONDS) {
+                $stale[] = $feed['name'];
+            }
+        }
+        if ($errors !== []) {
+            $items[] = [
+                'level' => 'error',
+                /* translators: %s: comma-separated feed names */
+                'text'  => sprintf(__('Product feeds with errors: %s. Review them in Product Feeds.', 'wc-product-engine'), implode(', ', $errors)),
+            ];
+        }
+        if ($stale !== []) {
+            $items[] = [
+                'level' => 'warning',
+                /* translators: %s: comma-separated feed names */
+                'text'  => sprintf(__('Product feeds not published for more than 48 hours: %s.', 'wc-product-engine'), implode(', ', $stale)),
+            ];
+        }
+        return $items;
+    }
+
     // ---------------------------------------------------------------------
     // Tabs
     // ---------------------------------------------------------------------
@@ -259,7 +324,7 @@ class SettingsPage
         $status = $health['status'] ?? 'unknown';
         $statusClass = $status === 'healthy' ? 'is-ok' : ($status === 'unhealthy' ? 'is-error' : 'is-warning');
         $statusIcon = $status === 'healthy' ? 'yes-alt' : 'warning';
-        $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? 'legacy'));
+        $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? $bootstrap->getSystemMode()));
         $epoch = $health['authority_epoch'] ?? null;
         $counts = $health['counts'] ?? [];
         $canOps = Capabilities::canViewOperations();
@@ -283,7 +348,7 @@ class SettingsPage
                     </p>
                 </div>
                 <?php if ($canOps) : ?>
-                    <a class="button" href="<?php echo esc_url(self::tabUrl('operations')); ?>">
+                    <a class="wpe-btn is-secondary" href="<?php echo esc_url(self::tabUrl('operations')); ?>">
                         <?php echo esc_html__('Open Operations & Health', 'wc-product-engine'); ?>
                     </a>
                 <?php endif; ?>
@@ -335,17 +400,6 @@ class SettingsPage
                     </span>
                 </div>
             </div>
-
-            <div class="wpe-card">
-                <h3><?php echo esc_html__('Default routing', 'wc-product-engine'); ?></h3>
-                <p>
-                    <code><?php echo esc_html((string)($flags['cohort_mode'] ?? 'legacy')); ?></code>
-                    <span class="wpe-badge"><?php echo esc_html__('Read-only', 'wc-product-engine'); ?></span>
-                </p>
-                <p class="wpe-help">
-                    <?php echo esc_html__('Used for products that have no product or category routing rule. This is separate from the global system mode shown above, and it is changed only through the governed rollout commands.', 'wc-product-engine'); ?>
-                </p>
-            </div>
         </section>
         <?php
     }
@@ -375,17 +429,25 @@ class SettingsPage
                 </div>
             <?php endif; ?>
 
-            <form id="wpe-settings-form" class="wpe-card wpe-features" novalidate>
-                <?php foreach ($featureFlags as $key => $def) :
-                    $this->renderFlagRow($key, $def, $flags, $bootstrap, $depsOk);
-                endforeach; ?>
+            <form id="wpe-settings-form" class="wpe-card wpe-settings-group" novalidate>
+                <div class="wpe-settings-group__header">
+                    <h3><?php echo esc_html__('Engine features', 'wc-product-engine'); ?></h3>
+                    <p class="wpe-help">
+                        <?php echo esc_html__('Switch changes take effect after you save. The status next to each switch shows whether the runtime currently applies it.', 'wc-product-engine'); ?>
+                    </p>
+                </div>
+                <div class="wpe-features">
+                    <?php foreach ($featureFlags as $key => $def) :
+                        $this->renderFlagRow($key, $def, $flags, $bootstrap, $depsOk);
+                    endforeach; ?>
+                </div>
             </form>
 
             <div class="wpe-savebar" id="wpe-savebar" hidden>
                 <span class="wpe-savebar__dot" aria-hidden="true"></span>
                 <span class="wpe-savebar__text" id="wpe-savebar-text"></span>
                 <span class="wpe-savebar__actions">
-                    <button type="button" class="wpe-btn is-ghost" id="wpe-discard-btn"><?php echo esc_html__('Discard', 'wc-product-engine'); ?></button>
+                    <button type="button" class="wpe-btn is-secondary" id="wpe-discard-btn"><?php echo esc_html__('Discard', 'wc-product-engine'); ?></button>
                     <button type="submit" form="wpe-settings-form" class="wpe-btn is-primary" id="wpe-save-settings-btn"><?php echo esc_html__('Save changes', 'wc-product-engine'); ?></button>
                 </span>
             </div>
@@ -599,7 +661,7 @@ class SettingsPage
                                     <div class="wpe-attr-config-item__main">
                                         <div class="wpe-attr-config-item__info">
                                             <strong class="wpe-attr-config-item__label"><?php echo esc_html($attrLabel); ?></strong>
-                                            <span class="wpe-badge is-muted"><code><?php echo esc_html($badgeCode); ?></code> &middot; <?php echo esc_html($badgeMeta); ?></span>
+                                            <span class="wpe-attr-config-item__meta"><code><?php echo esc_html($badgeCode); ?></code> &middot; <?php echo esc_html($badgeMeta); ?></span>
                                         </div>
                                         <div class="wpe-attr-config-item__controls">
                                             <label class="wpe-attr-field">
@@ -664,7 +726,7 @@ class SettingsPage
                 <span class="wpe-savebar__dot" aria-hidden="true"></span>
                 <span class="wpe-savebar__text" id="wpe-savebar-text"></span>
                 <span class="wpe-savebar__actions">
-                    <button type="button" class="wpe-btn is-ghost" id="wpe-discard-btn"><?php echo esc_html__('Discard', 'wc-product-engine'); ?></button>
+                    <button type="button" class="wpe-btn is-secondary" id="wpe-discard-btn"><?php echo esc_html__('Discard', 'wc-product-engine'); ?></button>
                     <button type="submit" form="wpe-settings-form" class="wpe-btn is-primary" id="wpe-save-settings-btn"><?php echo esc_html__('Save changes', 'wc-product-engine'); ?></button>
                 </span>
             </div>
@@ -684,39 +746,49 @@ class SettingsPage
         // Engine gates are administrator-only (audit SEC-02); others see the state but cannot change it.
         $locked = in_array($key, SettingsRegistry::adminOnlyKeys(), true)
             && !current_user_can(SettingsRegistry::ADMIN_ONLY_CAPABILITY);
+        $isGate = $def['runtime'] === SettingsRegistry::RUNTIME_GATE;
+        // Row layout: name + affected area | switch, runtime status, description.
+        // The status line is presentational and derived in CSS from the switch state,
+        // the row's runtime type, the server-rendered inactive marker and the JS
+        // "unsaved" class, so it never claims a state the runtime has not confirmed.
         ?>
-        <div class="wpe-feature" data-flag-row="<?php echo esc_attr($key); ?>">
-            <div class="wpe-feature__body">
+        <div class="wpe-feature <?php echo $isGate ? 'is-gate' : 'is-preference'; ?>" data-flag-row="<?php echo esc_attr($key); ?>">
+            <div class="wpe-feature__head">
                 <label class="wpe-feature__title" for="<?php echo esc_attr($id); ?>"><?php echo esc_html($def['label']); ?></label>
-                <p class="wpe-help" id="<?php echo esc_attr($id); ?>-desc"><?php echo esc_html($def['description']); ?></p>
-                <p class="wpe-feature__meta">
-                    <span class="wpe-badge"><?php
-                        /* translators: %s: area affected by a feature, e.g. Storefront */
-                        echo esc_html(sprintf(__('Affects: %s', 'wc-product-engine'), $def['affects']));
-                    ?></span>
-                    <?php if ($def['runtime'] === SettingsRegistry::RUNTIME_GATE) : ?>
-                        <span class="wpe-badge is-ok"><?php echo esc_html__('Active gate', 'wc-product-engine'); ?></span>
-                    <?php else : ?>
-                        <span class="wpe-badge is-muted"><?php echo esc_html__('Saved, not applied by the runtime yet', 'wc-product-engine'); ?></span>
-                    <?php endif; ?>
-                    <span class="wpe-badge is-warning" data-inactive-badge<?php echo $inactive ? '' : ' hidden'; ?>>
-                        <?php echo esc_html__('On, but inactive: requirements not met', 'wc-product-engine'); ?>
+                <span class="wpe-feature__affects"><?php
+                    /* translators: %s: area affected by a feature, e.g. Storefront */
+                    echo esc_html(sprintf(__('Affects: %s', 'wc-product-engine'), $def['affects']));
+                ?></span>
+            </div>
+            <div class="wpe-feature__body">
+                <div class="wpe-feature__control">
+                    <span class="wpe-switch">
+                        <input type="checkbox" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($key); ?>" value="1"
+                               data-flag="<?php echo esc_attr($key); ?>"
+                               role="switch"
+                               aria-describedby="<?php echo esc_attr($id); ?>-status <?php echo esc_attr($id); ?>-desc"
+                               <?php checked($checked); ?>
+                               <?php disabled(!$depsOk || $locked); ?>>
+                        <span class="wpe-switch__track" aria-hidden="true"></span>
                     </span>
-                    <?php if ($locked) : ?>
-                        <span class="wpe-badge is-muted"><?php echo esc_html__('Administrator only', 'wc-product-engine'); ?></span>
-                    <?php endif; ?>
-                </p>
+                    <span class="wpe-feature__status" id="<?php echo esc_attr($id); ?>-status">
+                        <?php if ($isGate) : ?>
+                            <span class="wpe-status is-ok wpe-feature__when-active"><?php echo esc_html__('Active', 'wc-product-engine'); ?></span>
+                            <span class="wpe-status is-off wpe-feature__when-off"><?php echo esc_html__('Disabled', 'wc-product-engine'); ?></span>
+                        <?php else : ?>
+                            <span class="wpe-status is-pending wpe-feature__when-active"><?php echo esc_html__('Saved, not applied by the runtime yet', 'wc-product-engine'); ?></span>
+                            <span class="wpe-status is-off wpe-feature__when-off"><?php echo esc_html__('Disabled, not applied by the runtime yet', 'wc-product-engine'); ?></span>
+                        <?php endif; ?>
+                        <span class="wpe-status is-warning" data-inactive-badge<?php echo $inactive ? '' : ' hidden'; ?>><?php echo esc_html__('On, but inactive: requirements not met', 'wc-product-engine'); ?></span>
+                        <span class="wpe-status is-dirty wpe-feature__when-dirty"><?php echo esc_html__('Unsaved change', 'wc-product-engine'); ?></span>
+                        <?php if ($locked) : ?>
+                            <span class="wpe-status is-locked"><?php echo esc_html__('Administrator only', 'wc-product-engine'); ?></span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <p class="wpe-help" id="<?php echo esc_attr($id); ?>-desc"><?php echo esc_html($def['description']); ?></p>
                 <p class="wpe-field-error" id="<?php echo esc_attr($id); ?>-error" data-error-for="<?php echo esc_attr($key); ?>" hidden></p>
             </div>
-            <span class="wpe-switch">
-                <input type="checkbox" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($key); ?>" value="1"
-                       data-flag="<?php echo esc_attr($key); ?>"
-                       role="switch"
-                       aria-describedby="<?php echo esc_attr($id); ?>-desc"
-                       <?php checked($checked); ?>
-                       <?php disabled(!$depsOk || $locked); ?>>
-                <span class="wpe-switch__track" aria-hidden="true"></span>
-            </span>
         </div>
         <?php
     }
@@ -727,7 +799,7 @@ class SettingsPage
         $status = (string)($health['status'] ?? 'unknown');
         $statusClass = $status === 'healthy' ? 'is-ok' : ($status === 'unhealthy' ? 'is-error' : 'is-warning');
         $statusIcon = $status === 'healthy' ? 'yes-alt' : 'warning';
-        $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? 'legacy'));
+        $mode = (string)($health['system_mode'] ?? ($this->controlValue('system_mode') ?? PluginBootstrap::instance()->getSystemMode()));
         $epoch = $health['authority_epoch'] ?? null;
         $counts = $health['counts'] ?? [];
         $mismatches = (int)($health['mismatches'] ?? 0);
@@ -810,22 +882,19 @@ class SettingsPage
             </div>
 
             <div class="wpe-card">
-                <h3><?php echo esc_html__('Operations Controls', 'wc-product-engine'); ?></h3>
+                <h3><?php echo esc_html__('Catalog Operations', 'wc-product-engine'); ?></h3>
                 <p class="wpe-help">
-                    <?php echo esc_html__('Trigger background catalog operations, index rebuilds, shadow diff audits, or emergency rollbacks.', 'wc-product-engine'); ?>
+                    <?php echo esc_html__('Sync pending outbox mirrors to WooCommerce tables, rebuild the catalog index generation, or import existing WooCommerce simple/variable products directly into native_bridge.', 'wc-product-engine'); ?>
                 </p>
                 <div class="wpe-ops-actions">
-                    <button type="button" class="wpe-btn is-primary wpe-action-btn" data-action="audit" <?php disabled(!$canOps); ?>>
-                        <?php echo esc_html__('Run Shadow Diff Audit', 'wc-product-engine'); ?>
+                    <button type="button" class="wpe-btn is-primary wpe-action-btn" data-action="outbox" <?php disabled(!$canOps); ?>>
+                        <?php echo esc_html__('Sync Legacy Mirror (Drain Outbox)', 'wc-product-engine'); ?>
                     </button>
                     <button type="button" class="wpe-btn is-secondary wpe-action-btn" data-action="rebuild" <?php disabled(!$canOps); ?>>
-                        <?php echo esc_html__('Rebuild Index Generation', 'wc-product-engine'); ?>
+                        <?php echo esc_html__('Rebuild Catalog Index', 'wc-product-engine'); ?>
                     </button>
-                    <button type="button" class="wpe-btn is-secondary wpe-action-btn" data-action="migrate" <?php disabled(!$canOps); ?>>
-                        <?php echo esc_html__('Run Keyset Backfill Batch', 'wc-product-engine'); ?>
-                    </button>
-                    <button type="button" class="wpe-btn is-danger wpe-action-btn wpe-ops-rollback-btn" data-action="rollback" <?php disabled(!$canOps); ?>>
-                        <?php echo esc_html__('Initiate Authority Rollback', 'wc-product-engine'); ?>
+                    <button type="button" class="wpe-btn is-secondary wpe-action-btn" data-action="import_legacy" <?php disabled(!$canOps); ?>>
+                        <?php echo esc_html__('Import Legacy Woo Products', 'wc-product-engine'); ?>
                     </button>
                 </div>
                 <div id="wpe-action-result" class="wpe-notice wpe-ops-result" role="status" hidden></div>
@@ -895,13 +964,25 @@ class SettingsPage
                     <dd><?php echo esc_html__('Triggered when active worker has no heartbeat or checkpoint for > 120s.', 'wc-product-engine'); ?></dd>
                 </dl>
             </div>
+
+            <div class="wpe-card wpe-card--danger">
+                <h3><?php echo esc_html__('Danger Zone — Emergency Rollback', 'wc-product-engine'); ?></h3>
+                <p class="wpe-help">
+                    <?php echo esc_html__('Use only before deactivating or removing WC Product Engine. Reconciles the latest native prices, stock, and SKUs back to WooCommerce posts/postmeta and switches catalog authority back to Legacy CPT.', 'wc-product-engine'); ?>
+                </p>
+                <div class="wpe-ops-actions">
+                    <button type="button" class="wpe-btn is-danger wpe-action-btn wpe-ops-rollback-btn" data-action="rollback" <?php disabled(!$canOps); ?>>
+                        <?php echo esc_html__('Rollback to WooCommerce Legacy', 'wc-product-engine'); ?>
+                    </button>
+                </div>
+            </div>
         </section>
 
         <dialog id="wpe-rollback-dialog" class="wpe-dialog" aria-labelledby="wpe-rollback-title" aria-describedby="wpe-rollback-body">
             <form method="dialog">
-                <h2 id="wpe-rollback-title"><?php echo esc_html__('Initiate authority rollback?', 'wc-product-engine'); ?></h2>
+                <h2 id="wpe-rollback-title"><?php echo esc_html__('Rollback catalog authority to WooCommerce Legacy?', 'wc-product-engine'); ?></h2>
                 <p id="wpe-rollback-body">
-                    <?php echo esc_html__('WARNING: Are you sure you want to initiate an Authority Rollback back to Legacy CPT? Current native catalog data will be reconciled before switching.', 'wc-product-engine'); ?>
+                    <?php echo esc_html__('WARNING: Current native prices, stock, and SKUs will be reconciled into WooCommerce posts/postmeta, and catalog authority will switch back to Legacy CPT. Continue?', 'wc-product-engine'); ?>
                 </p>
                 <div class="wpe-dialog__actions">
                     <button type="submit" value="cancel" class="wpe-btn is-secondary" id="wpe-rollback-cancel"><?php echo esc_html__('Cancel', 'wc-product-engine'); ?></button>
@@ -919,22 +1000,22 @@ class SettingsPage
         <section class="wpe-panel" aria-labelledby="wpe-h-maint">
             <div class="wpe-card">
                 <h2 id="wpe-h-maint"><?php echo esc_html__('Catalog index', 'wc-product-engine'); ?></h2>
-                <p>
-                    <?php echo esc_html__('Current generation', 'wc-product-engine'); ?>:
-                    <strong id="wpe-current-gen">#<?php echo esc_html((string)$this->catalogGeneration()); ?></strong>
-                </p>
                 <p class="wpe-help">
                     <?php echo esc_html__('Rebuilding recomputes the search index and facet caches and activates a new generation. Run it after a large import or when the storefront shows stale results. It runs now and the request waits for it to finish.', 'wc-product-engine'); ?>
                 </p>
-                <p>
+                <div class="wpe-action-row">
+                    <div class="wpe-action-row__info">
+                        <span class="wpe-action-row__label"><?php echo esc_html__('Current generation', 'wc-product-engine'); ?></span>
+                        <strong class="wpe-action-row__value" id="wpe-current-gen">#<?php echo esc_html((string)$this->catalogGeneration()); ?></strong>
+                    </div>
                     <button type="button" class="wpe-btn is-secondary" id="wpe-rebuild-gen-btn">
                         <?php echo esc_html__('Rebuild catalog index', 'wc-product-engine'); ?>
                     </button>
-                </p>
+                </div>
                 <p id="wpe-rebuild-status" class="wpe-rebuild-status" hidden></p>
 
                 <?php if ($canOps) : ?>
-                    <p class="wpe-help">
+                    <p class="wpe-help wpe-card__footnote">
                         <?php echo esc_html__('Prefer a background, resumable run? Use the job-backed action in', 'wc-product-engine'); ?>
                         <a href="<?php echo esc_url(self::tabUrl('operations')); ?>"><?php echo esc_html__('Operations & Health', 'wc-product-engine'); ?></a>.
                     </p>
@@ -943,9 +1024,13 @@ class SettingsPage
 
             <?php if (current_user_can('wpe_import_products') || current_user_can('manage_woocommerce')) : ?>
                 <div class="wpe-card">
-                    <h3><?php echo esc_html__('Importing a catalog?', 'wc-product-engine'); ?></h3>
-                    <p class="wpe-help"><?php echo esc_html__('Large Shopify CSV imports run in chunks with pause, resume and a live log.', 'wc-product-engine'); ?></p>
-                    <p><a class="button" href="<?php echo esc_url(admin_url('admin.php?page=wpe-shopify-import')); ?>"><?php echo esc_html__('Open Shopify CSV Import', 'wc-product-engine'); ?></a></p>
+                    <div class="wpe-action-row is-flush">
+                        <div class="wpe-action-row__info">
+                            <h3><?php echo esc_html__('Importing a catalog?', 'wc-product-engine'); ?></h3>
+                            <p class="wpe-help"><?php echo esc_html__('Large CSV Imports run in chunks with pause, resume and a live log.', 'wc-product-engine'); ?></p>
+                        </div>
+                        <a class="wpe-btn is-secondary" href="<?php echo esc_url(admin_url('admin.php?page=wpe-shopify-import')); ?>"><?php echo esc_html__('Open CSV Import', 'wc-product-engine'); ?></a>
+                    </div>
                 </div>
             <?php endif; ?>
         </section>
@@ -968,16 +1053,16 @@ class SettingsPage
     private function renderAdvanced(PluginBootstrap $bootstrap): void
     {
         $flags = $bootstrap->getFlags();
-        $mode = $this->controlValue('system_mode') ?? 'legacy';
+        $mode = $this->controlValue('system_mode') ?? $bootstrap->getSystemMode();
         $health = $this->healthReport();
         $epoch = $health['authority_epoch'] ?? null;
         $errors = $bootstrap->getDependencyErrors();
         ?>
         <section class="wpe-panel" aria-labelledby="wpe-h-adv">
             <div class="wpe-card">
-                <h2 id="wpe-h-adv"><?php echo esc_html__('Authority', 'wc-product-engine'); ?> <span class="wpe-badge"><?php echo esc_html__('Read-only', 'wc-product-engine'); ?></span></h2>
+                <h2 id="wpe-h-adv"><?php echo esc_html__('Authority', 'wc-product-engine'); ?> <span class="wpe-tag"><?php echo esc_html__('Read-only', 'wc-product-engine'); ?></span></h2>
                 <p class="wpe-help">
-                    <?php echo esc_html__('Authority decides whether WooCommerce posts or the engine tables are the source of truth. It must change only through the governed rollout steps, which check readiness gates, take a barrier and advance the epoch. It cannot be edited from this screen.', 'wc-product-engine'); ?>
+                    <?php echo esc_html__('WC Product Engine operates in native_bridge mode by default (unsupported product types such as bundles or subscriptions automatically remain on WooCommerce CPT). Authority is never toggled directly without data reconciliation.', 'wc-product-engine'); ?>
                 </p>
                 <dl class="wpe-dl">
                     <dt><?php echo esc_html__('System mode', 'wc-product-engine'); ?></dt>
@@ -985,11 +1070,11 @@ class SettingsPage
                     <dt><?php echo esc_html__('Authority epoch', 'wc-product-engine'); ?></dt>
                     <dd><code><?php echo esc_html($epoch === null ? '—' : (string)$epoch); ?></code></dd>
                     <dt><?php echo esc_html__('Default routing', 'wc-product-engine'); ?></dt>
-                    <dd><code><?php echo esc_html((string)($flags['cohort_mode'] ?? 'legacy')); ?></code></dd>
+                    <dd><code><?php echo esc_html((string)($flags['cohort_mode'] ?? PluginBootstrap::DEFAULT_FLAGS['cohort_mode'])); ?></code></dd>
                 </dl>
                 <p class="wpe-help">
-                    <?php echo esc_html__('To inspect or change authority use Operations, or WP-CLI:', 'wc-product-engine'); ?>
-                    <code>wp wpe health</code>, <code>wp wpe migrate</code>, <code>wp wpe rollback</code>.
+                    <?php echo esc_html__('CLI commands:', 'wc-product-engine'); ?>
+                    <code>wp wpe health</code>, <code>wp wpe outbox</code>, <code>wp wpe rebuild</code>, <code>wp wpe import-legacy</code>, <code>wp wpe rollback</code>.
                 </p>
             </div>
 
@@ -1005,7 +1090,7 @@ class SettingsPage
                     <dt><?php echo esc_html__('Requirements', 'wc-product-engine'); ?></dt>
                     <dd>
                         <?php if ($errors === []) : ?>
-                            <span class="wpe-badge is-ok"><?php echo esc_html__('All met', 'wc-product-engine'); ?></span>
+                            <span class="wpe-status is-ok"><?php echo esc_html__('All met', 'wc-product-engine'); ?></span>
                         <?php else : ?>
                             <ul>
                                 <?php foreach ($errors as $error) : ?>
