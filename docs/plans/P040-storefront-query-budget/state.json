@@ -1,7 +1,7 @@
 {
   "id": "P040",
   "title": "Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "82b9dc9f4151b1d748168a50ece20976ae8a524d4fc489663bac6e5c0762abd8",
   "tasks": [
     {
@@ -438,9 +438,109 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/ProductDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "a02ab5da7ea42c5b8994c8e6a0a879ec652dd08a7e8ecf8f877b895786e7ec6a",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541648700-3cfeec33.log",
+          "time": "2026-11-24T17:34:08.701Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Infrastructure/Database/MediaRepository.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "420fb0d40a22bfbca23972ba84185881a3023a9cf253a530527f0a082883002d",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541648792-feada090.log",
+          "time": "2026-11-24T17:34:08.792Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/StorefrontQueryBudgetTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "166c527f753a2c788cb46ebee4e01fae05e128652e40a67c5d398852da181980",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541650555-1c9d39b7.log",
+          "time": "2026-11-24T17:34:10.555Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "05c7d9415c8710fade29ec4df117922eba8531cbfeccd1875768c8d7f96eda05",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541652971-ba37967f.log",
+          "time": "2026-11-24T17:34:12.972Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541655816-936c6c4a.log",
+          "time": "2026-11-24T17:34:15.816Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "840b01c58619f115ce6bc045e1062b96ac197176e16acba7eb7987be78a69abf",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541655927-a2088e1a.log",
+          "time": "2026-11-24T17:34:15.927Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "44cd914a36e297232021b7ca4e19fa9336b2aa096cf223b3be90cbee1b1119f8",
+          "output_sha256": "c8f5ee00661931ee1ae511145ffbd2ecd06cf6a9c81446c076258e7be084cf9d",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541656043-3aa8ac33.log",
+          "time": "2026-11-24T17:34:16.043Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:28:19.371Z"
     }
   ],
-  "approved_hash": "82b9dc9f4151b1d748168a50ece20976ae8a524d4fc489663bac6e5c0762abd8"
+  "approved_hash": "82b9dc9f4151b1d748168a50ece20976ae8a524d4fc489663bac6e5c0762abd8",
+  "report_hash": "742ae0f65ab7201c0eda8a6d6c43ad72a59d0c61e18c80af3a126f1dfa234da2"
 }

@@ -865,8 +865,17 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
             $variantId
         ), ARRAY_A);
 
+        return self::variationAttributesFromRows(is_array($rows) ? $rows : []);
+    }
+
+    /**
+     * Variation attributes (sanitized name => value, '' for "any") from variant value rows ordered
+     * by option position and ID.
+     */
+    protected static function variationAttributesFromRows(array $rows): array
+    {
         $attributes = [];
-        foreach (is_array($rows) ? $rows : [] as $row) {
+        foreach ($rows as $row) {
             $name = self::attributeNameFor($row);
             if ($name === '') {
                 continue;
@@ -1447,9 +1456,7 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     public function read_meta(&$object)
     {
-        $objectId = (int)$object->get_id();
-        $bundle = $this->getPrimedBundle($objectId);
-        $metaMap = $bundle !== null ? $bundle['meta_map'] : $this->mediaRepo->getMeta($objectId);
+        $metaMap = $this->metaMapFor((int)$object->get_id());
         $rawMeta = [];
         $metaIdCounter = 1;
 
@@ -1664,11 +1671,29 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
         }
     }
 
+    /**
+     * wpe_meta of one object as key => values (primed archive bundle or one query).
+     *
+     * @return array<string, array>
+     */
+    protected function metaMapFor(int $objectId): array
+    {
+        $bundle = $this->getPrimedBundle($objectId);
+        return $bundle !== null ? $bundle['meta_map'] : $this->mediaRepo->getMeta($objectId);
+    }
+
+    /**
+     * Download rows of one object (primed archive bundle or one query).
+     */
+    protected function downloadsFor(int $objectId): array
+    {
+        $bundle = $this->getPrimedBundle($objectId);
+        return $bundle !== null ? $bundle['downloads'] : $this->mediaRepo->getDownloads($objectId);
+    }
+
     protected function read_downloads(&$product): void
     {
-        $productId = (int)$product->get_id();
-        $bundle = $this->getPrimedBundle($productId);
-        $downloads = $bundle !== null ? $bundle['downloads'] : $this->mediaRepo->getDownloads($productId);
+        $downloads = $this->downloadsFor((int)$product->get_id());
         $wcDownloads = [];
         foreach ($downloads as $d) {
             $wcDownload = new WC_Product_Download();
@@ -1939,22 +1964,31 @@ class ProductVariationDataStore extends ProductDataStore
         }
     }
 
+    /** Largest variation family primed in one go; bigger families are read one variation at a time. */
+    public const FAMILY_PRIME_LIMIT = 1000;
+
     public function read(&$product): void
     {
-        $variantId = $product->get_id();
-        $row = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT * FROM {$this->tableVariants} WHERE id = %d",
-            $variantId
-        ), ARRAY_A);
+        $variantId = (int)$product->get_id();
+        $bundle = $this->variationBundle($variantId);
+
+        if ($bundle !== null) {
+            $row = $bundle['row'];
+            $inv = $bundle['inventory'];
+        } else {
+            $row = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$this->tableVariants} WHERE id = %d",
+                $variantId
+            ), ARRAY_A);
+            $inv = $row ? $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
+                $variantId
+            ), ARRAY_A) : null;
+        }
 
         if (!$row) {
             throw new Exception(esc_html__('Invalid product variation.', 'woocommerce'));
         }
-
-        $inv = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
-            $variantId
-        ), ARRAY_A);
 
         $extra = json_decode($row['extra_props'] ?? '{}', true) ?: [];
 
@@ -1979,7 +2013,9 @@ class ProductVariationDataStore extends ProductDataStore
             'date_modified'     => $row['updated_at'],
         ]);
 
-        $attributes = $this->readNativeVariationAttributes($variantId);
+        $attributes = $bundle !== null
+            ? self::variationAttributesFromRows($bundle['attribute_rows'])
+            : $this->readNativeVariationAttributes($variantId);
         if ($attributes === [] && !empty($extra['attributes']) && is_array($extra['attributes'])) {
             $attributes = $extra['attributes'];
         }
@@ -2013,6 +2049,15 @@ class ProductVariationDataStore extends ProductDataStore
      * Customs props stay empty: they are legacy-only and refused under native authority.
      */
     protected function readParentData(int $parentId): array
+    {
+        $family = $this->primedFamily($parentId);
+        if ($family !== null) {
+            return $family['parent_data'];
+        }
+        return $this->loadParentData($parentId);
+    }
+
+    protected function loadParentData(int $parentId): array
     {
         $parent = $this->wpdb->get_row($this->wpdb->prepare(
             "SELECT * FROM {$this->tableProducts} WHERE id = %d",
@@ -2052,6 +2097,137 @@ class ProductVariationDataStore extends ProductDataStore
             'catalog_visibility' => (string)($parent['catalog_visibility'] ?? 'visible'),
             'image_id'           => $imageId,
         ];
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Variation family priming (P040.2)                                          */
+    /* -------------------------------------------------------------------------- */
+
+    protected function metaMapFor(int $objectId): array
+    {
+        $bundle = $this->variationBundle($objectId);
+        return $bundle !== null ? $bundle['meta_map'] : parent::metaMapFor($objectId);
+    }
+
+    protected function downloadsFor(int $objectId): array
+    {
+        $bundle = $this->variationBundle($objectId);
+        return $bundle !== null ? $bundle['downloads'] : parent::downloadsFor($objectId);
+    }
+
+    /**
+     * Native rows of one variation, priming its whole family on first use.
+     *
+     * Themes and WooCommerce instantiate every variation of a product page one by one; reading
+     * each separately cost about 30 queries per variation. On read-only storefront requests
+     * (AuthorityResolver::isRequestMemoEnabled()) the first read loads all siblings and the parent
+     * data in bulk. Elsewhere it returns null and the caller reads the variation directly.
+     *
+     * @return array{row: array, inventory: ?array, attribute_rows: array, meta_map: array, downloads: array}|null
+     */
+    protected function variationBundle(int $variantId): ?array
+    {
+        if ($variantId <= 0 || !function_exists('wp_cache_get') || !\WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            return null;
+        }
+        $group = \WPE\Support\AuthorityResolver::CACHE_GROUP;
+        $bundle = wp_cache_get('var_bundle_' . $variantId, $group);
+        if (is_array($bundle)) {
+            return $bundle;
+        }
+
+        $parentId = (int)(\WPE\Support\AuthorityResolver::probeObject($variantId, $this->wpdb)['native_var_parent'] ?? 0);
+        if ($parentId <= 0 || $this->primedFamily($parentId) === null) {
+            return null;
+        }
+        $bundle = wp_cache_get('var_bundle_' . $variantId, $group);
+        return is_array($bundle) ? $bundle : null;
+    }
+
+    /**
+     * Parent data and variation bundles of one variable product, loaded once per request.
+     *
+     * @return array{parent_data: array, variant_ids: int[]}|null
+     */
+    protected function primedFamily(int $parentId): ?array
+    {
+        if ($parentId <= 0 || !function_exists('wp_cache_get') || !\WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            return null;
+        }
+        \WPE\Support\AuthorityResolver::ensureRuntimeCacheGroup();
+        $group = \WPE\Support\AuthorityResolver::CACHE_GROUP;
+        $family = wp_cache_get('var_family_' . $parentId, $group);
+        if (is_array($family)) {
+            return $family;
+        }
+
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT * FROM {$this->tableVariants} WHERE product_id = %d ORDER BY id ASC LIMIT %d",
+            $parentId,
+            self::FAMILY_PRIME_LIMIT + 1
+        ), ARRAY_A) ?: [];
+        if ($rows === [] || count($rows) > self::FAMILY_PRIME_LIMIT) {
+            return null;
+        }
+
+        $ids = array_map(static fn(array $r): int => (int)$r['id'], $rows);
+        $in = \WPE\Support\Sql::intList($ids);
+        $prefix = $this->wpdb->prefix;
+
+        $inventory = [];
+        foreach ($this->wpdb->get_results("SELECT * FROM {$this->tableInventory} WHERE owner_id IN ({$in})", ARRAY_A) ?: [] as $r) {
+            $inventory[(int)$r['owner_id']] = $r;
+        }
+
+        $attributeRows = [];
+        $attrSql = "SELECT vv.variant_id, o.name, o.`key`, o.taxonomy, vv.is_any, ov.label, ov.value_key, ov.term_id
+             FROM {$prefix}wpe_variant_values vv
+             INNER JOIN {$prefix}wpe_options o ON o.id = vv.option_id
+             LEFT JOIN {$prefix}wpe_option_values ov ON ov.id = vv.value_id AND ov.option_id = vv.option_id
+             WHERE vv.variant_id IN ({$in}) AND o.used_for_variation = 1
+             ORDER BY vv.variant_id ASC, o.position ASC, o.id ASC";
+        foreach ($this->wpdb->get_results($attrSql, ARRAY_A) ?: [] as $r) {
+            $vid = (int)$r['variant_id'];
+            unset($r['variant_id']);
+            $attributeRows[$vid][] = $r;
+        }
+
+        $meta = [];
+        foreach ($this->wpdb->get_results("SELECT object_id, meta_key, meta_value FROM {$this->tableMeta} WHERE object_id IN ({$in}) ORDER BY meta_id ASC", ARRAY_A) ?: [] as $r) {
+            $meta[(int)$r['object_id']][$r['meta_key']][] = maybe_unserialize($r['meta_value']);
+        }
+
+        $downloads = [];
+        foreach ($this->wpdb->get_results("SELECT object_id, download_id, name, file_url, position FROM {$this->tableDownloads} WHERE object_id IN ({$in}) ORDER BY object_id ASC, position ASC", ARRAY_A) ?: [] as $r) {
+            $vid = (int)$r['object_id'];
+            unset($r['object_id']);
+            $downloads[$vid][] = $r;
+        }
+
+        foreach ($rows as $row) {
+            $vid = (int)$row['id'];
+            wp_cache_set('var_bundle_' . $vid, [
+                'row'            => $row,
+                'inventory'      => $inventory[$vid] ?? null,
+                'attribute_rows' => $attributeRows[$vid] ?? [],
+                'meta_map'       => $meta[$vid] ?? [],
+                'downloads'      => $downloads[$vid] ?? [],
+            ], $group);
+        }
+
+        // Authority probes and WordPress post caches of the shells, which WC_Product_Factory reads
+        // per variation (post row, terms and postmeta).
+        \WPE\Support\AuthorityResolver::primeObjects($ids, $this->wpdb);
+        if (function_exists('_prime_post_caches')) {
+            _prime_post_caches($ids, true, true);
+        }
+
+        $family = [
+            'parent_data' => $this->loadParentData($parentId),
+            'variant_ids' => $ids,
+        ];
+        wp_cache_set('var_family_' . $parentId, $family, $group);
+        return $family;
     }
 
     protected function generateVariationTitle(WC_Product_Variation $product, string $titleBase): string

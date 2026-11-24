@@ -39,5 +39,5 @@
 - P037 — Register the P036 feed fallback constants in docs/01 (done)
 - P038 — Feed worker notice reflects the cron-less fallback (done)
 - P039 — Complete product purge and bulk delete all products (done)
-- P040 — Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration (in_progress)
+- P040 — Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration (done)
 - P041 — P040.2 amendment: evict variation-family and meta runtime caches (done)

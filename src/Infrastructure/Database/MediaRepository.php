@@ -404,6 +404,7 @@ class MediaRepository
         if ($res === false) {
             throw new RuntimeException("Failed to insert meta row: " . $this->wpdb->last_error);
         }
+        $this->forgetMeta($objectId);
 
         return $metaId;
     }
@@ -414,6 +415,20 @@ class MediaRepository
      */
     public function getMeta(int $objectId, ?string $metaKey = null, bool $single = false)
     {
+        // Storefront reads ask for one key at a time (page template, taxonomy, SEO keys, ...) and
+        // repeat them; on read-only storefront requests load the object's meta once (P040.2).
+        $memo = $this->memoizedMeta($objectId);
+        if ($memo !== null) {
+            if ($metaKey === null) {
+                return $memo;
+            }
+            $values = $memo[$metaKey] ?? [];
+            if ($values === []) {
+                return $single ? '' : [];
+            }
+            return $single ? $values[0] : $values;
+        }
+
         if ($metaKey !== null) {
             $sql = "SELECT meta_id, meta_value FROM {$this->tableMeta} WHERE object_id = %d AND meta_key = %s ORDER BY meta_id ASC";
             $rows = $this->wpdb->get_results($this->wpdb->prepare($sql, $objectId, $metaKey), ARRAY_A);
@@ -449,6 +464,7 @@ class MediaRepository
      */
     public function updateMeta(int $metaId, $metaValue): bool
     {
+        $this->forgetMetaRow($metaId);
         $serialized = maybe_serialize($metaValue);
         $res = $this->wpdb->update(
             $this->tableMeta,
@@ -466,8 +482,62 @@ class MediaRepository
      */
     public function deleteMeta(int $metaId): bool
     {
+        $this->forgetMetaRow($metaId);
         $res = $this->wpdb->delete($this->tableMeta, ['meta_id' => $metaId], ['%d']);
         return $res !== false;
+    }
+
+    /**
+     * All wpe_meta of one object, kept for the request on read-only storefront requests
+     * (AuthorityResolver::isRequestMemoEnabled()); null elsewhere.
+     *
+     * @return array<string, array>|null
+     */
+    private function memoizedMeta(int $objectId): ?array
+    {
+        if ($objectId <= 0 || !function_exists('wp_cache_get') || !\WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            return null;
+        }
+        \WPE\Support\AuthorityResolver::ensureRuntimeCacheGroup();
+        $key = 'meta_map_' . $objectId;
+        $cached = wp_cache_get($key, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->wpdb->get_results($this->wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$this->tableMeta} WHERE object_id = %d ORDER BY meta_id ASC",
+            $objectId
+        ), ARRAY_A) ?: [];
+        $meta = [];
+        foreach ($rows as $r) {
+            $meta[$r['meta_key']][] = maybe_unserialize($r['meta_value']);
+        }
+        wp_cache_set($key, $meta, \WPE\Support\AuthorityResolver::CACHE_GROUP);
+        return $meta;
+    }
+
+    /**
+     * Drop the request caches holding an object's meta after a write. They only exist on read-only
+     * storefront requests, so other writers (imports, admin, CLI) skip this.
+     */
+    private function forgetMeta(int $objectId): void
+    {
+        if ($objectId > 0 && \WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            \WPE\Support\AuthorityResolver::evictObject($objectId);
+        }
+    }
+
+    private function forgetMetaRow(int $metaId): void
+    {
+        if (!\WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            return;
+        }
+        $objectId = (int)$this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT object_id FROM {$this->tableMeta} WHERE meta_id = %d",
+            $metaId
+        ));
+        $this->forgetMeta($objectId);
     }
 
     /* -------------------------------------------------------------------------- */

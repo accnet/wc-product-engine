@@ -255,6 +255,107 @@ try {
     $must($afterEvict === 2, "clean_post_cache must evict the memoized probe, got {$afterEvict} queries");
     $ok('memo on: one probe query per object, evicted by clean_post_cache');
 
+    /* ---------------------------------------------------------------- */
+    /* 6. P040.2: variation family priming                              */
+    /* ---------------------------------------------------------------- */
+    $customKey = '_p040_note';
+    $mediaRepo = new \WPE\Infrastructure\Database\MediaRepository($wpdb);
+    $mediaRepo->addMeta($vIds[1], 'variation', $customKey, 'first');
+
+    $snapshot = static function (int $id): array {
+        $v = new WC_Product_Variation($id);
+        $data = $v->get_data();
+        $meta = [];
+        foreach ($v->get_meta_data() as $m) {
+            $meta[] = [$m->key, $m->value];
+        }
+        unset($data['meta_data']);
+        foreach ($data as $k => $val) {
+            if ($val instanceof WC_DateTime) {
+                $data[$k] = $val->getTimestamp();
+            }
+        }
+        $data['downloads'] = array_keys($v->get_downloads());
+        return ['data' => $data, 'meta' => $meta, 'attributes' => $v->get_attributes(), 'parent' => $v->get_parent_data()];
+    };
+
+    AuthorityResolver::flushAll();
+    $plain = [];
+    foreach ($vIds as $id) {
+        $plain[$id] = $snapshot($id);
+    }
+
+    add_filter('wpe_authority_request_memo', '__return_true');
+    AuthorityResolver::flushAll();
+    $sqlLog = [];
+    add_filter('query', $queryFilter);
+    $primed = [];
+    $perVariation = [];
+    foreach ($vIds as $i => $id) {
+        $before = count($sqlLog);
+        $primed[$id] = $snapshot($id);
+        $perVariation[] = count($sqlLog) - $before;
+    }
+    remove_filter('query', $queryFilter);
+    $variantRowReads = $countMatching($sqlLog, $prefix . 'wpe_variants WHERE id =');
+    $total = count($sqlLog);
+    $later = array_sum(array_slice($perVariation, 1));
+    foreach ($vIds as $id) {
+        $must($primed[$id] == $plain[$id], "Primed variation {$id} differs from a direct read:\nprimed " . wp_json_encode($primed[$id]) . "\nplain  " . wp_json_encode($plain[$id]));
+    }
+    $ok('primed variations read the same data, meta, attributes and parent data as direct reads');
+    $must($variantRowReads === 0, "Primed reads still query wpe_variants by id {$variantRowReads} times");
+    $must($later <= 2 * (count($vIds) - 1), "Siblings after the first should need (almost) no queries, got {$later}: " . implode(',', $perVariation) . "\n" . implode("\n", $sqlLog));
+    $ok("6 variations read in {$total} queries (" . implode(',', $perVariation) . '), no per-variation row reads');
+
+    // Writes followed by eviction are visible within the same request.
+    $wpdb->update("{$prefix}wpe_variants", ['regular_price' => '77.000000'], ['id' => $vIds[3]]);
+    AuthorityResolver::evictObject($pid);
+    $afterParentEvict = new WC_Product_Variation($vIds[3]);
+    $must((float)$afterParentEvict->get_regular_price() === 77.0, 'Evicting the parent must drop its variation bundles, got ' . $afterParentEvict->get_regular_price());
+
+    $wpdb->update("{$prefix}wpe_products", ['title' => 'P040 Budget Variable Renamed'], ['id' => $pid]);
+    AuthorityResolver::evictObject($pid);
+    $renamed = new WC_Product_Variation($vIds[4]);
+    $must(($renamed->get_parent_data()['title'] ?? '') === 'P040 Budget Variable Renamed', 'Evicting the parent must drop the cached parent data');
+    $wpdb->update("{$prefix}wpe_products", ['title' => 'P040 Budget Variable'], ['id' => $pid]);
+    $ok('evicting the parent drops the family: new variant price and parent title are read');
+
+    $metaRows = $mediaRepo->getMeta($vIds[1], $customKey);
+    $must($metaRows === ['first'], 'Memoized meta read: ' . wp_json_encode($metaRows));
+    $metaId = (int)$wpdb->get_var($wpdb->prepare("SELECT meta_id FROM {$prefix}wpe_meta WHERE object_id = %d AND meta_key = %s", $vIds[1], $customKey));
+    $mediaRepo->updateMeta($metaId, 'second');
+    $must($mediaRepo->getMeta($vIds[1], $customKey, true) === 'second', 'updateMeta() must drop the memoized meta map');
+    $must((new WC_Product_Variation($vIds[1]))->get_meta($customKey) === 'second', 'updateMeta() must drop the variation bundle meta');
+    $mediaRepo->addMeta($vIds[1], 'variation', $customKey, 'third');
+    $must($mediaRepo->getMeta($vIds[1], $customKey) === ['second', 'third'], 'addMeta() must drop the memoized meta map');
+    $mediaRepo->deleteMeta($metaId);
+    $must($mediaRepo->getMeta($vIds[1], $customKey) === ['third'], 'deleteMeta() must drop the memoized meta map');
+    $ok('wpe_meta writes through MediaRepository drop the meta map and variation bundle');
+
+    AuthorityResolver::flushAll();
+    $sqlLog = [];
+    add_filter('query', $queryFilter);
+    foreach (['_wp_page_template', 'taxonomy', '_wp_page_template', '_p040_missing', 'taxonomy'] as $k) {
+        $mediaRepo->getMeta($pid, $k, true);
+    }
+    $mediaRepo->getMeta($pid);
+    remove_filter('query', $queryFilter);
+    $metaQueries = $countMatching($sqlLog, $prefix . 'wpe_meta');
+    $must($metaQueries === 1, "Expected one wpe_meta query for 6 reads of one object, got {$metaQueries}");
+    $ok('memo on: six meta reads of one object run one wpe_meta query');
+    remove_filter('wpe_authority_request_memo', '__return_true');
+
+    AuthorityResolver::flushAll();
+    $sqlLog = [];
+    add_filter('query', $queryFilter);
+    new WC_Product_Variation($vIds[0]);
+    new WC_Product_Variation($vIds[0]);
+    remove_filter('query', $queryFilter);
+    $must($countMatching($sqlLog, $prefix . 'wpe_variants WHERE id =') === 2, 'Memo off: variations must be read directly each time');
+    $must($countMatching($sqlLog, 'WHERE product_id = ' . $pid . ' ORDER BY id ASC LIMIT') === 0, 'Memo off: the family must not be primed');
+    $ok('memo off (WP-CLI default): variations are read directly, no family priming');
+
     echo "ALL P040 STOREFRONT QUERY BUDGET ASSERTIONS PASSED ({$checks} checks)\n";
 } finally {
     remove_filter('query', $queryFilter);
@@ -276,6 +377,7 @@ try {
     }
     foreach ($createdVariantIds as $vid) {
         $wpdb->delete("{$prefix}wpe_variant_values", ['variant_id' => $vid]);
+        $wpdb->delete("{$prefix}wpe_meta", ['object_id' => $vid]);
         $wpdb->delete("{$prefix}wpe_sku_registry", ['object_id' => $vid]);
         $wpdb->delete("{$prefix}wpe_inventory", ['owner_id' => $vid]);
         $wpdb->delete("{$prefix}wpe_object_state", ['object_id' => $vid]);
