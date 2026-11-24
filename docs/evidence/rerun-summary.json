@@ -1,38 +1,22 @@
 {
-  "generated_at": "2026-11-24T20:08:20.991Z",
+  "generated_at": "2026-11-24T20:36:36.066Z",
   "mode": "run_and_verify",
-  "base_commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+  "base_commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
     "php": "8.3.36",
     "database": "11.8.9-MariaDB"
   },
-  "tasks": 3,
-  "passed": 3,
+  "tasks": 1,
+  "passed": 1,
   "failed": [],
   "results": [
     {
-      "task": "T17",
-      "title": "Fast query compiler và keyset pagination",
+      "task": "T04",
+      "title": "Fixture và differential test harness",
       "run_exit": 0,
-      "run_seconds": 14,
-      "verify_exit": 0,
-      "ok": true
-    },
-    {
-      "task": "T18",
-      "title": "Facets coherent theo variant và counts",
-      "run_exit": 0,
-      "run_seconds": 14,
-      "verify_exit": 0,
-      "ok": true
-    },
-    {
-      "task": "T19",
-      "title": "Tích hợp wc_get_products, shop archives và admin lists",
-      "run_exit": 0,
-      "run_seconds": 14,
+      "run_seconds": 27,
       "verify_exit": 0,
       "ok": true
     }

@@ -1,0 +1,242 @@
+{
+  "id": "P051",
+  "title": "test_wpe_bench hygiene and stale test expectations (T04, T45, native read parity, schema version, hydration budget)",
+  "status": "in_progress",
+  "content_hash": "2a2538c2978147d846e800a5cdd85448ddcb4ff240c5cc463fdfbe13d35999b2",
+  "tasks": [
+    {
+      "id": "P051.1",
+      "title": "test_wpe_bench: remove residue and leftover fixture products with a backup, deactivate contact-form-7; T04 Node gate reads the same database; T04, T45 and native attribute read parity pass",
+      "depends_on": [],
+      "read_first": [
+        "scripts/test-isolation.mjs",
+        "tests/integration/T04Test.php",
+        "src/Infrastructure/Database/ProductPurger.php",
+        "docs/QUESTIONS.md"
+      ],
+      "files": [
+        "docs/01-architecture-and-stack.md",
+        "scripts/test-isolation.mjs",
+        "tests/integration/T04Test.php",
+        "docs/evidence/residue-cleanup-p051-bench.json",
+        "docs/evidence/fixture-purge-p051-bench.json"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T04Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/NativeAttributeReadTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T45Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T04Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+          "content_digest": "98f603b01b315c8e319c7ffcf4ed33bedc9e20aa4f05293b1f58aebbee3a9ce2",
+          "output_sha256": "85953539e2e1cec9daa71e972c34b0694095e5dbec61e366465b038ea8b40540",
+          "output_path": "docs/plans/P051-bench-db-and-stale-test-fixes/command-1795552209437-7756333b.log",
+          "time": "2026-11-24T20:30:09.438Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/NativeAttributeReadTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+          "content_digest": "98f603b01b315c8e319c7ffcf4ed33bedc9e20aa4f05293b1f58aebbee3a9ce2",
+          "output_sha256": "abdb5fc9c6a7f5dc398ad9ead7898c38c9a083abdf72555ba1b2776eb14ea5a6",
+          "output_path": "docs/plans/P051-bench-db-and-stale-test-fixes/command-1795552554265-ae4793bf.log",
+          "time": "2026-11-24T20:35:54.266Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T45Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+          "content_digest": "98f603b01b315c8e319c7ffcf4ed33bedc9e20aa4f05293b1f58aebbee3a9ce2",
+          "output_sha256": "01b2ab961474cb9c09a7bdb4686c5d854031414e1baf072c02bc8996a8357a68",
+          "output_path": "docs/plans/P051-bench-db-and-stale-test-fixes/command-1795552555650-88175e23.log",
+          "time": "2026-11-24T20:35:55.651Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+          "content_digest": "98f603b01b315c8e319c7ffcf4ed33bedc9e20aa4f05293b1f58aebbee3a9ce2",
+          "output_sha256": "3dcc19cb276ccc6e4fe50743667772132b31a025cc8853642211eecdd201e922",
+          "output_path": "docs/plans/P051-bench-db-and-stale-test-fixes/command-1795552555769-1cfe2d1d.log",
+          "time": "2026-11-24T20:35:55.769Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+          "content_digest": "98f603b01b315c8e319c7ffcf4ed33bedc9e20aa4f05293b1f58aebbee3a9ce2",
+          "output_sha256": "89cd366cede0f4f808a28a7d197963f5443b0733551ee7fbf8d33d3a2ee83436",
+          "output_path": "docs/plans/P051-bench-db-and-stale-test-fixes/command-1795552555884-36d3f35e.log",
+          "time": "2026-11-24T20:35:55.884Z"
+        }
+      ],
+      "started_at": "2026-11-24T20:29:47.306Z"
+    },
+    {
+      "id": "P051.2",
+      "title": "CatalogIndexOptimizationTest expects the current schema version; QueryHydrationPerformanceTest measures the data-store budget with selector price features off",
+      "depends_on": [
+        "P051.1"
+      ],
+      "read_first": [
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "docs/plans/P028-query-hydration-performance/plan.md"
+      ],
+      "files": [
+        "tests/integration/CatalogIndexOptimizationTest.php",
+        "tests/integration/QueryHydrationPerformanceTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/CatalogIndexOptimizationTest.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CatalogIndexOptimizationTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ArchiveCardBatchTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "2a2538c2978147d846e800a5cdd85448ddcb4ff240c5cc463fdfbe13d35999b2"
+}

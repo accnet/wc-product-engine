@@ -14,7 +14,10 @@ import fs from 'node:fs';import os from 'node:os';import path from 'node:path';i
 import {fileURLToPath} from 'node:url';
 
 const WP_PATH=process.env.WPE_WP_PATH||'/var/www/site1.localhost';
-const wp=(args,opts={})=>spawnSync('wp',[`--path=${WP_PATH}`,'--allow-root',...args],{encoding:'utf8',maxBuffer:64*1024*1024,...opts});
+// Optional file WP-CLI loads first (P051), e.g. tests/performance/use-test-db.php with WPE_TEST_DB, so the gate reads the
+// same test_* database as a test that runs without an isolated root.
+const WP_REQUIRE=process.env.WPE_WP_REQUIRE?[`--require=${process.env.WPE_WP_REQUIRE}`]:[];
+const wp=(args,opts={})=>spawnSync('wp',[`--path=${WP_PATH}`,...WP_REQUIRE,'--allow-root',...args],{encoding:'utf8',maxBuffer:64*1024*1024,...opts});
 function must(r,what){if(r.status!==0)throw new Error(`${what} failed: ${(r.stderr||r.stdout||'').trim().slice(0,400)}`);return r;}
 function query(sql){return must(wp(['db','query',sql,'--skip-column-names']),'db query').stdout.split('\n').filter(l=>l.length).map(l=>l.split('\t'));}
 let prefixCache;

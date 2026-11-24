@@ -50,3 +50,4 @@
 - P048 — Integration tests pin the cohort mode they need and restore it (done)
 - P049 — Re-certify on WooCommerce 11.3.1 and the current theme and plugin set (done)
 - P050 — T17/T18 catalog filter tests scope their fixtures away from existing catalog data (done)
+- P051 — test_wpe_bench hygiene and stale test expectations (T04, T45, native read parity, schema version, hydration budget) (in_progress)

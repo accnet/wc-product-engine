@@ -1,0 +1,304 @@
+{
+    "plan": "P051.1",
+    "database": "test_wpe_bench",
+    "at": "2026-11-24T20:20:05+00:00",
+    "selection": "native wpe_products status=publish whose wp_posts shell is post_status=auto-draft",
+    "count": 48,
+    "products": [
+        {
+            "id": "5640",
+            "title": "Unicode Test Product",
+            "type": "simple",
+            "created_at": "2026-11-19 22:30:13.931369"
+        },
+        {
+            "id": "5641",
+            "title": "Collision Test Product",
+            "type": "variable",
+            "created_at": "2026-11-19 22:30:13.942676"
+        },
+        {
+            "id": "5644",
+            "title": "Preserve ID Product",
+            "type": "simple",
+            "created_at": "2026-11-19 22:30:13.958944"
+        },
+        {
+            "id": "5645",
+            "title": "Any Vs Empty Product",
+            "type": "simple",
+            "created_at": "2026-11-19 22:30:13.964728"
+        },
+        {
+            "id": "5646",
+            "title": "No Cartesian Product",
+            "type": "variable",
+            "created_at": "2026-11-19 22:30:13.969660"
+        },
+        {
+            "id": "5649",
+            "title": "Parent Product 1",
+            "type": "simple",
+            "created_at": "2026-11-19 22:30:13.983070"
+        },
+        {
+            "id": "5650",
+            "title": "Parent Product 2",
+            "type": "simple",
+            "created_at": "2026-11-19 22:30:13.986122"
+        },
+        {
+            "id": "5651",
+            "title": "Duplicate Combination Product",
+            "type": "variable",
+            "created_at": "2026-11-19 22:30:13.992980"
+        },
+        {
+            "id": "19982",
+            "title": "Product A SKU Race",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:19.299521"
+        },
+        {
+            "id": "19987",
+            "title": "CAS Test Product Updated",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:19.320921"
+        },
+        {
+            "id": "19988",
+            "title": "Test Product 701566 (Tiếng Việt có dấu: Áo thun)",
+            "type": "variable",
+            "created_at": "2026-11-19 23:16:19.326448"
+        },
+        {
+            "id": "19999",
+            "title": "Gallery Test Product",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:20.775635"
+        },
+        {
+            "id": "20001",
+            "title": "Shared Product 2",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:20.787461"
+        },
+        {
+            "id": "20003",
+            "title": "Downloadable Test Product",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:20.801779"
+        },
+        {
+            "id": "20004",
+            "title": "Validation Product",
+            "type": "simple",
+            "created_at": "2026-11-19 23:16:20.806143"
+        },
+        {
+            "id": "26555",
+            "title": "Product A SKU Race",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:14.002733"
+        },
+        {
+            "id": "26560",
+            "title": "CAS Test Product Updated",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:14.027639"
+        },
+        {
+            "id": "26561",
+            "title": "Test Product 400996 (Tiếng Việt có dấu: Áo thun)",
+            "type": "variable",
+            "created_at": "2026-11-20 06:54:14.033358"
+        },
+        {
+            "id": "26572",
+            "title": "Gallery Test Product",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.562526"
+        },
+        {
+            "id": "26574",
+            "title": "Shared Product 2",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.575313"
+        },
+        {
+            "id": "26575",
+            "title": "Meta Test Product",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.585838"
+        },
+        {
+            "id": "26576",
+            "title": "Downloadable Test Product",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.591149"
+        },
+        {
+            "id": "26577",
+            "title": "Validation Product",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.595861"
+        },
+        {
+            "id": "26578",
+            "title": "Roundtrip Product",
+            "type": "simple",
+            "created_at": "2026-11-20 06:54:15.600865"
+        },
+        {
+            "id": "42133",
+            "title": "Gallery Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.230620"
+        },
+        {
+            "id": "42135",
+            "title": "Shared Product 2",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.244108"
+        },
+        {
+            "id": "42136",
+            "title": "Meta Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.316668"
+        },
+        {
+            "id": "42137",
+            "title": "Downloadable Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.323250"
+        },
+        {
+            "id": "42138",
+            "title": "Validation Product",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.328026"
+        },
+        {
+            "id": "42139",
+            "title": "Roundtrip Product",
+            "type": "simple",
+            "created_at": "2026-11-24 17:33:23.333958"
+        },
+        {
+            "id": "44331",
+            "title": "Product A SKU Race",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:03.727538"
+        },
+        {
+            "id": "44336",
+            "title": "CAS Test Product Updated",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:03.763687"
+        },
+        {
+            "id": "44337",
+            "title": "Test Product 394438 (Tiếng Việt có dấu: Áo thun)",
+            "type": "variable",
+            "created_at": "2026-11-24 18:39:03.770425"
+        },
+        {
+            "id": "44348",
+            "title": "Gallery Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.829312"
+        },
+        {
+            "id": "44350",
+            "title": "Shared Product 2",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.844891"
+        },
+        {
+            "id": "44351",
+            "title": "Meta Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.951674"
+        },
+        {
+            "id": "44352",
+            "title": "Downloadable Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.957914"
+        },
+        {
+            "id": "44353",
+            "title": "Validation Product",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.962515"
+        },
+        {
+            "id": "44354",
+            "title": "Roundtrip Product",
+            "type": "simple",
+            "created_at": "2026-11-24 18:39:07.968188"
+        },
+        {
+            "id": "45139",
+            "title": "Product A SKU Race",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:39.235820"
+        },
+        {
+            "id": "45144",
+            "title": "CAS Test Product Updated",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:39.257564"
+        },
+        {
+            "id": "45145",
+            "title": "Test Product 369747 (Tiếng Việt có dấu: Áo thun)",
+            "type": "variable",
+            "created_at": "2026-11-24 19:08:39.263901"
+        },
+        {
+            "id": "45156",
+            "title": "Gallery Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.154930"
+        },
+        {
+            "id": "45158",
+            "title": "Shared Product 2",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.169425"
+        },
+        {
+            "id": "45159",
+            "title": "Meta Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.272912"
+        },
+        {
+            "id": "45160",
+            "title": "Downloadable Test Product",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.278416"
+        },
+        {
+            "id": "45161",
+            "title": "Validation Product",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.283195"
+        },
+        {
+            "id": "45162",
+            "title": "Roundtrip Product",
+            "type": "simple",
+            "created_at": "2026-11-24 19:08:43.288415"
+        }
+    ],
+    "purge_result": {
+        "products": 48,
+        "variants": 42,
+        "rows": 563,
+        "outbox_retired": 52
+    },
+    "backup": "scratchpad test_wpe_bench-before-p051.sql (taken before P051 cleanup)"
+}

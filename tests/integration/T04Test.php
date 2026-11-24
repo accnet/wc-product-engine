@@ -248,7 +248,13 @@ class T04Test
     {
         $root = dirname(__DIR__, 2);
         $out = [];
-        exec('cd ' . escapeshellarg($root) . ' && node scripts/test-isolation.mjs ' . $args . ' 2>&1', $out, $code);
+        // P051: without an isolated root (WPE_WP_PATH), point the Node gate at the database this test runs on.
+        $env = '';
+        if (getenv('WPE_WP_PATH') === false && strpos((string)DB_NAME, 'test_') === 0) {
+            $env = 'WPE_WP_REQUIRE=' . escapeshellarg($root . '/tests/performance/use-test-db.php')
+                . ' WPE_TEST_DB=' . escapeshellarg((string)DB_NAME) . ' ';
+        }
+        exec('cd ' . escapeshellarg($root) . ' && ' . $env . 'node scripts/test-isolation.mjs ' . $args . ' 2>&1', $out, $code);
         return [$code, implode("\n", $out)];
     }
 
