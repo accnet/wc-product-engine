@@ -91,8 +91,8 @@ try {
     }
     echo "  [OK] shell-less product is not reported as stale\n";
 } finally {
-    $now = gmdate('Y-m-d H:i:s');
-    $wpdb->update("{$prefix}wpe_products", ['status' => 'trash', 'deleted_at' => $now], ['id' => $pid]);
+    // P054: remove the native rows; a soft delete left an orphan native row behind every run.
+    (new \WPE\Infrastructure\Database\ProductPurger($wpdb))->purge([$pid]);
     $wpdb->delete("{$prefix}wpe_catalog", ['generation' => $gen, 'product_id' => $pid]);
     $wpdb->delete("{$prefix}wpe_catalog_facets", ['generation' => $gen, 'product_id' => $pid]);
     $wpdb->delete($wpdb->posts, ['ID' => $pid, 'post_type' => 'product']);

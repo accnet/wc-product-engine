@@ -27,11 +27,28 @@ use WPE\Infrastructure\Database\InvalidParentException;
 use WPE\Compatibility\WordPress\PostIdAllocator;
 use WPE\Bootstrap\FixtureHarness;
 
+/**
+ * Records every shell the repository allocates during the test, so the test can remove what it
+ * created (P054).
+ */
+class T06TrackingAllocator extends PostIdAllocator
+{
+    /** @var int[] */
+    public array $ids = [];
+
+    public function allocateShell(string $postType = 'product'): int
+    {
+        $id = parent::allocateShell($postType);
+        $this->ids[] = (int)$id;
+        return $id;
+    }
+}
+
 class T06Test
 {
     private \wpdb $wpdb;
     private ProductRepository $repo;
-    private PostIdAllocator $allocator;
+    private T06TrackingAllocator $allocator;
     private OutboxWorker $outboxWorker;
     private FixtureHarness $harness;
 
@@ -39,7 +56,7 @@ class T06Test
     {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->allocator = new PostIdAllocator($wpdb);
+        $this->allocator = new T06TrackingAllocator($wpdb);
         $this->outboxWorker = new OutboxWorker($wpdb);
         $this->repo = new ProductRepository($wpdb, $this->allocator, $this->outboxWorker);
         $this->harness = new FixtureHarness(65432);
@@ -49,13 +66,17 @@ class T06Test
     {
         echo "=== Running T06 Integration Tests ===\n";
 
-        $r18 = $this->testAggregateAtomicity();
-        $r19 = $this->testSkuRace();
-        $r20 = $this->testVariantWrongParent();
-        $r21 = $this->testDeletedProductOrderReference();
-        $r22 = $this->testStaleWrite412();
-        $ac01 = $this->testCanonicalSnapshotMatch();
-        $ac02 = $this->testLegacyIdReuse();
+        try {
+            $r18 = $this->testAggregateAtomicity();
+            $r19 = $this->testSkuRace();
+            $r20 = $this->testVariantWrongParent();
+            $r21 = $this->testDeletedProductOrderReference();
+            $r22 = $this->testStaleWrite412();
+            $ac01 = $this->testCanonicalSnapshotMatch();
+            $ac02 = $this->testLegacyIdReuse();
+        } finally {
+            $this->removeCreated();
+        }
 
         echo "\n=== Test Summary ===\n";
         echo "R18 (aggregate_atomicity): " . ($r18 ? "PASSED" : "FAILED") . "\n";
@@ -73,6 +94,31 @@ class T06Test
 
         echo "T06 tests failed.\n";
         return 1;
+    }
+
+    /** @var int[] Legacy posts created by the test (P054). */
+    private array $legacyPostIds = [];
+
+    /**
+     * Remove every product, variation and shell the test created: allocated shells and the legacy
+     * post, their native rows (ProductPurger) and the posts themselves (P054).
+     */
+    private function removeCreated(): void
+    {
+        $ids = array_values(array_unique(array_merge($this->allocator->ids, $this->legacyPostIds)));
+        if ($ids === []) {
+            return;
+        }
+        $purger = new \WPE\Infrastructure\Database\ProductPurger($this->wpdb);
+        $purger->purge($ids);
+        foreach ($ids as $id) {
+            if (get_post($id)) {
+                wp_delete_post($id, true);
+            }
+        }
+        $purger->purge($ids);
+        $this->allocator->ids = [];
+        $this->legacyPostIds = [];
     }
 
     /**
@@ -403,6 +449,7 @@ class T06Test
         }
 
         $legacyId = (int)$legacyPostId;
+        $this->legacyPostIds[] = $legacyId;
         $sku = 'LEGACY-' . $legacyId;
 
         $migrated = $this->repo->create([

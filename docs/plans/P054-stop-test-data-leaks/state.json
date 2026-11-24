@@ -408,8 +408,136 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T06Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "7f1a82088a50faefe7e2720d0d5b215ce50edce160ee7aedc72215f8e98a8321",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556885132-0aeebe84.log",
+          "time": "2026-11-24T21:48:05.132Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/CatalogShellIntegrityTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "ca97afb01b8f1901d5b512d8e84006111de9f2b88c3fc456baf89ff689be84ad",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556885225-6ab87464.log",
+          "time": "2026-11-24T21:48:05.225Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/leak-check.php",
+            "snapshot",
+            "/tmp/wpe-p054-leak-t06.json"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "5f73c35b79dcc0fbd96a775b6f61b8d0089baa2112124d67c1560220b8d236d1",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556886533-ae9fdff9.log",
+          "time": "2026-11-24T21:48:06.534Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T06Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "f73306fc4b8c0927dcbe1c251094a862dae4bb7d848d2b30d5961b1510aa53bb",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556888540-5981d8e4.log",
+          "time": "2026-11-24T21:48:08.541Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CatalogShellIntegrityTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "39887929f0021ad0f3165ced8d35a0cd0fc53c2b908ae0e8bae99ad70d30c8e3",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556889905-eb8d9c51.log",
+          "time": "2026-11-24T21:48:09.906Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/leak-check.php",
+            "compare",
+            "/tmp/wpe-p054-leak-t06.json"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "04eab5f2e857c56260999ff4d631a8cdf4777497ecc5ca8cae757c91ad19c6e3",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556891299-09e05ce9.log",
+          "time": "2026-11-24T21:48:11.299Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "515b398a4919cd3819b8fd8b0f18f957c7fd5c0c48f2539c2808776ee408df31",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556891417-b91654f7.log",
+          "time": "2026-11-24T21:48:11.417Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "1a0a19eb0a73e84efdcdc1deb432dbea7b73eff7",
+          "content_digest": "829e0ed0215ced347694c47cd014ea276318c43d7caed0067fd7837d173fbe31",
+          "output_sha256": "bbe5a16234ae64b90a86f1db10f165ae000bd9dbcd8ac24d9173eaea4fb686d0",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556891534-de4ae1af.log",
+          "time": "2026-11-24T21:48:11.535Z"
+        }
+      ],
+      "started_at": "2026-11-24T21:47:44.269Z"
     },
     {
       "id": "P054.3",
