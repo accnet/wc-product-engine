@@ -57,6 +57,16 @@ class AuthorityResolver
         if (function_exists('wp_cache_delete')) {
             wp_cache_delete('auth_probe_' . $id, self::CACHE_GROUP);
             wp_cache_delete('prod_bundle_' . $id, self::CACHE_GROUP);
+            wp_cache_delete('var_bundle_' . $id, self::CACHE_GROUP);
+            wp_cache_delete('meta_map_' . $id, self::CACHE_GROUP);
+            // A primed variation family (P040.2) goes with its parent, bundles included.
+            $family = wp_cache_get('var_family_' . $id, self::CACHE_GROUP);
+            if (is_array($family)) {
+                foreach ((array)($family['variant_ids'] ?? []) as $vid) {
+                    wp_cache_delete('var_bundle_' . (int)$vid, self::CACHE_GROUP);
+                }
+                wp_cache_delete('var_family_' . $id, self::CACHE_GROUP);
+            }
         }
         if (function_exists('wc_get_container') && class_exists(\Automattic\WooCommerce\Internal\Caches\ProductCache::class)) {
             try {

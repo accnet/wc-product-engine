@@ -1,0 +1,104 @@
+{
+  "id": "P041",
+  "title": "P040.2 amendment: evict variation-family and meta runtime caches",
+  "status": "done",
+  "content_hash": "a2051c5b4f7c7b6338a371a3927018a227218f4a0b436a765000eb492c4070d2",
+  "tasks": [
+    {
+      "id": "P041.1",
+      "title": "AuthorityResolver::evictObject drops variation bundles, variation families (cascading to their bundles) and meta maps",
+      "depends_on": [],
+      "read_first": [
+        "src/Support/AuthorityResolver.php",
+        "docs/plans/P040-storefront-query-budget/plan.md"
+      ],
+      "files": [
+        "src/Support/AuthorityResolver.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Support/AuthorityResolver.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/StorefrontQueryBudgetTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "f080c424026fc94985cde77eee4624448ea030f5878e50e808a316cdd2acec77",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P041-p040-eviction-amendment/command-1795541646568-9a14589e.log",
+          "time": "2026-11-24T17:34:06.568Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/StorefrontQueryBudgetTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "f080c424026fc94985cde77eee4624448ea030f5878e50e808a316cdd2acec77",
+          "output_sha256": "166c527f753a2c788cb46ebee4e01fae05e128652e40a67c5d398852da181980",
+          "output_path": "docs/plans/P041-p040-eviction-amendment/command-1795541648299-a00e3662.log",
+          "time": "2026-11-24T17:34:08.299Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "f080c424026fc94985cde77eee4624448ea030f5878e50e808a316cdd2acec77",
+          "output_sha256": "840b01c58619f115ce6bc045e1062b96ac197176e16acba7eb7987be78a69abf",
+          "output_path": "docs/plans/P041-p040-eviction-amendment/command-1795541648421-35d4c8e3.log",
+          "time": "2026-11-24T17:34:08.421Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "984d07d69ca8b9df862f24433ff91f6c8f8bfc9e",
+          "content_digest": "f080c424026fc94985cde77eee4624448ea030f5878e50e808a316cdd2acec77",
+          "output_sha256": "2bce662288619ba39ff10145cdfffec1de4c46f1885bb8a059f2699bcc521ab3",
+          "output_path": "docs/plans/P041-p040-eviction-amendment/command-1795541648537-aceb95aa.log",
+          "time": "2026-11-24T17:34:08.537Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:32:21.526Z"
+    }
+  ],
+  "approved_hash": "a2051c5b4f7c7b6338a371a3927018a227218f4a0b436a765000eb492c4070d2",
+  "report_hash": "bec52378c8cbbbb16dae1bef98201527adbb9c4f9b3edb1a9e9fb3ccf78886c1"
+}
