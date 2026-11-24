@@ -400,9 +400,14 @@ class LegacyMirror
             if (!empty($variants)) {
                 $varIdList = implode(',', array_map(static fn(array $row): int => (int)$row['id'], $variants));
 
-                $existingVarPosts = array_flip(array_map('intval', $this->wpdb->get_col(
-                    "SELECT ID FROM {$this->wpdb->posts} WHERE ID IN ({$varIdList})"
-                )));
+                // Existing shells with the columns the mirror writes, so unchanged ones are skipped (P043).
+                $existingVarPosts = [];
+                foreach ((array)$this->wpdb->get_results(
+                    "SELECT ID, post_title, post_status, post_parent FROM {$this->wpdb->posts} WHERE ID IN ({$varIdList})",
+                    ARRAY_A
+                ) as $shellRow) {
+                    $existingVarPosts[(int)$shellRow['ID']] = $shellRow;
+                }
 
                 $invByOwner = [];
                 foreach ((array)$this->wpdb->get_results(
@@ -459,7 +464,13 @@ class LegacyMirror
                     $vExists = isset($existingVarPosts[$varId]);
 
                     $varTitle = "Variation for " . ($effectiveTitle ?: $product['title']);
-                    if ($vExists) {
+                    $varStatus = (string)($v['status'] ?? 'publish');
+                    $shell = $existingVarPosts[$varId] ?? null;
+                    $shellChanged = $shell === null
+                        || (string)$shell['post_title'] !== $varTitle
+                        || (string)$shell['post_status'] !== $varStatus
+                        || (int)$shell['post_parent'] !== $aggregateId;
+                    if ($vExists && $shellChanged) {
                         $this->wpdb->update($this->wpdb->posts, [
                             'post_title'        => $varTitle,
                             'post_status'       => $v['status'] ?? 'publish',
@@ -467,7 +478,7 @@ class LegacyMirror
                             'post_modified'     => $now,
                             'post_modified_gmt' => $nowGmt,
                         ], ['ID' => $varId]);
-                    } else {
+                    } elseif (!$vExists) {
                         $this->wpdb->insert($this->wpdb->posts, [
                             'ID'                => $varId,
                             'post_author'       => 1,
@@ -561,6 +572,10 @@ class LegacyMirror
             clean_post_cache($aggregateId);
             wp_cache_delete($aggregateId, 'post_meta');
             if (!empty($variants)) {
+                // clean_post_cache() loads each post first; load the shells in one query instead (P043).
+                if (function_exists('_prime_post_caches')) {
+                    _prime_post_caches(array_map(static fn(array $row): int => (int)$row['id'], $variants), false, false);
+                }
                 foreach ($variants as $v) {
                     $vId = (int)$v['id'];
                     clean_post_cache($vId);

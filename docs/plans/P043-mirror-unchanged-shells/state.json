@@ -1,0 +1,212 @@
+{
+  "id": "P043",
+  "title": "Legacy mirror skips unchanged variation shells and primes their post cache",
+  "status": "in_progress",
+  "content_hash": "9138cc2f700dfc5a13c3da41080faa1c3e0dcb2927debc84f7db16bce705c1ba",
+  "tasks": [
+    {
+      "id": "P043.1",
+      "title": "Skip unchanged variation shell updates and prime shells before clean_post_cache in LegacyMirror; ImportPerformanceTest passes its P017 budget",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/ImportPerformanceTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyMirror.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/OutboxProjectionWorkerTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/PostShellProjectionTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "blocked",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyMirror.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "6e720e35fe76e3f9603705ad6fb32e8976eebc6bad43ca7ef02ad922e4a82fbf",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795542996950-93ed8975.log",
+          "time": "2026-11-24T17:56:36.951Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "05d2dbea53181c25ed2c97369622da597057f5e971f0f8de4de3749407a81a43",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795542997048-ac80093d.log",
+          "time": "2026-11-24T17:56:37.048Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "f18d8004be254e20da67484dfd89a6d11a74ce61903e62a0fbfa8c8dc819a46f",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795542999427-0359544a.log",
+          "time": "2026-11-24T17:56:39.428Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 1,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "9d09c3557806cb27e527513eeef45d7a5e78dbde433f00f2e9e3c8990055b0ea",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543000759-0ce12715.log",
+          "time": "2026-11-24T17:56:40.759Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/OutboxProjectionWorkerTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "976d5cb75fb7d309a74cd508c03ad38e8e363decf98912899b0f381c91ab36bf",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543002295-aabbd21b.log",
+          "time": "2026-11-24T17:56:42.295Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PostShellProjectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "44d49cf10586315b2062e9d6b7664f90102a2b898f024fb972c2fe216978d160",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543003843-93772c65.log",
+          "time": "2026-11-24T17:56:43.843Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543005410-f385dd36.log",
+          "time": "2026-11-24T17:56:45.411Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "c8951b2add7c7e7d7fdad7b136799d959d4f04a26fe73f35d9ae6b61e7a658ca",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543005524-c816e7ca.log",
+          "time": "2026-11-24T17:56:45.524Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "49c79b9c9be7a1661037634e813825d92c39ef1b8f07549ee95913f3d26f3133",
+          "output_sha256": "257e8d8c4e5ce66826c51fcfd7d0bd3cfdef80d4fba373860af3ecbd0e5bcdfe",
+          "output_path": "docs/plans/P043-mirror-unchanged-shells/command-1795543005640-9d64769e.log",
+          "time": "2026-11-24T17:56:45.641Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:55:34.849Z"
+    }
+  ],
+  "approved_hash": "9138cc2f700dfc5a13c3da41080faa1c3e0dcb2927debc84f7db16bce705c1ba"
+}

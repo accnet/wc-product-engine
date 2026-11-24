@@ -1,0 +1,285 @@
+{
+  "id": "P044",
+  "title": "P043 amendment: complete the mirror shell change with an assertion-enabled DoD",
+  "status": "done",
+  "content_hash": "2c2440be9dd4a69ec1ce38afe510d55b03d24934b3c63d8fb98276e1b9c80881",
+  "tasks": [
+    {
+      "id": "P044.1",
+      "title": "Complete P043.1 (unchanged variation shells skipped, shells primed before clean_post_cache) with assertion-enabled mirror epoch checks",
+      "depends_on": [],
+      "read_first": [
+        "docs/plans/P043-mirror-unchanged-shells/plan.md",
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/ImportPerformanceTest.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyMirror.php",
+        "tests/integration/ImportPerformanceTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyMirror.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/OutboxProjectionWorkerTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/PostShellProjectionTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyBatchImporterTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductEditorServiceTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyMirror.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "6e720e35fe76e3f9603705ad6fb32e8976eebc6bad43ca7ef02ad922e4a82fbf",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543077545-4b6e2128.log",
+          "time": "2026-11-24T17:57:57.546Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "05d2dbea53181c25ed2c97369622da597057f5e971f0f8de4de3749407a81a43",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543077653-8eb9cdf9.log",
+          "time": "2026-11-24T17:57:57.653Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "0f9c24efb0f089522ee787cf11a72c558cd2f386cddaf5d505c8478afce790d5",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543080052-4a10bce7.log",
+          "time": "2026-11-24T17:58:00.053Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "b18a646ceb6345d98dc6042c104500ee170f2c9c5110376e43ce8b8fc2027c41",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543081736-2394193c.log",
+          "time": "2026-11-24T17:58:01.737Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/OutboxProjectionWorkerTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "976d5cb75fb7d309a74cd508c03ad38e8e363decf98912899b0f381c91ab36bf",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543083189-be2a62e5.log",
+          "time": "2026-11-24T17:58:03.190Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PostShellProjectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "44d49cf10586315b2062e9d6b7664f90102a2b898f024fb972c2fe216978d160",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543084758-d7e1a0b4.log",
+          "time": "2026-11-24T17:58:04.759Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyBatchImporterTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "a27c4b562575f191cbf59616325fdc713c51472a97c41c21042d3027e223291b",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543086297-2b5c4d02.log",
+          "time": "2026-11-24T17:58:06.298Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductEditorServiceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "f88c1422fe400b6722056916857a6332614a963e7a4a8c8ec2ca93fcce5ac684",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543089159-2fd81d18.log",
+          "time": "2026-11-24T17:58:09.160Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "fe0bd196dd18d3b7d9ad590c6bd0013889e1ffaa88f4d5d31e17b6a2e90c68e7",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543089278-3a95ee8b.log",
+          "time": "2026-11-24T17:58:09.278Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "4bfe28aefdab6c5fb4fa1178c8d2b283d090a5ac",
+          "content_digest": "98565628e462c6671ac7b3268f9aa8b88653b3b8b7a2f149b4d59cde2445da69",
+          "output_sha256": "15129c0a2d62b673f14da515e5c6ca715fec235b72a08f4fb858ad96ac70f487",
+          "output_path": "docs/plans/P044-p043-dod-amendment/command-1795543089392-dba05b31.log",
+          "time": "2026-11-24T17:58:09.392Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:57:57.440Z"
+    }
+  ],
+  "approved_hash": "2c2440be9dd4a69ec1ce38afe510d55b03d24934b3c63d8fb98276e1b9c80881",
+  "report_hash": "81711bb148978cb91d2b4b1d6988260a21b6010c1bd61cba3a1a1e98693100b2"
+}

@@ -42,3 +42,5 @@
 - P040 — Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration (done)
 - P041 — P040.2 amendment: evict variation-family and meta runtime caches (done)
 - P042 — Ratify the 2026-11-24 import contract and docs changes (done)
+- P043 — Legacy mirror skips unchanged variation shells and primes their post cache (in_progress)
+- P044 — P043 amendment: complete the mirror shell change with an assertion-enabled DoD (done)

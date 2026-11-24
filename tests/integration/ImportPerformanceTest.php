@@ -330,19 +330,27 @@ final class ImportPerformanceTest
 
         $metaWrites = 0;
         $mirrorQueries = 0;
-        $counter = function ($sql) use (&$metaWrites, &$mirrorQueries, $pm) {
+        $shellWrites = 0;
+        $posts = $this->wpdb->posts;
+        $vidSet = array_flip($vids);
+        $counter = function ($sql) use (&$metaWrites, &$mirrorQueries, &$shellWrites, $pm, $posts, $vidSet) {
             $mirrorQueries++;
+            // P043: variation shell rewrites (UPDATE wp_posts ... WHERE `ID` = <variation>).
+            if (preg_match('/^\s*UPDATE\s+`?' . preg_quote($posts, '/') . '`?\s.*WHERE\s+`?ID`?\s*=\s*(\d+)/is', $sql, $m) && isset($vidSet[(int) $m[1]])) {
+                $shellWrites++;
+            }
             if (preg_match('/^\s*(INSERT|UPDATE|DELETE)\b[^;]*?`?' . preg_quote($pm, '/') . '`?\s/i', $sql)) {
                 $metaWrites++;
             }
             return $sql;
         };
-        $mirror = function () use ($pid, $counter, &$metaWrites, &$mirrorQueries): void {
+        $mirror = function () use ($pid, $counter, &$metaWrites, &$mirrorQueries, &$shellWrites): void {
             $state = $this->wpdb->get_row($this->wpdb->prepare("SELECT native_applied FROM {$this->wpdb->prefix}wpe_object_state WHERE object_id = %d", $pid), ARRAY_A);
             $m = \WPE\Application\Migration\LegacyMirror::getInstance();
             $epoch = $m->getAggregateEpoch($pid);
             $metaWrites = 0;
             $mirrorQueries = 0;
+            $shellWrites = 0;
             add_filter('query', $counter);
             try {
                 $res = $m->mirrorAggregate($pid, (int) ($state['native_applied'] ?? 0) + 1, $epoch);
@@ -358,6 +366,21 @@ final class ImportPerformanceTest
         $this->assert($metaWrites === 0, "Re-mirroring unchanged data issued {$metaWrites} postmeta writes.");
         $budget = 3 * count($vids) + 60;
         $this->assert($mirrorQueries <= $budget, "Mirror used {$mirrorQueries} queries for " . count($vids) . " variations (budget {$budget}).");
+        $this->assert($shellWrites === 0, "Re-mirroring unchanged data rewrote {$shellWrites} variation shells.");
+        $unchangedQueries = $mirrorQueries;
+
+        // P043 D02: a changed variation status still reaches its shell, and only that shell.
+        $pv = $this->wpdb->prefix . 'wpe_variants';
+        $v2 = $vids[2];
+        $this->wpdb->update($pv, ['status' => 'private'], ['id' => $v2]);
+        $mirror();
+        $shellStatus = (string) $this->wpdb->get_var($this->wpdb->prepare("SELECT post_status FROM {$posts} WHERE ID = %d", $v2));
+        $this->assert($shellStatus === 'private' && $shellWrites === 1, "Changed variation status: shell status {$shellStatus}, {$shellWrites} shell writes (expected private, 1).");
+        $this->wpdb->update($pv, ['status' => 'publish'], ['id' => $v2]);
+        $mirror();
+        $shellStatus = (string) $this->wpdb->get_var($this->wpdb->prepare("SELECT post_status FROM {$posts} WHERE ID = %d", $v2));
+        $this->assert($shellStatus === 'publish' && $shellWrites === 1, "Restored variation status: shell status {$shellStatus}, {$shellWrites} shell writes (expected publish, 1).");
+        $before = $snapshot();
 
         // Damage legacy meta: changed value, missing key, duplicated key.
         $v0 = $vids[0];
@@ -380,7 +403,7 @@ final class ImportPerformanceTest
         $this->assert($get($v0, '_sku') === [(string) $firstSku['meta_value'], 'dup-row'], 'Duplicated key: only the first row may be updated, got ' . wp_json_encode($get($v0, '_sku')));
         $this->wpdb->delete($pm, ['meta_id' => $dupId]);
 
-        echo sprintf("  ✓ batched mirror: no writes when unchanged, repairs changed/missing keys, first-row semantics (%d queries for %d variations)\n", $mirrorQueries, count($vids));
+        echo sprintf("  ✓ batched mirror: no writes when unchanged (%d queries for %d variations, budget %d), changed shell status written, repairs changed/missing keys, first-row semantics\n", $unchangedQueries, count($vids), $budget);
     }
 
     /**
