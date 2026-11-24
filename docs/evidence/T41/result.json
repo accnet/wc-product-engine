@@ -1,11 +1,11 @@
 {
   "task_id": "T41",
-  "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+  "commit": "3e100210e243abc6333d1a1beaf977a30795a877",
   "qa_status": "passed",
-  "content_digest": "1ccfbc3d89b2ea8c2c6a5f6b33b79d73a2754cb807337c6621e27b04c224aabe",
+  "content_digest": "f13402de3ae7ebdb01894aad55c1a1136c73e1ed04d58388c9b3c55c74fee000",
   "environment": {
     "wordpress": "7.1.5",
-    "woocommerce": "11.3.0",
+    "woocommerce": "11.3.1",
     "php": "8.3.36",
     "database": "11.8.9-MariaDB"
   },
@@ -13,7 +13,7 @@
     {
       "argv": [
         "wp",
-        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/24192a3b-ac90-4a2f-8b9a-e3bd15b14f37/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T41Test.php"
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T41/output.log",
       "output_sha256": "611fff3353ba4a03c94b4929743e32f41269d8d3cabe94a78cc265375346347b",
-      "content_digest": "1ccfbc3d89b2ea8c2c6a5f6b33b79d73a2754cb807337c6621e27b04c224aabe"
+      "content_digest": "f13402de3ae7ebdb01894aad55c1a1136c73e1ed04d58388c9b3c55c74fee000"
     }
   ],
   "regression_results": [
@@ -102,14 +102,13 @@
   "blockers": [],
   "files_implemented": [
     "src/Admin/OperationsPage.php",
-    "assets/operations/operations.js",
     "src/Cli/Commands.php",
     "tests/integration/T41Test.php",
     "docs/evidence/T41/result.json"
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
-    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/24192a3b-ac90-4a2f-8b9a-e3bd15b14f37/scratchpad/wptest",
     "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
@@ -121,6 +120,9 @@
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -147,11 +149,14 @@
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
       "wp_wpe_audit": 7375,
-      "wp_wpe_catalog": 256,
+      "wp_wpe_catalog": 244,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -183,6 +188,9 @@
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -206,7 +214,8 @@
       "wp_postmeta": 53858
     },
     "leaked_by_test": {
-      "wp_wpe_audit": 10
+      "wp_wpe_audit": 10,
+      "wp_wpe_catalog": -12
     },
     "residue_after_restore": {},
     "junk_before": {
@@ -230,11 +239,10 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+  "base_commit": "3e100210e243abc6333d1a1beaf977a30795a877",
   "file_hashes": {
-    "assets/operations/operations.js": "678720e00a67ea2f97857c5f44b53caaa06ae8d80da3c63f8ca451c1d54a59c2",
-    "src/Admin/OperationsPage.php": "c92cd371b498893bc6c9f452d70d7b16fd379f5d37198d399d2b1fd9950790d8",
-    "src/Cli/Commands.php": "4dad1b57711a6c3948c0b3b19bc0303ba442d561e09cc9707749f3a56076b1cf",
+    "src/Admin/OperationsPage.php": "861b88cf1556ded0a205f8770e098a4b1a95b7d46b63d10e3ee6e6400c39d7de",
+    "src/Cli/Commands.php": "2d82f3369b4d202d3578f5967754d7772934da681bf75e12bca762f86521e259",
     "tests/integration/T41Test.php": "8b999b3e8632c6f9fa88ebd1f096d61eff9ac319ed175d745cdcfc9128efe74f"
   }
 }

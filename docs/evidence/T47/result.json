@@ -1,11 +1,11 @@
 {
   "task_id": "T47",
-  "commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+  "commit": "3e100210e243abc6333d1a1beaf977a30795a877",
   "qa_status": "passed",
-  "content_digest": "a4decc7ae892571f8d38bbcbea4618f616d5382ee8bc8db0abf52667d5bacca1",
+  "content_digest": "0f17a8755a7e0e557c8ce120481bbfd894abf3b1cb9865cab23943f2b6ce70a5",
   "environment": {
     "wordpress": "7.1.5",
-    "woocommerce": "11.3.0",
+    "woocommerce": "11.3.1",
     "php": "8.3.36",
     "database": "11.8.9-MariaDB"
   },
@@ -13,7 +13,7 @@
     {
       "argv": [
         "wp",
-        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
+        "--path=/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/24192a3b-ac90-4a2f-8b9a-e3bd15b14f37/scratchpad/wptest",
         "--allow-root",
         "eval-file",
         "tests/integration/T47Test.php"
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T47",
       "exit_code": 0,
       "output_path": "docs/evidence/T47/output.log",
-      "output_sha256": "404b790253ecbb2cb7ba73abddd2a85fbb6044e5b7f9beaa3f5383368aa7024d",
-      "content_digest": "a4decc7ae892571f8d38bbcbea4618f616d5382ee8bc8db0abf52667d5bacca1"
+      "output_sha256": "d55e5203d3dab8c0906667baccdb5b0b3b47a00727ba4054c24e915c4cf9341b",
+      "content_digest": "0f17a8755a7e0e557c8ce120481bbfd894abf3b1cb9865cab23943f2b6ce70a5"
     }
   ],
   "regression_results": [
@@ -130,7 +130,7 @@
   ],
   "isolation": {
     "mechanism": "wp db export before the test, wp db import after the test",
-    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/002115d5-3137-4f1d-bddc-b761644ed853/scratchpad/wptest",
+    "wp_root": "/tmp/claude-1000/-var-www-site1-localhost-wp-content-plugins-wc-product-engine/24192a3b-ac90-4a2f-8b9a-e3bd15b14f37/scratchpad/wptest",
     "database": "test_wpe_regress",
     "restored": true,
     "counts_before": {
@@ -142,6 +142,9 @@
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -173,6 +176,9 @@
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -204,6 +210,9 @@
       "wp_wpe_control": 14,
       "wp_wpe_downloads": 4,
       "wp_wpe_external_ids": 0,
+      "wp_wpe_feed_dirty": 0,
+      "wp_wpe_feed_items": 0,
+      "wp_wpe_feeds": 0,
       "wp_wpe_import_rows": 0,
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
@@ -251,7 +260,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "20f875f3147a1afb448553436a95ff6cd42bd1c6",
+  "base_commit": "3e100210e243abc6333d1a1beaf977a30795a877",
   "file_hashes": {
     "tests/integration/T47Test.php": "ef2e5900ae422c4ad21a27289b65f8d9cb06917b01033b67056a198f45ee0e90",
     "tests/performance/ScaleBenchmark.mjs": "aa891da2c0be28bc00d1f125c7b3f54fadb6f09606ff6731c8f73da01068a560"
