@@ -1,7 +1,7 @@
 {
   "id": "P049",
   "title": "Re-certify on WooCommerce 11.3.1 and the current theme and plugin set",
-  "status": "in_progress",
+  "status": "done",
   "content_hash": "48e887c572ae5d6d34813dfb1fb4889f5feef71271e0b081812ebd8e754a0d4d",
   "tasks": [
     {
@@ -180,9 +180,38 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "002cdc2766fbac7a475200b9ac071c4931a891b1",
+          "content_digest": "61f1ea671bbcf26094a5bbb5d5e249d38d90778769a4bd3403b290e00497fc7e",
+          "output_sha256": "6e77ea56569e1afca7947a0577c6faeda323bf6a35213fcad7fb30545fc108f4",
+          "output_path": "docs/plans/P049-wc1131-recertification/command-1795549800272-cef65a45.log",
+          "time": "2026-11-24T19:50:00.272Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "002cdc2766fbac7a475200b9ac071c4931a891b1",
+          "content_digest": "61f1ea671bbcf26094a5bbb5d5e249d38d90778769a4bd3403b290e00497fc7e",
+          "output_sha256": "15a0eddcf87f0c5ca37671428d5c458b9246ac8d09b8a2c181bfaa3f7b374bb4",
+          "output_path": "docs/plans/P049-wc1131-recertification/command-1795549800381-81ebdb0e.log",
+          "time": "2026-11-24T19:50:00.382Z"
+        }
+      ],
+      "started_at": "2026-11-24T19:50:00.159Z"
     }
   ],
-  "approved_hash": "48e887c572ae5d6d34813dfb1fb4889f5feef71271e0b081812ebd8e754a0d4d"
+  "approved_hash": "48e887c572ae5d6d34813dfb1fb4889f5feef71271e0b081812ebd8e754a0d4d",
+  "report_hash": "825e34b4f9b971b4f54597fee4e52219c5ab6c1ee03f7409bd657b2f574916ff"
 }

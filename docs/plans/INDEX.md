@@ -48,4 +48,4 @@
 - P046 — Legacy capture syncs variations with batched reads and writes (done)
 - P047 — Archive product cards: batched price fingerprints, lowest-price inputs, gallery and owned meta (done)
 - P048 — Integration tests pin the cohort mode they need and restore it (done)
-- P049 — Re-certify on WooCommerce 11.3.1 and the current theme and plugin set (in_progress)
+- P049 — Re-certify on WooCommerce 11.3.1 and the current theme and plugin set (done)
