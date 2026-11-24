@@ -13,8 +13,10 @@ class SchemaMigrator
      *    installed before P011 stayed at 1 and never got them).
      * 3: P028 workload sort indexes on wpe_catalog (idx_cat_menu_order, idx_cat_rating,
      *    idx_cat_title, idx_cat_price) per docs/03-database-schema.md §4.
+     * 5: idx_parent_kind on wpe_object_state: the per-product mirror marks its variations applied by
+     *    parent_id, which scanned the whole table without it.
      */
-    public const SCHEMA_VERSION = 4;
+    public const SCHEMA_VERSION = 5;
     public const OPTION_SCHEMA_VERSION = 'wpe_schema_version';
     public const OPTION_MIGRATION_CHECKPOINT = 'wpe_migration_checkpoint';
     /** @deprecated 1.1.1 The migration lock is a MySQL named lock now; kept for callers that reference it. */
@@ -132,6 +134,9 @@ class SchemaMigrator
             }
 
             $this->ensureCatalogWorkloadIndexes($applied);
+            $this->ensureIndexes('wpe_object_state', [
+                'idx_parent_kind' => '(`parent_id`, `kind`)',
+            ], $applied);
 
             update_option(self::OPTION_SCHEMA_VERSION, self::SCHEMA_VERSION);
             delete_option(self::OPTION_MIGRATION_CHECKPOINT);
@@ -189,6 +194,33 @@ class SchemaMigrator
                 throw new \RuntimeException("Failed to create index {$indexName} on {$catalogTable}: " . $this->wpdb->last_error);
             }
             $applied[] = "{$catalogTable}.{$indexName}";
+        }
+    }
+
+    /**
+     * Add secondary indexes missing on an existing table (CREATE TABLE IF NOT EXISTS never alters it).
+     *
+     * @param array<string, string> $indexes index name => column list SQL
+     * @param string[] $applied
+     */
+    private function ensureIndexes(string $table, array $indexes, array &$applied): void
+    {
+        $tableName = $this->wpdb->prefix . $table;
+        if ($this->wpdb->get_var($this->wpdb->prepare("SHOW TABLES LIKE %s", $tableName)) !== $tableName) {
+            return;
+        }
+        $existing = [];
+        foreach ($this->wpdb->get_results("SHOW INDEX FROM `{$tableName}`", ARRAY_A) ?: [] as $row) {
+            $existing[(string)($row['Key_name'] ?? '')] = true;
+        }
+        foreach ($indexes as $indexName => $columnsSql) {
+            if (isset($existing[$indexName])) {
+                continue;
+            }
+            if ($this->wpdb->query("ALTER TABLE `{$tableName}` ADD INDEX `{$indexName}` {$columnsSql}") === false) {
+                throw new \RuntimeException("Failed to create index {$indexName} on {$tableName}: " . $this->wpdb->last_error);
+            }
+            $applied[] = "{$tableName}.{$indexName}";
         }
     }
 

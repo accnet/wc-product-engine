@@ -156,15 +156,15 @@ class ShopifyImportPage
                             <div class="wpe-field">
                                 <label class="wpe-field__label" for="wpe-opt-category-mode"><?php echo esc_html__('Product Category', 'wc-product-engine'); ?></label>
                                 <select id="wpe-opt-category-mode" class="wpe-input wpe-import-select" aria-describedby="wpe-opt-category-mode-desc">
-                                    <option value="none" selected>
-                                        <?php echo esc_html__('Do not map (default category only)', 'wc-product-engine'); ?>
+                                    <option value="path" selected>
+                                        <?php echo esc_html__('Map to categories (create missing, A > B > C)', 'wc-product-engine'); ?>
                                     </option>
-                                    <option value="path">
-                                        <?php echo esc_html__('Create category tree from path (A > B > C)', 'wc-product-engine'); ?>
+                                    <option value="none">
+                                        <?php echo esc_html__('Do not map (default category only)', 'wc-product-engine'); ?>
                                     </option>
                                 </select>
                                 <p class="wpe-help" id="wpe-opt-category-mode-desc">
-                                    <?php echo esc_html__('Uses the Shopify "Product category" column. Products are filed under the last level; parent categories list them too.', 'wc-product-engine'); ?>
+                                    <?php echo esc_html__('Uses the Shopify "Product category" column: existing categories are reused, missing ones are created. Products are filed under the last level; parent categories list them too. Products with an empty cell get the default category.', 'wc-product-engine'); ?>
                                 </p>
                             </div>
 

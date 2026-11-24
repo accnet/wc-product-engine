@@ -284,7 +284,7 @@
             startBtn.prop('disabled', true);
             var updateMode = $('#wpe-opt-update-mode').val();
             var imageMode = $('#wpe-opt-image-mode').val();
-            var categoryMode = $('#wpe-opt-category-mode').val() || 'none';
+            var categoryMode = $('#wpe-opt-category-mode').val() || 'path';
             state.batchSize = parseInt($('#wpe-opt-batch-size').val(), 10) || 25;
 
             var initPayload = {

@@ -215,7 +215,7 @@ class ShopifyBatchImporter
         $headers = [];
         $unsupportedColumns = [];
         $ignoredColumns = [];
-        $categoryMode = self::normalizeCategoryMode($options['category_mode'] ?? 'none');
+        $categoryMode = self::normalizeCategoryMode($options['category_mode'] ?? 'path');
         foreach ($rawHeaders as $idx => $rawH) {
             $cleaned = trim((string)$rawH);
             if ($idx === 0 && str_starts_with($cleaned, "\xEF\xBB\xBF")) {
@@ -393,10 +393,72 @@ class ShopifyBatchImporter
             ];
         }
 
+        // Term counts: WordPress (`_update_post_term_count`) and WooCommerce (`_wc_term_recount`)
+        // recount every category of a product on each save, which costs more as the categories
+        // grow (two thirds of the SQL time at 15k products). Defer both and recount each touched
+        // term once per batch instead (the bulk-import path WooCommerce documents for the filter).
+        $touched = [];
+        $collect = static function ($objectId) use (&$touched): void {
+            $touched[(int)$objectId] = true;
+        };
+        $skipWcRecount = static fn(): bool => false;
+        add_action('set_object_terms', $collect, 10, 1);
+        add_action('woocommerce_product_set_stock_status', $collect, 10, 1);
+        add_filter('woocommerce_product_recount_terms', $skipWcRecount, 999);
+        $deferCounts = function_exists('wp_defer_term_counting');
+        if ($deferCounts) {
+            wp_defer_term_counting(true);
+        }
+
         try {
             return $this->runLockedBatch($jobId, $job, $batchSize);
         } finally {
+            remove_action('set_object_terms', $collect, 10);
+            remove_action('woocommerce_product_set_stock_status', $collect, 10);
+            remove_filter('woocommerce_product_recount_terms', $skipWcRecount, 999);
+            if ($deferCounts) {
+                wp_defer_term_counting(false); // flushes the core counts once per term
+            }
+            $this->recountWooTerms(array_keys($touched));
             $this->wpdb->query($this->wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lockName));
+        }
+    }
+
+    /**
+     * WooCommerce visible-product counts for the categories, tags and brands of the given
+     * products, each term once (they were skipped per product during the batch).
+     *
+     * @param int[] $objectIds Products or variations touched by the batch
+     */
+    private function recountWooTerms(array $objectIds): void
+    {
+        if ($objectIds === [] || !function_exists('_wc_term_recount')) {
+            return;
+        }
+        try {
+            $productIds = [];
+            foreach ($objectIds as $id) {
+                $parent = (int)wp_get_post_parent_id($id);
+                $productIds[$parent > 0 ? $parent : $id] = true;
+            }
+            foreach (['product_cat', 'product_tag', 'product_brand'] as $taxonomy) {
+                $tax = get_taxonomy($taxonomy);
+                if (!$tax instanceof \WP_Taxonomy) {
+                    continue;
+                }
+                $terms = wp_get_object_terms(array_keys($productIds), $taxonomy, ['fields' => 'all']);
+                if (is_wp_error($terms) || $terms === []) {
+                    continue;
+                }
+                $map = [];
+                foreach ($terms as $term) {
+                    $map[(int)$term->term_id] = (int)$term->parent;
+                }
+                _wc_term_recount($map, $tax, false, false);
+            }
+        } catch (\Throwable $e) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator diagnostic
+            error_log('[wc-product-engine] import term recount failed: ' . $e->getMessage());
         }
     }
 
@@ -1154,9 +1216,13 @@ class ShopifyBatchImporter
     /** @var array<string, int> Resolved category paths -> leaf term ID (per request). */
     private array $categoryPathCache = [];
 
+    /**
+     * `path` (default) maps the Shopify `Product category` column: missing categories are created,
+     * existing ones reused. Only an explicit `none` leaves the column unmapped (docs/10 §7).
+     */
     public static function normalizeCategoryMode($mode): string
     {
-        return $mode === 'path' ? 'path' : 'none';
+        return $mode === 'none' ? 'none' : 'path';
     }
 
     /**
@@ -1314,10 +1380,15 @@ class ShopifyBatchImporter
         $p = $this->wpdb->prefix;
         $variantIds = "SELECT id FROM {$this->tableVariants} WHERE product_id = %d";
         $optionIds  = "SELECT id FROM {$this->tableOptions} WHERE product_id = %d";
+        // Inventory owners as a literal list: `IN (SELECT %d UNION ...)` is a dependent subquery that
+        // MariaDB evaluates per inventory row, a full scan that made each import slower as the catalog grew.
+        $owners = array_map('intval', $this->wpdb->get_col($this->wpdb->prepare($variantIds, $productId)));
+        $owners[] = $productId;
+        $ownerList = implode(',', array_unique($owners));
         $reads = [
             "SELECT * FROM {$this->tableProducts} WHERE id = %d",
             "SELECT * FROM {$this->tableVariants} WHERE product_id = %d ORDER BY id",
-            "SELECT * FROM {$this->tableInventory} WHERE owner_id IN (SELECT %d UNION {$variantIds}) ORDER BY owner_id",
+            "SELECT * FROM {$this->tableInventory} WHERE owner_id IN ({$ownerList}) ORDER BY owner_id",
             "SELECT * FROM {$this->tableOptions} WHERE product_id = %d ORDER BY id",
             "SELECT * FROM {$this->tableOptionValues} WHERE option_id IN ({$optionIds}) ORDER BY id",
             "SELECT * FROM {$this->tableVariantValues} WHERE variant_id IN ({$variantIds}) ORDER BY variant_id, option_id",

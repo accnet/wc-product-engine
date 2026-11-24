@@ -59,7 +59,7 @@ $importer = new ShopifyBatchImporter();
 $jobs = [];
 $files = [];
 $runJob = static function (string $csv, array $options = []) use ($importer, &$jobs): array {
-    $init = $importer->initJob($csv, $options + ['batch_size' => 25, 'skip_unchanged' => false]);
+    $init = $importer->initJob($csv, $options + ['batch_size' => 25, 'skip_unchanged' => false, 'category_mode' => 'none']);
     $jobs[] = $init['job_id'];
     for ($i = 0; $i < 20; $i++) {
         $res = $importer->processBatch($init['job_id'], 25);

@@ -338,7 +338,8 @@ CREATE TABLE IF NOT EXISTS `{prefix}wpe_object_state` (
   `tombstone` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `updated_at` DATETIME(6) NOT NULL,
   PRIMARY KEY (`object_id`),
-  KEY `idx_authority_parent_object` (`authority`, `parent_id`, `object_id`)
+  KEY `idx_authority_parent_object` (`authority`, `parent_id`, `object_id`),
+  KEY `idx_parent_kind` (`parent_id`, `kind`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `{prefix}wpe_outbox` (

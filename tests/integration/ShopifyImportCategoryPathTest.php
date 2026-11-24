@@ -2,6 +2,7 @@
 /**
  * P032 — Shopify `Product category` path → WooCommerce category tree (category_mode=path).
  *
+ * 0. Default (no option) is category_mode=path.
  * 1. category_mode=none: column reported in ignored_cols, product gets the default category only.
  * 2. category_mode=path: `Root &amp; Co > Mid > Leaf` creates Root/Mid/Leaf (entities decoded, nested),
  *    the product is filed under Leaf and the default category is dropped.
@@ -87,6 +88,14 @@ try {
     $check($default > 0, 'site has no default_product_cat');
     $csv = $writeCsv([$pathA, $pathB, '']);
 
+    // 0. Mapping is the default: no option (or anything but an explicit 'none') means 'path'.
+    $check(ShopifyBatchImporter::normalizeCategoryMode(null) === 'path' && ShopifyBatchImporter::normalizeCategoryMode('x') === 'path'
+        && ShopifyBatchImporter::normalizeCategoryMode('none') === 'none', 'default category mode must be path');
+    $init = $importer->initJob($csv, ['batch_size' => 25]);
+    $jobs[] = $init['job_id'];
+    $check($init['category_mode'] === 'path' && !in_array('Product category', $init['ignored_cols'], true), 'initJob without category_mode must map the column');
+    echo "  [OK] default category_mode is path (column mapped)\n";
+
     // 1. category_mode=none
     $init = $runJob($csv, 'none');
     $check(in_array('Product category', $init['ignored_cols'], true) && $init['category_mode'] === 'none', 'none: column must be reported');
@@ -118,6 +127,15 @@ try {
     ));
     $check($created === 3, "exactly 3 categories expected, got {$created}");
     echo "  [OK] category_mode=path: Root > Mid > Leaf tree, leaf assigned, default dropped, terms reused\n";
+
+    // Term counts are deferred during a batch and recounted once at its end (core + WooCommerce).
+    clean_term_cache([$leafId, (int)$rootTerm['term_id']], 'product_cat');
+    $check((int)get_term($leafId, 'product_cat')->count === 2, 'core count of the leaf must be 2, got ' . (int)get_term($leafId, 'product_cat')->count);
+    $wcLeaf = (int)get_term_meta($leafId, 'product_count_product_cat', true);
+    $wcRoot = (int)get_term_meta((int)$rootTerm['term_id'], 'product_count_product_cat', true);
+    $check($wcLeaf === 2 && $wcRoot === 2, "WooCommerce counts must include the batch: leaf {$wcLeaf}, root {$wcRoot}");
+    $check(!has_filter('woocommerce_product_recount_terms'), 'the recount filter must be removed after the batch');
+    echo "  [OK] category counts (core and WooCommerce) are correct after the batch\n";
 
     // 4. A hand-set category survives a path re-import.
     $handTerm = wp_insert_term($hand, 'product_cat');

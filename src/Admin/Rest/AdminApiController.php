@@ -402,8 +402,8 @@ class AdminApiController
         $options = [
             'update_mode'       => sanitize_text_field($params['update_mode'] ?? 'merge'),
             'image_mode'        => sanitize_text_field($params['image_mode'] ?? 'external'),
-            // Whitelisted: anything but 'path' keeps the column unmapped (docs/10 §7).
-            'category_mode'     => \WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter::normalizeCategoryMode($params['category_mode'] ?? 'none'),
+            // Whitelisted: mapped by default; only an explicit 'none' keeps the column unmapped (docs/10 §7).
+            'category_mode'     => \WPE\Compatibility\Csv\Shopify\ShopifyBatchImporter::normalizeCategoryMode($params['category_mode'] ?? 'path'),
             'batch_size'        => max(5, min(200, (int)($params['batch_size'] ?? 25))),
             'original_filename' => sanitize_text_field($params['original_filename'] ?? basename($filePath)),
         ];
