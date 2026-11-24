@@ -41,3 +41,4 @@
 - P039 — Complete product purge and bulk delete all products (done)
 - P040 — Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration (done)
 - P041 — P040.2 amendment: evict variation-family and meta runtime caches (done)
+- P042 — Ratify the 2026-11-24 import contract and docs changes (done)

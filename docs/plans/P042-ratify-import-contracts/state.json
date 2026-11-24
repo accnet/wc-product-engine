@@ -1,0 +1,157 @@
+{
+  "id": "P042",
+  "title": "Ratify the 2026-11-24 import contract and docs changes",
+  "status": "done",
+  "content_hash": "5d4e89c0ccd03a6be2a18f9ab0832058a01cafb44ab33d4dca4494b5d64e0572",
+  "tasks": [
+    {
+      "id": "P042.1",
+      "title": "Ratify idx_parent_kind and the path category default; sync schema-contract.json and add contract/code agreement checks",
+      "depends_on": [],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "docs/10-integrations.md",
+        "contracts/database/schema.sql",
+        "contracts/database/schema-contract.json",
+        "src/Infrastructure/Database/SchemaMigrator.php",
+        "src/Compatibility/Csv/Shopify/ShopifyBatchImporter.php"
+      ],
+      "files": [
+        "contracts/database/schema-contract.json",
+        "contracts/database/schema.sql",
+        "docs/03-database-schema.md",
+        "docs/10-integrations.md",
+        "tests/integration/ObjectStateIndexTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/ObjectStateIndexTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ObjectStateIndexTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyImportCategoryPathTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ShopifyImportTaxonomyTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/ObjectStateIndexTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "f261884ec375335373151aca15125e25b07d4d615893aa146f2c03796c7445e4",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541967759-e726bce8.log",
+          "time": "2026-11-24T17:39:27.760Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ObjectStateIndexTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "3549d98c3042cc425f5edd36ef66d5f93331f2d5511947d417d266bf0d267483",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541969151-24661706.log",
+          "time": "2026-11-24T17:39:29.151Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyImportCategoryPathTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "f2f4beef8502469cc80da2d0208c83184aaf39f656bebf69d6798086f7257651",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541970956-76eb6955.log",
+          "time": "2026-11-24T17:39:30.956Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ShopifyImportTaxonomyTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "8e403243e540988e88722e9cf5b8857fcdfc61f56972f638fd5c9f19b30c8fcd",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541972577-c5a73059.log",
+          "time": "2026-11-24T17:39:32.578Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "97b7e9b47f3bae4306a0852c4adfcc7d4b31a9b9e5e5bba2975fa603f8e48e7c",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541972690-4efbcda1.log",
+          "time": "2026-11-24T17:39:32.690Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "39617420bb467a15d506fef61eca5f477eb81984",
+          "content_digest": "fedc2d844600fdc06d97688ee9849c9058adef34ebae0d64c52d4d72b5fe948e",
+          "output_sha256": "87219e3299ba0960bb5b600b62a8995e7a9ec9e1b3ad1ee3dc21b3cd31ddfe67",
+          "output_path": "docs/plans/P042-ratify-import-contracts/command-1795541972801-267ee115.log",
+          "time": "2026-11-24T17:39:32.802Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:38:29.560Z"
+    }
+  ],
+  "approved_hash": "5d4e89c0ccd03a6be2a18f9ab0832058a01cafb44ab33d4dca4494b5d64e0572",
+  "report_hash": "75937b93b55c5b45748ba28d2c76c8284db11742e43117fc0aebd958ecdd019f"
+}

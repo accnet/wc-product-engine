@@ -96,7 +96,7 @@
     {
       "name": "object_state",
       "columns_contract": "`object_id ID`, `kind V16`, `parent_id ID?`, `authority V16`, `epoch VER`, `legacy_revision VER`, `native_revision VER`, `legacy_applied VER`, `native_applied VER`, `legacy_hash BINARY(32)?`, `native_hash BINARY(32)?`, `tombstone B`, `updated_at TS`",
-      "keys_contract": "PK object_id; `(authority,parent_id,object_id)`; revisions monotonic theo nguồn, không thay bằng updated_at"
+      "keys_contract": "PK object_id; `(authority,parent_id,object_id)`; `(parent_id,kind)` cho mirror đánh dấu variation theo product; revisions monotonic theo nguồn, không thay bằng updated_at"
     },
     {
       "name": "outbox",
