@@ -234,8 +234,9 @@
           "--all"
         ]
       ],
-      "status": "todo",
-      "runs": []
+      "status": "blocked",
+      "runs": [],
+      "started_at": "2026-11-24T20:36:49.666Z"
     }
   ],
   "approved_hash": "2a2538c2978147d846e800a5cdd85448ddcb4ff240c5cc463fdfbe13d35999b2"

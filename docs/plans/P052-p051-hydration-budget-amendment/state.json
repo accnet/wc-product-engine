@@ -1,0 +1,199 @@
+{
+  "id": "P052",
+  "title": "P051.2 amendment: schema version expectation and both data-store hydration budgets with selector price features off",
+  "status": "done",
+  "content_hash": "034e21b0f2f1b6251c9627f713a9e51ed54d129a96de800fc2f0b20f98752fd4",
+  "tasks": [
+    {
+      "id": "P052.1",
+      "title": "CatalogIndexOptimizationTest expects the current schema version; QueryHydrationPerformanceTest measures both data-store budgets with selector price features off",
+      "depends_on": [],
+      "read_first": [
+        "docs/plans/P051-bench-db-and-stale-test-fixes/plan.md",
+        "docs/plans/P028-query-hydration-performance/plan.md",
+        "src/Infrastructure/Database/SchemaMigrator.php"
+      ],
+      "files": [
+        "tests/integration/CatalogIndexOptimizationTest.php",
+        "tests/integration/QueryHydrationPerformanceTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/CatalogIndexOptimizationTest.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CatalogIndexOptimizationTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ArchiveCardBatchTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/CatalogIndexOptimizationTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "8232ec2f2310d7e5a37bf7f8db004ff74cb35dceec62da5cad5e3b1c0fbcbd17",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552696658-34972820.log",
+          "time": "2026-11-24T20:38:16.659Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "50cb99de0b84df53dc2b845e5a8cd9eb61b40cece2d029643d7668a909d0422f",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552696750-5e1b5d97.log",
+          "time": "2026-11-24T20:38:16.750Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CatalogIndexOptimizationTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "eb0baad6abab43eb30d4913b891eb7fbd1b02d7e8bcd5992cd2be31f460c223d",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552698451-6f05c8f0.log",
+          "time": "2026-11-24T20:38:18.451Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "edc9c84c5093e3a69a7f5a58b950727dac71b3cd964e9e3c99e303524339e52f",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552700762-a209b93a.log",
+          "time": "2026-11-24T20:38:20.763Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ArchiveCardBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "a7cb197074d6daff484385f7feff0c70340396af5a930a9426d0236c8a60176d",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552702408-2e7f7cd3.log",
+          "time": "2026-11-24T20:38:22.409Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "fc45268f97afc49093122c9651a86ac7b5331b7a4b4207b7a25aafef010db211",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552702523-0a8a1fe0.log",
+          "time": "2026-11-24T20:38:22.523Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "303184c077a8d3f3da297a5a19a3082904ea26ae",
+          "content_digest": "0b0c0a00a503c3024eb3e3b933a4010e5915e5b38cdeadb23239466d2bfcb699",
+          "output_sha256": "4e99c8057f1b885924ab2fa50ef89355821d898fc8061cf08f64045c6b437383",
+          "output_path": "docs/plans/P052-p051-hydration-budget-amendment/command-1795552702639-b509b7bf.log",
+          "time": "2026-11-24T20:38:22.639Z"
+        }
+      ],
+      "started_at": "2026-11-24T20:38:16.551Z"
+    }
+  ],
+  "approved_hash": "034e21b0f2f1b6251c9627f713a9e51ed54d129a96de800fc2f0b20f98752fd4",
+  "report_hash": "34bfeedb0c9bbed4d8c07329ef1ee6719a5528130a0404c2d97d8935734acaed"
+}

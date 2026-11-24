@@ -66,3 +66,7 @@
 {"action":"state","state_hash":"95770059c8303b947af3473f53c085b3f0dee6d7a2b86535b5923c8f0af2178c","time":"2026-11-24T20:35:55.888Z","actor":"accnet","commit":"21eab4cd82382312aafa7e1fcf95ecd4ed2869c8"}
 {"action":"done","task_id":"P051.1","time":"2026-11-24T20:35:55.969Z","actor":"accnet","commit":"21eab4cd82382312aafa7e1fcf95ecd4ed2869c8"}
 {"action":"state","state_hash":"dd6afeed990c09c8429ff554b4b5ab5e1d27ece761eb76efece6a25b73d6a904","time":"2026-11-24T20:35:55.973Z","actor":"accnet","commit":"21eab4cd82382312aafa7e1fcf95ecd4ed2869c8"}
+{"action":"start","task_id":"P051.2","time":"2026-11-24T20:36:49.666Z","actor":"accnet","commit":"303184c077a8d3f3da297a5a19a3082904ea26ae"}
+{"action":"state","state_hash":"7036856a6878d97fb234af956f6885d52e9534b08cc1d4e1aeb60ff7d3e9cf90","time":"2026-11-24T20:36:49.671Z","actor":"accnet","commit":"303184c077a8d3f3da297a5a19a3082904ea26ae"}
+{"action":"block","task_id":"P051.2","reason":"The cold archive step (P028.3 budget 32) also includes the selector price path (42 queries with defaults); the feature toggle must cover both data-store budget steps. Reword and resync.","time":"2026-11-24T20:37:13.115Z","actor":"accnet","commit":"303184c077a8d3f3da297a5a19a3082904ea26ae"}
+{"action":"state","state_hash":"38618b733d7032f1cd35185d66ed1291bdf637a26e6c2566925857cb1ac26c00","time":"2026-11-24T20:37:13.122Z","actor":"accnet","commit":"303184c077a8d3f3da297a5a19a3082904ea26ae"}

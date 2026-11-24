@@ -31,7 +31,8 @@ try {
     $migrator = new SchemaMigrator($wpdb);
     $migRes = $migrator->migrate();
     assert($migRes['success'] === true, 'SchemaMigrator::migrate() must succeed');
-    assert((int)$migRes['schema_version'] === 3, 'Expected schema version 3');
+    // P051: later migrations raised the version (P039 v4, import v5); the v3 indexes must still be there.
+    assert((int)$migRes['schema_version'] === SchemaMigrator::SCHEMA_VERSION && SchemaMigrator::SCHEMA_VERSION >= 3, 'Expected the current schema version (at least 3), got ' . $migRes['schema_version']);
 
     CatalogQuery::resetIndexCache();
     $idxRows = $wpdb->get_results("SHOW INDEX FROM `{$prefix}wpe_catalog`", ARRAY_A) ?: [];

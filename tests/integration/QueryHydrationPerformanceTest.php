@@ -107,6 +107,13 @@ try {
     echo "  [OK] Un-primed variable product (15 variants) hydrated + priced in {$unprimedQueries} queries (schedule-aware)\n";
 
     // 2. Bulk-primed archive loop across all 3 variable products (45 variations)
+    // P051/P052: the budgets below measure the data stores (P028). The variant selector / Single Price Display
+    // filters add their own card reads to get_price_html(); their batched budget is ArchiveCardBatchTest (P047).
+    // They stay off to the end (finally restores the flags): a mid-test flags update invalidates the ContextCache
+    // the last step expects to hit.
+    $flagsForLoop = get_option(PluginBootstrap::OPTION_FLAGS);
+    update_option(PluginBootstrap::OPTION_FLAGS, array_merge($flagsForLoop, ['variant_selector_ui' => false, 'single_price_display' => false]));
+    PluginBootstrap::instance()->loadFlags();
     AuthorityResolver::flushAll();
     wp_cache_flush();
     wp_load_alloptions();
