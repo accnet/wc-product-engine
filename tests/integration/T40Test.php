@@ -6,6 +6,10 @@ use WPE\Application\Migration\RollbackRunner;
 use WPE\Application\Migration\LegacyMirror;
 use WPE\Application\Migration\LegacyCapture;
 
+// P048: rollback steps change cohort_mode; restore the flags when the test ends.
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::preserve();
+
 /**
  * Integration Tests for T40: Rollback orchestration and deactivation safety.
  *

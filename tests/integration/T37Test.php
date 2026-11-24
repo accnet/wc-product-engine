@@ -28,6 +28,10 @@ use WPE\Infrastructure\Database\ProductRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Compatibility\Gallery\AssetService;
 
+// P048: pin the cohort mode instead of inheriting the shared test DB's (exercises legacy-authority objects, written for cohort_canary).
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::pin('cohort_canary');
+
 class T37Test
 {
     private \wpdb $wpdb;

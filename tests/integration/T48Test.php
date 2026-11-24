@@ -37,6 +37,10 @@ use WPE\Compatibility\WooDataStore\ProductDataStore;
 use WPE\Compatibility\WordPress\PostIdAllocator;
 use WPE\Infrastructure\Database\OutboxWorker;
 
+// P048: pin the cohort mode instead of inheriting the shared test DB's (exercises legacy-authority objects, written for cohort_canary).
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::pin('cohort_canary');
+
 class T48Test
 {
     private \wpdb $wpdb;

@@ -23,6 +23,10 @@ use WPE\Infrastructure\Database\MediaRepository;
 use WPE\Infrastructure\Database\OptionsRepository;
 use WPE\Infrastructure\Database\ProductRepository;
 
+// P048: pin the cohort mode instead of inheriting the shared test DB's (written for the default native_bridge mode).
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::pin('native_bridge');
+
 global $wpdb;
 $prefix = $wpdb->prefix;
 $checks = 0;

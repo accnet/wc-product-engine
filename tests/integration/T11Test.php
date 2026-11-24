@@ -26,6 +26,10 @@ require_once dirname(__DIR__, 2) . '/wc-product-engine.php';
 use WPE\Compatibility\WooDataStore\ProductDataStore;
 use WPE\Compatibility\WooDataStore\MetaBridge;
 
+// P048: pin the cohort mode instead of inheriting the shared test DB's (written for the default native_bridge mode).
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::pin('native_bridge');
+
 class T11Test
 {
     private \wpdb $wpdb;

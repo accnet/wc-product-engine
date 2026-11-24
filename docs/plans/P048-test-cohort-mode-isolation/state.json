@@ -1,0 +1,1030 @@
+{
+  "id": "P048",
+  "title": "Integration tests pin the cohort mode they need and restore it",
+  "status": "done",
+  "content_hash": "8fb630e8da1dd341f3c88969711e73b1b8cd6ca6c2e1dd3c41a94c10cf12d43d",
+  "tasks": [
+    {
+      "id": "P048.1",
+      "title": "CohortModeFixture pins and restores cohort_mode; the 12 mode-dependent tests pin their mode and T40Test restores it",
+      "depends_on": [],
+      "read_first": [
+        "docs/07-testing.md",
+        "src/Bootstrap/PluginBootstrap.php",
+        "src/Application/Migration/RollbackRunner.php",
+        "tests/performance/use-test-db.php"
+      ],
+      "files": [
+        "tests/integration/support/CohortModeFixture.php",
+        "tests/integration/support/cohort-mode.php",
+        "tests/integration/FeedAutoRunTest.php",
+        "tests/integration/FeedBuildPublishTest.php",
+        "tests/integration/FeedEndpointTest.php",
+        "tests/integration/FeedIncrementalTest.php",
+        "tests/integration/FeedItemSourceTest.php",
+        "tests/integration/FeedReconcileTest.php",
+        "tests/integration/LifecycleHookRegistrationTest.php",
+        "tests/integration/T11Test.php",
+        "tests/integration/VariationShellProjectionTest.php",
+        "tests/integration/T26Test.php",
+        "tests/integration/T37Test.php",
+        "tests/integration/T48Test.php",
+        "tests/integration/T40Test.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/support/CohortModeFixture.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/support/cohort-mode.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/cohort-mode.php",
+          "set",
+          "cohort_canary"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T11Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedAutoRunTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedBuildPublishTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedEndpointTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedIncrementalTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedItemSourceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/FeedReconcileTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/LifecycleHookRegistrationTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/VariationShellProjectionTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/cohort-mode.php",
+          "expect",
+          "cohort_canary"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/cohort-mode.php",
+          "set",
+          "native_bridge"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T26Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T37Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T48Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T40Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/cohort-mode.php",
+          "expect",
+          "native_bridge"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/support/CohortModeFixture.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "bb411d2f022bc6a64f60399e425284f5220103fd49e3294525da049e43d98a84",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547846551-cede5e34.log",
+          "time": "2026-11-24T19:17:26.551Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/support/cohort-mode.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "08e31f77cd1e533cf330436082c0339b2fb728723f545cb643c9abc76b9c4491",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547846643-ee407b20.log",
+          "time": "2026-11-24T19:17:26.643Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "set",
+            "cohort_canary"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "510ca53744999a483ec789069e6b46d2e23e0adc7db76ce5876206d6d0602d12",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547847928-f6d7642f.log",
+          "time": "2026-11-24T19:17:27.928Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T11Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "d613b8e851d43a533e571873785024e73f8ba5eca58745710a105f32313c9466",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547849546-3445a9aa.log",
+          "time": "2026-11-24T19:17:29.547Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedAutoRunTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "29cb709d64f9596fd79c5f1a3c2797b69e5d9e1ee3383bc782e5e68f1e51b2de",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547852613-70820e5c.log",
+          "time": "2026-11-24T19:17:32.613Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedBuildPublishTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "f8d1a6eb144fb1ae372d4c9cca1aacf1a57226d919f69fa29dfb3ef2955daec3",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547891088-4d5775dd.log",
+          "time": "2026-11-24T19:18:11.089Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedEndpointTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "d9ac3113d2c5d7b154ff1006ba6647c6cc095084dd9f373d0b83cca49b94dff8",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547894007-0201ed8b.log",
+          "time": "2026-11-24T19:18:14.008Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedIncrementalTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "8d1f7fea005e25b069dab9ef7257c6c8d7f4dc8954f3e92dc61f5b8a1191fe51",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547905200-31d25b2b.log",
+          "time": "2026-11-24T19:18:25.200Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedItemSourceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "b002b790e4e127ffb5481c55dc5d9bf91908d023ae0f0116d5e73519eeb7ec1b",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547907399-6200c3a9.log",
+          "time": "2026-11-24T19:18:27.399Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedReconcileTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "f8a18d8bf62d996e9409b428a6415ae7a99ec106408373b6f20c3a661c722aa6",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547914978-d987d185.log",
+          "time": "2026-11-24T19:18:34.979Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LifecycleHookRegistrationTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "6cce9aed549aeda61ef84c12963bcc934c4569450e5b40fec29607de484edc1f",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547917467-b7ad319f.log",
+          "time": "2026-11-24T19:18:37.467Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/VariationShellProjectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "aefc2255246e3cb4ce4a1648a3045591739995c32c5c5eeef328aec973f15873",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547919902-0c45baef.log",
+          "time": "2026-11-24T19:18:39.902Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "expect",
+            "cohort_canary"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "42309e34078e18c38124770be9ac7f811a39fbd284e2858973e9c2e2a06855c3",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547921176-c67ba805.log",
+          "time": "2026-11-24T19:18:41.176Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "set",
+            "native_bridge"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "c652f5817a4f638bc66a7d33e119b33434f5e6941d5666213fedad5c1598ddab",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547922468-6b43667b.log",
+          "time": "2026-11-24T19:18:42.469Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T26Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "b7d634697326d895b4ee676b3b47ad0deb277861ac3abb0f24efacb225917aee",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547923942-bb549ff4.log",
+          "time": "2026-11-24T19:18:43.943Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T37Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "8ecf23e213397ddd8a22b6cb9bf2f44bc83fdc6369b98745ec4d652f81f7ca3c",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547954184-ce06418c.log",
+          "time": "2026-11-24T19:19:14.184Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T48Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "45526cb4148c14dfc71583428a3a5a303376d5a7e7e521e52e25ffbc63c4d373",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547958170-b0766933.log",
+          "time": "2026-11-24T19:19:18.171Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "00d0121d94488719ba237be024644d33fe09b809f2de389d855126409d5788c1",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547959830-a95a324d.log",
+          "time": "2026-11-24T19:19:19.831Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "expect",
+            "native_bridge"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "d63a4654d0d9be2c73a2d0c0dd59f7ad5248f55980a4543dcd4886f7e12acc1c",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547961111-335c6fee.log",
+          "time": "2026-11-24T19:19:21.111Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "44c0fde8998b1f5d024b5f0c724b56039b9f9331ed0e2c35edf2ac884cdb9c85",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547961228-fa0ae574.log",
+          "time": "2026-11-24T19:19:21.229Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "f1cdc14a8f781fd421b5764d5271ecbf38548d15ec38258e8429fca711455b5a",
+          "output_sha256": "eed7d4e6bed43a2635f123711a5b9f79249e97d6d54725646b450460351e0646",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547961346-e03d7c4e.log",
+          "time": "2026-11-24T19:19:21.347Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "44c0fde8998b1f5d024b5f0c724b56039b9f9331ed0e2c35edf2ac884cdb9c85",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795547995518-babfbf8a.log",
+          "time": "2026-11-24T19:19:55.519Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/support/CohortModeFixture.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "bb411d2f022bc6a64f60399e425284f5220103fd49e3294525da049e43d98a84",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548003380-5f9863cd.log",
+          "time": "2026-11-24T19:20:03.381Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/support/cohort-mode.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "08e31f77cd1e533cf330436082c0339b2fb728723f545cb643c9abc76b9c4491",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548003472-29e335d3.log",
+          "time": "2026-11-24T19:20:03.473Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "set",
+            "cohort_canary"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "510ca53744999a483ec789069e6b46d2e23e0adc7db76ce5876206d6d0602d12",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548004744-91a27fca.log",
+          "time": "2026-11-24T19:20:04.745Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T11Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "d613b8e851d43a533e571873785024e73f8ba5eca58745710a105f32313c9466",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548006322-de085454.log",
+          "time": "2026-11-24T19:20:06.322Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedAutoRunTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "29cb709d64f9596fd79c5f1a3c2797b69e5d9e1ee3383bc782e5e68f1e51b2de",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548009390-35f88836.log",
+          "time": "2026-11-24T19:20:09.391Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedBuildPublishTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "bee1f092da9c59ac3bb65979bab5676abd5011f0a544c28f5a05ee536519d5af",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548047445-d203faf0.log",
+          "time": "2026-11-24T19:20:47.445Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedEndpointTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "d9ac3113d2c5d7b154ff1006ba6647c6cc095084dd9f373d0b83cca49b94dff8",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548050353-ba2dffa5.log",
+          "time": "2026-11-24T19:20:50.353Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedIncrementalTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "8d1f7fea005e25b069dab9ef7257c6c8d7f4dc8954f3e92dc61f5b8a1191fe51",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548061309-911c00e2.log",
+          "time": "2026-11-24T19:21:01.310Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedItemSourceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "5512a049a3e1f2fc6760191a4364b78f1400a5a5c9c240b4fea5811a0d29a2eb",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548063475-46ac733c.log",
+          "time": "2026-11-24T19:21:03.475Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/FeedReconcileTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "f8a18d8bf62d996e9409b428a6415ae7a99ec106408373b6f20c3a661c722aa6",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548071135-d4db2bad.log",
+          "time": "2026-11-24T19:21:11.136Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LifecycleHookRegistrationTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "6cce9aed549aeda61ef84c12963bcc934c4569450e5b40fec29607de484edc1f",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548073602-8d96fcb0.log",
+          "time": "2026-11-24T19:21:13.602Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/VariationShellProjectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "aefc2255246e3cb4ce4a1648a3045591739995c32c5c5eeef328aec973f15873",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548075984-72d332c5.log",
+          "time": "2026-11-24T19:21:15.984Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "expect",
+            "cohort_canary"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "42309e34078e18c38124770be9ac7f811a39fbd284e2858973e9c2e2a06855c3",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548077243-60c623da.log",
+          "time": "2026-11-24T19:21:17.243Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "set",
+            "native_bridge"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "c652f5817a4f638bc66a7d33e119b33434f5e6941d5666213fedad5c1598ddab",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548078529-f1a423ef.log",
+          "time": "2026-11-24T19:21:18.530Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T26Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "b7d634697326d895b4ee676b3b47ad0deb277861ac3abb0f24efacb225917aee",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548079997-d82b1d41.log",
+          "time": "2026-11-24T19:21:19.998Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T37Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "8ecf23e213397ddd8a22b6cb9bf2f44bc83fdc6369b98745ec4d652f81f7ca3c",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548109852-c0b15bf0.log",
+          "time": "2026-11-24T19:21:49.852Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T48Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "45526cb4148c14dfc71583428a3a5a303376d5a7e7e521e52e25ffbc63c4d373",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548113206-aba1b677.log",
+          "time": "2026-11-24T19:21:53.207Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "00d0121d94488719ba237be024644d33fe09b809f2de389d855126409d5788c1",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548114873-9df6f91d.log",
+          "time": "2026-11-24T19:21:54.873Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/cohort-mode.php",
+            "expect",
+            "native_bridge"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "d63a4654d0d9be2c73a2d0c0dd59f7ad5248f55980a4543dcd4886f7e12acc1c",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548116162-4b297ab4.log",
+          "time": "2026-11-24T19:21:56.162Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "44c0fde8998b1f5d024b5f0c724b56039b9f9331ed0e2c35edf2ac884cdb9c85",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548116276-d0979600.log",
+          "time": "2026-11-24T19:21:56.276Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "d023197b7cc6e24e720ae345b9a4df743ed8c754",
+          "content_digest": "5706f8b30ce4d52907412aa9fb40e819dd58a5fb44bfaec67b6bd3a45a8de4b0",
+          "output_sha256": "35c67a8c31f84b513b454a697319f57ed9798c4305102210d51f965b6975fe11",
+          "output_path": "docs/plans/P048-test-cohort-mode-isolation/command-1795548116390-2678279a.log",
+          "time": "2026-11-24T19:21:56.391Z"
+        }
+      ],
+      "started_at": "2026-11-24T19:17:26.429Z"
+    }
+  ],
+  "approved_hash": "8fb630e8da1dd341f3c88969711e73b1b8cd6ca6c2e1dd3c41a94c10cf12d43d",
+  "report_hash": "6ad480be67833322064149222e95b517b8a49589db39e604a273168a5597a6c6"
+}

@@ -47,3 +47,4 @@
 - P045 — Legacy hash reads variation meta in one query (done)
 - P046 — Legacy capture syncs variations with batched reads and writes (done)
 - P047 — Archive product cards: batched price fingerprints, lowest-price inputs, gallery and owned meta (done)
+- P048 — Integration tests pin the cohort mode they need and restore it (done)

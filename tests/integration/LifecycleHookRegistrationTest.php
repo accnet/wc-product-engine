@@ -14,6 +14,10 @@
 use WPE\Application\Catalog\CatalogProjector;
 use WPE\Infrastructure\Database\ProductRepository;
 
+// P048: pin the cohort mode instead of inheriting the shared test DB's (written for the default native_bridge mode).
+require_once __DIR__ . '/support/CohortModeFixture.php';
+WpeCohortModeFixture::pin('native_bridge');
+
 if (!defined('ABSPATH')) {
     $wp_load = '/var/www/site1.localhost/wp-load.php';
     if (file_exists($wp_load)) {
