@@ -981,6 +981,64 @@ class VariantResolver
     /**
      * Fetch parent inventory row once per resolve call.
      */
+    /**
+     * Candidate variants of several products, each exactly as getCandidateVariants($id, false)
+     * returns them ('variants' keyed by variant ID in position, ID order), in one query (P047).
+     *
+     * @param int[] $productIds
+     * @return array<int, array<int, array>> product ID => variants (products without any map to [])
+     */
+    public function getCandidateVariantsFor(array $productIds): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $productIds), static fn(int $id): bool => $id > 0)));
+        $out = array_fill_keys($ids, []);
+        if ($ids === []) {
+            return $out;
+        }
+        $rows = $this->wpdb->get_results(
+            "SELECT v.product_id AS wpe_product_id, v.id, v.sku, v.regular_price, v.sale_price, v.sale_from, v.sale_to,
+                    v.stock_owner_id, v.position, v.status,
+                    i.manage_stock, i.quantity AS stock_qty, i.stock_status, i.backorders
+             FROM {$this->tableVariants} v
+             LEFT JOIN {$this->tableInventory} i ON i.owner_id = COALESCE(v.stock_owner_id, v.id)
+             WHERE v.product_id IN (" . \WPE\Support\Sql::intList($ids) . ") AND v.status = 'publish' AND v.deleted_at IS NULL
+             ORDER BY v.product_id ASC, v.position ASC, v.id ASC",
+            ARRAY_A
+        ) ?: [];
+        foreach ($rows as $row) {
+            $pid = (int)$row['wpe_product_id'];
+            unset($row['wpe_product_id']);
+            $out[$pid][(int)$row['id']] = $row;
+        }
+        return $out;
+    }
+
+    /**
+     * Parent inventory rows of several products, each as getParentInventory() returns it, in one
+     * query (P047). Products without a row are absent.
+     *
+     * @param int[] $productIds
+     * @return array<int, array>
+     */
+    public function getParentInventoriesFor(array $productIds): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $productIds), static fn(int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+        $out = [];
+        foreach ($this->wpdb->get_results(
+            "SELECT owner_id, manage_stock, quantity, stock_status, backorders FROM {$this->tableInventory}
+             WHERE owner_id IN (" . \WPE\Support\Sql::intList($ids) . ")",
+            ARRAY_A
+        ) ?: [] as $row) {
+            $pid = (int)$row['owner_id'];
+            unset($row['owner_id']);
+            $out[$pid] = $row;
+        }
+        return $out;
+    }
+
     private function getParentInventory(int $productId): ?array
     {
         $sqlParentInv = "SELECT manage_stock, quantity, stock_status, backorders FROM {$this->tableInventory} WHERE owner_id = %d LIMIT 1";

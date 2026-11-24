@@ -245,6 +245,15 @@ class ProductDataStore extends WC_Data_Store_WP implements WC_Object_Data_Store_
 
     protected function getPrimedBundle(int $productId): ?array
     {
+        return self::primedBundle($productId);
+    }
+
+    /**
+     * The archive bundle primeProducts() stored for a product this request, or null (read-only).
+     * Bundles exist for product IDs only, never for variations.
+     */
+    public static function primedBundle(int $productId): ?array
+    {
         if ($productId <= 0 || !function_exists('wp_cache_get')) {
             return null;
         }

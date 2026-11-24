@@ -1,0 +1,536 @@
+{
+  "id": "P047",
+  "title": "Archive product cards: batched price fingerprints, lowest-price inputs, gallery and owned meta",
+  "status": "done",
+  "content_hash": "fd39f226c58c146de2f81e376582ac1ed036dd55865efaaca574ad9dcb2d59cf",
+  "tasks": [
+    {
+      "id": "P047.1",
+      "title": "Batch archive card price fingerprints and lowest-price inputs; serve card gallery and owned meta from the primed bundle",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Application/Variant/VariantResolver.php",
+        "src/Compatibility/Gallery/GalleryAdapter.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php"
+      ],
+      "files": [
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Application/Variant/VariantResolver.php",
+        "src/Compatibility/Gallery/GalleryAdapter.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "tests/integration/ArchiveCardBatchTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/StoreApi/SelectorAdapter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Application/Variant/VariantResolver.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/Gallery/GalleryAdapter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/MetaBridge.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/ProductDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/ArchiveCardBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ArchiveCardBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/StorefrontQueryBudgetTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T23Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T24Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T25Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T26Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T27Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T11Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/PdpUrlSelectionTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/EffectivePriceResolverTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544710813-9b07eba6.log",
+          "time": "2026-11-24T18:25:10.814Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Variant/VariantResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "afaa1c9dffb0a3f04289803d3b0ccc98a0c9de930255a8aa44d5ff2c52383e18",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544710915-214caa5c.log",
+          "time": "2026-11-24T18:25:10.915Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/Gallery/GalleryAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "ff19c6dccdaad0d67775c572bc3348fb4441c696940f3453c076f63568cb74f2",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544711018-ac3245cf.log",
+          "time": "2026-11-24T18:25:11.018Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/MetaBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "ed63fd00d25ac4bf24f979d7602a6606319137f099e0de025696cf4a330768fb",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544711123-c24f0fbe.log",
+          "time": "2026-11-24T18:25:11.124Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/ProductDataStore.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "a02ab5da7ea42c5b8994c8e6a0a879ec652dd08a7e8ecf8f877b895786e7ec6a",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544711232-6e4854d8.log",
+          "time": "2026-11-24T18:25:11.232Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/ArchiveCardBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "8571f7101aca13814a7cc63b1f8313f4cd388ce51ffb743b24d3896de37b7ccb",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544711337-5d480787.log",
+          "time": "2026-11-24T18:25:11.337Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ArchiveCardBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "fd650fe0612d0b89e10b1f066ceb3958f1d027a860b921d26c14c911f20ccfa2",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544714553-38ede544.log",
+          "time": "2026-11-24T18:25:14.554Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/StorefrontQueryBudgetTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "77c214fea3d9d74d78fadba64e50f1d91ca3596d1ea5b4ab8eb95ae7610ea42c",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544716416-dc80614d.log",
+          "time": "2026-11-24T18:25:16.416Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "05c7d9415c8710fade29ec4df117922eba8531cbfeccd1875768c8d7f96eda05",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544718978-a8f751c1.log",
+          "time": "2026-11-24T18:25:18.979Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T23Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "d2a1e8c9f8fc0e39509dd7e27f7cd31483d385eb5a437aaa00e544e774d19803",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544724983-b5107cd0.log",
+          "time": "2026-11-24T18:25:24.984Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T24Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "19d3b8ce5e2a8f565a4a05bb1bc4c1a28f7789af811526950b56e4a8bda5f421",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544726760-19d8d36d.log",
+          "time": "2026-11-24T18:25:26.760Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T25Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "3e9782ac4a2748dd4862bc2003517384f273c41aefc5a2f9fe012e8e3d06f4c5",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544728582-59275227.log",
+          "time": "2026-11-24T18:25:28.583Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T27Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "25c79a29efde6f18a5c27c99ff07ebd5242f210338b3720ce2a0e31205591128",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544737619-12b803b2.log",
+          "time": "2026-11-24T18:25:37.620Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T11Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "d613b8e851d43a533e571873785024e73f8ba5eca58745710a105f32313c9466",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544739489-f8a2d654.log",
+          "time": "2026-11-24T18:25:39.489Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "a4cc9f83a824b8470872026ed0ed6bc6d2c808b789854eb78853d1fe9e89f946",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544742877-41f79cbf.log",
+          "time": "2026-11-24T18:25:42.878Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PdpUrlSelectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "a06701b9d3ed3dc22971c6a8831e35a89a462ff98f12a73feec8cf7d6451db80",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544744828-5e09826c.log",
+          "time": "2026-11-24T18:25:44.829Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/EffectivePriceResolverTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "ec796c2ea56639d0a7b49b22bee1474f67f382607a82e2ae7ba442b9d1a79d7b",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544746676-c11b4c26.log",
+          "time": "2026-11-24T18:25:46.677Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T26Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "b7d634697326d895b4ee676b3b47ad0deb277861ac3abb0f24efacb225917aee",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544749734-6b11035a.log",
+          "time": "2026-11-24T18:25:49.734Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "ac7f757fdc4cea4ff85593a5d58dd5fbe868d30bbf27ff6926f5311ea0f16889",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544751312-7f9b054c.log",
+          "time": "2026-11-24T18:25:51.312Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "868b1228eb7314d05a684a1b9eb50fba861c2d90",
+          "content_digest": "3815733938f9c6892f9c90b236be7638a72084600eece26e8c4e792082d88811",
+          "output_sha256": "e9a6ad2a2576e96b837b2ec80599f9df4ce57c70d737a0024690673a520d0d47",
+          "output_path": "docs/plans/P047-archive-card-batch/command-1795544751439-8ee0fbf6.log",
+          "time": "2026-11-24T18:25:51.439Z"
+        }
+      ],
+      "started_at": "2026-11-24T18:24:55.645Z"
+    }
+  ],
+  "approved_hash": "fd39f226c58c146de2f81e376582ac1ed036dd55865efaaca574ad9dcb2d59cf",
+  "report_hash": "04aeb05df3ec590e7e24479f38973b86c9da8952023528a9458e2168cd3fdbd7"
+}

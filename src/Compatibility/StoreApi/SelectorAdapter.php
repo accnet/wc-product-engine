@@ -71,6 +71,15 @@ class SelectorAdapter
     /** @var array<int, string> Selector config cache key per product for this request (P040.1). */
     private array $productKeyMemo = [];
 
+    /** Whether the main query's lowest-price keys were computed in bulk this request (P047). */
+    private bool $lowestKeysPrimed = false;
+
+    /** Whether the main query's lowest-price inputs were loaded in bulk this request (P047). */
+    private bool $lowestInputsPrimed = false;
+
+    /** @var array<int, array{variants: array, parent_inv: array}> Preloaded resolver inputs (P047). */
+    private array $lowestInputs = [];
+
     /** @var array<string, array> Render configs with the request's deep-link selection applied (P035.2). */
     private array $renderConfigCache = [];
 
@@ -160,12 +169,15 @@ class SelectorAdapter
             $this->mainQueryPrimed = false;
             $this->lowestKeyMemo = [];
             $this->productKeyMemo = [];
+            $this->lowestKeysPrimed = false;
+            $this->lowestInputsPrimed = false;
+            $this->lowestInputs = [];
             $ver = (int)get_option('wpe_selector_cache_ver', 1);
             update_option('wpe_selector_cache_ver', $ver + 1, false);
             return;
         }
 
-        unset($this->lastProductRow[$productId], $this->managedTypes[$productId], $this->lowestKeyMemo[$productId], $this->productKeyMemo[$productId]);
+        unset($this->lastProductRow[$productId], $this->managedTypes[$productId], $this->lowestKeyMemo[$productId], $this->productKeyMemo[$productId], $this->lowestInputs[$productId]);
         foreach (array_keys($this->configCache) as $k) {
             if (str_starts_with($k, $productId . ':')) {
                 unset($this->configCache[$k]);
@@ -235,18 +247,30 @@ class SelectorAdapter
             $ids = [$productId];
             if (!$this->mainQueryPrimed) {
                 $this->mainQueryPrimed = true;
-                global $wp_query;
-                if ($wp_query instanceof \WP_Query && is_array($wp_query->posts)) {
-                    foreach ($wp_query->posts as $post) {
-                        if ($post instanceof \WP_Post && $post->post_type === 'product') {
-                            $ids[] = (int)$post->ID;
-                        }
-                    }
-                }
+                $ids = array_merge($ids, $this->mainQueryProductIds());
             }
             $this->primeManagedProducts($ids);
         }
         return $this->managedTypes[$productId] ?? '';
+    }
+
+    /**
+     * Product IDs of the main query (archive pages), in query order.
+     *
+     * @return int[]
+     */
+    private function mainQueryProductIds(): array
+    {
+        global $wp_query;
+        $ids = [];
+        if ($wp_query instanceof \WP_Query && is_array($wp_query->posts)) {
+            foreach ($wp_query->posts as $post) {
+                if ($post instanceof \WP_Post && $post->post_type === 'product') {
+                    $ids[] = (int)$post->ID;
+                }
+            }
+        }
+        return $ids;
     }
 
     /**
@@ -526,7 +550,10 @@ class SelectorAdapter
             return $cached;
         }
 
-        $lowest = $this->resolver->resolveLowestPurchasableVariation($productId);
+        $inputs = $this->lowestPriceInputs($productId);
+        $lowest = $inputs !== null
+            ? $this->resolver->resolveLowestPurchasableVariation($productId, $inputs['variants'], $inputs['parent_inv'])
+            : $this->resolver->resolveLowestPurchasableVariation($productId);
         $html = $lowest ? (string)$lowest['price_html'] : '';
 
         $this->lowestPriceCache[$cacheKey] = $html;
@@ -1895,14 +1922,142 @@ class SelectorAdapter
         if (isset($this->lowestKeyMemo[$productId])) {
             return $this->lowestKeyMemo[$productId];
         }
+        // First lookup of the request: compute every main-query card's key at once (P047).
+        if (!$this->lowestKeysPrimed) {
+            $this->lowestKeysPrimed = true;
+            $ids = $this->mainQueryProductIds();
+            if (in_array($productId, $ids, true) && count($ids) > 1) {
+                $this->primeLowestPriceCacheKeys($ids);
+                if (isset($this->lowestKeyMemo[$productId])) {
+                    return $this->lowestKeyMemo[$productId];
+                }
+            }
+        }
         return $this->lowestKeyMemo[$productId] = $this->computeLowestPriceCacheKey($productId);
+    }
+
+    /**
+     * Lowest-price cache keys of several products in two queries, byte-identical to
+     * computeLowestPriceCacheKey() (P047 D01): product version/updated_at and the variant signature
+     * per product, and the inventory signature assembled from MySQL-formatted row pieces.
+     *
+     * @param int[] $productIds
+     */
+    private function primeLowestPriceCacheKeys(array $productIds): void
+    {
+        $ids = [];
+        foreach ($productIds as $id) {
+            $id = (int)$id;
+            if ($id > 0 && !isset($this->lowestKeyMemo[$id])) {
+                $ids[$id] = $id;
+            }
+        }
+        if ($ids === []) {
+            return;
+        }
+
+        foreach (array_chunk(array_values($ids), 200) as $chunk) {
+            $targets = implode(' UNION ALL ', array_map(static fn(int $id): string => "SELECT {$id} AS target_id", $chunk));
+            $inList = \WPE\Support\Sql::intList($chunk);
+
+            $rows = $this->wpdb->get_results(
+                "SELECT t.target_id,
+                    p.version,
+                    p.updated_at,
+                    (SELECT CONCAT_WS(':', COUNT(*), COALESCE(MAX(v.version), 0), COALESCE(SUM(COALESCE(v.regular_price, 0) + COALESCE(v.sale_price, 0)), 0), COALESCE(GROUP_CONCAT(CONCAT_WS(':', v.id, COALESCE(v.regular_price, 'null'), COALESCE(v.sale_price, 'null'), COALESCE(v.sale_from, ''), COALESCE(v.sale_to, '')) ORDER BY v.id SEPARATOR '|'), ''))
+                     FROM {$this->tableVariants} v
+                     WHERE v.product_id = t.target_id AND v.status = 'publish' AND v.deleted_at IS NULL) AS var_sig
+                 FROM ({$targets}) t
+                 LEFT JOIN {$this->tableProducts} p ON p.id = t.target_id AND p.deleted_at IS NULL",
+                ARRAY_A
+            ) ?: [];
+
+            $pieces = [];
+            foreach ($this->wpdb->get_results(
+                "SELECT x.pid, i.owner_id,
+                        CONCAT_WS(':', i.owner_id, i.manage_stock, COALESCE(i.quantity, 'null'), i.stock_status, i.backorders) AS piece
+                 FROM (SELECT target_id AS pid, target_id AS oid FROM ({$targets}) t0
+                       UNION SELECT v2.product_id, v2.id FROM {$this->tableVariants} v2 WHERE v2.product_id IN ({$inList})) x
+                 JOIN {$this->tableInventory} i ON i.owner_id = x.oid",
+                ARRAY_A
+            ) ?: [] as $piece) {
+                $pieces[(int)$piece['pid']][(int)$piece['owner_id']] = (string)$piece['piece'];
+            }
+
+            foreach ($rows as $row) {
+                $pid = (int)$row['target_id'];
+                $invPieces = $pieces[$pid] ?? [];
+                ksort($invPieces, SORT_NUMERIC);
+                $stamp = [
+                    'version'    => $row['version'],
+                    'updated_at' => $row['updated_at'],
+                    'var_sig'    => $row['var_sig'],
+                    'inv_sig'    => $invPieces !== [] ? implode('|', $invPieces) : null,
+                ];
+                $this->lowestKeyMemo[$pid] = $this->lowestKeyFromStamp($pid, $stamp);
+            }
+        }
+    }
+
+    /**
+     * Resolver inputs (candidate variants, parent inventory) preloaded for the main query's variable
+     * products whose lowest price is not cached yet, on read-only storefront requests (P047 D02).
+     * Null when not preloaded: the resolver then reads them itself.
+     *
+     * @return array{variants: array, parent_inv: array}|null
+     */
+    private function lowestPriceInputs(int $productId): ?array
+    {
+        if (isset($this->lowestInputs[$productId])) {
+            $inputs = $this->lowestInputs[$productId];
+            unset($this->lowestInputs[$productId]);
+            return $inputs;
+        }
+        if ($this->lowestInputsPrimed || !\WPE\Support\AuthorityResolver::isRequestMemoEnabled()) {
+            return null;
+        }
+        $this->lowestInputsPrimed = true;
+
+        $ids = $this->mainQueryProductIds();
+        if (!in_array($productId, $ids, true) || count($ids) < 2) {
+            return null;
+        }
+        $this->primeManagedProducts($ids);
+        $wanted = [];
+        foreach ($ids as $id) {
+            if (($this->managedTypes[$id] ?? '') !== 'variable') {
+                continue;
+            }
+            $key = $this->getLowestPriceCacheKey($id);
+            if (array_key_exists($key, $this->lowestPriceCache)) {
+                continue;
+            }
+            // Keep what the object cache already has, so the card does not fetch it again.
+            $cached = wp_cache_get('lowest_' . $key, 'wpe_selector');
+            if (is_string($cached)) {
+                $this->lowestPriceCache[$key] = $cached;
+                continue;
+            }
+            $wanted[] = $id;
+        }
+        if (!in_array($productId, $wanted, true)) {
+            $wanted[] = $productId;
+        }
+
+        $variants = $this->resolver->getCandidateVariantsFor($wanted);
+        $parentInv = $this->resolver->getParentInventoriesFor($wanted);
+        foreach ($wanted as $id) {
+            // A missing parent row is [] so the resolver does not query it again (P047 D03).
+            $this->lowestInputs[$id] = ['variants' => $variants[$id] ?? [], 'parent_inv' => $parentInv[$id] ?? []];
+        }
+
+        $inputs = $this->lowestInputs[$productId];
+        unset($this->lowestInputs[$productId]);
+        return $inputs;
     }
 
     private function computeLowestPriceCacheKey(int $productId): string
     {
-        $globalVer = (int)get_option('wpe_selector_cache_ver', 1);
-        $flagsJson = wp_json_encode($this->getProductPageFlags());
-
         $stamp = $this->wpdb->get_row($this->wpdb->prepare(
             "SELECT
                 p.version,
@@ -1921,6 +2076,17 @@ class SelectorAdapter
             $productId,
             $productId
         ), ARRAY_A);
+
+        return $this->lowestKeyFromStamp($productId, $stamp);
+    }
+
+    /**
+     * Lowest-price cache key from a product's fingerprint row (version, updated_at, var_sig, inv_sig).
+     */
+    private function lowestKeyFromStamp(int $productId, $stamp): string
+    {
+        $globalVer = (int)get_option('wpe_selector_cache_ver', 1);
+        $flagsJson = wp_json_encode($this->getProductPageFlags());
 
         $raw = implode('||', [
             (string)$productId,

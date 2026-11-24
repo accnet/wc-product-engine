@@ -425,17 +425,25 @@ class MetaBridge
 
     private function getOwnedProperty(int $objectId, string $prop)
     {
-        // Determine whether product or variation
-        $isVar = (int)$this->wpdb->get_var($this->wpdb->prepare(
-            "SELECT COUNT(1) FROM {$this->tableVariants} WHERE id = %d",
-            $objectId
-        ));
+        // Archive cards: products primed by ProductDataStore::primeProducts() carry their row,
+        // inventory, media and links (P047). Bundles exist for products only.
+        $bundle = \WPE\Compatibility\WooDataStore\ProductDataStore::primedBundle($objectId);
 
-        $table = $isVar > 0 ? $this->tableVariants : $this->tableProducts;
-        $row = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT * FROM {$table} WHERE id = %d",
-            $objectId
-        ), ARRAY_A);
+        if ($bundle !== null) {
+            $row = $bundle['product'];
+        } else {
+            // Determine whether product or variation
+            $isVar = (int)$this->wpdb->get_var($this->wpdb->prepare(
+                "SELECT COUNT(1) FROM {$this->tableVariants} WHERE id = %d",
+                $objectId
+            ));
+
+            $table = $isVar > 0 ? $this->tableVariants : $this->tableProducts;
+            $row = $this->wpdb->get_row($this->wpdb->prepare(
+                "SELECT * FROM {$table} WHERE id = %d",
+                $objectId
+            ), ARRAY_A);
+        }
 
         if (!$row) {
             return null;
@@ -443,7 +451,7 @@ class MetaBridge
 
         // Inventory properties
         if (in_array($prop, ['manage_stock', 'stock_quantity', 'stock_status', 'backorders', 'low_stock_amount'], true)) {
-            $inv = $this->wpdb->get_row($this->wpdb->prepare(
+            $inv = $bundle !== null ? $bundle['inventory'] : $this->wpdb->get_row($this->wpdb->prepare(
                 "SELECT * FROM {$this->tableInventory} WHERE owner_id = %d",
                 $objectId
             ), ARRAY_A);
@@ -468,7 +476,7 @@ class MetaBridge
 
         // Media properties
         if ($prop === 'image_id') {
-            $featured = $this->mediaRepo->getFeaturedImage($objectId);
+            $featured = $bundle !== null ? $bundle['featured'] : $this->mediaRepo->getFeaturedImage($objectId);
             if (!$featured) {
                 return '';
             }
@@ -477,7 +485,7 @@ class MetaBridge
         }
 
         if ($prop === 'gallery_image_ids') {
-            $gallery = $this->mediaRepo->getGallery($objectId);
+            $gallery = $bundle !== null ? (array)$bundle['gallery'] : $this->mediaRepo->getGallery($objectId);
             $ids = [];
             foreach ($gallery as $item) {
                 $id = !empty($item['attachment_id']) ? $item['attachment_id'] : ($item['id'] ?? null);
@@ -490,12 +498,12 @@ class MetaBridge
 
         // Links
         if ($prop === 'upsell_ids') {
-            $links = $this->mediaRepo->getLinks($objectId, 'upsell');
+            $links = $bundle !== null ? (array)$bundle['upsells'] : $this->mediaRepo->getLinks($objectId, 'upsell');
             return array_map('intval', array_column($links, 'target_id'));
         }
 
         if ($prop === 'cross_sell_ids') {
-            $links = $this->mediaRepo->getLinks($objectId, 'crosssell');
+            $links = $bundle !== null ? (array)$bundle['crosssells'] : $this->mediaRepo->getLinks($objectId, 'crosssell');
             return array_map('intval', array_column($links, 'target_id'));
         }
 

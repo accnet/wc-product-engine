@@ -430,7 +430,9 @@ class GalleryAdapter
             return !empty($cached) ? $cached : $galleryIds;
         }
 
-        $gallery = $this->mediaRepo->getGallery($productId);
+        // Archive cards: the gallery is already in the primed product bundle (P047).
+        $bundle = \WPE\Compatibility\WooDataStore\ProductDataStore::primedBundle($productId);
+        $gallery = $bundle !== null ? (array)$bundle['gallery'] : $this->mediaRepo->getGallery($productId);
         if (empty($gallery)) {
             self::$galleryAttachmentIdsCache[$productId] = [];
             return $galleryIds;
