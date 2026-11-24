@@ -1,8 +1,8 @@
 {
   "task_id": "T03",
-  "commit": "3e100210e243abc6333d1a1beaf977a30795a877",
+  "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "qa_status": "passed",
-  "content_digest": "e1adaa3eb80fb359043055edaa56879e9fa0fd16500291820d1f1c7a0f660194",
+  "content_digest": "492054dcc5cd3a4c3be323855d6d30d00dda0cdd98fc9d43ab67834e568563a6",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -19,7 +19,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T03/output.log",
       "output_sha256": "a8ea106df3cce6cc8429c99e7e12f4008dc4d35b0e3c3e46142b17df2a82375a",
-      "content_digest": "e1adaa3eb80fb359043055edaa56879e9fa0fd16500291820d1f1c7a0f660194"
+      "content_digest": "492054dcc5cd3a4c3be323855d6d30d00dda0cdd98fc9d43ab67834e568563a6"
     }
   ],
   "regression_results": [
@@ -115,7 +115,7 @@
     "counts_before": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -128,13 +128,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -149,7 +149,7 @@
     "counts_after_test": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -162,13 +162,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -183,7 +183,7 @@
     "counts_after_restore": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -196,13 +196,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -237,14 +237,14 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "3e100210e243abc6333d1a1beaf977a30795a877",
+  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "file_hashes": {
     "contracts/api/endpoints.json": "7967c3fdc2f1d48dcbeb8ded573d27223ddc3c2b488bc3d25c41123320056f4c",
     "contracts/compatibility/wc-props-mapping.json": "dc3a5740c1fe870bbb24965d3277a5fa7b3930bb1578b465471c59de2d11b874",
     "contracts/csv/dialects.json": "13a7a601949f2b0925e8200323bcdd67a71258e29ca4f01f717a08790022c1cb",
     "contracts/database/schema-contract.json": "821b745a5f93bad2a08b7e661df4d6c8ea0538014a4e0d8147b0951c742baa15",
     "contracts/events/product-changed.schema.json": "693e286d739cd1530f0a56d6230f387371d36069279c00c128ad5680d45e57e9",
-    "contracts/openapi/wpe-v1.json": "39337f6fd59368572660dde7be9bbde19006d9e7c5447d7153793d76ac1dc30b",
+    "contracts/openapi/wpe-v1.json": "a5528fe84bcc0e5c8b33e079dbae111c0ff90c4f80069314d94bcb5a4d2d6b7a",
     "tests/unit/T03Test.php": "b801cc9f7a151291c6316db809c5d6ba95c8aa62603c196ec8b64df4679c1845"
   }
 }

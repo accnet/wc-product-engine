@@ -3,7 +3,7 @@
  * Plugin Name: WC Product Engine
  * Plugin URI: https://site1.localhost
  * Description: High performance native product catalog engine for WooCommerce.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: WC Product Engine Team
  * Requires at least: 7.0
  * Requires PHP: 8.3
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WPE_VERSION', '1.1.0');
+define('WPE_VERSION', '1.2.0');
 define('WPE_PLUGIN_FILE', __FILE__);
 define('WPE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 

@@ -1,8 +1,8 @@
 {
   "task_id": "T04",
-  "commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+  "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "qa_status": "passed",
-  "content_digest": "6436950670a760f2feb0743e7271d0bc39308685a20982afc92cd1ed93cad9ec",
+  "content_digest": "bb9d4d3e8b2fe363b6c8d4e1ee6ea4a792dfdecc2f789328613d2c804423f68e",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T04/output.log",
       "output_sha256": "309f04c68e6ef6902378ce73f8e68b37cb10fc2f11b510f429960288adacc364",
-      "content_digest": "6436950670a760f2feb0743e7271d0bc39308685a20982afc92cd1ed93cad9ec"
+      "content_digest": "bb9d4d3e8b2fe363b6c8d4e1ee6ea4a792dfdecc2f789328613d2c804423f68e"
     }
   ],
   "regression_results": [
@@ -236,7 +236,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "21eab4cd82382312aafa7e1fcf95ecd4ed2869c8",
+  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "file_hashes": {
     "scripts/test-isolation.mjs": "db4e0a26759deb65c8f8dadf476ec277a682d0574746a73a7062b970c6ae2931",
     "src/Bootstrap/FixtureHarness.php": "c6bfd81efb2c7b917ef86f0e45e7964ebdbb14f6bfe2b8404228279c2ec50b96",

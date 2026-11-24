@@ -1,8 +1,8 @@
 {
   "task_id": "T20",
-  "commit": "3e100210e243abc6333d1a1beaf977a30795a877",
+  "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "qa_status": "passed",
-  "content_digest": "062fc8518833dee506244c111a82ad6801c970c2cccabe9c8920454ca49399c3",
+  "content_digest": "a7b5fa30516117613732f06fa6a30540b21d90299b25e10c7210b57ab8de10a9",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -21,8 +21,8 @@
       "display": "npm run test:task -- T20",
       "exit_code": 0,
       "output_path": "docs/evidence/T20/output.log",
-      "output_sha256": "e3d2116a3fdf5f60a6ce96143d52ca7df2092a8a249c2115361c51ae00b168e4",
-      "content_digest": "062fc8518833dee506244c111a82ad6801c970c2cccabe9c8920454ca49399c3"
+      "output_sha256": "0d7af0db16a969337442b7e145965d8afdf8dce1c81c3b1f9093a606728c38c3",
+      "content_digest": "a7b5fa30516117613732f06fa6a30540b21d90299b25e10c7210b57ab8de10a9"
     }
   ],
   "regression_results": [
@@ -95,7 +95,7 @@
       "basis": "output_anchor",
       "anchor": {
         "line": 16,
-        "text": "PASSED: AC-T20-02 outbox lag observable: pending=5220, lag=422655s, status=degraded."
+        "text": "PASSED: AC-T20-02 outbox lag observable: pending=5222, lag=428798s, status=degraded."
       }
     }
   ],
@@ -113,7 +113,7 @@
     "counts_before": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -126,13 +126,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -147,7 +147,7 @@
     "counts_after_test": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -160,13 +160,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -181,7 +181,7 @@
     "counts_after_restore": {
       "wp_wpe_asset_storage": 0,
       "wp_wpe_assets": 694,
-      "wp_wpe_audit": 7365,
+      "wp_wpe_audit": 7367,
       "wp_wpe_catalog": 256,
       "wp_wpe_catalog_facets": 54784,
       "wp_wpe_control": 14,
@@ -194,13 +194,13 @@
       "wp_wpe_inventory": 4761,
       "wp_wpe_jobs": 2,
       "wp_wpe_meta": 12,
-      "wp_wpe_object_state": 5203,
+      "wp_wpe_object_state": 5205,
       "wp_wpe_option_values": 1039,
       "wp_wpe_options": 199,
-      "wp_wpe_outbox": 5241,
+      "wp_wpe_outbox": 5243,
       "wp_wpe_product_links": 0,
       "wp_wpe_product_media": 694,
-      "wp_wpe_product_terms": 0,
+      "wp_wpe_product_terms": 4,
       "wp_wpe_products": 132,
       "wp_wpe_reservation_bridge": 3,
       "wp_wpe_sku_registry": 185,
@@ -235,7 +235,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "3e100210e243abc6333d1a1beaf977a30795a877",
+  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "file_hashes": {
     "src/Application/Catalog/ContextCache.php": "6e703f5306f85a77f64c8b32a1f8f56b5735baf213a31f9a6e6d5cf9caec94c0",
     "tests/integration/T20Test.php": "e5a757fb976f7b4cf2fc5ea828aa9c8519603a212190e9ffe4a8b3ceadfab95d"

@@ -1,0 +1,237 @@
+{
+  "id": "P053",
+  "title": "Release 1.2.0: version bump and distribution zip",
+  "status": "done",
+  "content_hash": "54446d3c11dd74daf1d6138c7d0196628dc9aef7f7c41ac6f391be74bcf494f4",
+  "tasks": [
+    {
+      "id": "P053.1",
+      "title": "Bump to 1.2.0 (header, WPE_VERSION, OpenAPI, package files, baseline lock, changelog) and build the distribution zip",
+      "depends_on": [],
+      "read_first": [
+        "docs/08-operations.md",
+        "scripts/release/ReleasePackager.mjs",
+        "tests/integration/T49Test.php"
+      ],
+      "files": [
+        "wc-product-engine.php",
+        "contracts/openapi/wpe-v1.json",
+        "package.json",
+        "package-lock.json",
+        "tests/integration/T49Test.php",
+        "contracts/compatibility/baseline-lock.json",
+        "docs/CHANGELOG.md",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "wc-product-engine.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T49Test.php"
+        ],
+        [
+          "node",
+          "scripts/release/ReleasePackager.mjs"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/T01Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "wc-product-engine.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "ac8b0129ac9304a745977740aaa6e1d2ebfc8b4068ac96b9a085c0a29c0aa937",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554646521-7a1703f7.log",
+          "time": "2026-11-24T21:10:46.521Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T49Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "f5df4b35ae2195cf1bd1c50d1c6f6cef7b98392e66c752328629ef71f4e74ef6",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554646614-baf00ae8.log",
+          "time": "2026-11-24T21:10:46.615Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/release/ReleasePackager.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "78236f9307eca2e06cf057680ba28b2cbc475e4543d012c17d1bbd5c0da6ec04",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554652560-d1f872bc.log",
+          "time": "2026-11-24T21:10:52.561Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/T01Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "a385d96b1c9cd9a774014df9a9b923f017e279ea00bbb4f975f67ea5215cd9c7",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554653884-5c08cbcb.log",
+          "time": "2026-11-24T21:10:53.884Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "83eff5b22ffdff33d0cfeeb82b03b7a864461909f0f49646f0ad1552521f2162",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554654000-a7304945.log",
+          "time": "2026-11-24T21:10:54.001Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "96198351008ae4e2949679dec058b5a342de46be161c556ae12dd67320f9980c",
+          "output_sha256": "010b7198268f789ccbada6af4bcacf8cdbe51a2812ea7c56a0fdd722fb2f22ae",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795554654122-51a1bd22.log",
+          "time": "2026-11-24T21:10:54.122Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "wc-product-engine.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "ac8b0129ac9304a745977740aaa6e1d2ebfc8b4068ac96b9a085c0a29c0aa937",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555782347-9dbb9f8d.log",
+          "time": "2026-11-24T21:29:42.347Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T49Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "f5df4b35ae2195cf1bd1c50d1c6f6cef7b98392e66c752328629ef71f4e74ef6",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555782457-873aab88.log",
+          "time": "2026-11-24T21:29:42.457Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/release/ReleasePackager.mjs"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "b8ab252d42d257c1f4a9462e457320799317df92792e57073c579fbca6b0e63e",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555788647-1fd9e6cf.log",
+          "time": "2026-11-24T21:29:48.648Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/T01Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "a385d96b1c9cd9a774014df9a9b923f017e279ea00bbb4f975f67ea5215cd9c7",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555790045-849daaab.log",
+          "time": "2026-11-24T21:29:50.046Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "83eff5b22ffdff33d0cfeeb82b03b7a864461909f0f49646f0ad1552521f2162",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555790163-41bb84d9.log",
+          "time": "2026-11-24T21:29:50.163Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+          "content_digest": "63c537fe5d9d54527724f2a63501b79bfe8569135ae81e533feadf17529b66c7",
+          "output_sha256": "16889308f08b98acf7d6f0d3dc74baf958406bd2378278f96aa7037473cf894c",
+          "output_path": "docs/plans/P053-release-1-2-0/command-1795555790280-0095d5a2.log",
+          "time": "2026-11-24T21:29:50.281Z"
+        }
+      ],
+      "started_at": "2026-11-24T21:10:39.048Z"
+    }
+  ],
+  "approved_hash": "54446d3c11dd74daf1d6138c7d0196628dc9aef7f7c41ac6f391be74bcf494f4",
+  "report_hash": "18269963c60f0b6aca98d67afa533368387ff9bd80a8e41a1bd030a20ba27361"
+}

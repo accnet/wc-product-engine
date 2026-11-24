@@ -1,8 +1,8 @@
 {
   "task_id": "T17",
-  "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+  "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "qa_status": "passed",
-  "content_digest": "cb5ae8a59b0427dfba3bdfeab03f96cc24488fedb2d1a11103bfe436186e099d",
+  "content_digest": "da8757a026d03468ec0c8c815ddd5b6df6eb9e8e83426ec8ae6c96eb51060515",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T17/output.log",
       "output_sha256": "e7021f41ca7f80a8b33b98ea62c68d57f22baa3cabea2532dcbff9986c66ed9d",
-      "content_digest": "cb5ae8a59b0427dfba3bdfeab03f96cc24488fedb2d1a11103bfe436186e099d"
+      "content_digest": "da8757a026d03468ec0c8c815ddd5b6df6eb9e8e83426ec8ae6c96eb51060515"
     }
   ],
   "regression_results": [
@@ -240,7 +240,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "file_hashes": {
     "src/Application/Catalog/CatalogQuery.php": "04e7cebe20b40adaae350b11bfec958d0722c9ff14cbc63c78141c9bac133015",
     "tests/integration/T17Test.php": "ff96955e4bc2d301a6e28d73cf26c610fb654c0bfce1ba15bb52954f6115361f"

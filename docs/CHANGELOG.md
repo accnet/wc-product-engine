@@ -34,3 +34,14 @@ Kết quả audit hợp nhất (`docs/audits/FINAL-AUDIT.md`) và quyết địn
 - Evidence T01–T49 phải chạy lại và cô lập test (snapshot/residue gate).
 
 Không claim READY; xem `docs/audits/READINESS-GATE.md`.
+
+## 4. v1.2.0 — 2026-11-25
+
+Bản phát hành plugin 1.2.0 (P053), gom các thay đổi sau 1.1.0; chưa deploy/kích hoạt ở đâu, không cutover.
+
+- Xóa sản phẩm vĩnh viễn đầy đủ và xóa hàng loạt: `ProductPurger`, `ProductBulkPurge`, card Danger Zone, `wp wpe products purge` (P039).
+- Shopify import: map `Product category` thành cây danh mục mặc định, digest trạng thái native và đếm lại term theo lô, index `idx_parent_kind` (SchemaMigrator v5; P042 hợp thức hóa contract).
+- Hiệu năng storefront: chữ ký tồn kho đọc theo khóa chính, memo theo request, nạp sẵn họ biến thể và meta, gộp truy vấn thẻ sản phẩm (P040, P041, P047); trang danh mục/sản phẩm trên site1 từ 0,65–1,30 s xuống 0,15–0,21 s TTFB.
+- Legacy mirror bỏ qua shell biến thể không đổi, hash legacy và vòng đồng bộ capture đọc/ghi theo lô (P043–P046).
+- Re-certify trên WooCommerce 11.3.1 (P049): evidence verify 49/49 trên root cô lập; OD-20 (wp-file-manager) chờ user.
+- Cách ly test: ghim `cohort_mode` (P048), fixture T17/T18 theo phạm vi (P050), cổng residue T04 cùng DB, ngân sách hydration chỉ đo data store (P051, P052).

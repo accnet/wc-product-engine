@@ -1,8 +1,8 @@
 {
   "task_id": "T18",
-  "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+  "commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "qa_status": "passed",
-  "content_digest": "310e382bdd91e13349319b721c91f8b7c26c1ae179761b1347c378ba87955780",
+  "content_digest": "3ba197770b1a753a8640f98eb070e547c58b132e612c037155bd43ec82bf6719",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T18/output.log",
       "output_sha256": "0efaabcdd858a6eadc44590711df9ce4a9afcf83b203961dc1cd5a8598dc7c86",
-      "content_digest": "310e382bdd91e13349319b721c91f8b7c26c1ae179761b1347c378ba87955780"
+      "content_digest": "3ba197770b1a753a8640f98eb070e547c58b132e612c037155bd43ec82bf6719"
     }
   ],
   "regression_results": [
@@ -229,7 +229,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
   "file_hashes": {
     "src/Application/Catalog/FacetQuery.php": "3ba2f3040fa794ed1702ce0d8530a815f6a8b3b683b550d57050daf961b9fef5",
     "tests/integration/T18Test.php": "57f6850a664fcdff019165a7c493bbe77bf8d63b68371ca2a414e1ebf0711170"

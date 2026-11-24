@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "WC Product Engine",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Design contract seed; T03 must seal full typed prop and version compatibility mapping before implementation certification."
   },
   "servers": [

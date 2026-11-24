@@ -114,7 +114,8 @@ class T49Test
         echo "Testing R199 (release_install_upgrade)...\n";
 
         $distDir = dirname(__DIR__, 2) . '/dist';
-        $zipPath = "{$distDir}/wc-product-engine-1.1.0.zip";
+        $version = defined('WPE_VERSION') ? WPE_VERSION : '1.2.0';
+        $zipPath = "{$distDir}/wc-product-engine-{$version}.zip";
         $manifestPath = "{$distDir}/release_manifest.json";
 
         // If package does not exist, build it via packager script
