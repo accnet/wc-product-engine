@@ -1,0 +1,307 @@
+{
+  "id": "P045",
+  "title": "Legacy hash reads variation meta in one query",
+  "status": "done",
+  "content_hash": "85f462bd43bab1f24fc47407bce0d2bdae6e1bf43f6d6c95aa0011043212acce",
+  "tasks": [
+    {
+      "id": "P045.1",
+      "title": "computeLegacyHash reads variation _sku/_price/_stock in one ordered query with an unchanged hash",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Application/Migration/LegacyCapture.php",
+        "src/Application/Migration/LegacyMirror.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyCapture.php",
+        "tests/integration/LegacyHashBatchTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyCapture.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/LegacyHashBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/LegacyHashBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ImportPerformanceTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/MirrorWorkerEpochTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T38Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T39Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T40Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyCapture.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "09e9561bd662a63fb9995ac880b942e1a5d0aff17e7cc3159c30f0de18ad3f5c",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543403116-087730f7.log",
+          "time": "2026-11-24T18:03:23.116Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/LegacyHashBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "d23c2272efa9005bcf5be60b1ee6cf02ca06183aa47fb65b03025e21d8f00760",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543403217-146d695a.log",
+          "time": "2026-11-24T18:03:23.217Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LegacyHashBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "1e5a8e3dde614ca8208e80e77d8ff47dbe4fb3f828d119ddebecfba029db2fc1",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543404709-0624406d.log",
+          "time": "2026-11-24T18:03:24.709Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ImportPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "6440f901d883348ef2c49dc9588e039dda149a41606dab6b81f7b4bbc480354b",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543407150-80872817.log",
+          "time": "2026-11-24T18:03:27.150Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/MirrorWorkerEpochTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "b18a646ceb6345d98dc6042c104500ee170f2c9c5110376e43ce8b8fc2027c41",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543408839-cf16d53a.log",
+          "time": "2026-11-24T18:03:28.839Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T38Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "4dd6c6855827827f926c17d44da5e2c6ebc0129ca9f835f29ed1cb669dac94ff",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543425465-745dc9b1.log",
+          "time": "2026-11-24T18:03:45.465Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T39Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "cb889ebea7abf1ab3eb6a93891207e5f6ee1b6adff34398334e1794c0f61293a",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543427073-8536d13b.log",
+          "time": "2026-11-24T18:03:47.073Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "00d0121d94488719ba237be024644d33fe09b809f2de389d855126409d5788c1",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543428871-69c4f69b.log",
+          "time": "2026-11-24T18:03:48.871Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543431803-53f9b0c4.log",
+          "time": "2026-11-24T18:03:51.803Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "9eefb89b2ced335bf32537653b88a935969ffc714d596076598b990c6064d75b",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543431917-cadc5940.log",
+          "time": "2026-11-24T18:03:51.917Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "f196f6e00616dd7d95b79a9c9a248bfd28b885c4",
+          "content_digest": "3d4d190ee5f4cd435a918f83de74ffcb1c23674e572a3a1e2ee78a8f9f67f515",
+          "output_sha256": "61162c631a5c4b6041bbad7027c0f9406ca928af37a040a7a0c6809442a633fd",
+          "output_path": "docs/plans/P045-legacy-hash-batch-meta/command-1795543432042-7d9922a5.log",
+          "time": "2026-11-24T18:03:52.042Z"
+        }
+      ],
+      "started_at": "2026-11-24T18:02:54.926Z"
+    }
+  ],
+  "approved_hash": "85f462bd43bab1f24fc47407bce0d2bdae6e1bf43f6d6c95aa0011043212acce",
+  "report_hash": "558d3e7bdcd0fedc7c92e097dd3379d8c296da4d56677ee797e2e4b3f678da30"
+}

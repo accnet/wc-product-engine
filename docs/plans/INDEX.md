@@ -44,3 +44,4 @@
 - P042 — Ratify the 2026-11-24 import contract and docs changes (done)
 - P043 — Legacy mirror skips unchanged variation shells and primes their post cache (in_progress)
 - P044 — P043 amendment: complete the mirror shell change with an assertion-enabled DoD (done)
+- P045 — Legacy hash reads variation meta in one query (done)

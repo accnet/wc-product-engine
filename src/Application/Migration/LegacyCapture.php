@@ -721,9 +721,24 @@ class LegacyCapture
             $productId
         ), ARRAY_A);
 
+        // Variation meta the hash uses, for all variations in one query (P045). Ordered by meta_id so a
+        // duplicated key resolves to its last row, as the former per-variation read did.
+        $varMeta = [];
+        if (!empty($varRows)) {
+            $varIdList = implode(',', array_map(static fn(array $vr): int => (int)$vr['ID'], $varRows));
+            foreach ((array)$this->wpdb->get_results(
+                "SELECT post_id, meta_key, meta_value FROM {$this->wpdb->postmeta}
+                 WHERE post_id IN ({$varIdList}) AND meta_key IN ('_sku', '_price', '_stock')
+                 ORDER BY post_id ASC, meta_id ASC",
+                ARRAY_A
+            ) as $mr) {
+                $varMeta[(int)$mr['post_id']][$mr['meta_key']] = $mr['meta_value'];
+            }
+        }
+
         $varHashes = [];
         foreach ($varRows as $vr) {
-            $vMeta = $this->loadPostMetaMap((int)$vr['ID']);
+            $vMeta = $varMeta[(int)$vr['ID']] ?? [];
             $varHashes[] = [
                 'id'       => $vr['ID'],
                 'modified' => $vr['post_modified_gmt'],
