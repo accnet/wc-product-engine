@@ -17,6 +17,8 @@ use WPE\Bootstrap\PluginBootstrap;
  * Performance characteristics (P028):
  * - Single-object resolution combines object_state, native product type, and native variant check
  *   into one primary-key round-trip (and inspects WP_Post memory cache before querying wp_posts).
+ * - Single-object probes are kept for the request only on read-only storefront requests (P040.1,
+ *   isRequestMemoEnabled()); admin, AJAX, cron and CLI read them fresh unless primed.
  * - Archive loops call primeObjects(int[] $ids) once to preload all IDs in two bulk IN(...) queries
  *   into the non-persistent 'wpe_runtime' cache group, automatically evicted on clean_post_cache,
  *   wp_cache_flush, and flag/routing option updates.
@@ -198,7 +200,7 @@ class AuthorityResolver
             $objectId
         ), ARRAY_A);
 
-        return [
+        $probe = [
             'has_state'         => !empty($row['state_oid']),
             'authority'         => !empty($row['state_oid']) ? (string)$row['authority'] : null,
             'parent_id'         => !empty($row['parent_id']) ? (int)$row['parent_id'] : 0,
@@ -207,6 +209,33 @@ class AuthorityResolver
             'native_var_parent' => isset($row['native_var_parent']) && $row['native_var_parent'] !== null ? (int)$row['native_var_parent'] : null,
             'wp_post_type'      => isset($row['wp_post_type']) && $row['wp_post_type'] !== null ? (string)$row['wp_post_type'] : null,
         ];
+
+        if (function_exists('wp_cache_set') && self::isRequestMemoEnabled()) {
+            wp_cache_set('auth_probe_' . $objectId, $probe, self::CACHE_GROUP);
+        }
+
+        return $probe;
+    }
+
+    /**
+     * Whether single-object probes may be kept for the rest of this request (P040.1).
+     *
+     * Only read-only storefront requests (front-end GET/HEAD, not admin, AJAX, cron or WP-CLI) keep
+     * them: write paths change wpe_object_state from places that do not all evict the probe, so a
+     * long admin or CLI process must keep reading it fresh. Filter: `wpe_authority_request_memo`.
+     */
+    public static function isRequestMemoEnabled(): bool
+    {
+        $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? ''));
+        $enabled = in_array($method, ['GET', 'HEAD'], true)
+            && !(defined('WP_CLI') && WP_CLI)
+            && !(function_exists('is_admin') && is_admin())
+            && !(function_exists('wp_doing_ajax') && wp_doing_ajax())
+            && !(function_exists('wp_doing_cron') && wp_doing_cron());
+
+        return function_exists('apply_filters')
+            ? (bool)apply_filters('wpe_authority_request_memo', $enabled)
+            : $enabled;
     }
 
     /**

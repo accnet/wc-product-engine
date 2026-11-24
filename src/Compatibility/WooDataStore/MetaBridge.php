@@ -130,17 +130,27 @@ class MetaBridge
             return false;
         }
 
-        // Check wpe_object_state first
-        $state = $this->wpdb->get_row($this->wpdb->prepare(
-            "SELECT authority, parent_id, tombstone FROM {$this->tableObjectState} WHERE object_id = %d",
-            $objectId
-        ), ARRAY_A);
-
-        if ($state) {
-            if (!empty($state['tombstone'])) {
+        // Native authority only covers products and variations (docs/02 §4). Attachments, menu items,
+        // pages and other posts already in the post cache skip the lookup: this filter runs for every
+        // get_post_metadata call, and they made up most of the storefront's authority queries (P040.1).
+        // An object whose post is not cached (e.g. a variation without a shell) is still checked.
+        if (function_exists('wp_cache_get')) {
+            $cachedPost = wp_cache_get($objectId, 'posts');
+            if (is_object($cachedPost) && isset($cachedPost->post_type)
+                && !in_array((string)$cachedPost->post_type, ['product', 'product_variation'], true)) {
                 return false;
             }
-            $auth = (string)($state['authority'] ?? 'legacy');
+        }
+
+        // Check wpe_object_state first (through the shared probe, primed on archives and kept per
+        // request on storefront reads).
+        $probe = \WPE\Support\AuthorityResolver::probeObject($objectId, $this->wpdb);
+
+        if ($probe['has_state']) {
+            if ($probe['tombstone'] !== 0) {
+                return false;
+            }
+            $auth = (string)($probe['authority'] ?? 'legacy');
             if ($auth === 'legacy') {
                 return false;
             }

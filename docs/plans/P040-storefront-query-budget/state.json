@@ -1,0 +1,446 @@
+{
+  "id": "P040",
+  "title": "Storefront query budget: indexed selector signatures, request-scoped authority memo, batched variation hydration",
+  "status": "in_progress",
+  "content_hash": "82b9dc9f4151b1d748168a50ece20976ae8a524d4fc489663bac6e5c0762abd8",
+  "tasks": [
+    {
+      "id": "P040.1",
+      "title": "Indexed inventory signatures, per-request product cache key memo, and request-scoped authority probe memo with a non-product post-type gate",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Support/AuthorityResolver.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php"
+      ],
+      "files": [
+        "src/Compatibility/StoreApi/SelectorAdapter.php",
+        "src/Support/AuthorityResolver.php",
+        "src/Compatibility/WooDataStore/MetaBridge.php",
+        "tests/integration/StorefrontQueryBudgetTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/StoreApi/SelectorAdapter.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Support/AuthorityResolver.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/MetaBridge.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/StorefrontQueryBudgetTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPageSettingsTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/AutoSelectFirstValuesTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/PdpUrlSelectionTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541004245-e0962728.log",
+          "time": "2026-11-24T17:23:24.246Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541004338-74e1cf86.log",
+          "time": "2026-11-24T17:23:24.338Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/MetaBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "ed63fd00d25ac4bf24f979d7602a6606319137f099e0de025696cf4a330768fb",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541004429-aa6def51.log",
+          "time": "2026-11-24T17:23:24.430Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/StorefrontQueryBudgetTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "541bbd8c37fd33bc9aae72cff946cb2bd4bf7561cbc0c77b2c4f087899ed977e",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541006052-d449d25e.log",
+          "time": "2026-11-24T17:23:26.053Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "a4cc9f83a824b8470872026ed0ed6bc6d2c808b789854eb78853d1fe9e89f946",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541009021-70c0b7dd.log",
+          "time": "2026-11-24T17:23:29.021Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/AutoSelectFirstValuesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "398c3bc8c35ec3d9cd43477599619fb160de261a1f57d534d02a746b3144a1a7",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541010519-866da780.log",
+          "time": "2026-11-24T17:23:30.519Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PdpUrlSelectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "37e5fdeb711bff52bb81e08a72a0b85df4505154ec1bc2b61020287418914f86",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541012106-8e5e650b.log",
+          "time": "2026-11-24T17:23:32.106Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541014896-0b098b9d.log",
+          "time": "2026-11-24T17:23:34.897Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "ce90df6a9b996d26137db50d59e46c530f2b8476971c78a92377540ac1ebf735",
+          "output_sha256": "05c7d9415c8710fade29ec4df117922eba8531cbfeccd1875768c8d7f96eda05",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541017153-b56419ee.log",
+          "time": "2026-11-24T17:23:37.154Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/StoreApi/SelectorAdapter.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "6ced34e1d4c5e0feeea799bbdbc6df5bd6a91c1526b7f6f35941a608739af516",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541120743-d4179cdc.log",
+          "time": "2026-11-24T17:25:20.743Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Support/AuthorityResolver.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "20b5d17980949f354070c6913c72849a9a9d9f137d6f97246bbc58c6f3d8df44",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541120839-0acf8ab2.log",
+          "time": "2026-11-24T17:25:20.839Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Compatibility/WooDataStore/MetaBridge.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "ed63fd00d25ac4bf24f979d7602a6606319137f099e0de025696cf4a330768fb",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541120931-43a26e28.log",
+          "time": "2026-11-24T17:25:20.931Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/StorefrontQueryBudgetTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "71a6fea083a760ae702cd1a66f957f278eb60984ff4d3141fa2b4e9ce65f571c",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541122551-bb9746cc.log",
+          "time": "2026-11-24T17:25:22.552Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPageSettingsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "a4cc9f83a824b8470872026ed0ed6bc6d2c808b789854eb78853d1fe9e89f946",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541125490-189e4063.log",
+          "time": "2026-11-24T17:25:25.490Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/AutoSelectFirstValuesTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "4a338796e3502417b2331d4a8f676c45495f6d7e8a157ba9991f9b826eb6390b",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541127013-2d31434d.log",
+          "time": "2026-11-24T17:25:27.014Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/PdpUrlSelectionTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "66046a972f4c88dbcd4711162f4ce80d97ffd9b56d4309472142c25dd6438c4f",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541128550-504f374a.log",
+          "time": "2026-11-24T17:25:28.550Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541131326-a99d8004.log",
+          "time": "2026-11-24T17:25:31.327Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/QueryHydrationPerformanceTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "05c7d9415c8710fade29ec4df117922eba8531cbfeccd1875768c8d7f96eda05",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541133544-f5fc5748.log",
+          "time": "2026-11-24T17:25:33.545Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "8ebb6d25899f6082838d81e4c4cb10e808e4e31bcf4175049ec60df71e532d4a",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541133660-72441018.log",
+          "time": "2026-11-24T17:25:33.660Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "6d1f7d76f08ce0a064f91fe226130dd04b5c35876a89639e8827efe3f1fec6ac",
+          "output_sha256": "0328641635dfceedaec638415a240dc6d87dba8c656ae962e8ca9e44015528a1",
+          "output_path": "docs/plans/P040-storefront-query-budget/command-1795541133772-b5d3ef69.log",
+          "time": "2026-11-24T17:25:33.772Z"
+        }
+      ],
+      "started_at": "2026-11-24T17:18:43.843Z"
+    },
+    {
+      "id": "P040.2",
+      "title": "Bulk-prime variation hydration when children are read and load wpe_meta per object once per request",
+      "depends_on": [
+        "P040.1"
+      ],
+      "read_first": [
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Infrastructure/Database/MediaRepository.php"
+      ],
+      "files": [
+        "src/Compatibility/WooDataStore/ProductDataStore.php",
+        "src/Infrastructure/Database/MediaRepository.php",
+        "tests/integration/StorefrontQueryBudgetTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Compatibility/WooDataStore/ProductDataStore.php"
+        ],
+        [
+          "php",
+          "-l",
+          "src/Infrastructure/Database/MediaRepository.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/StorefrontQueryBudgetTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/QueryHydrationPerformanceTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "82b9dc9f4151b1d748168a50ece20976ae8a524d4fc489663bac6e5c0762abd8"
+}

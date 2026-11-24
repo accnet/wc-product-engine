@@ -68,6 +68,9 @@ class SelectorAdapter
     /** @var array<int, string> Lowest-price cache key per product for this request. */
     private array $lowestKeyMemo = [];
 
+    /** @var array<int, string> Selector config cache key per product for this request (P040.1). */
+    private array $productKeyMemo = [];
+
     /** @var array<string, array> Render configs with the request's deep-link selection applied (P035.2). */
     private array $renderConfigCache = [];
 
@@ -156,12 +159,13 @@ class SelectorAdapter
             $this->managedTypes = [];
             $this->mainQueryPrimed = false;
             $this->lowestKeyMemo = [];
+            $this->productKeyMemo = [];
             $ver = (int)get_option('wpe_selector_cache_ver', 1);
             update_option('wpe_selector_cache_ver', $ver + 1, false);
             return;
         }
 
-        unset($this->lastProductRow[$productId], $this->managedTypes[$productId], $this->lowestKeyMemo[$productId]);
+        unset($this->lastProductRow[$productId], $this->managedTypes[$productId], $this->lowestKeyMemo[$productId], $this->productKeyMemo[$productId]);
         foreach (array_keys($this->configCache) as $k) {
             if (str_starts_with($k, $productId . ':')) {
                 unset($this->configCache[$k]);
@@ -1907,8 +1911,8 @@ class SelectorAdapter
                  FROM {$this->tableVariants} v
                  WHERE v.product_id = %d AND v.status = 'publish' AND v.deleted_at IS NULL) AS var_sig,
                 (SELECT GROUP_CONCAT(CONCAT_WS(':', i.owner_id, i.manage_stock, COALESCE(i.quantity, 'null'), i.stock_status, i.backorders) ORDER BY i.owner_id SEPARATOR '|')
-                 FROM {$this->tableInventory} i
-                 WHERE i.owner_id = %d OR i.owner_id IN (SELECT v2.id FROM {$this->tableVariants} v2 WHERE v2.product_id = %d)) AS inv_sig
+                 FROM (SELECT %d AS oid UNION SELECT v2.id FROM {$this->tableVariants} v2 WHERE v2.product_id = %d) inv_ids
+                 JOIN {$this->tableInventory} i ON i.owner_id = inv_ids.oid) AS inv_sig
              FROM (SELECT %d AS target_id) q
              LEFT JOIN {$this->tableProducts} p ON p.id = q.target_id AND p.deleted_at IS NULL
              LIMIT 1",
@@ -1933,6 +1937,16 @@ class SelectorAdapter
      * Consolidates all 6 table signatures into a single SQL round-trip while also priming lastProductRow.
      */
     private function getProductCacheKey(int $productId): string
+    {
+        // Price filters, swatches, the form config and enqueueScripts all ask for this key on one
+        // product page; the fingerprint query is the same each time, so run it once per request.
+        if (isset($this->productKeyMemo[$productId])) {
+            return $this->productKeyMemo[$productId];
+        }
+        return $this->productKeyMemo[$productId] = $this->computeProductCacheKey($productId);
+    }
+
+    private function computeProductCacheKey(int $productId): string
     {
         $globalVer = (int)get_option('wpe_selector_cache_ver', 1);
         $flagsJson = wp_json_encode($this->getProductPageFlags());
@@ -1959,8 +1973,8 @@ class SelectorAdapter
                  JOIN {$this->tableOptions} o2 ON o2.id = ov.option_id
                  WHERE o2.product_id = %d) AS val_sig,
                 (SELECT GROUP_CONCAT(CONCAT_WS(':', i.owner_id, i.manage_stock, COALESCE(i.quantity, 'null'), i.stock_status, i.backorders) ORDER BY i.owner_id SEPARATOR '|')
-                 FROM {$this->tableInventory} i
-                 WHERE i.owner_id = %d OR i.owner_id IN (SELECT v2.id FROM {$this->tableVariants} v2 WHERE v2.product_id = %d)) AS inv_sig,
+                 FROM (SELECT %d AS oid UNION SELECT v2.id FROM {$this->tableVariants} v2 WHERE v2.product_id = %d) inv_ids
+                 JOIN {$this->tableInventory} i ON i.owner_id = inv_ids.oid) AS inv_sig,
                 (SELECT GROUP_CONCAT(CONCAT_WS(':', pm.asset_id, pm.role, pm.position) ORDER BY pm.position SEPARATOR ',')
                  FROM {$this->tableProductMedia} pm
                  WHERE pm.product_id = %d) AS pm_sig,
