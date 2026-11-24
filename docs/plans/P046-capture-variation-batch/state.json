@@ -1,0 +1,339 @@
+{
+  "id": "P046",
+  "title": "Legacy capture syncs variations with batched reads and writes",
+  "status": "done",
+  "content_hash": "61b636b713f4672e1d9350a30af5c5246a05200589719dbaf355b8ac7d97012e",
+  "tasks": [
+    {
+      "id": "P046.1",
+      "title": "captureLegacyProduct variation loop: one meta read, one existence read, multi-row inventory and SKU registry REPLACE, identical rows",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "contracts/database/schema.sql",
+        "src/Application/Migration/LegacyCapture.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyCapture.php",
+        "tests/integration/CaptureVariationBatchTest.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyCapture.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/CaptureVariationBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CaptureVariationBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/LegacyHashBatchTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T37Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T38Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T39Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T40Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CohortRoutingDataStoreTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/SingleModeOperationsTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyCapture.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "09e9561bd662a63fb9995ac880b942e1a5d0aff17e7cc3159c30f0de18ad3f5c",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543734131-69529821.log",
+          "time": "2026-11-24T18:08:54.131Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/CaptureVariationBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "5929b25d1b349202ce24d473feea34b6e64841a52cd19f4e8b8585102814460e",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543734248-320e2717.log",
+          "time": "2026-11-24T18:08:54.248Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CaptureVariationBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "e2da8f82d15024ae4d3ed3f5e3ef180b2e3782d2a326b5b69f23ad0f06b2fd76",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543737827-399d2825.log",
+          "time": "2026-11-24T18:08:57.828Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LegacyHashBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "2e4d145796a4ed6c90def4a2658e20829b68deffcbcca995914b977715210f9a",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543739373-f4c3f18f.log",
+          "time": "2026-11-24T18:08:59.373Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T37Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "8ecf23e213397ddd8a22b6cb9bf2f44bc83fdc6369b98745ec4d652f81f7ca3c",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543767218-0d9dab4a.log",
+          "time": "2026-11-24T18:09:27.218Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T38Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "4dd6c6855827827f926c17d44da5e2c6ebc0129ca9f835f29ed1cb669dac94ff",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543778637-2a7b61f0.log",
+          "time": "2026-11-24T18:09:38.638Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T39Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "cb889ebea7abf1ab3eb6a93891207e5f6ee1b6adff34398334e1794c0f61293a",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543780167-4c2796ce.log",
+          "time": "2026-11-24T18:09:40.168Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T40Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "00d0121d94488719ba237be024644d33fe09b809f2de389d855126409d5788c1",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543781785-98dbc827.log",
+          "time": "2026-11-24T18:09:41.786Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CohortRoutingDataStoreTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "d641f7ab16c7d044b190c23da41f35e4bcb0ab5b671ce3d9fe91d0a2801b9b26",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543784606-d5eda869.log",
+          "time": "2026-11-24T18:09:44.607Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/SingleModeOperationsTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "08ef91a9747d4e3d6fcc94c72fd789a6144077e0efa8c07223d6f3f5ee6cdf7e",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543786895-2a33bbcc.log",
+          "time": "2026-11-24T18:09:46.895Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "6e9644c42cf769144723e1514fd177eac56b03b073aa8a6ba0ca7e2c2466f15e",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543787007-24c62d84.log",
+          "time": "2026-11-24T18:09:47.008Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "219a9a26eaacead8bfc9eb7ad2b498c5b93fe5b5",
+          "content_digest": "ce04ee444e32608ecda9d195274a5f982a2acac3ba9a9d196183058558334ec8",
+          "output_sha256": "fae9f59fd8530a094fbe227853e081e01af18af0c5a15c8b2a0d6a6da3188f58",
+          "output_path": "docs/plans/P046-capture-variation-batch/command-1795543787121-059e4378.log",
+          "time": "2026-11-24T18:09:47.122Z"
+        }
+      ],
+      "started_at": "2026-11-24T18:08:27.456Z"
+    }
+  ],
+  "approved_hash": "61b636b713f4672e1d9350a30af5c5246a05200589719dbaf355b8ac7d97012e",
+  "report_hash": "1aa75dc2dda70ad7c60c679204e50ecb9c5e65ef959ac327ba1d46ca2a8cb19f"
+}

@@ -452,9 +452,28 @@ class LegacyCapture
 
         // Sync variations if variable
         if (!empty($varRows)) {
+            // P046: one meta read and one existence read for all variations; inventory and SKU
+            // registry rows are written below in one multi-row REPLACE each, in loop order.
+            $varIdList = implode(',', array_map(static fn(array $vr): int => (int)$vr['ID'], $varRows));
+            $varMeta = [];
+            foreach ((array)$this->wpdb->get_results(
+                "SELECT post_id, meta_key, meta_value FROM {$this->wpdb->postmeta}
+                 WHERE post_id IN ({$varIdList})
+                   AND meta_key IN ('_sku', '_regular_price', '_sale_price', '_stock', '_manage_stock', '_stock_status')
+                 ORDER BY post_id ASC, meta_id ASC",
+                ARRAY_A
+            ) as $mr) {
+                $varMeta[(int)$mr['post_id']][$mr['meta_key']] = $mr['meta_value'];
+            }
+            $existingVariantIds = array_flip(array_map('intval', $this->wpdb->get_col(
+                "SELECT id FROM {$this->tableVariants} WHERE id IN ({$varIdList})"
+            )));
+            $inventoryRows = [];
+            $skuRows = [];
+
             foreach ($varRows as $vr) {
                 $vId = (int)$vr['ID'];
-                $vMeta = $this->loadPostMetaMap($vId);
+                $vMeta = $varMeta[$vId] ?? [];
                 $vSku = $vMeta['_sku'] ?? null;
                 $vReg = isset($vMeta['_regular_price']) && $vMeta['_regular_price'] !== '' ? (float)$vMeta['_regular_price'] : null;
                 $vSale = isset($vMeta['_sale_price']) && $vMeta['_sale_price'] !== '' ? (float)$vMeta['_sale_price'] : null;
@@ -462,10 +481,7 @@ class LegacyCapture
                 $vManage = !empty($vMeta['_manage_stock']) && $vMeta['_manage_stock'] === 'yes' ? 1 : 0;
                 $vStatus = $vMeta['_stock_status'] ?? 'instock';
 
-                $vExisting = $this->wpdb->get_var($this->wpdb->prepare(
-                    "SELECT id FROM {$this->tableVariants} WHERE id = %d",
-                    $vId
-                ));
+                $vExisting = isset($existingVariantIds[$vId]);
 
                 $combKey = hash('sha256', "var_{$vId}", true);
 
@@ -494,28 +510,24 @@ class LegacyCapture
                     ]);
                 }
 
-                $this->wpdb->replace($this->tableInventory, [
-                    'owner_id'         => $vId,
-                    'manage_stock'     => $vManage,
-                    'quantity'         => $vStock,
-                    'backorders'       => 'no',
-                    'stock_status'     => $vStatus,
-                    'low_stock_amount' => null,
-                    'updated_at'       => $now,
-                    'version'          => 1,
-                ]);
+                $inventoryRows[] = [$vId, $vManage, $vStock, 'no', $vStatus, null, $now, 1];
 
                 // Register SKU for variation
                 if (!empty($vSku)) {
-                    $normSku = mb_strtolower(trim($vSku), 'UTF-8');
-                    $this->wpdb->replace($this->tableSkuRegistry, [
-                        'normalized_sku' => $normSku,
-                        'object_id'      => $vId,
-                        'object_kind'    => 'variation',
-                        'original_sku'   => $vSku,
-                    ]);
+                    $skuRows[] = [mb_strtolower(trim($vSku), 'UTF-8'), $vId, 'variation', $vSku];
                 }
             }
+
+            $this->replaceRows(
+                $this->tableInventory,
+                ['owner_id', 'manage_stock', 'quantity', 'backorders', 'stock_status', 'low_stock_amount', 'updated_at', 'version'],
+                $inventoryRows
+            );
+            $this->replaceRows(
+                $this->tableSkuRegistry,
+                ['normalized_sku', 'object_id', 'object_kind', 'original_sku'],
+                $skuRows
+            );
         }
 
         // Register SKU for parent
@@ -873,6 +885,32 @@ class LegacyCapture
             'summary'    => json_encode($payload, JSON_UNESCAPED_SLASHES),
             'created_at' => gmdate('Y-m-d H:i:s.u'),
         ]);
+    }
+
+    /**
+     * Multi-row REPLACE with the value handling of wpdb::replace() without formats: every value is
+     * bound as %s and null becomes NULL. MySQL/MariaDB apply the rows in order, so key conflicts
+     * resolve as a sequence of single-row REPLACE statements would (P046 D02).
+     *
+     * @param string[] $columns
+     * @param array<int, array<int, mixed>> $rows values in column order
+     */
+    private function replaceRows(string $table, array $columns, array $rows): void
+    {
+        if ($rows === []) {
+            return;
+        }
+        $tuples = [];
+        foreach ($rows as $row) {
+            $values = [];
+            foreach ($row as $value) {
+                $values[] = $value === null ? 'NULL' : $this->wpdb->prepare('%s', $value);
+            }
+            $tuples[] = '(' . implode(', ', $values) . ')';
+        }
+        $cols = implode(', ', array_map(static fn(string $c): string => "`{$c}`", $columns));
+        // Errors are left to wpdb (last_error), as with the former per-row wpdb::replace() calls.
+        $this->wpdb->query("REPLACE INTO `{$table}` ({$cols}) VALUES " . implode(', ', $tuples));
     }
 
     /**

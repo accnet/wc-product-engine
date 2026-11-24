@@ -45,3 +45,4 @@
 - P043 — Legacy mirror skips unchanged variation shells and primes their post cache (in_progress)
 - P044 — P043 amendment: complete the mirror shell change with an assertion-enabled DoD (done)
 - P045 — Legacy hash reads variation meta in one query (done)
+- P046 — Legacy capture syncs variations with batched reads and writes (done)
