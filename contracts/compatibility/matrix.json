@@ -157,12 +157,12 @@
     },
     {
       "slug": "contact-form-7",
-      "version": "6.2.5",
+      "version": "6.2.6",
       "classification": "WP API bridge",
       "status": "unknown",
       "owner": "team-integration",
-      "notes": "Isolated forms post type. Version changed from 6.2.2 to 6.2.5 and now active; code review of 6.2.5 (2026-11-20): writes only its own wpcf7_contact_form posts and meta through WordPress APIs, no direct SQL writes, no product or global query hooks. Not in the AuthoritySeal allowlist, so sealing is refused while it is active (OD-17).",
-      "active": true
+      "notes": "Isolated forms post type. Version changed from 6.2.2 to 6.2.5 and now active; code review of 6.2.5 (2026-11-20): writes only its own wpcf7_contact_form posts and meta through WordPress APIs, no direct SQL writes, no product or global query hooks. Not in the AuthoritySeal allowlist, so sealing is refused while it is active (OD-17). Version changed from 6.2.5 to 6.2.6 and inactive at the 2026-11-25 re-pin (OD-17 option B); not re-reviewed.",
+      "active": false
     },
     {
       "slug": "disable-xml-rpc",
@@ -197,8 +197,8 @@
       "classification": "WP API bridge",
       "status": "unknown",
       "owner": "team-checkout",
-      "notes": "Payment protection gateway bridge (version changed from 2.0 to 3.0.8; not re-reviewed)",
-      "active": false
+      "notes": "Payment protection gateway bridge (version changed from 2.0 to 3.0.8; not re-reviewed; active on the live site at the 2026-11-25 re-pin, inactive in test_wpe_regress)",
+      "active": true
     },
     {
       "slug": "wp-mail-smtp",
@@ -210,6 +210,15 @@
       "active": false
     },
     {
+      "slug": "wp-file-manager",
+      "version": "8.0.7",
+      "classification": "unclassified",
+      "status": "unknown",
+      "owner": "team-security",
+      "notes": "File manager plugin, active on the live site at the 2026-11-25 re-pin, inactive in test_wpe_regress. Not reviewed and not in the AuthoritySeal allowlist, so sealing is refused while it is active (OD-20).",
+      "active": true
+    },
+    {
       "slug": "unregistered-direct-sql-writer",
       "version": "any",
       "classification": "SQL-writer",
@@ -218,5 +227,5 @@
       "notes": "Direct SQL writer without adapter is a strict blocker for native cohort rollout (AC-T01-03, R02)"
     }
   ],
-  "re_pinned_at": "2026-11-20T15:00:00+07:00"
+  "re_pinned_at": "2026-11-25T15:00:00+07:00"
 }

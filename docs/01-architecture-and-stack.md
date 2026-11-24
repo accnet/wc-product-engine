@@ -30,12 +30,12 @@ Namespace `WPE\`; PSR-4 `src/`; strict types trong domain; không gọi global W
 
 ## 8. Stack pin và dependencies
 
-Pin ở `contracts/compatibility/pins.json` lấy từ **môi trường thực tế** `http://site1.localhost` (`/var/www/site1.localhost`), ngày đo 12/10/2026, re-pin lần hai 12/10/2026 22:20 (ADR 003: pin trước đó 7.0 / 11.1.2 không khớp host), re-pin lần ba 20/11/2026 sau khi host lên WP 7.1.5 / WC 11.3.0 (P020; evidence chạy trên root cô lập, xem `WPE_WP_PATH` ở §9); plugin chạy trực tiếp từ thư mục `wp-content/plugins/wc-product-engine` của site này, không dựng Docker/wp-env/site riêng. Không còn ma trận MySQL vs MariaDB: chỉ DB của site (MariaDB). Đây là baseline môi trường, **không phải supported/certified claim**. T01 đọc lại version bằng WP-CLI và ghi vào baseline; đổi version site mở lại gate bị ảnh hưởng.
+Pin ở `contracts/compatibility/pins.json` lấy từ **môi trường thực tế** `http://site1.localhost` (`/var/www/site1.localhost`), ngày đo 12/10/2026, re-pin lần hai 12/10/2026 22:20 (ADR 003: pin trước đó 7.0 / 11.1.2 không khớp host), re-pin lần ba 20/11/2026 sau khi host lên WP 7.1.5 / WC 11.3.0 (P020; evidence chạy trên root cô lập, xem `WPE_WP_PATH` ở §9), re-pin lần bốn 25/11/2026 sau khi host lên WC 11.3.1, đổi theme sang starterkit 1.2.7 và bật cards-shield, wp-file-manager (P049; wp-file-manager chưa review, OD-20); plugin chạy trực tiếp từ thư mục `wp-content/plugins/wc-product-engine` của site này, không dựng Docker/wp-env/site riêng. Không còn ma trận MySQL vs MariaDB: chỉ DB của site (MariaDB). Đây là baseline môi trường, **không phải supported/certified claim**. T01 đọc lại version bằng WP-CLI và ghi vào baseline; đổi version site mở lại gate bị ảnh hưởng.
 
 | Thành phần | Pin lựa chọn | Vai trò |
 |---|---|---|
 | wordpress | 7.1.5 | Runtime (site1.localhost) |
-| woocommerce | 11.3.0 | Runtime (site1.localhost) |
+| woocommerce | 11.3.1 | Runtime (site1.localhost) |
 | php | 8.3.36 | Runtime (site1.localhost) |
 | node | 22.23.3 | Dev/test |
 | mariadb | 11.8.9 | Runtime (DB của site1.localhost) |
@@ -44,7 +44,7 @@ Pin ở `contracts/compatibility/pins.json` lấy từ **môi trường thực t
 | phpcodesniffer | not_installed | Không dùng bởi task nào |
 | wordpress_coding_standards | not_installed | Không dùng bởi task nào |
 | playwright | 1.63.0 | Dev/test (`@playwright/test` trong `package-lock.json`, cài bằng `npm ci`) |
-| theme | storefront 4.6.2 | Runtime (site1.localhost) |
+| theme | starterkit 1.2.7 | Runtime (site1.localhost) |
 
 Không thêm dependency runtime ngoài WC/WP trong V1 nếu không có task contract riêng. Node dùng scripts docs và browser tests; UI selector vanilla JavaScript, admin operations dùng WP packages được WC/WP cung cấp. Không tải CDN JS runtime tùy ý. Test tooling exact pins do T02 tạo lockfiles, WordPress test-library source phải cùng WP pin. Không dùng branch trunk/latest làm lock.
 

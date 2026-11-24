@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "locked_at": "2026-11-20T15:00:00+07:00",
+  "locked_at": "2026-11-25T15:00:00+07:00",
   "environment": {
     "site_url": "http://site1.localhost",
     "site_path": "/var/www/site1.localhost",
@@ -12,9 +12,9 @@
       }
     },
     "woocommerce": {
-      "version": "11.3.0",
+      "version": "11.3.1",
       "entry_file": "wp-content/plugins/woocommerce/woocommerce.php",
-      "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803"
+      "sha256": "7aff68f5a1276ca22ea1e93b8ab636484fc1ee59f04fb3e2d6a30373d370fbcf"
     },
     "php": {
       "version": "8.3.36",
@@ -28,11 +28,18 @@
       "charset": "utf8mb4"
     },
     "theme": {
-      "name": "storefront",
-      "version": "4.6.2",
+      "name": "starterkit",
+      "version": "1.2.7",
       "status": "active"
     },
     "active_plugins": [
+      {
+        "name": "cards-shield",
+        "file": "cards-shield/cards-shield.php",
+        "version": "3.0.8",
+        "sha256": "adbaf47735d38ed09408fece6321f84ef17d187d3c069c3224ea743d10f62c82",
+        "category": "WP API bridge (unknown, not re-reviewed)"
+      },
       {
         "name": "classic-editor",
         "file": "classic-editor/classic-editor.php",
@@ -45,13 +52,6 @@
         "file": "classic-widgets/classic-widgets.php",
         "version": "0.3",
         "sha256": "b742035f4d4494d3fb38ae68b360667f97f89fb867bfd14c38fd27e7e4f6d731",
-        "category": "WP API bridge"
-      },
-      {
-        "name": "contact-form-7",
-        "file": "contact-form-7/wp-contact-form-7.php",
-        "version": "6.2.5",
-        "sha256": "0be0438fadcb8532b991ea85961a1848473eb60fd711c1ad68132d71dc76407c",
         "category": "WP API bridge"
       },
       {
@@ -71,15 +71,22 @@
       {
         "name": "woocommerce",
         "file": "woocommerce/woocommerce.php",
-        "version": "11.3.0",
-        "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803",
+        "version": "11.3.1",
+        "sha256": "7aff68f5a1276ca22ea1e93b8ab636484fc1ee59f04fb3e2d6a30373d370fbcf",
         "category": "Core Host"
+      },
+      {
+        "name": "wp-file-manager",
+        "file": "wp-file-manager/file_folder_manager.php",
+        "version": "8.0.7",
+        "sha256": "e131744dd85c0e8688a1fce24a1331c1fb48db5d0766615ee32b78f5d145b872",
+        "category": "Unclassified (not reviewed, OD-20)"
       }
     ],
     "inactive_plugins": [
       {
-        "name": "cards-shield",
-        "version": "3.0.8"
+        "name": "contact-form-7",
+        "version": "6.2.6"
       },
       {
         "name": "wp-mail-smtp",

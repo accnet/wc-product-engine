@@ -1,0 +1,160 @@
+{
+  "id": "P049",
+  "title": "Re-certify on WooCommerce 11.3.1 and the current theme and plugin set",
+  "status": "in_progress",
+  "content_hash": "48e887c572ae5d6d34813dfb1fb4889f5feef71271e0b081812ebd8e754a0d4d",
+  "tasks": [
+    {
+      "id": "P049.1",
+      "title": "Re-pin contracts and docs to WooCommerce 11.3.1, theme starterkit 1.2.7 and the current plugin set; record OD-20",
+      "depends_on": [],
+      "read_first": [
+        "docs/01-architecture-and-stack.md",
+        "docs/plans/P020-wp715-recertification/plan.md",
+        "contracts/compatibility/pins.json",
+        "contracts/compatibility/baseline-lock.json",
+        "contracts/compatibility/matrix.json"
+      ],
+      "files": [
+        "contracts/compatibility/pins.json",
+        "contracts/compatibility/baseline-lock.json",
+        "contracts/compatibility/matrix.json",
+        "contracts/compatibility/wc-props-mapping.json",
+        "docs/01-architecture-and-stack.md",
+        "docs/PROGRESS.md",
+        "README.md",
+        "docs/QUESTIONS.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/T01Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "eval-file",
+            "tests/integration/T01Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "4989f38a5934a7077e73341496c8b87fde1a684a",
+          "content_digest": "cb4c7df9da1997532664a39c4636c5d091f01ec33c034664e0e127b646a9d4c7",
+          "output_sha256": "a385d96b1c9cd9a774014df9a9b923f017e279ea00bbb4f975f67ea5215cd9c7",
+          "output_path": "docs/plans/P049-wc1131-recertification/command-1795548626246-55d649ec.log",
+          "time": "2026-11-24T19:30:26.247Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "4989f38a5934a7077e73341496c8b87fde1a684a",
+          "content_digest": "cb4c7df9da1997532664a39c4636c5d091f01ec33c034664e0e127b646a9d4c7",
+          "output_sha256": "6e77ea56569e1afca7947a0577c6faeda323bf6a35213fcad7fb30545fc108f4",
+          "output_path": "docs/plans/P049-wc1131-recertification/command-1795548626364-36600bb4.log",
+          "time": "2026-11-24T19:30:26.364Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "4989f38a5934a7077e73341496c8b87fde1a684a",
+          "content_digest": "cb4c7df9da1997532664a39c4636c5d091f01ec33c034664e0e127b646a9d4c7",
+          "output_sha256": "50a449eebcb9517cc4784c1a6c114ea57c2b905c3a3020df40f14640fda546ff",
+          "output_path": "docs/plans/P049-wc1131-recertification/command-1795548626481-ab00df93.log",
+          "time": "2026-11-24T19:30:26.482Z"
+        }
+      ],
+      "started_at": "2026-11-24T19:29:27.242Z"
+    },
+    {
+      "id": "P049.2",
+      "title": "Re-run T01-T49 evidence on the isolated root against test_wpe_regress",
+      "depends_on": [
+        "P049.1"
+      ],
+      "read_first": [
+        "docs/evidence/README.md",
+        "docs/plans/P020-wp715-recertification/report.md"
+      ],
+      "files": [
+        "docs/evidence/rerun-summary.json",
+        "docs/evidence/verify-summary.json"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P049.3",
+      "title": "Report, notes and closeout",
+      "depends_on": [
+        "P049.2"
+      ],
+      "read_first": [
+        "docs/plans/README.md"
+      ],
+      "files": [
+        "docs/NOTES.md",
+        "docs/plans/P049-wc1131-recertification/report.md"
+      ],
+      "dod": [
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "48e887c572ae5d6d34813dfb1fb4889f5feef71271e0b081812ebd8e754a0d4d"
+}

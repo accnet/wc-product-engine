@@ -2,7 +2,7 @@
   "status": "sealed",
   "sealed_at": "2026-10-12T15:00:00+07:00",
   "source_wp": "7.1.5",
-  "source_wc": "11.3.0",
+  "source_wc": "11.3.1",
   "properties_count": 55,
   "props_mapping": {
     "id": "products.id / variants.id + real WP shells",

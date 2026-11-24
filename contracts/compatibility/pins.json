@@ -4,7 +4,7 @@
   "status": "site1_localhost_baseline_not_certified",
   "versions": {
     "wordpress": "7.1.5",
-    "woocommerce": "11.3.0",
+    "woocommerce": "11.3.1",
     "php": "8.3.36",
     "node": "22.23.3",
     "composer": "not_installed",
@@ -12,7 +12,7 @@
     "phpcodesniffer": "not_installed",
     "wordpress_coding_standards": "not_installed",
     "playwright": "1.63.0",
-    "theme": "storefront 4.6.2",
+    "theme": "starterkit 1.2.7",
     "mariadb": "11.8.9"
   },
   "policy": "T01 reads versions from site1.localhost via WP-CLI; tests assert pins equal the live runtime (T01 R01, evidence R203); version changes reopen affected gates (R171). Tools marked not_installed are not used by any task command.",
@@ -27,5 +27,5 @@
     ],
     "scale_targets_note": "Future targets only. No 100k/1M dataset has been measured (ADR 003)."
   },
-  "re_pinned_at": "2026-11-20T15:00:00+07:00"
+  "re_pinned_at": "2026-11-25T15:00:00+07:00"
 }
