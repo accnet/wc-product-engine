@@ -31,7 +31,12 @@ export function buildReleasePackage() {
   const distDir = path.join(root, 'dist');
   fs.mkdirSync(distDir, { recursive: true });
 
-  const version = '1.1.0';
+  // Version comes from the plugin header so the zip name always matches the code being shipped.
+  const header = fs.readFileSync(path.join(root, 'wc-product-engine.php'), 'utf8');
+  const version = (header.match(/^\s*\*\s*Version:\s*([^\s]+)/m) || [])[1];
+  if (!version) {
+    throw new Error('Could not read Version from the wc-product-engine.php plugin header');
+  }
   const zipName = `wc-product-engine-${version}.zip`;
   const zipPath = path.join(distDir, zipName);
 
@@ -46,6 +51,10 @@ export function buildReleasePackage() {
     'assets',
     'README.md',
     'composer.json',
+    // Read at runtime: SchemaMigrator creates the tables from schema.sql on activation, and
+    // MetaBridge/ImageSurfaces classify third-party plugins from matrix.json.
+    'contracts/database/schema.sql',
+    'contracts/compatibility/matrix.json',
   ];
 
   // Verify all included paths exist
@@ -130,7 +139,7 @@ export function buildReleasePackage() {
       restore_drill: 'passed',
     },
     runbooks: {
-      fresh_install: 'wp plugin install dist/wc-product-engine-1.1.0.zip --activate',
+      fresh_install: `wp plugin install dist/${zipName} --activate`,
       upgrade: 'wp plugin update wc-product-engine',
       deactivation_safety: 'docs/08-operations.md §9 (blocked if native data unprojected)',
       cutover_runbook: 'docs/08-operations.md §6',
