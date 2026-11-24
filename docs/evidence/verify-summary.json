@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-24T19:48:02.934Z",
+  "generated_at": "2026-11-24T20:09:23.286Z",
   "mode": "verify_only",
-  "base_commit": "3e100210e243abc6333d1a1beaf977a30795a877",
+  "base_commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -9,11 +9,8 @@
     "database": "11.8.9-MariaDB"
   },
   "tasks": 49,
-  "passed": 47,
-  "failed": [
-    "T18",
-    "T19"
-  ],
+  "passed": 49,
+  "failed": [],
   "results": [
     {
       "task": "T01",
@@ -120,16 +117,14 @@
     {
       "task": "T18",
       "title": "Facets coherent theo variant và counts",
-      "verify_exit": 1,
-      "verify_tail": "T18: command output changed\nT18: requirement R71 has no verifiable output anchor\nT18: requirement R72 has no verifiable output anchor\nT18: requirement R73 has no verifiable output anchor\nT18: requirement R74 has no verifiable output anchor\nT18: acceptance AC-T18-01 anchor not in output",
-      "ok": false
+      "verify_exit": 0,
+      "ok": true
     },
     {
       "task": "T19",
       "title": "Tích hợp wc_get_products, shop archives và admin lists",
-      "verify_exit": 1,
-      "verify_tail": "T18: command output changed\nT18: requirement R71 has no verifiable output anchor\nT18: requirement R72 has no verifiable output anchor\nT18: requirement R73 has no verifiable output anchor\nT18: requirement R74 has no verifiable output anchor\nT18: acceptance AC-T18-01 anchor not in output",
-      "ok": false
+      "verify_exit": 0,
+      "ok": true
     },
     {
       "task": "T20",

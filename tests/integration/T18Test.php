@@ -218,13 +218,18 @@ class T18Test
     {
         echo "Testing R71 & AC-T18-01 (impossible_combination_filter)...\n";
 
+        // P050: catalog products already in the database also carry black/m and fill the bounded
+        // first page, so both fixtures share a run-unique category and every query filters on it.
+        $scope = 'test_r71_' . strtolower(wp_generate_password(6, false));
+
         // Product A has Black-M and White-L
         $prodA = $this->createVariableProductWithVariations(
             'Product A (Black-M / White-L)',
             [
                 ['pa_color' => 'black', 'pa_size' => 'm'],
                 ['pa_color' => 'white', 'pa_size' => 'l'],
-            ]
+            ],
+            [$scope]
         );
 
         // Product B has Black-L and White-M (has black and has m, but NOT Black-M!)
@@ -233,12 +238,14 @@ class T18Test
             [
                 ['pa_color' => 'black', 'pa_size' => 'l'],
                 ['pa_color' => 'white', 'pa_size' => 'm'],
-            ]
+            ],
+            [$scope]
         );
 
         // 1. Variant-coherent mode
         $filterCoherent = [
             'facet_mode' => FacetQuery::MODE_COHERENT,
+            'category'   => $scope,
             'attributes' => [
                 'pa_color' => 'black',
                 'pa_size'  => 'm',
@@ -258,6 +265,7 @@ class T18Test
         // 2. WC-compatible mode
         $filterCompatible = [
             'facet_mode' => FacetQuery::MODE_COMPATIBLE,
+            'category'   => $scope,
             'attributes' => [
                 'pa_color' => 'black',
                 'pa_size'  => 'm',

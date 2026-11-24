@@ -184,6 +184,14 @@ class T17Test
     {
         echo "Testing R67 (filter_sort_diff)...\n";
 
+        // P050: existing catalog products also match red, 30-120 and "Cotton" and fill the bounded first
+        // page. Category values are run-unique, and every non-category step filters on a scope
+        // category only these three fixtures carry.
+        $sfx    = strtolower(wp_generate_password(6, false));
+        $shoes  = "shoes-{$sfx}";
+        $shirts = "shirts-{$sfx}";
+        $scope  = "t17-r67-{$sfx}";
+
         // Setup test products with diverse attributes
         $p1 = $this->createProductInCatalog([
             'title'       => 'Alpha Running Shoes',
@@ -192,7 +200,8 @@ class T17Test
             'on_sale'     => false,
             'total_sales' => 50,
             'facets'      => [
-                ['key' => 'category', 'value' => 'shoes'],
+                ['key' => 'category', 'value' => $shoes],
+                ['key' => 'category', 'value' => $scope],
                 ['key' => 'pa_color', 'value' => 'red'],
             ],
             'sku'         => 'SKU-ALPHA-SHOES',
@@ -205,7 +214,8 @@ class T17Test
             'on_sale'     => true,
             'total_sales' => 20,
             'facets'      => [
-                ['key' => 'category', 'value' => 'shoes'],
+                ['key' => 'category', 'value' => $shoes],
+                ['key' => 'category', 'value' => $scope],
                 ['key' => 'pa_color', 'value' => 'blue'],
             ],
             'sku'         => 'SKU-BETA-SHOES',
@@ -218,35 +228,36 @@ class T17Test
             'on_sale'     => true,
             'total_sales' => 100,
             'facets'      => [
-                ['key' => 'category', 'value' => 'shirts'],
+                ['key' => 'category', 'value' => $shirts],
+                ['key' => 'category', 'value' => $scope],
                 ['key' => 'pa_color', 'value' => 'red'],
             ],
             'sku'         => 'SKU-GAMMA-SHIRT',
         ]);
 
         // 1. Filter by category = shoes
-        $res = $this->query->execute(['category' => 'shoes', 'sort' => 'price_asc']);
+        $res = $this->query->execute(['category' => $shoes, 'sort' => 'price_asc']);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p1, $pids, true) || !in_array($p2, $pids, true) || in_array($p3, $pids, true)) {
             throw new \RuntimeException("R67 Failed: Category filter mismatch");
         }
 
         // 2. Filter by category = shoes AND in_stock = true
-        $res = $this->query->execute(['category' => 'shoes', 'in_stock' => true]);
+        $res = $this->query->execute(['category' => $shoes, 'in_stock' => true]);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p1, $pids, true) || in_array($p2, $pids, true)) {
             throw new \RuntimeException("R67 Failed: in_stock filter mismatch");
         }
 
         // 3. Filter by attribute pa_color = red
-        $res = $this->query->execute(['attributes' => ['pa_color' => 'red']]);
+        $res = $this->query->execute(['category' => $scope, 'attributes' => ['pa_color' => 'red']]);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p1, $pids, true) || !in_array($p3, $pids, true) || in_array($p2, $pids, true)) {
             throw new \RuntimeException("R67 Failed: Attribute filter mismatch");
         }
 
         // 4. Price range filter: 30 <= price <= 120
-        $res = $this->query->execute(['min_price' => 30.0, 'max_price' => 120.0, 'sort' => 'price_asc']);
+        $res = $this->query->execute(['category' => $scope, 'min_price' => 30.0, 'max_price' => 120.0, 'sort' => 'price_asc']);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p3, $pids, true) || !in_array($p1, $pids, true) || in_array($p2, $pids, true)) {
             throw new \RuntimeException("R67 Failed: Price range filter mismatch");
@@ -259,14 +270,14 @@ class T17Test
         }
 
         // 5. Search by SKU
-        $res = $this->query->execute(['search' => 'BETA-SHOES']);
+        $res = $this->query->execute(['category' => $scope, 'search' => 'BETA-SHOES']);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p2, $pids, true) || in_array($p1, $pids, true)) {
             throw new \RuntimeException("R67 Failed: SKU search filter mismatch");
         }
 
         // 6. Search by Title
-        $res = $this->query->execute(['search' => 'Cotton']);
+        $res = $this->query->execute(['category' => $scope, 'search' => 'Cotton']);
         $pids = array_column($res['items'], 'product_id');
         if (!in_array($p3, $pids, true) || in_array($p1, $pids, true)) {
             throw new \RuntimeException("R67 Failed: Title search filter mismatch");

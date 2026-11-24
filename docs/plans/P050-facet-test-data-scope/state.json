@@ -1,0 +1,169 @@
+{
+  "id": "P050",
+  "title": "T17/T18 catalog filter tests scope their fixtures away from existing catalog data",
+  "status": "done",
+  "content_hash": "703e8f2cc04b1251d9b45cc1c3122fa754fb5d01dfaae1cf150fb0e89ef38de5",
+  "tasks": [
+    {
+      "id": "P050.1",
+      "title": "Scope T17 R67 and T18 R71 fixtures with run-unique category facets; re-run T17-T19 evidence",
+      "depends_on": [],
+      "read_first": [
+        "docs/07-testing.md",
+        "src/Application/Catalog/FacetQuery.php",
+        "src/Application/Catalog/CatalogQuery.php",
+        "tests/integration/T17Test.php",
+        "tests/integration/T18Test.php"
+      ],
+      "files": [
+        "tests/integration/T17Test.php",
+        "tests/integration/T18Test.php",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/T17Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/T18Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T17Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T18Test.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T17Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "6b96b503be60b32ae407cb70b239169b41fdda17deea628d15ea32b9a3a554e0",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550984951-dd485dad.log",
+          "time": "2026-11-24T20:09:44.951Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/T18Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "d601021d44e345a2a3a2fce8155255355c479d6fd71a93eeb9c08e949e97b9ae",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550985039-c1fcf097.log",
+          "time": "2026-11-24T20:09:45.039Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T17Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "3e8191aaf36bc56c603a2291cc71af19bc3d3fcbc59518744e8857507865ae07",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550988647-9f58ad36.log",
+          "time": "2026-11-24T20:09:48.647Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T18Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "707a0e12dc98528bf73203fa330fd3ed0e4ca3f0c2b85a02325592c9f5277724",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550991059-195cef2d.log",
+          "time": "2026-11-24T20:09:51.059Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "5d820ef357101f03ce919c3f60a6b73c22f1df2ab1b8c41d8bc087ca9a84601e",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550991170-647d271c.log",
+          "time": "2026-11-24T20:09:51.171Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "fe1c98394cc5fe7238dd85cc3de69a1521fe43fb",
+          "content_digest": "c8269fbaa9cc0d0100f77a26f89c77afca02dcb6e4564c528b4ef22e351deb76",
+          "output_sha256": "4b485d17c7e1beb004fa6823265aa1d5de51d02279f67c9dbceca9697b37cf1c",
+          "output_path": "docs/plans/P050-facet-test-data-scope/command-1795550991288-ef5b7384.log",
+          "time": "2026-11-24T20:09:51.288Z"
+        }
+      ],
+      "started_at": "2026-11-24T20:06:59.048Z"
+    }
+  ],
+  "approved_hash": "703e8f2cc04b1251d9b45cc1c3122fa754fb5d01dfaae1cf150fb0e89ef38de5",
+  "report_hash": "0b486f11f448be046e096efc40e5bba3d5d9f85b479fc1b297f1086fdb4ab802"
+}
