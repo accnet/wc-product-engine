@@ -31,6 +31,12 @@ class LegacyCapture
     private static int $syncDepth = 0;
     private static string $currentOrigin = '';
 
+    /** @var array<int, int> Product/variation posts being permanently deleted => parent product ID or 0 (P054). */
+    private static array $deleting = [];
+
+    /** @var array<int, int> Parent product ID => number of its variations being deleted (P054). */
+    private static array $deferredParents = [];
+
     private wpdb $wpdb;
     private ProductRepository $productRepo;
     private OptionsRepository $optionsRepo;
@@ -122,6 +128,10 @@ class LegacyCapture
         add_action('before_delete_post', [$this, 'onPostDeleted'], 20, 1);
         add_action('delete_post', [$this, 'onPostDeleted'], 20, 1);
         add_action('deleted_post', [$this, 'onPostDeleted'], 20, 1);
+        // P054: no capture of a post while it is being deleted. Registered before WooCommerce deletes a parent's
+        // variations (priority 10), finished after the tombstone above.
+        add_action('before_delete_post', [$this, 'onDeletionStarted'], 1, 1);
+        add_action('deleted_post', [$this, 'onDeletionFinished'], 30, 1);
 
         // Taxonomy / Term hooks (R150)
         add_action('set_object_terms', [$this, 'onObjectTermsSet'], 20, 6);
@@ -243,6 +253,74 @@ class LegacyCapture
     }
 
     /**
+     * A product or variation post starts being permanently deleted (P054).
+     *
+     * wp_delete_post() removes the post's meta row by row and its terms before the post row. Each of
+     * those fires a capture hook, and capturing the half-deleted post rewrote, or after a purge
+     * recreated, its native rows. Until deleted_post, captures of the post (and of the parent of a
+     * variation being deleted) are skipped; the deletion itself is recorded by the tombstone.
+     */
+    public function onDeletionStarted($postId): void
+    {
+        $id = (int)$postId;
+        if ($id <= 0) {
+            return;
+        }
+        $post = $this->wpdb->get_row($this->wpdb->prepare(
+            "SELECT post_type, post_parent FROM {$this->wpdb->posts} WHERE ID = %d",
+            $id
+        ), ARRAY_A);
+        if (!$post || !in_array($post['post_type'], ['product', 'product_variation'], true)) {
+            return;
+        }
+        $parentId = $post['post_type'] === 'product_variation' ? (int)$post['post_parent'] : 0;
+        self::$deleting[$id] = $parentId;
+        if ($parentId > 0) {
+            self::$deferredParents[$parentId] = (self::$deferredParents[$parentId] ?? 0) + 1;
+        }
+    }
+
+    /**
+     * The post row is gone (P054). A deleted variation's parent, if it still exists and is not being
+     * deleted itself, is captured once so its native aggregate reflects the removal.
+     */
+    public function onDeletionFinished($postId): void
+    {
+        $id = (int)$postId;
+        if (!array_key_exists($id, self::$deleting)) {
+            return;
+        }
+        $parentId = self::$deleting[$id];
+        unset(self::$deleting[$id]);
+        if ($parentId <= 0) {
+            return;
+        }
+        if (--self::$deferredParents[$parentId] > 0) {
+            return;
+        }
+        unset(self::$deferredParents[$parentId]);
+        if (isset(self::$deleting[$parentId]) || $this->shouldIgnoreHook()) {
+            return;
+        }
+        $parentType = $this->wpdb->get_var($this->wpdb->prepare(
+            "SELECT post_type FROM {$this->wpdb->posts} WHERE ID = %d",
+            $parentId
+        ));
+        if ($parentType === 'product') {
+            $this->markDirty($parentId);
+            $this->captureLegacyProduct($parentId, 'variation_deleted');
+        }
+    }
+
+    /**
+     * Whether a product (or a variation of it) is in the middle of a permanent delete (P054).
+     */
+    public function isBeingDeleted(int $productId): bool
+    {
+        return isset(self::$deleting[$productId]) || isset(self::$deferredParents[$productId]);
+    }
+
+    /**
      * Handle taxonomy / term assignment (R150).
      */
     public function onObjectTermsSet($objectId, $terms, $ttIds, $taxonomy, $append, $oldTtIds): void
@@ -337,6 +415,14 @@ class LegacyCapture
      */
     public function captureLegacyProduct(int $parentAggregateId, string $trigger = 'manual'): array
     {
+        // P054: a post being permanently deleted is not captured; its tombstone records the delete.
+        if ($this->isBeingDeleted($parentAggregateId)) {
+            return [
+                'status' => 'skipped_deleting',
+                'id'     => $parentAggregateId,
+            ];
+        }
+
         // AC-T37-02: Native authority protection
         if ($this->isNativeAuthority($parentAggregateId)) {
             $this->logAuditAlert('native_authority_legacy_mismatch', $parentAggregateId, [

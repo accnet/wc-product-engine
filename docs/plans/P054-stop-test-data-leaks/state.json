@@ -1,0 +1,500 @@
+{
+  "id": "P054",
+  "title": "Stop native rows leaking from deleted legacy products and leaky tests; residue gate sees orphan native rows",
+  "status": "in_progress",
+  "content_hash": "09c269a1fd00c1460e67a25bad383f4f5f8ab06ba5d54b8528ea4aac9931087b",
+  "tasks": [
+    {
+      "id": "P054.1",
+      "title": "LegacyCapture ignores hooks of posts being permanently deleted and captures a deleted variation's parent once; T37 stops leaking",
+      "depends_on": [],
+      "read_first": [
+        "docs/02-domain.md",
+        "src/Application/Migration/LegacyCapture.php",
+        "tests/integration/T37Test.php"
+      ],
+      "files": [
+        "src/Application/Migration/LegacyCapture.php",
+        "tests/integration/LegacyCaptureDeleteTest.php",
+        "tests/integration/support/leak-check.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Application/Migration/LegacyCapture.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/LegacyCaptureDeleteTest.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/support/leak-check.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/LegacyCaptureDeleteTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/leak-check.php",
+          "snapshot",
+          "/tmp/wpe-p054-leak-t37.json"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T37Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/leak-check.php",
+          "compare",
+          "/tmp/wpe-p054-leak-t37.json"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T38Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T39Test.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CaptureVariationBatchTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/LegacyHashBatchTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "php",
+            "-l",
+            "src/Application/Migration/LegacyCapture.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "09e9561bd662a63fb9995ac880b942e1a5d0aff17e7cc3159c30f0de18ad3f5c",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556706563-598c27b3.log",
+          "time": "2026-11-24T21:45:06.564Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/LegacyCaptureDeleteTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "59a708dea6f7a43f93bd495df0ef3cd27931403992d0f29a283e21fcc65dcc1f",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556706663-078f934d.log",
+          "time": "2026-11-24T21:45:06.663Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-l",
+            "tests/integration/support/leak-check.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "e43965e81b00bccf44b53b53f650f785ad38e361d9ee57acefbf954bd2fb87aa",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556706757-1effefcb.log",
+          "time": "2026-11-24T21:45:06.758Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LegacyCaptureDeleteTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "07a9383ee452995507798af2ab973d37ee0294d0f50548cd63b21638ff51b59a",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556709798-04ba8a36.log",
+          "time": "2026-11-24T21:45:09.798Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/leak-check.php",
+            "snapshot",
+            "/tmp/wpe-p054-leak-t37.json"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "5f73c35b79dcc0fbd96a775b6f61b8d0089baa2112124d67c1560220b8d236d1",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556711110-8c1948cd.log",
+          "time": "2026-11-24T21:45:11.110Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T37Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "8ecf23e213397ddd8a22b6cb9bf2f44bc83fdc6369b98745ec4d652f81f7ca3c",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556744016-dd30b8bd.log",
+          "time": "2026-11-24T21:45:44.017Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/support/leak-check.php",
+            "compare",
+            "/tmp/wpe-p054-leak-t37.json"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "04eab5f2e857c56260999ff4d631a8cdf4777497ecc5ca8cae757c91ad19c6e3",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556745462-b37b59dd.log",
+          "time": "2026-11-24T21:45:45.463Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T38Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "4dd6c6855827827f926c17d44da5e2c6ebc0129ca9f835f29ed1cb669dac94ff",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556788703-0223adaa.log",
+          "time": "2026-11-24T21:46:28.703Z"
+        },
+        {
+          "argv": [
+            "php",
+            "-d",
+            "zend.assertions=1",
+            "-d",
+            "assert.exception=1",
+            "/usr/local/bin/wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/T39Test.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "cb889ebea7abf1ab3eb6a93891207e5f6ee1b6adff34398334e1794c0f61293a",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556790189-f639b691.log",
+          "time": "2026-11-24T21:46:30.190Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/CaptureVariationBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "e2da8f82d15024ae4d3ed3f5e3ef180b2e3782d2a326b5b69f23ad0f06b2fd76",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556793160-6d6f2cf8.log",
+          "time": "2026-11-24T21:46:33.161Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/LegacyHashBatchTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "4cbff309081623841b44324aad816279f6b1987991300e2619fc29834ad63e46",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556794567-54b60870.log",
+          "time": "2026-11-24T21:46:34.567Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "515b398a4919cd3819b8fd8b0f18f957c7fd5c0c48f2539c2808776ee408df31",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556794684-fd6ecc86.log",
+          "time": "2026-11-24T21:46:34.684Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "2e5cd3bfd84e2d3a606a40616e0e46df364a5a67",
+          "content_digest": "7355e69d42efeeeee075047bfe969e1a059699de62ca4294537d37d7a19d73f9",
+          "output_sha256": "ef41bc46f0ef30fd091cf3e335891a476e86d5f0de8b16bf61b39381ca0f7d2d",
+          "output_path": "docs/plans/P054-stop-test-data-leaks/command-1795556794802-10083488.log",
+          "time": "2026-11-24T21:46:34.802Z"
+        }
+      ],
+      "started_at": "2026-11-24T21:44:57.491Z"
+    },
+    {
+      "id": "P054.2",
+      "title": "T06 and CatalogShellIntegrityTest remove the products and shells they create",
+      "depends_on": [
+        "P054.1"
+      ],
+      "read_first": [
+        "tests/integration/T06Test.php",
+        "tests/integration/CatalogShellIntegrityTest.php",
+        "src/Infrastructure/Database/ProductPurger.php"
+      ],
+      "files": [
+        "tests/integration/T06Test.php",
+        "tests/integration/CatalogShellIntegrityTest.php"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "tests/integration/T06Test.php"
+        ],
+        [
+          "php",
+          "-l",
+          "tests/integration/CatalogShellIntegrityTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/leak-check.php",
+          "snapshot",
+          "/tmp/wpe-p054-leak-t06.json"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T06Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/CatalogShellIntegrityTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/support/leak-check.php",
+          "compare",
+          "/tmp/wpe-p054-leak-t06.json"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    },
+    {
+      "id": "P054.3",
+      "title": "Residue gate detects orphan native rows; clean test_wpe_bench and purge the 17 live orphans with a backup; native price parity passes",
+      "depends_on": [
+        "P054.2"
+      ],
+      "read_first": [
+        "scripts/test-isolation.mjs",
+        "src/Bootstrap/FixtureHarness.php"
+      ],
+      "files": [
+        "scripts/test-isolation.mjs",
+        "src/Bootstrap/FixtureHarness.php",
+        "docs/evidence/residue-cleanup-p054-bench.json",
+        "docs/evidence/orphan-purge-p054-live.json",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "php",
+          "-l",
+          "src/Bootstrap/FixtureHarness.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/T04Test.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/NativePriceReadTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/NativeAttributeReadTest.php"
+        ],
+        [
+          "php",
+          "-d",
+          "zend.assertions=1",
+          "-d",
+          "assert.exception=1",
+          "/usr/local/bin/wp",
+          "--path=/var/www/site1.localhost",
+          "eval-file",
+          "tests/integration/NativePriceReadTest.php"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "todo",
+      "runs": []
+    }
+  ],
+  "approved_hash": "09c269a1fd00c1460e67a25bad383f4f5f8ab06ba5d54b8528ea4aac9931087b"
+}

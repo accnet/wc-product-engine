@@ -53,3 +53,4 @@
 - P051 — test_wpe_bench hygiene and stale test expectations (T04, T45, native read parity, schema version, hydration budget) (in_progress)
 - P052 — P051.2 amendment: schema version expectation and both data-store hydration budgets with selector price features off (done)
 - P053 — Release 1.2.0: version bump and distribution zip (done)
+- P054 — Stop native rows leaking from deleted legacy products and leaky tests; residue gate sees orphan native rows (in_progress)
