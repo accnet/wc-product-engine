@@ -1,0 +1,225 @@
+{
+  "id": "P039",
+  "title": "Complete product purge and bulk delete all products",
+  "status": "done",
+  "content_hash": "61f8601679d0e8db6fb5be68b3a66ce28265790a9f34e91c8e29c79f875a1802",
+  "tasks": [
+    {
+      "id": "P039.1",
+      "title": "ProductPurger removes every native row of a purged product; option IDs retry on duplicate key",
+      "depends_on": [],
+      "read_first": [
+        "docs/03-database-schema.md",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Infrastructure/Database/OptionsRepository.php",
+        "src/Compatibility/WooDataStore/ProductLifecycle.php"
+      ],
+      "files": [
+        "src/Infrastructure/Database/ProductPurger.php",
+        "src/Infrastructure/Database/ProductRepository.php",
+        "src/Infrastructure/Database/OptionsRepository.php",
+        "tests/integration/ProductPurgeCompletenessTest.php",
+        "tests/integration/ProductPurgeOutboxTest.php"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPurgeCompletenessTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPurgeOutboxTest.php"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPurgeCompletenessTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "607e32e05dee44dd9d3b0ecccb3d989c29775fb477faf925565aa668aba343ee",
+          "output_sha256": "8c2edbcd611478b0c37bbc51e9315fe7e8abd1cd7a4577c1eac98f9f437f0156",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795514791929-c6bde59a.log",
+          "time": "2026-11-24T10:06:31.930Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPurgeOutboxTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "607e32e05dee44dd9d3b0ecccb3d989c29775fb477faf925565aa668aba343ee",
+          "output_sha256": "356b95e3211b925ce783b5580dc972973a9df620506237d1fb7af8050a0e2aee",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795514793466-1eee5a33.log",
+          "time": "2026-11-24T10:06:33.466Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "607e32e05dee44dd9d3b0ecccb3d989c29775fb477faf925565aa668aba343ee",
+          "output_sha256": "276f7efa87d16498610ac3d454e76d940a54273c051ea90c71578dc199e15f97",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795514793584-740b3f9c.log",
+          "time": "2026-11-24T10:06:33.585Z"
+        }
+      ],
+      "started_at": "2026-11-24T10:03:42.174Z"
+    },
+    {
+      "id": "P039.2",
+      "title": "Bulk product purge: dry-run plan, batched purge job, WP-CLI command and Operations Danger Zone action",
+      "depends_on": [
+        "P039.1"
+      ],
+      "read_first": [
+        "docs/08-operations.md",
+        "docs/09-ui.md",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "src/Cli/Commands.php"
+      ],
+      "files": [
+        "src/Application/Catalog/ProductBulkPurge.php",
+        "src/Admin/OperationsPage.php",
+        "src/Admin/SettingsPage.php",
+        "assets/admin/settings.js",
+        "src/Cli/Commands.php",
+        "tests/integration/ProductBulkPurgeTest.php",
+        "docs/08-operations.md",
+        "docs/09-ui.md",
+        "docs/NOTES.md"
+      ],
+      "dod": [
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductBulkPurgeTest.php"
+        ],
+        [
+          "wp",
+          "--path=/var/www/site1.localhost",
+          "--require=tests/performance/use-test-db.php",
+          "eval-file",
+          "tests/integration/ProductPurgeCompletenessTest.php"
+        ],
+        [
+          "node",
+          "--check",
+          "assets/admin/settings.js"
+        ],
+        [
+          "node",
+          "scripts/check-docs.mjs",
+          "--strict"
+        ],
+        [
+          "node",
+          "scripts/guard.mjs",
+          "--all"
+        ]
+      ],
+      "status": "done",
+      "runs": [
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductBulkPurgeTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "912854bf9c89622b19ca956cfb524cbab547b51089b13517d6b5a3bfc917b7d1",
+          "output_sha256": "7c3d9e4cc21c066e41ddced20d10e2e92bf3c6f8eab23bd956b31e8ae84e92f7",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795515333496-602972af.log",
+          "time": "2026-11-24T10:15:33.497Z"
+        },
+        {
+          "argv": [
+            "wp",
+            "--path=/var/www/site1.localhost",
+            "--require=tests/performance/use-test-db.php",
+            "eval-file",
+            "tests/integration/ProductPurgeCompletenessTest.php"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "912854bf9c89622b19ca956cfb524cbab547b51089b13517d6b5a3bfc917b7d1",
+          "output_sha256": "8c2edbcd611478b0c37bbc51e9315fe7e8abd1cd7a4577c1eac98f9f437f0156",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795515335672-f5999850.log",
+          "time": "2026-11-24T10:15:35.672Z"
+        },
+        {
+          "argv": [
+            "node",
+            "--check",
+            "assets/admin/settings.js"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "912854bf9c89622b19ca956cfb524cbab547b51089b13517d6b5a3bfc917b7d1",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795515335748-4eff459a.log",
+          "time": "2026-11-24T10:15:35.749Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/check-docs.mjs",
+            "--strict"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "912854bf9c89622b19ca956cfb524cbab547b51089b13517d6b5a3bfc917b7d1",
+          "output_sha256": "282f0ff0b8e56f66bc4c1fddd9e42afb051864cc34b22529a02ced463d72dd64",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795515335856-4ee21720.log",
+          "time": "2026-11-24T10:15:35.857Z"
+        },
+        {
+          "argv": [
+            "node",
+            "scripts/guard.mjs",
+            "--all"
+          ],
+          "exit_code": 0,
+          "commit": "98697b993c32437948e178cd5bf4cd15e6bb647d",
+          "content_digest": "912854bf9c89622b19ca956cfb524cbab547b51089b13517d6b5a3bfc917b7d1",
+          "output_sha256": "f7efe8407267263e4b0c2073558ddab00bb4a48f915d86dd8d6cd6c3c9dc4d97",
+          "output_path": "docs/plans/P039-bulk-product-purge/command-1795515335968-39923cbc.log",
+          "time": "2026-11-24T10:15:35.969Z"
+        }
+      ],
+      "started_at": "2026-11-24T10:07:46.349Z"
+    }
+  ],
+  "approved_hash": "61f8601679d0e8db6fb5be68b3a66ce28265790a9f34e91c8e29c79f875a1802",
+  "report_hash": "1914509ae51b9c296b0dcef6716c512f20c749eefea62a2d3b40498f8e579fd1"
+}

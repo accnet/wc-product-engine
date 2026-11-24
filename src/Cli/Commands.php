@@ -20,6 +20,7 @@ use WPE\Admin\OperationsPage;
  *   wp wpe audit [--limit=<int>]
  *   wp wpe rollback [--cohort-ids=<ids>] [--timeout=<sec>]
  *   wp wpe export [--format=<woo|shopify>] [--profile=<machine|spreadsheet_safe>]
+ *   wp wpe products purge (--all|--status=<s>|--category=<slug>|--import-job=<id>) [--include-ordered] [--yes]
  */
 class Commands
 {
@@ -43,6 +44,7 @@ class Commands
         \WP_CLI::add_command('wpe gates', [self::class, 'gates']);
         \WP_CLI::add_command('wpe cutover', [self::class, 'cutover']);
         \WP_CLI::add_command('wpe hygiene', [self::class, 'hygiene']);
+        \WP_CLI::add_command('wpe products', [self::class, 'products']);
         \WP_CLI::add_command('wpe feeds', [self::class, 'feeds']);
     }
 
@@ -520,6 +522,86 @@ class Commands
             \WP_CLI::success("Pre-cutover hygiene cleanup applied.");
         } else {
             \WP_CLI::log("Dry-run only. Re-run with --apply to remove unreferenced residue.");
+        }
+    }
+
+    /**
+     * Permanently delete products in batches (P039). Dry run unless --yes.
+     *
+     * Usage:
+     *   wp wpe products purge --all [--include-ordered] [--batch-size=200] [--yes]
+     *   wp wpe products purge --status=draft,trash [--yes]
+     *   wp wpe products purge --category=uncategorized [--yes]
+     *   wp wpe products purge --import-job=<shopify-import-job-id> [--yes]
+     *   wp wpe products purge --job=<purge-job-id>      (resume an interrupted purge)
+     */
+    public static function products(array $args, array $assocArgs): void
+    {
+        if (($args[0] ?? '') !== 'purge') {
+            \WP_CLI::error('Usage: wp wpe products purge (--all|--status=<s>|--category=<slug>|--import-job=<id>) [--include-ordered] [--yes]');
+            return;
+        }
+        $ops = OperationsPage::getInstance();
+        $batchSize = isset($assocArgs['batch-size']) ? max(1, (int)$assocArgs['batch-size']) : 200;
+        $jobId = (string)($assocArgs['job'] ?? '');
+
+        try {
+            if ($jobId === '') {
+                $criteria = ['include_ordered' => !empty($assocArgs['include-ordered'])];
+                if (!empty($assocArgs['all'])) {
+                    $criteria['scope'] = 'all';
+                } elseif (isset($assocArgs['status'])) {
+                    $criteria += ['scope' => 'status', 'status' => (string)$assocArgs['status']];
+                } elseif (isset($assocArgs['category'])) {
+                    $criteria += ['scope' => 'category', 'category' => (string)$assocArgs['category']];
+                } elseif (isset($assocArgs['import-job'])) {
+                    $criteria += ['scope' => 'import_job', 'import_job' => (string)$assocArgs['import-job']];
+                } else {
+                    \WP_CLI::error('Choose what to delete: --all, --status=<s>, --category=<slug> or --import-job=<id>.');
+                    return;
+                }
+
+                $plan = $ops->handleAction('purge_products', ['mode' => 'plan', 'criteria' => $criteria], 0);
+                \WP_CLI::log(json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                if (empty($assocArgs['yes'])) {
+                    \WP_CLI::log('Dry run only. Re-run with --yes to delete these products permanently.');
+                    return;
+                }
+                if ((int)$plan['products'] === 0) {
+                    \WP_CLI::success('Nothing to delete.');
+                    return;
+                }
+                $start = $ops->handleAction('purge_products', [
+                    'mode'     => 'start',
+                    'criteria' => $criteria,
+                    'confirm'  => (string)$plan['products'],
+                ], 0);
+                $jobId = (string)$start['job_id'];
+                \WP_CLI::log("Purge job {$jobId} started.");
+            }
+
+            do {
+                $res = $ops->handleAction('purge_products', [
+                    'mode'        => 'run',
+                    'job_id'      => $jobId,
+                    'batch_size'  => $batchSize,
+                    'max_batches' => 5,
+                ], 0);
+                $c = $res['counts'] ?? [];
+                \WP_CLI::log(sprintf(
+                    'Deleted %d product(s), %d variation(s); %d remaining.',
+                    (int)($c['products'] ?? 0),
+                    (int)($c['variations'] ?? 0),
+                    (int)($res['remaining'] ?? 0)
+                ));
+            } while (($res['status'] ?? '') !== 'completed');
+
+            if ((int)($c['failed'] ?? 0) > 0) {
+                \WP_CLI::warning("{$c['failed']} product(s) could not be deleted; see the PHP error log.");
+            }
+            \WP_CLI::success("Purge job {$jobId} completed. Media files were kept ({$c['attachments_kept']} attachment(s) were attached to deleted products).");
+        } catch (\Throwable $e) {
+            \WP_CLI::error($e->getMessage());
         }
     }
 }

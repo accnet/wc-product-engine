@@ -723,32 +723,11 @@ class ProductRepository
             return $this->trash($productId);
         }
 
-        $now = gmdate('Y-m-d H:i:s.u');
         $this->wpdb->query("START TRANSACTION");
 
         try {
-            $variants = $this->wpdb->get_col($this->wpdb->prepare(
-                "SELECT id FROM {$this->tableVariants} WHERE product_id = %d",
-                $productId
-            ));
-
-            $allIds = array_merge([$productId], array_map('intval', $variants));
-
-            foreach ($allIds as $id) {
-                $this->wpdb->delete($this->tableSkuRegistry, ['object_id' => $id]);
-                $this->wpdb->delete($this->tableInventory, ['owner_id' => $id]);
-                $this->wpdb->delete($this->tableObjectState, ['object_id' => $id]);
-            }
-
-            $this->wpdb->delete($this->tableProductMedia, ['product_id' => $productId]);
-            $this->wpdb->delete($this->tableProductLinks, ['product_id' => $productId]);
-            $this->wpdb->delete($this->tableDownloads, ['object_id' => $productId]);
-            $this->wpdb->delete($this->tableVariants, ['product_id' => $productId]);
-            $this->wpdb->delete($this->tableProducts, ['id' => $productId]);
-
-            // Nothing is left to project for a purged aggregate; retire its queued events
-            // so they do not linger as pending outbox work.
-            $this->outboxWorker->retireAggregateEvents($allIds);
+            // Every native row of the aggregate and its variants, plus queued outbox events (P039).
+            (new ProductPurger($this->wpdb, $this->outboxWorker))->purge([$productId]);
 
             $this->wpdb->query("COMMIT");
 

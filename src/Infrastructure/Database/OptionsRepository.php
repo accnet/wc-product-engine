@@ -103,32 +103,23 @@ class OptionsRepository
             $position = (int)$data['position'];
         }
 
-        if (!empty($data['id'])) {
-            $optionId = (int)$data['id'];
-        } else {
-            $maxId = (int)$this->wpdb->get_var("SELECT COALESCE(MAX(id), 0) FROM {$this->tableOptions}");
-            $optionId = $maxId + 1;
-        }
-
-        $res = $this->wpdb->insert(
+        $row = [
+            'product_id'         => $productId,
+            'key'                => $key,
+            'name'               => $name,
+            'taxonomy'           => $data['taxonomy'] ?? null,
+            'position'           => $position,
+            'visible'            => isset($data['visible']) ? (!empty($data['visible']) ? 1 : 0) : 1,
+            'used_for_variation' => isset($data['used_for_variation']) ? (!empty($data['used_for_variation']) ? 1 : 0) : 1,
+            'default_value_id'   => null,
+        ];
+        $optionId = $this->insertWithId(
             $this->tableOptions,
-            [
-                'id'                 => $optionId,
-                'product_id'         => $productId,
-                'key'                => $key,
-                'name'               => $name,
-                'taxonomy'           => $data['taxonomy'] ?? null,
-                'position'           => $position,
-                'visible'            => isset($data['visible']) ? (!empty($data['visible']) ? 1 : 0) : 1,
-                'used_for_variation' => isset($data['used_for_variation']) ? (!empty($data['used_for_variation']) ? 1 : 0) : 1,
-                'default_value_id'   => null,
-            ],
-            ['%d', '%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d']
+            $row,
+            ['%d', '%s', '%s', '%s', '%d', '%d', '%d', '%d'],
+            !empty($data['id']) ? (int)$data['id'] : null,
+            'option'
         );
-
-        if ($res === false) {
-            throw new RuntimeException("Failed to insert option: " . $this->wpdb->last_error);
-        }
 
         // If values are supplied in creation payload, create them
         $values = [];
@@ -320,32 +311,59 @@ class OptionsRepository
             $position = (int)$data['position'];
         }
 
-        if (!empty($data['id'])) {
-            $valueId = (int)$data['id'];
-        } else {
-            $maxId = (int)$this->wpdb->get_var("SELECT COALESCE(MAX(id), 0) FROM {$this->tableOptionValues}");
-            $valueId = $maxId + 1;
-        }
-
-        $res = $this->wpdb->insert(
+        $row = [
+            'option_id' => $optionId,
+            'value_key' => $valueKey,
+            'label'     => $label,
+            'term_id'   => $data['term_id'] ?? null,
+            'position'  => $position,
+            'swatch'    => isset($data['swatch']) ? json_encode($data['swatch'], JSON_UNESCAPED_UNICODE) : null,
+        ];
+        $valueId = $this->insertWithId(
             $this->tableOptionValues,
-            [
-                'id'        => $valueId,
-                'option_id' => $optionId,
-                'value_key' => $valueKey,
-                'label'     => $label,
-                'term_id'   => $data['term_id'] ?? null,
-                'position'  => $position,
-                'swatch'    => isset($data['swatch']) ? json_encode($data['swatch'], JSON_UNESCAPED_UNICODE) : null,
-            ],
-            ['%d', '%d', '%s', '%s', '%d', '%d', '%s']
+            $row,
+            ['%d', '%s', '%s', '%d', '%d', '%s'],
+            !empty($data['id']) ? (int)$data['id'] : null,
+            'option value'
         );
 
-        if ($res === false) {
-            throw new RuntimeException("Failed to insert option value: " . $this->wpdb->last_error);
+        return $this->getOptionValueById($valueId);
+    }
+
+    /**
+     * Insert a row whose BIGINT primary key is not AUTO_INCREMENT. A caller-supplied ID is used as
+     * is; otherwise the next ID after MAX(id) is tried, moving on to the following ID when a
+     * concurrent writer took it first (duplicate PRIMARY key), so parallel imports do not fail (P039).
+     *
+     * @return int The inserted ID
+     */
+    private function insertWithId(string $table, array $row, array $formats, ?int $fixedId, string $label): int
+    {
+        $formats = array_merge(['%d'], $formats);
+        if ($fixedId !== null) {
+            if ($this->wpdb->insert($table, array_merge(['id' => $fixedId], $row), $formats) === false) {
+                throw new RuntimeException("Failed to insert {$label}: " . $this->wpdb->last_error);
+            }
+            return $fixedId;
         }
 
-        return $this->getOptionValueById($valueId);
+        $candidate = 0;
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $maxId = (int)$this->wpdb->get_var("SELECT COALESCE(MAX(id), 0) FROM {$table}");
+            $candidate = max($maxId + 1, $candidate + 1);
+            $suppress = $this->wpdb->suppress_errors(true);
+            $res = $this->wpdb->insert($table, array_merge(['id' => $candidate], $row), $formats);
+            $this->wpdb->suppress_errors($suppress);
+            if ($res !== false) {
+                return $candidate;
+            }
+            $error = (string)$this->wpdb->last_error;
+            if (stripos($error, 'Duplicate entry') === false || stripos($error, "'PRIMARY'") === false) {
+                throw new RuntimeException("Failed to insert {$label}: " . $error);
+            }
+        }
+
+        throw new RuntimeException("Failed to insert {$label}: no free ID after 10 attempts (last tried {$candidate}).");
     }
 
     /**

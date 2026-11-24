@@ -965,6 +965,8 @@ class SettingsPage
                 </dl>
             </div>
 
+            <?php $this->renderProductPurgeCard($canOps); ?>
+
             <div class="wpe-card wpe-card--danger">
                 <h3><?php echo esc_html__('Danger Zone — Emergency Rollback', 'wc-product-engine'); ?></h3>
                 <p class="wpe-help">
@@ -990,6 +992,90 @@ class SettingsPage
                 </div>
             </form>
         </dialog>
+        <?php
+    }
+
+    /**
+     * Danger Zone card: permanently delete products in batches (P039). Preview first; the delete
+     * button only enables once the exact number of selected products is typed.
+     */
+    private function renderProductPurgeCard(bool $canOps): void
+    {
+        global $wpdb;
+        $categories = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false, 'number' => 500, 'orderby' => 'name']);
+        $categories = is_array($categories) ? $categories : [];
+        $imports = $wpdb->get_results(
+            "SELECT id, config, created_at FROM {$wpdb->prefix}wpe_jobs WHERE kind = 'shopify_import' ORDER BY created_at DESC LIMIT 20",
+            ARRAY_A
+        ) ?: [];
+        $statuses = [
+            'draft'   => __('Draft', 'wc-product-engine'),
+            'pending' => __('Pending review', 'wc-product-engine'),
+            'private' => __('Private', 'wc-product-engine'),
+            'trash'   => __('Trash', 'wc-product-engine'),
+            'publish' => __('Published', 'wc-product-engine'),
+        ];
+        ?>
+        <div class="wpe-card wpe-card--danger" id="wpe-purge-card">
+            <h3><?php echo esc_html__('Danger Zone — Delete Products Permanently', 'wc-product-engine'); ?></h3>
+            <p class="wpe-help">
+                <?php echo esc_html__('Deletes products with their variations and all their data in batches. This cannot be undone: export or back up first. Products that appear in orders are skipped unless you include them. Media files and categories are kept.', 'wc-product-engine'); ?>
+            </p>
+            <div class="wpe-ops-actions">
+                <label for="wpe-purge-scope"><?php echo esc_html__('What to delete', 'wc-product-engine'); ?></label>
+                <select id="wpe-purge-scope" class="wpe-input" <?php disabled(!$canOps); ?>>
+                    <option value="all"><?php echo esc_html__('All products', 'wc-product-engine'); ?></option>
+                    <option value="category"><?php echo esc_html__('Products in a category', 'wc-product-engine'); ?></option>
+                    <option value="status"><?php echo esc_html__('Products with a status', 'wc-product-engine'); ?></option>
+                    <option value="import_job"><?php echo esc_html__('Products from a Shopify import', 'wc-product-engine'); ?></option>
+                </select>
+                <span data-purge-scope="category" hidden>
+                    <label for="wpe-purge-category" class="screen-reader-text"><?php echo esc_html__('Category', 'wc-product-engine'); ?></label>
+                    <select id="wpe-purge-category" class="wpe-input">
+                        <?php foreach ($categories as $term) : ?>
+                            <option value="<?php echo esc_attr((string)$term->slug); ?>"><?php echo esc_html(sprintf('%s (%d)', $term->name, (int)$term->count)); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </span>
+                <span data-purge-scope="status" hidden>
+                    <label for="wpe-purge-status" class="screen-reader-text"><?php echo esc_html__('Status', 'wc-product-engine'); ?></label>
+                    <select id="wpe-purge-status" class="wpe-input">
+                        <?php foreach ($statuses as $value => $label) : ?>
+                            <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </span>
+                <span data-purge-scope="import_job" hidden>
+                    <label for="wpe-purge-import" class="screen-reader-text"><?php echo esc_html__('Shopify import', 'wc-product-engine'); ?></label>
+                    <select id="wpe-purge-import" class="wpe-input">
+                        <?php foreach ($imports as $job) :
+                            $cfg = json_decode((string)$job['config'], true) ?: [];
+                            ?>
+                            <option value="<?php echo esc_attr((string)$job['id']); ?>"><?php echo esc_html(sprintf('%s — %s', (string)($cfg['original_filename'] ?? $job['id']), substr((string)$job['created_at'], 0, 16))); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </span>
+                <label>
+                    <input type="checkbox" id="wpe-purge-include-ordered" <?php disabled(!$canOps); ?>>
+                    <?php echo esc_html__('Also delete products that appear in orders', 'wc-product-engine'); ?>
+                </label>
+                <button type="button" class="wpe-btn is-secondary" id="wpe-purge-preview" <?php disabled(!$canOps); ?>>
+                    <?php echo esc_html__('Preview', 'wc-product-engine'); ?>
+                </button>
+            </div>
+            <p class="wpe-help" id="wpe-purge-summary" hidden></p>
+            <div class="wpe-ops-actions" id="wpe-purge-confirm" hidden>
+                <label for="wpe-purge-confirm-input">
+                    <?php echo esc_html__('Type the number of products to confirm:', 'wc-product-engine'); ?>
+                    <strong id="wpe-purge-count"></strong>
+                </label>
+                <input type="text" id="wpe-purge-confirm-input" class="wpe-input" inputmode="numeric" autocomplete="off">
+                <button type="button" class="wpe-btn is-danger" id="wpe-purge-run" disabled>
+                    <?php echo esc_html__('Delete permanently', 'wc-product-engine'); ?>
+                </button>
+            </div>
+            <div id="wpe-purge-result" class="wpe-notice wpe-ops-result" role="status" hidden></div>
+        </div>
         <?php
     }
 

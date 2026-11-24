@@ -686,6 +686,139 @@
             }
         });
 
+        // Danger Zone: bulk product purge (P039). Preview -> type the count -> batched delete.
+        var $purgeScope = $('#wpe-purge-scope');
+        var $purgeSummary = $('#wpe-purge-summary');
+        var $purgeConfirm = $('#wpe-purge-confirm');
+        var $purgeInput = $('#wpe-purge-confirm-input');
+        var $purgeRun = $('#wpe-purge-run');
+        var $purgePreview = $('#wpe-purge-preview');
+        var $purgeResult = $('#wpe-purge-result');
+        var purgePlan = null;
+
+        function purgeCriteria() {
+            var scope = String($purgeScope.val() || 'all');
+            var criteria = { scope: scope, include_ordered: $('#wpe-purge-include-ordered').is(':checked') };
+            if (scope === 'category') {
+                criteria.category = String($('#wpe-purge-category').val() || '');
+            } else if (scope === 'status') {
+                criteria.status = String($('#wpe-purge-status').val() || '');
+            } else if (scope === 'import_job') {
+                criteria.import_job = String($('#wpe-purge-import').val() || '');
+            }
+            return criteria;
+        }
+
+        function purgeMessage(kind, text) {
+            $purgeResult
+                .removeClass('is-success is-warning is-error')
+                .addClass(kind === 'ok' ? 'is-success' : (kind === 'error' ? 'is-error' : ''))
+                .text(text)
+                .prop('hidden', false);
+            announce(text);
+        }
+
+        function resetPurge() {
+            purgePlan = null;
+            $purgeSummary.prop('hidden', true).text('');
+            $purgeConfirm.prop('hidden', true);
+            $purgeInput.val('');
+            $purgeRun.prop('disabled', true);
+        }
+
+        function purgeStep(jobId) {
+            opsRequest('action', 'POST', { action: 'purge_products', params: { mode: 'run', job_id: jobId } })
+                .done(function (res) {
+                    var c = res.counts || {};
+                    var text = 'Deleted ' + String(c.products || 0) + ' product(s) and ' +
+                        String(c.variations || 0) + ' variation(s)';
+                    if (res.status === 'completed') {
+                        purgeMessage('ok', text + '. Done. Media files were kept (' + String(c.attachments_kept || 0) + ' attachment(s)).');
+                        $purgePreview.prop('disabled', false);
+                        resetPurge();
+                        refreshHealth();
+                        return;
+                    }
+                    purgeMessage('info', text + ', ' + String(res.remaining || 0) + ' remaining. Keep this page open…');
+                    purgeStep(jobId);
+                })
+                .fail(function (xhr) {
+                    purgeMessage('error', responseMessage(xhr, t('opsFailed', 'Operation failed.')) +
+                        ' (job ' + jobId + ': run `wp wpe products purge --job=' + jobId + '` to resume)');
+                    $purgePreview.prop('disabled', false);
+                });
+        }
+
+        $purgeScope.on('change', function () {
+            var scope = String($purgeScope.val() || '');
+            $('[data-purge-scope]').each(function () {
+                $(this).prop('hidden', String($(this).attr('data-purge-scope')) !== scope);
+            });
+            resetPurge();
+        });
+        $('#wpe-purge-category, #wpe-purge-status, #wpe-purge-import, #wpe-purge-include-ordered').on('change', resetPurge);
+
+        $purgePreview.on('click', function (e) {
+            e.preventDefault();
+            resetPurge();
+            $purgePreview.prop('disabled', true);
+            opsRequest('action', 'POST', { action: 'purge_products', params: { mode: 'plan', criteria: purgeCriteria() } })
+                .done(function (plan) {
+                    purgePlan = plan;
+                    var text = String(plan.products || 0) + ' product(s) with ' + String(plan.variations || 0) +
+                        ' variation(s) will be deleted';
+                    if (plan.skipped_ordered) {
+                        text += '; ' + String(plan.skipped_ordered) + ' product(s) in orders are skipped';
+                    }
+                    text += '.';
+                    if (Array.isArray(plan.samples) && plan.samples.length) {
+                        text += ' For example: ' + plan.samples.join(', ') + '.';
+                    }
+                    if (plan.active_imports) {
+                        text += ' A Shopify import is running: wait for it to finish first.';
+                    }
+                    $purgeSummary.text(text).prop('hidden', false);
+                    if (Number(plan.products || 0) > 0 && !plan.active_imports) {
+                        $('#wpe-purge-count').text(String(plan.products));
+                        $purgeConfirm.prop('hidden', false);
+                        $purgeInput.trigger('focus');
+                    }
+                })
+                .fail(function (xhr) {
+                    purgeMessage('error', responseMessage(xhr, t('opsFailed', 'Operation failed.')));
+                })
+                .always(function () {
+                    $purgePreview.prop('disabled', false);
+                });
+        });
+
+        $purgeInput.on('input', function () {
+            $purgeRun.prop('disabled', !purgePlan || $.trim(String($purgeInput.val())) !== String(purgePlan.products));
+        });
+
+        $purgeRun.on('click', function (e) {
+            e.preventDefault();
+            if (!purgePlan) {
+                return;
+            }
+            $purgeRun.prop('disabled', true);
+            $purgePreview.prop('disabled', true);
+            opsRequest('action', 'POST', {
+                action: 'purge_products',
+                params: { mode: 'start', criteria: purgeCriteria(), confirm: $.trim(String($purgeInput.val())) }
+            })
+                .done(function (res) {
+                    $purgeConfirm.prop('hidden', true);
+                    purgeMessage('info', 'Deleting ' + String(res.products || 0) + ' product(s)…');
+                    purgeStep(String(res.job_id));
+                })
+                .fail(function (xhr) {
+                    purgeMessage('error', responseMessage(xhr, t('opsFailed', 'Operation failed.')));
+                    $purgePreview.prop('disabled', false);
+                    $purgeRun.prop('disabled', false);
+                });
+        });
+
         $refreshBtn.on('click', function (e) {
             e.preventDefault();
             $refreshBtn.prop('disabled', true);

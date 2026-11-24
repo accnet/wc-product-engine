@@ -512,6 +512,26 @@ class OperationsPage
                 $result = $this->runPreCutoverHygiene($apply);
                 break;
 
+            case 'purge_products':
+                $purge = new \WPE\Application\Catalog\ProductBulkPurge($this->wpdb);
+                $mode = (string)($params['mode'] ?? 'plan');
+                $criteria = (array)($params['criteria'] ?? []);
+                if ($mode === 'plan') {
+                    $result = $purge->plan($criteria);
+                } elseif ($mode === 'start') {
+                    $result = $purge->start($criteria, (string)($params['confirm'] ?? ''), $actorId);
+                } elseif ($mode === 'run') {
+                    $result = $purge->run(
+                        (string)($params['job_id'] ?? ''),
+                        (int)($params['batch_size'] ?? \WPE\Application\Catalog\ProductBulkPurge::DEFAULT_BATCH),
+                        (int)($params['max_batches'] ?? 0),
+                        (float)($params['max_seconds'] ?? ($actorId > 0 ? 20 : 0))
+                    );
+                } else {
+                    throw new \InvalidArgumentException("Unknown purge_products mode: '{$mode}'");
+                }
+                break;
+
             case 'export':
                 $exporter = new SnapshotExporter($this->wpdb);
                 $jobId = $exporter->startJob($params);
