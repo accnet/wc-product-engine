@@ -64,8 +64,8 @@
       {
         "name": "wc-product-engine",
         "file": "wc-product-engine/wc-product-engine.php",
-        "version": "1.2.0",
-        "sha256": "96a96e6f2c72a22e87b16812585015ae95cee663af6ef27f5d110c0f1b6df166",
+        "version": "1.2.1",
+        "sha256": "b267bcb1fb236259c2e1551421ebe24523c440f9daa0cd3d7408d1adead203cd",
         "category": "Engine under test (legacy mode)"
       },
       {

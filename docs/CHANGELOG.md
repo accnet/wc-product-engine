@@ -45,3 +45,10 @@ Bản phát hành plugin 1.2.0 (P053), gom các thay đổi sau 1.1.0; chưa dep
 - Legacy mirror bỏ qua shell biến thể không đổi, hash legacy và vòng đồng bộ capture đọc/ghi theo lô (P043–P046).
 - Re-certify trên WooCommerce 11.3.1 (P049): evidence verify 49/49 trên root cô lập; OD-20 (wp-file-manager) chờ user.
 - Cách ly test: ghim `cohort_mode` (P048), fixture T17/T18 theo phạm vi (P050), cổng residue T04 cùng DB, ngân sách hydration chỉ đo data store (P051, P052).
+
+## 5. v1.2.1 — 2026-11-25
+
+Bản vá 1.2.1 (P055), sau 1.2.0; chưa deploy/kích hoạt ở đâu, không cutover, schema giữ version 5.
+
+- `LegacyCapture` không capture sản phẩm/biến thể đang bị xóa vĩnh viễn (từ `before_delete_post` tới `deleted_post`); xóa một biến thể thì capture sản phẩm cha một lần sau khi xóa xong. Trước đó, ở system mode `shadow`/`indexed`, việc xóa sản phẩm có thể tạo lại dòng native mồ côi không có shell (P054.1).
+- Chỉ ảnh hưởng test, không nằm trong gói: T06 và CatalogShellIntegrityTest dọn dữ liệu chúng tạo, gate residue có chữ ký `orphan_native_products` (P054.2, P054.3).

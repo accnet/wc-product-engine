@@ -114,7 +114,7 @@ class T49Test
         echo "Testing R199 (release_install_upgrade)...\n";
 
         $distDir = dirname(__DIR__, 2) . '/dist';
-        $version = defined('WPE_VERSION') ? WPE_VERSION : '1.2.0';
+        $version = defined('WPE_VERSION') ? WPE_VERSION : '1.2.1';
         $zipPath = "{$distDir}/wc-product-engine-{$version}.zip";
         $manifestPath = "{$distDir}/release_manifest.json";
 

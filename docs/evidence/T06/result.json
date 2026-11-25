@@ -1,8 +1,8 @@
 {
   "task_id": "T06",
-  "commit": "7db223622225a526d48425bc0271fe7426f735f6",
+  "commit": "b56f3bed243f23bf90f17778d36a1cae7c62268a",
   "qa_status": "passed",
-  "content_digest": "8406674e92dace96771803e8c5fe2ad5c42d6c5e057e7b4e068f90a2c13db9ca",
+  "content_digest": "e616f3704d39d6e1ad30c459f8f09686b8dbdf3094a33bfcd2f589f90db85a20",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
@@ -22,7 +22,7 @@
       "exit_code": 0,
       "output_path": "docs/evidence/T06/output.log",
       "output_sha256": "63cc156db70e00792fe874f2258f0c7b6fbd7c29a14fd5c2bdbcb4714c154c2c",
-      "content_digest": "8406674e92dace96771803e8c5fe2ad5c42d6c5e057e7b4e068f90a2c13db9ca"
+      "content_digest": "e616f3704d39d6e1ad30c459f8f09686b8dbdf3094a33bfcd2f589f90db85a20"
     }
   ],
   "regression_results": [
@@ -254,7 +254,7 @@
     "junk_total_before": 0,
     "junk_total_after_restore": 0
   },
-  "base_commit": "7db223622225a526d48425bc0271fe7426f735f6",
+  "base_commit": "b56f3bed243f23bf90f17778d36a1cae7c62268a",
   "file_hashes": {
     "src/Compatibility/WordPress/PostIdAllocator.php": "4bdda2a6b81e64ef97e94e2ce8645f8dce821de9c1577777de779dc1a6acb7c6",
     "src/Infrastructure/Database/ProductRepository.php": "2195101bcb68b90db0c3f68db48e60a39d9c62cc1098d6d060fe1003e9550edc",

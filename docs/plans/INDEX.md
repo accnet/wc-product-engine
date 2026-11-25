@@ -54,3 +54,4 @@
 - P052 — P051.2 amendment: schema version expectation and both data-store hydration budgets with selector price features off (done)
 - P053 — Release 1.2.0: version bump and distribution zip (done)
 - P054 — Stop native rows leaking from deleted legacy products and leaky tests; residue gate sees orphan native rows (done)
+- P055 — Release 1.2.1: patch version bump and distribution zip (done)
