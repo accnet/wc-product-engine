@@ -1,0 +1,306 @@
+{
+ "plan": "P054.3",
+ "database": "test_wpe_bench",
+ "backup": "scratchpad test_wpe_bench-before-p054.sql (full database export, taken first)",
+ "steps": [
+  {
+   "residue_cleanup": {
+    "cleaned_at": "2026-11-24T21:49:21.103Z",
+    "backup": "test_wpe_bench-before-p054.sql",
+    "backup_bytes": 88214991,
+    "deleted": {
+     "summary": {
+      "junk_native_products": 0,
+      "orphan_native_products": 95,
+      "orphan_auto_draft_posts": 13,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+     },
+     "junk_native_product_ids": [],
+     "orphan_native_product_ids": [
+      "20090",
+      "20092",
+      "20094",
+      "20095",
+      "20096",
+      "26656",
+      "26658",
+      "26660",
+      "26661",
+      "26662",
+      "26663",
+      "39318",
+      "39320",
+      "39322",
+      "39323",
+      "39324",
+      "39325",
+      "42604",
+      "42606",
+      "42608",
+      "42609",
+      "42610",
+      "42611",
+      "42825",
+      "42827",
+      "42829",
+      "42830",
+      "42831",
+      "42832",
+      "42927",
+      "42929",
+      "42931",
+      "42932",
+      "42933",
+      "42934",
+      "43364",
+      "43366",
+      "43484",
+      "43486",
+      "43690",
+      "43692",
+      "43694",
+      "43695",
+      "43696",
+      "43697",
+      "44606",
+      "44608",
+      "45426",
+      "45428",
+      "45430",
+      "45431",
+      "45432",
+      "45433",
+      "45629",
+      "45631",
+      "45633",
+      "45634",
+      "45635",
+      "45636",
+      "45691",
+      "45693",
+      "45695",
+      "45696",
+      "45697",
+      "45698",
+      "46180",
+      "46182",
+      "46184",
+      "46185",
+      "46186",
+      "46187",
+      "46220",
+      "46222",
+      "46224",
+      "46225",
+      "46226",
+      "46227",
+      "20091",
+      "26657",
+      "39319",
+      "42605",
+      "42826",
+      "42928",
+      "43365",
+      "43485",
+      "43691",
+      "43977",
+      "44607",
+      "44783",
+      "45427",
+      "45630",
+      "45692",
+      "46181",
+      "46219",
+      "46221"
+     ],
+     "orphan_auto_draft_post_ids": [
+      "46190",
+      "46194",
+      "46195",
+      "46197",
+      "46200",
+      "46201",
+      "46202",
+      "46203",
+      "46204",
+      "46205",
+      "46206",
+      "46207",
+      "46208"
+     ],
+     "cleanup_job_ids": [],
+     "control_keys": []
+    },
+    "statements": 19,
+    "count_delta": {
+     "wp_wpe_inventory": -95,
+     "wp_wpe_object_state": -95,
+     "wp_wpe_products": -95,
+     "wp_wpe_sku_registry": -15,
+     "wp_posts": -13
+    },
+    "remaining_junk": {
+     "junk_native_products": 0,
+     "orphan_native_products": 0,
+     "orphan_auto_draft_posts": 0,
+     "completed_cleanup_jobs": 0,
+     "test_control_keys": 0
+    },
+    "untouched": "wpe_audit and wpe_outbox are append-only history and were not modified; objects not matching the junk signatures were left in place"
+   }
+  },
+  {
+   "shell_fixture_purge": {
+    "selection": "test fixture titles (T37 rogue SQL, T06 migrated legacy, lifecycle-hook and variation-shell probes) without legacy _price",
+    "count": 8,
+    "products": [
+     {
+      "id": "19998",
+      "title": "Migrated Legacy Product",
+      "post_status": "publish"
+     },
+     {
+      "id": "20097",
+      "title": "Rogue Raw SQL Title",
+      "post_status": "publish"
+     },
+     {
+      "id": "26571",
+      "title": "Migrated Legacy Product",
+      "post_status": "publish"
+     },
+     {
+      "id": "44347",
+      "title": "Migrated Legacy Product",
+      "post_status": "publish"
+     },
+     {
+      "id": "44852",
+      "title": "Lifecycle Hook Probe variable E0cjeP6D",
+      "post_status": "publish"
+     },
+     {
+      "id": "45155",
+      "title": "Migrated Legacy Product",
+      "post_status": "publish"
+     },
+     {
+      "id": "45570",
+      "title": "Variation Shell Probe EWfBM4lj",
+      "post_status": "publish"
+     },
+     {
+      "id": "46209",
+      "title": "Migrated Legacy Product",
+      "post_status": "publish"
+     }
+    ]
+   }
+  },
+  {
+   "residue_cleanup_after_purge": {
+    "cleaned_at": "2026-11-24T21:49:29.148Z",
+    "backup": "test_wpe_bench-before-p054.sql",
+    "backup_bytes": 88214991,
+    "deleted": {
+     "summary": {
+      "junk_native_products": 0,
+      "orphan_native_products": 0,
+      "orphan_auto_draft_posts": 0,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+     },
+     "junk_native_product_ids": [],
+     "orphan_native_product_ids": [],
+     "orphan_auto_draft_post_ids": [],
+     "cleanup_job_ids": [],
+     "control_keys": []
+    },
+    "statements": 0,
+    "count_delta": {},
+    "remaining_junk": {
+     "junk_native_products": 0,
+     "orphan_native_products": 0,
+     "orphan_auto_draft_posts": 0,
+     "completed_cleanup_jobs": 0,
+     "test_control_keys": 0
+    },
+    "untouched": "wpe_audit and wpe_outbox are append-only history and were not modified; objects not matching the junk signatures were left in place"
+   }
+  },
+  {
+   "autodraft_shell_fixture_purge": {
+    "plan": "P051.1",
+    "database": "test_wpe_bench",
+    "at": "2026-11-24T22:03:18+00:00",
+    "selection": "native wpe_products status=publish whose wp_posts shell is post_status=auto-draft",
+    "count": 3,
+    "products": [
+     {
+      "id": "46193",
+      "title": "Product A SKU Race",
+      "type": "simple",
+      "created_at": "2026-11-24 21:40:24.578743"
+     },
+     {
+      "id": "46198",
+      "title": "CAS Test Product Updated",
+      "type": "simple",
+      "created_at": "2026-11-24 21:40:24.601168"
+     },
+     {
+      "id": "46199",
+      "title": "Test Product 998335 (Tiếng Việt có dấu: Áo thun)",
+      "type": "variable",
+      "created_at": "2026-11-24 21:40:24.608194"
+     }
+    ],
+    "purge_result": {
+     "products": 3,
+     "variants": 9,
+     "rows": 54,
+     "outbox_retired": 4
+    },
+    "backup": "scratchpad test_wpe_bench-before-p051.sql (taken before P051 cleanup)"
+   }
+  },
+  {
+   "residue_cleanup_final": {
+    "cleaned_at": "2026-11-24T22:03:25.156Z",
+    "backup": "test_wpe_bench-before-p054.sql",
+    "backup_bytes": 88214991,
+    "deleted": {
+     "summary": {
+      "junk_native_products": 0,
+      "orphan_native_products": 0,
+      "orphan_auto_draft_posts": 3,
+      "completed_cleanup_jobs": 0,
+      "test_control_keys": 0
+     },
+     "junk_native_product_ids": [],
+     "orphan_native_product_ids": [],
+     "orphan_auto_draft_post_ids": [
+      "46193",
+      "46198",
+      "46199"
+     ],
+     "cleanup_job_ids": [],
+     "control_keys": []
+    },
+    "statements": 3,
+    "count_delta": {
+     "wp_posts": -3
+    },
+    "remaining_junk": {
+     "junk_native_products": 0,
+     "orphan_native_products": 0,
+     "orphan_auto_draft_posts": 0,
+     "completed_cleanup_jobs": 0,
+     "test_control_keys": 0
+    },
+    "untouched": "wpe_audit and wpe_outbox are append-only history and were not modified; objects not matching the junk signatures were left in place"
+   }
+  }
+ ]
+}

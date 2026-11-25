@@ -1,22 +1,38 @@
 {
-  "generated_at": "2026-11-24T21:30:12.893Z",
+  "generated_at": "2026-11-25T03:09:37.344Z",
   "mode": "run_and_verify",
-  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+  "base_commit": "7db223622225a526d48425bc0271fe7426f735f6",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",
     "php": "8.3.36",
     "database": "11.8.9-MariaDB"
   },
-  "tasks": 1,
-  "passed": 1,
+  "tasks": 3,
+  "passed": 3,
   "failed": [],
   "results": [
     {
-      "task": "T49",
-      "title": "Release packaging, docs và staged delivery",
+      "task": "T04",
+      "title": "Fixture và differential test harness",
       "run_exit": 0,
-      "run_seconds": 20,
+      "run_seconds": 29,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T06",
+      "title": "Product/variant repositories và aggregate commands",
+      "run_exit": 0,
+      "run_seconds": 15,
+      "verify_exit": 0,
+      "ok": true
+    },
+    {
+      "task": "T37",
+      "title": "Change capture và reconciliation",
+      "run_exit": 0,
+      "run_seconds": 21,
       "verify_exit": 0,
       "ok": true
     }

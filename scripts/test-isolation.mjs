@@ -29,6 +29,8 @@ export function junkQueries(){
  const P=dbPrefix();
  return {
   junk_native_products:`SELECT id FROM ${P}wpe_products WHERE title='' OR title LIKE 'AUTO-DRAFT%'`,
+  // P054: native product rows whose WordPress shell is gone (a delete that bypassed the engine).
+  orphan_native_products:`SELECT p.id FROM ${P}wpe_products p LEFT JOIN ${P}posts w ON w.ID=p.id AND w.post_type='product' WHERE w.ID IS NULL`,
   orphan_auto_draft_posts:`SELECT ID FROM ${P}posts WHERE post_type IN ('product','product_variation') AND post_status='auto-draft' AND ID NOT IN (SELECT id FROM ${P}wpe_products)`,
   completed_cleanup_jobs:`SELECT id FROM ${P}wpe_jobs WHERE kind='cleanup' AND status='completed'`,
   test_control_keys:`SELECT \`key\` FROM ${P}wpe_control WHERE \`key\` LIKE 'mirror\\_stopped\\_cohort\\_r%' OR \`key\` LIKE 'idempotency:test-%'`,
@@ -101,10 +103,10 @@ export function isolationProblems(rec){
 function inList(ids){return ids.map(i=>`'${String(i).replace(/'/g,"''")}'`).join(',');}
 export function cleanupResidue({backup,apply=false,logPath='docs/evidence/residue-cleanup.json'}){
  const rep=residueReport(),P=dbPrefix();
- const plan={summary:residueSummary(rep),junk_native_product_ids:rep.junk_native_products,orphan_auto_draft_post_ids:rep.orphan_auto_draft_posts,cleanup_job_ids:rep.completed_cleanup_jobs,control_keys:rep.test_control_keys};
+ const plan={summary:residueSummary(rep),junk_native_product_ids:rep.junk_native_products,orphan_native_product_ids:rep.orphan_native_products,orphan_auto_draft_post_ids:rep.orphan_auto_draft_posts,cleanup_job_ids:rep.completed_cleanup_jobs,control_keys:rep.test_control_keys};
  if(!apply)return {applied:false,plan};
  if(!backup||!fs.existsSync(backup)||fs.statSync(backup).size<1024)throw new Error('--apply requires an existing, non-empty --backup file');
- const products=rep.junk_native_products.map(Number).filter(Number.isInteger);
+ const products=[...new Set([...rep.junk_native_products,...(rep.orphan_native_products??[])])].map(Number).filter(Number.isInteger);
  const stmts=[];
  if(products.length){
   const ids=products.join(',');

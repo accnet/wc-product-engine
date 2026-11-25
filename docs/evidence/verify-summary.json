@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-24T21:31:16.813Z",
+  "generated_at": "2026-11-25T03:10:41.030Z",
   "mode": "verify_only",
-  "base_commit": "3958aa533f46bb4bad19128d42821b19a0a24658",
+  "base_commit": "7db223622225a526d48425bc0271fe7426f735f6",
   "environment": {
     "wordpress": "7.1.5",
     "woocommerce": "11.3.1",

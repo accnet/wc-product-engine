@@ -237,6 +237,8 @@ class FixtureHarness
         $p = $wpdb->prefix;
         $queries = [
             'junk_native_products' => "SELECT id FROM {$p}wpe_products WHERE title = '' OR title LIKE 'AUTO-DRAFT%'",
+            // P054: native product rows whose WordPress shell is gone (a delete that bypassed the engine).
+            'orphan_native_products' => "SELECT p.id FROM {$p}wpe_products p LEFT JOIN {$p}posts w ON w.ID = p.id AND w.post_type = 'product' WHERE w.ID IS NULL",
             'orphan_auto_draft_posts' => "SELECT ID FROM {$p}posts WHERE post_type IN ('product','product_variation') AND post_status = 'auto-draft' AND ID NOT IN (SELECT id FROM {$p}wpe_products)",
             'completed_cleanup_jobs' => "SELECT id FROM {$p}wpe_jobs WHERE kind = 'cleanup' AND status = 'completed'",
             'test_control_keys' => "SELECT `key` FROM {$p}wpe_control WHERE `key` LIKE 'mirror\\_stopped\\_cohort\\_r%' OR `key` LIKE 'idempotency:test-%'",

@@ -1,0 +1,53 @@
+{
+ "applied": true,
+ "log": {
+  "cleaned_at": "2026-11-25T03:08:14.254Z",
+  "backup": "test_wpe_regress-before-p054.sql",
+  "backup_bytes": 14495140,
+  "deleted": {
+   "summary": {
+    "junk_native_products": 0,
+    "orphan_native_products": 14,
+    "orphan_auto_draft_posts": 0,
+    "completed_cleanup_jobs": 0,
+    "test_control_keys": 0
+   },
+   "junk_native_product_ids": [],
+   "orphan_native_product_ids": [
+    "6483",
+    "6485",
+    "6487",
+    "6488",
+    "6489",
+    "6490",
+    "7389",
+    "7391",
+    "7393",
+    "7394",
+    "7395",
+    "7396",
+    "6484",
+    "7390"
+   ],
+   "orphan_auto_draft_post_ids": [],
+   "cleanup_job_ids": [],
+   "control_keys": []
+  },
+  "statements": 16,
+  "count_delta": {
+   "wp_wpe_catalog": -24,
+   "wp_wpe_inventory": -14,
+   "wp_wpe_object_state": -14,
+   "wp_wpe_products": -14,
+   "wp_wpe_sku_registry": -2
+  },
+  "remaining_junk": {
+   "junk_native_products": 0,
+   "orphan_native_products": 0,
+   "orphan_auto_draft_posts": 0,
+   "completed_cleanup_jobs": 0,
+   "test_control_keys": 0
+  },
+  "untouched": "wpe_audit and wpe_outbox are append-only history and were not modified; objects not matching the junk signatures were left in place"
+ }
+}
